@@ -30,7 +30,9 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     *:not(hr) { box-sizing: inherit; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; }
-    .message { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; }
+    .message { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; background-color: lightgrey; }
+    .markdown > p:first-child { margin-top: 0; }
+    .markdown > p:last-child { margin-bottom: 0; }
   </style>
   <script src="jquery.js"></script>
   <script src="markdown-it.js"></script>
@@ -65,6 +67,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
           <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
         <?}?>
       </select>
+      <?if(!$uuid){?><input id="register" type="button" value="register"><?}?>
     </header>
     <div id="qa" style="background-color: goldenrod; overflow-y: scroll; padding: 0.5em;">
       <?for($x = 0; $x<100; $x++){?>
@@ -81,7 +84,6 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       </select>
     </header>
     <div>
-      <?if(!$uuid){?><input id="register" type="button" value="register"><?}?>
       <textarea id="chatbox" style="width: 100%; resize: none; outline: none; border: none; padding: 0.3em;" rows="1" placeholder="type message here" autofocus></textarea>
     </div>
     <div style="display: flex; flex-direction: column-reverse; overflow-y: scroll; padding: 0.5em;">

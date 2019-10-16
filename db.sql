@@ -9,7 +9,7 @@ create type room_type_enum as enum ('public','gallery','private');
 
 create table room(
   community_id integer references community on delete cascade deferrable initially deferred
-, room_id serial
+, room_id serial unique
 , room_type room_type_enum not null default 'public'
 , room_name text
 , primary key (community_id,room_id)
@@ -42,8 +42,9 @@ create table room_account_x(
 create table chat(
   community_id integer
 , room_id integer
-, chat_id serial
+, account_id integer references account
+, chat_id serial unique
 , chat_at timestamptz not null default current_timestamp
 , chat_markdown text not null
-, primary key (community_id,room_id,chat_id)
+, primary key (community_id,room_id,account_id,chat_id)
 );

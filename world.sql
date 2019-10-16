@@ -13,7 +13,7 @@ set local schema 'world';
 create function _error(text) returns void language plpgsql as $$begin raise exception '%', $1 using errcode='H0403'; end;$$;
 --
 create view community as select community_name,community_room_id from db.community;
-create view chat as select room_id,chat_at,chat_markdown from db.chat;
+create view chat as select room_id,account_id,chat_at,chat_markdown from db.chat;
 create view room as select room_id,room_name,community_name from db.room natural join db.community;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
@@ -31,7 +31,12 @@ create function new_chat(luuid uuid, roomid integer, msg text) returns integer l
   select _error('room does not exist') where not exists(select * from room where room_id=roomid);
   select _error('not authorised to chat in this room') where (select room_type<>'public' from room where room_id=roomid) and not exists (select * from room_account_x natural join login where room_id=roomid and login_uuid=luuid);
   select _error('message too long') where length(msg)>500;
-  insert into chat(community_id,room_id,chat_markdown) select community_id,roomid,msg from room where room_id=roomid returning chat_id;
+  insert into chat(community_id,room_id,account_id,chat_markdown) select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid),msg from room where room_id=roomid returning chat_id;
+$$;
+--
+create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  with a as (insert into account default values returning account_id)
+  insert into login(account_id,login_uuid) select account_id,luuid from a returning account_id;
 $$;
 --
 revoke all on all functions in schema world from public;
