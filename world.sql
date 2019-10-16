@@ -12,8 +12,9 @@ set local schema 'world';
 --
 create function _error(text) returns void language plpgsql as $$begin raise exception '%', $1 using errcode='H0403'; end;$$;
 --
-create view community as select community_name from db.community;
-create view chat as select chat_at,chat_markdown from db.chat;
+create view community as select community_name,community_room_id from db.community;
+create view chat as select room_id,chat_at,chat_markdown from db.chat;
+create view room as select room_id,room_name,community_name from db.room natural join db.community;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
 declare
