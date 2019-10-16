@@ -24,23 +24,30 @@ $community = $_GET['community'];
 $room = $_GET['room'] ?? ccdb("select community_room_id from community where community_name=$1",$community);
 ?>
 <!doctype html>
-<html style="box-sizing: border-box;">
+<html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
+  <link rel="stylesheet" href="/highlightjs/default.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
+    @font-face { font-family: 'Quattrocento'; src: url('/quattrocento.ttf') format('truetype'); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+    header { font-size: 1rem; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; }
     .message { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; background-color: lightgrey; }
-    .markdown > p:first-child { margin-top: 0; }
-    .markdown > p:last-child { margin-bottom: 0; }
+    .markdown>:first-child { margin-top: 0; }
+    .markdown>:last-child { margin-bottom: 0; }
+    .markdown ul { padding-left: 1em; }
   </style>
-  <script src="jquery.js"></script>
-  <script src="markdown-it.js"></script>
-  <script src="markdown-it-sup.js"></script>
-  <script src="js.cookie.js"></script>
+  <script src="/jquery.js"></script>
+  <script src="/markdown-it.js"></script>
+  <script src="/markdown-it-sup.js"></script>
+  <script src="/markdown-it-sub.js"></script>
+  <script src="/highlightjs/highlight.js"></script>
+  <script src="/js.cookie.js"></script>
   <script>
+    hljs.initHighlightingOnLoad();
     $(function(){
-      var md = window.markdownit().use(window.markdownitSup);
+      var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
       $('#register').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('.markdown').each(function(){ $(this).html(md.render($(this).data('markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
