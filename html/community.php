@@ -30,6 +30,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     *:not(hr) { box-sizing: inherit; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; }
+    .message { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; }
   </style>
   <script src="jquery.js"></script>
   <script src="markdown-it.js"></script>
@@ -39,12 +40,21 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     $(function(){
       var md = window.markdownit().use(window.markdownitSup);
       $('#register').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
-      $('#send').click(function(){ $.ajax({ type: "POST", url: '/community', data: { room: <?=$room?>, msg: $('textarea').val() }, async: false }); location.reload(true); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).data('markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
+      $('#chatbox').on('input', function(){ $(this).css('height', '0'); $(this).css('height', this.scrollHeight + 'px'); });
+      $('#chatbox').keydown(function(e){
+        if((e.keyCode || e.which) == 13) {
+          if(!e.shiftKey) {
+            $.ajax({ type: "POST", url: '/community', data: { room: <?=$room?>, msg: $('textarea').val() }, async: false }); location.reload(true);
+            return false;
+          }
+        }
+      });
     });
   </script>
+  <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex; background-color: red;">
   <main style="background-color: lightgreen; display: flex; flex-direction: column; flex: 0 0 70%;">
@@ -70,14 +80,13 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
         <?}?>
       </select>
     </header>
-    <div style="padding: 0.5em;">
+    <div>
       <?if(!$uuid){?><input id="register" type="button" value="register"><?}?>
-      <textarea></textarea>
-      <input id="send" type="button" value="send">
+      <textarea id="chatbox" style="width: 100%; resize: none; outline: none; border: none; padding: 0.3em;" rows="1" placeholder="type message here" autofocus></textarea>
     </div>
     <div style="display: flex; flex-direction: column-reverse; overflow-y: scroll; padding: 0.5em;">
       <?foreach(db("select chat_markdown from chat where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
-        <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+        <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
       <?}?>
     </div>
   </div>
