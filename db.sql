@@ -18,6 +18,7 @@ create table room(
 create table account(
   account_id serial primary key
 , account_name text not null default ''
+, account_random integer not null default floor(random()*1000000000)
 );
 
 create table login(

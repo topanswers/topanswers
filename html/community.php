@@ -29,14 +29,18 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
   <link rel="stylesheet" href="/highlightjs/default.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    @font-face { font-family: 'Quattrocento'; src: url('/quattrocento.ttf') format('truetype'); }
+    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header { font-size: 1rem; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; }
-    .message { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; background-color: lightgrey; }
+    .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid black; border-radius: 0.3em; background-color: white; }
+    .message-wrapper { width: 100%; display: flex; margin-top: 0.2em; align-items: center; }
+    .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; xborder: 1px solid black; xborder-radius: 2px; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
+    .markdown img { max-height: 7em; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -66,8 +70,8 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex; background-color: red;">
-  <main style="background-color: lightgreen; display: flex; flex-direction: column; flex: 0 0 70%;">
-    <header style="background-color: brown; padding: 0.5em; border-bottom: 2px solid black;">
+  <main style="background-color: lightgreen; display: flex; flex-direction: column; flex: 0 0 60%;">
+    <header style="background-color: #4e82c2; padding: 0.5em; border-bottom: 2px solid black;">
       <span>TopAnswers: </span>
       <select id="community">
         <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
@@ -76,27 +80,32 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       </select>
       <?if(!$uuid){?><input id="register" type="button" value="register"><?}?>
     </header>
-    <div id="qa" style="background-color: goldenrod; overflow-y: scroll; padding: 0.5em;">
-      <?for($x = 0; $x<100; $x++){?>
-        <div class="question"><?=$x?>) Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi tristique placerat felis vitae cursus.</div>
+    <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
+      <?for($x = 1; $x<100; $x++){?>
+        <div class="question">Question <?=$x?></div>
       <?}?>
     </div>
   </main>
-  <div id="chat" style="background-color: darkslateblue; flex: 0 0 30%; display: flex; flex-direction: column-reverse; justify-content: flex-start; border-left: 2px solid black;">
-    <header style="background-color: seagreen; padding: 0.5em; border-top: 2px solid black;">
+  <div id="chat" style="background-color: #f8f8f8; flex: 0 0 40%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; xoverflow-x: auto; border-left: 2px solid black;">
+    <header style="flex: 0 0 auto; background-color: #4e82c2; padding: 0.5em; border-top: 2px solid black;">
       <select id="room">
         <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name from room where community_name=$1 order by room_name desc",$community) as $r){ extract($r);?>
           <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
         <?}?>
       </select>
     </header>
-    <div>
-      <textarea id="chatbox" style="width: 100%; resize: none; outline: none; border: none; padding: 0.3em;" rows="1" placeholder="type message here" autofocus></textarea>
-    </div>
-    <div style="display: flex; flex-direction: column-reverse; overflow-y: scroll; padding: 0.5em;">
-      <?foreach(db("select chat_markdown from chat where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
-        <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
-      <?}?>
+    <textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em;" rows="1" placeholder="type message here" autofocus></textarea>
+    <div style="display: flex; flex: 1 1 auto; min-height: 0;">
+      <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
+        <?foreach(db("select account_random, chat_markdown from chat where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
+          <div class="message-wrapper">
+            <img src="/identicon.php?id=<?=$account_random?>">
+            <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+          </div>
+        <?}?>
+      </div>
+      <div style="flex: 0 0 2em; background-color: pink;">
+      </div>
     </div>
   </div>
 </body>   
