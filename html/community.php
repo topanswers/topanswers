@@ -97,9 +97,9 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     <textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em;" rows="1" placeholder="type message here" autofocus></textarea>
     <div style="display: flex; flex: 1 1 auto; min-height: 0;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
-        <?foreach(db("select account_random, chat_markdown from chat where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
+        <?foreach(db("select account_id, chat_markdown from chat where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
           <div class="message-wrapper">
-            <img src="/identicon.php?id=<?=$account_random?>">
+            <img src="/identicon.php?id=<?=crc32($account_id)?>">
             <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
           </div>
         <?}?>

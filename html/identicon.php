@@ -50,7 +50,7 @@ $colBG = imagecolorallocate($im, $colBG_r, $colBG_g, $colBG_b);
 imagefill($im, 0, 0, $colBG);
 
 // currently hard coded foreground-color
-$col = imagecolorallocate($im, $id%256, intdiv($id,256)%256, intdiv($id,65536)%256);
+$col = imagecolorallocate($im, $id%128, intdiv($id,128)%128, intdiv($id,16384)%128);
 
 // build pixels as long there are bits in
 for($i = 0; $i < $pixelCount; $i++) {

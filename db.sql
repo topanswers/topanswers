@@ -1,5 +1,5 @@
 create table community(
-  community_id serial primary key
+  community_id integer generated always as identity primary key
 , community_name text not null
 , community_room_id integer not null
 , foreign key (community_id,community_room_id) references room deferrable initially deferred
@@ -9,16 +9,15 @@ create type room_type_enum as enum ('public','gallery','private');
 
 create table room(
   community_id integer references community on delete cascade deferrable initially deferred
-, room_id serial unique
+, room_id integer generated always as identity
 , room_type room_type_enum not null default 'public'
 , room_name text
 , primary key (community_id,room_id)
 );
 
 create table account(
-  account_id serial primary key
+  account_id integer generated always as identity primary key
 , account_name text not null default ''
-, account_random integer not null default floor(random()*1000000000)
 );
 
 create table login(
@@ -44,8 +43,22 @@ create table chat(
   community_id integer
 , room_id integer
 , account_id integer references account
-, chat_id serial unique
+, chat_id bigint generated always as identity unique
 , chat_at timestamptz not null default current_timestamp
+, chat_change_id bigint generated always as identity unique
+, chat_change_at timestamptz not null default current_timestamp
 , chat_markdown text not null
 , primary key (community_id,room_id,account_id,chat_id)
+);
+
+create table chat_history(
+  community_id integer
+, room_id integer
+, account_id integer
+, chat_id bigint
+, chat_history_id bigint unique
+, chat_history_at timestamptz not null
+, chat_markdown text not null
+, primary key (community_id,room_id,account_id,chat_id,chat_history_id)
+, foreign key (community_id,room_id,account_id,chat_id) references chat
 );
