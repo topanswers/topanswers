@@ -26,7 +26,7 @@ define('BOX_SIZE_W', 4);      // Width of the individual "pixels" in px
 define('BOX_SIZE_H', 4);      // Height of the individual "pixels" in px
 define('GRID_COUNT_W', 7);     // Horizontal "pixel"-count
 define('GRID_COUNT_H', 7);     // Vertical "pixel"-count
-define('BG_COLOR', '#F0F0F0'); // Background color as 6-digit hexadecimal rgb code
+define('BG_COLOR', '#D4DFEC'); // Background color as 6-digit hexadecimal rgb code
 
 
 

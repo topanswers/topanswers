@@ -32,9 +32,9 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    header { font-size: 1rem; }
+    header { font-size: 1rem; background-color: #4d7ebb; padding: 0.5em; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; }
-    .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid black; border-radius: 0.3em; background-color: white; }
+    .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
     .message-wrapper { width: 100%; display: flex; margin-top: 0.2em; align-items: center; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; xborder: 1px solid black; xborder-radius: 2px; }
     .markdown>:first-child { margin-top: 0; }
@@ -52,26 +52,35 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     hljs.initHighlightingOnLoad();
     $(function(){
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
+      var chatChangeId = <?=ccdb("select coalesce(max(chat_change_id),0) from chat where room_id=$1",$room)?>;
       $('#register').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('.markdown').each(function(){ $(this).html(md.render($(this).data('markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
       $('#chatbox').on('input', function(){ $(this).css('height', '0'); $(this).css('height', this.scrollHeight + 'px'); });
       $('#chatbox').keydown(function(e){
-        if((e.keyCode || e.which) == 13) {
-          if(!e.shiftKey) {
-            $.ajax({ type: "POST", url: '/community', data: { room: <?=$room?>, msg: $('textarea').val() }, async: false }); location.reload(true);
-            return false;
-          }
-        }
+	if((e.keyCode || e.which) == 13) {
+	  if(!e.shiftKey) {
+	    $.ajax({ type: "POST", url: '/community', data: { room: <?=$room?>, msg: $('textarea').val() }, async: false }); location.reload(true);
+	    return false;
+	  }
+	}
       });
+      setInterval(function(){ 
+	$.get('/change?room=<?=$room?>',function(r){ 
+          console.log(chatChangeId + ' - ' + JSON.parse(r).chat_change_id);
+          if(chatChangeId!==JSON.parse(r).chat_change_id){
+            $.get(window.location.href,function(r){ $('#chat > div').html($(r).find('#chat > div').html()); },'html');
+          }
+        });
+      }, 10000);
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex; background-color: red;">
   <main style="background-color: lightgreen; display: flex; flex-direction: column; flex: 0 0 60%;">
-    <header style="background-color: #4e82c2; padding: 0.5em; border-bottom: 2px solid black;">
+    <header style="border-bottom: 2px solid black;">
       <span>TopAnswers: </span>
       <select id="community">
         <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
@@ -86,8 +95,8 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       <?}?>
     </div>
   </main>
-  <div id="chat" style="background-color: #f8f8f8; flex: 0 0 40%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; xoverflow-x: auto; border-left: 2px solid black;">
-    <header style="flex: 0 0 auto; background-color: #4e82c2; padding: 0.5em; border-top: 2px solid black;">
+  <div id="chat" style="background-color: #d4dfec; flex: 0 0 40%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; xoverflow-x: auto; border-left: 2px solid black;">
+    <header style="flex: 0 0 auto; border-top: 2px solid black;">
       <select id="room">
         <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name from room where community_name=$1 order by room_name desc",$community) as $r){ extract($r);?>
           <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
