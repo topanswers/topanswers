@@ -34,7 +34,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header { font-size: 1rem; background-color: #4d7ebb; padding: 0.5em; }
-    .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid black; }
+    .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
     .message-wrapper { width: 100%; display: flex; margin-top: 0.2em; align-items: center; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; xborder: 1px solid black; xborder-radius: 2px; }
@@ -42,6 +42,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
     .markdown img { max-height: 7em; }
+    .activeUser { height: 1.5em; width: 1.5em; margin: 0.1em; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -130,7 +131,9 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       </select>
       <?if($uuid) if(intval(ccdb("select account_id from login where login_uuid=$1",$uuid))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
-    <?if($uuid){?><textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em;" rows="1" placeholder="type message here" autofocus></textarea><?}?>
+    <?if($uuid){?>
+      <textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; border-top: 1px solid darkgrey;" rows="1" placeholder="type message here" autofocus></textarea>
+    <?}?>
     <div style="display: flex; flex: 1 1 auto; min-height: 0;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
         <?foreach(db("select account_id, chat_markdown from chat where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
@@ -140,7 +143,10 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
           </div>
         <?}?>
       </div>
-      <div style="flex: 0 0 2em; background-color: pink;">
+      <div id="activeUsers" style="display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #e7edf4; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
+        <?foreach(db("select account_id from chat group by account_id having max(chat_at)>(current_timestamp-'1d'::interval) order by max(chat_at)") as $r){ extract($r);?>
+          <img class="activeUser" src="/identicon.php?id=<?=crc32($account_id)?>">
+        <?}?>
       </div>
     </div>
   </div>

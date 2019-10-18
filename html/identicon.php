@@ -26,7 +26,7 @@ define('BOX_SIZE_W', 4);      // Width of the individual "pixels" in px
 define('BOX_SIZE_H', 4);      // Height of the individual "pixels" in px
 define('GRID_COUNT_W', 7);     // Horizontal "pixel"-count
 define('GRID_COUNT_H', 7);     // Vertical "pixel"-count
-define('BG_COLOR', '#D4DFEC'); // Background color as 6-digit hexadecimal rgb code
+define('BG_COLOR', '#FFFFFF'); // Background color as 6-digit hexadecimal rgb code
 
 
 
@@ -47,7 +47,9 @@ $colBG_r = hexdec(substr(BG_COLOR, -6, 2));
 $colBG_g = hexdec(substr(BG_COLOR, -4, 2));
 $colBG_b = hexdec(substr(BG_COLOR, -2, 2));
 $colBG = imagecolorallocate($im, $colBG_r, $colBG_g, $colBG_b);
-imagefill($im, 0, 0, $colBG);
+$colTransparentBG = imagecolortransparent($im, $colBG);
+//imagefill($im, 0, 0, $colBG);
+imagefill($im, 0, 0, $colTransparentBG);
 
 // currently hard coded foreground-color
 $col = imagecolorallocate($im, $id%128, intdiv($id,128)%128, intdiv($id,16384)%128);
