@@ -15,6 +15,7 @@ header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 $uuid = $_COOKIE['uuid'] ?? false;
+if($uuid) ccdb("select set_config('custom.uuid',$1,false)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   db("select new_chat($1,$2,$3)",$uuid,$_POST['room'],$_POST['msg']);
   exit;
@@ -53,27 +54,52 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     $(function(){
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
       var chatChangeId = <?=ccdb("select coalesce(max(chat_change_id),0) from chat where room_id=$1",$room)?>;
+      var chatLastChange = <?=ccdb("select extract(epoch from current_timestamp-coalesce(max(chat_change_at),current_timestamp))::integer from chat where room_id=$1",$room)?>;
+      var chatPollInterval;
+      function setChatPollInterval(){
+        if(chatLastChange<5) chatPollInterval = 1000;
+        else if(chatLastChange<15) chatPollInterval = 3000;
+        else if(chatLastChange<30) chatPollInterval = 5000;
+        else if(chatLastChange<300) chatPollInterval = 10000;
+        else if(chatLastChange<3600) chatPollInterval = 30000;
+        else chatPollInterval = 60000;
+      }
+      function updateChat(){
+        $.get('/change?room=<?=$room?>',function(r){
+          //console.log(chatChangeId + ' - ' + JSON.parse(r).chat_change_id + ' - ' + chatPollInterval + ' - ' + chatLastChange);
+          if(chatChangeId!==JSON.parse(r).chat_change_id){
+            $.get(window.location.href,function(data) {
+              $('#chat>div').html($('<div />').append(data).find('#chat>div'));
+              $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
+              chatChangeId = JSON.parse(r).chat_change_id;
+              chatLastChange = 0;
+              setChatPollInterval();
+            },'html');
+          }else{
+            chatLastChange += Math.floor(chatPollInterval/1000);
+            setChatPollInterval();
+          }
+        });
+      }
+      function pollChat() { updateChat(); setTimeout(pollChat, chatPollInterval); }
       $('#register').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
-      $('.markdown').each(function(){ $(this).html(md.render($(this).data('markdown'))); });
+      $('#poll').click(function(){ updateChat(); });
+      $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
       $('#chatbox').on('input', function(){ $(this).css('height', '0'); $(this).css('height', this.scrollHeight + 'px'); });
       $('#chatbox').keydown(function(e){
-	if((e.keyCode || e.which) == 13) {
-	  if(!e.shiftKey) {
-	    $.ajax({ type: "POST", url: '/community', data: { room: <?=$room?>, msg: $('textarea').val() }, async: false }); location.reload(true);
-	    return false;
-	  }
-	}
-      });
-      setInterval(function(){ 
-	$.get('/change?room=<?=$room?>',function(r){ 
-          console.log(chatChangeId + ' - ' + JSON.parse(r).chat_change_id);
-          if(chatChangeId!==JSON.parse(r).chat_change_id){
-            $.get(window.location.href,function(r){ $('#chat > div').html($(r).find('#chat > div').html()); },'html');
+        var t = $(this);
+        if((e.keyCode || e.which) == 13) {
+          if(!e.shiftKey) {
+            $.post('/community', { room: <?=$room?>, msg: $('textarea').val() }).done(function(){ updateChat(); t.val(''); t.prop('disabled',false); });
+            $(this).prop('disabled',true);
+            return false;
           }
-        });
-      }, 10000);
+        }
+      });
+      setChatPollInterval();
+      setTimeout(pollChat, chatPollInterval);
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -102,8 +128,9 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
           <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
         <?}?>
       </select>
+      <?if($uuid) if(intval(ccdb("select account_id from login where login_uuid=$1",$uuid))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
-    <textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em;" rows="1" placeholder="type message here" autofocus></textarea>
+    <?if($uuid){?><textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em;" rows="1" placeholder="type message here" autofocus></textarea><?}?>
     <div style="display: flex; flex: 1 1 auto; min-height: 0;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
         <?foreach(db("select account_id, chat_markdown from chat where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
