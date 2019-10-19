@@ -23,13 +23,29 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     header("Location: /profile");
     exit;
   }
+  if(isset($_POST['image'])){
+    db("select change_account_image(null)");
+    header("Location: /profile");
+    exit;
+  }
   if(isset($_FILES['image'])){
-    //imagescale(imagecreatefrompng($_FILES['image']['tmp_name']),64,64);
-    //db("select change_account_image($1)",pg_escape_bytea(file_get_contents($_FILES['image']['tmp_name'])));
+    switch(getimagesize($_FILES['image']['tmp_name'])[2]){
+      case IMAGETYPE_JPEG:
+        $image = imagecreatefromjpeg($_FILES['image']['tmp_name']);
+        break;
+      case IMAGETYPE_GIF:
+        $image = imagecreatefromgif($_FILES['image']['tmp_name']);
+        break;
+      case IMAGETYPE_PNG:
+        $image = imagecreatefrompng($_FILES['image']['tmp_name']);
+        break;
+      default:
+        exit('wrong image format: need gif, png or jpeg');
+    }
     ob_start();
-    imagepng(imagescale(imagecreatefrompng($_FILES['image']['tmp_name']),64,64));
-    ob_end_clean();
+    imagejpeg(imagescale($image,32,32,IMG_BICUBIC));
     db("select change_account_image($1)",pg_escape_bytea(ob_get_contents()));
+    ob_end_clean();
     header("Location: /profile");
     exit;
   }
@@ -51,13 +67,18 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 </head>
 <body>
   <form action="/profile" method="post">
-    <input type="text" name="name" placeholder="name" value="<?=ccdb("select account_name from login where login_is_me")?>" autocomplete="off" autofocus>
+    <input type="text" name="name" placeholder="name" value="<?=ccdb("select account_name from login natural join account  where login_is_me")?>" autocomplete="off" autofocus>
     <input type="submit" value="Save">
   </form>
   <br>
   <form action="/profile" method="post" enctype="multipart/form-data">
-    <input type="file" name="image" accept=".png">
+    <img src="/identicon.php?id=<?=ccdb("select account_id from login where login_is_me")?>">
+    <input type="file" name="image" accept=".png,.gif,.jpg,.jpeg">
     <input type="submit" value="Save">
+  </form>
+  <form action="/profile" method="post">
+    <input type="hidden" name="image">
+    <input type="submit" value="Remove Picture">
   </form>
 </body>   
 </html>   

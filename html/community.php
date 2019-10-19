@@ -118,7 +118,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       </div>
       <div style="height: 100%">
         <?if(!$uuid){?><input id="register" type="button" value="register" style="margin: 0.5em;"><?}?>
-        <?if($uuid){?><a href="/profile"><img style="background-color: #d4dfec; padding: 0.2em; display: block;" src="/identicon.php?id=<?=crc32(ccdb("select account_id from login where login_is_me"))?>"></a><?}?>
+        <?if($uuid){?><a href="/profile"><img style="background-color: #d4dfec; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login where login_is_me")?>"></a><?}?>
       </div>
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
@@ -141,10 +141,10 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     <?}?>
     <div style="display: flex; flex: 1 1 auto; min-height: 0;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
-        <?foreach(db("select account_id,coalesce(nullif(account_name,''),'Anonymous') account_name,chat_markdown from chat natural join login where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
+        <?foreach(db("select account_id,coalesce(nullif(account_name,''),'Anonymous') account_name,chat_markdown from chat natural join account where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
           <div class="message-wrapper">
             <small><?=$account_name?>:</small>
-            <img src="/identicon.php?id=<?=crc32($account_id)?>">
+            <img src="/identicon.php?id=<?=$account_id?>">
             <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
           </div>
           <div class="spacer" style="height: 1em;"></div>
@@ -152,7 +152,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       </div>
       <div id="active-users" style="display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #e7edf4; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
         <?foreach(db("select account_id from chat where room_id=$1 group by account_id having max(chat_at)>(current_timestamp-'1d'::interval) order by max(chat_at) desc",$room) as $r){ extract($r);?>
-          <img class="active-user" src="/identicon.php?id=<?=crc32($account_id)?>">
+          <img class="active-user" src="/identicon.php?id=<?=$account_id?>">
         <?}?>
       </div>
     </div>
