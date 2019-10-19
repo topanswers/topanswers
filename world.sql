@@ -14,7 +14,7 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 --
 create view community as select community_name,community_room_id from db.community;
 create view chat as select room_id,account_id,chat_id,chat_at,chat_change_id,chat_change_at,chat_markdown from db.chat natural join db.account;
-create view account as select account_id,account_name,account_image from db.account;
+create view account as select account_id,account_name,account_image, dummy is not null account_is_me from db.account natural left join (select account_id, 1 dummy from db.login where login_uuid=current_setting('custom.uuid',true)::uuid) l;
 create view login as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account;
 create view room as select room_id,room_name,community_name from db.room natural join db.community;
 --

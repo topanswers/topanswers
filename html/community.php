@@ -86,7 +86,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
         });
       }
       function pollChat() { updateChat(); setTimeout(pollChat, chatPollInterval); }
-      $('#register').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
+      $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('#poll').click(function(){ updateChat(); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
@@ -120,7 +120,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
         </select>
       </div>
       <div style="height: 100%">
-        <?if(!$uuid){?><input id="register" type="button" value="register" style="margin: 0.5em;"><?}?>
+        <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"><?}?>
         <?if($uuid){?><a href="/profile"><img style="background-color: #d4dfec; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login where login_is_me")?>"></a><?}?>
       </div>
     </header>
@@ -144,9 +144,9 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     <?}?>
     <div style="display: flex; flex: 1 1 auto; min-height: 0;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
-        <?foreach(db("select account_id,coalesce(nullif(account_name,''),'Anonymous') account_name,chat_markdown from chat natural join account where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
+        <?foreach(db("select account_id,coalesce(nullif(account_name,''),'Anonymous') account_name,chat_markdown,account_is_me from chat natural join account where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
           <div class="message-wrapper">
-            <small><?=$account_name?>:</small>
+            <small><?=($account_is_me==='t')?'<em>Me</em>':$account_name?>:</small>
             <img src="/identicon.php?id=<?=$account_id?>">
             <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
           </div>
