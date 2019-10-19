@@ -14,6 +14,8 @@ header('X-Powered-By: ');
 header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
+$uuid = $_COOKIE['uuid'] ?? false;
+if($uuid) ccdb("select set_config('custom.uuid',$1,false)",$uuid);
 $room = $_GET['room'] or die('Missing room_id');
 echo ccdb("select json_build_object('question_change_id',1,'chat_change_id',coalesce(max(chat_change_id),0)) from chat where room_id=$1",$room);
 ?>

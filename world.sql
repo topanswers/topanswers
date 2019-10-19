@@ -12,11 +12,11 @@ set local schema 'world';
 --
 create function _error(text) returns void language plpgsql as $$begin raise exception '%', $1 using errcode='H0403'; end;$$;
 --
-create view community as select community_name,community_room_id from db.community where community_name<>'meta' or current_setting('custom.uuid',true)::uuid is not null;
-create view chat as select room_id,account_id,chat_id,chat_at,chat_change_id,chat_change_at,chat_markdown from db.chat natural join db.account;
-create view account as select account_id,account_name,account_image, dummy is not null account_is_me from db.account natural left join (select account_id, 1 dummy from db.login where login_uuid=current_setting('custom.uuid',true)::uuid) l;
+create view community as select community_id,community_name,community_room_id from db.community where community_name<>'meta' or current_setting('custom.uuid',true)::uuid is not null;
 create view login as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account;
-create view room as select room_id,room_name,community_name from db.room natural join db.community;
+create view account as select account_id,account_name,account_image, account_id=(select account_id from login where login_is_me) account_is_me from db.account;
+create view room as select community_id,room_id,room_name from db.room where room_type<>'private' or exists (select * from db.room_account_x natural join account where account_is_me);
+create view chat as select community_id,room_id,account_id,chat_id,chat_at,chat_change_id,chat_change_at,chat_markdown from db.chat natural join room;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
 declare
