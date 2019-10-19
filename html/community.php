@@ -24,6 +24,7 @@ if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
 $room = $_GET['room'] ?? ccdb("select community_room_id from community where community_name=$1",$community);
+extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light from community where community_name=$1",$community));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
@@ -34,16 +35,16 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    header { font-size: 1rem; background-color: #4d7ebb; }
+    header { font-size: 1rem; background-color: #<?=$colour_dark?>; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
     .message-wrapper { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
     .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; }
     .message-wrapper>small>span+span { margin-left: 1em; display: none; }
     .message-wrapper:hover>small>span+span { display: inline; }
-    .message-wrapper>small>span+span>a { margin-left: 0.2em; color: #4d7ebb; }
+    .message-wrapper>small>span+span>a { margin-left: 0.2em; color: #<?=$colour_dark?>; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
-    .message-wrapper .me { color: #4d7ebb; }
+    .message-wrapper .me { color: #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
@@ -129,7 +130,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       </div>
       <div style="height: 100%">
         <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"><?}?>
-        <?if($uuid){?><a href="/profile"><img style="background-color: #d4dfec; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login where login_is_me")?>"></a><?}?>
+        <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login where login_is_me")?>"></a><?}?>
       </div>
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
@@ -138,7 +139,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       <?}?>
     </div>
   </main>
-  <div id="chat" style="background-color: #d4dfec; flex: 0 0 40%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; xoverflow-x: auto; border-left: 2px solid black;">
+  <div id="chat" style="background-color: #<?=$colour_mid?>; flex: 0 0 40%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; xoverflow-x: auto; border-left: 2px solid black;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
       <select id="room">
         <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where community_name=$1 order by room_name desc",$community) as $r){ extract($r);?>
@@ -170,7 +171,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
           <div class="spacer" style="height: 1em;"></div>
         <?}?>
       </div>
-      <div id="active-users" style="display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #e7edf4; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
+      <div id="active-users" style="display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
         <?foreach(db("select account_id from chat where room_id=$1 group by account_id having max(chat_at)>(current_timestamp-'1d'::interval) order by max(chat_at) desc",$room) as $r){ extract($r);?>
           <img class="active-user" src="/identicon.php?id=<?=$account_id?>">
         <?}?>

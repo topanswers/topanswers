@@ -2,6 +2,9 @@ create table community(
   community_id integer generated always as identity primary key
 , community_name text not null
 , community_room_id integer not null
+, community_dark_shade bytea not null default decode('4d7ebb','hex') check(length(community_dark_shade)=3)
+, community_mid_shade bytea not null default decode('d4dfec','hex') check(length(community_dark_shade)=3)
+, community_light_shade bytea not null default decode('e7edf4','hex') check(length(community_dark_shade)=3)
 , foreign key (community_id,community_room_id) references room deferrable initially deferred
 );
 
