@@ -12,7 +12,7 @@ set local schema 'world';
 --
 create function _error(text) returns void language plpgsql as $$begin raise exception '%', $1 using errcode='H0403'; end;$$;
 --
-create view community as select community_name,community_room_id from db.community;
+create view community as select community_name,community_room_id from db.community where community_name<>'meta' or current_setting('custom.uuid',true)::uuid is not null;
 create view chat as select room_id,account_id,chat_id,chat_at,chat_change_id,chat_change_at,chat_markdown from db.chat natural join db.account;
 create view account as select account_id,account_name,account_image, dummy is not null account_is_me from db.account natural left join (select account_id, 1 dummy from db.login where login_uuid=current_setting('custom.uuid',true)::uuid) l;
 create view login as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account;

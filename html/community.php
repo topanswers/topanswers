@@ -22,6 +22,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 }
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
+ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
 $room = $_GET['room'] ?? ccdb("select community_room_id from community where community_name=$1",$community);
 ?>
 <!doctype html>
