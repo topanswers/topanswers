@@ -43,6 +43,9 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
     .markdown img { max-height: 7em; }
+    .markdown table { border-collapse: collapse; }
+    .markdown td, .markdown th { border: 1px solid black; }
+    .markdown blockquote {  padding-left: 1em;  margin-left: 1em; margin-right: 0; border-left: 2px solid gray; }
     .active-user { height: 1.5em; width: 1.5em; margin: 0.1em; }
   </style>
   <script src="/jquery.js"></script>
