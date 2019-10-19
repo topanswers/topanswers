@@ -36,9 +36,14 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     header { font-size: 1rem; background-color: #4d7ebb; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
-    .message-wrapper { width: 100%; margin-top: 0.2em; position: relative; display: flex; }
-    .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.2em; }
+    .message-wrapper { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
+    .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; }
+    .message-wrapper>small>span+span { margin-left: 1em; display: none; }
+    .message-wrapper:hover>small>span+span { display: inline; }
+    .message-wrapper>small>span+span>a { margin-left: 0.2em; color: #4d7ebb; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
+    .message-wrapper .me { color: #4d7ebb; }
+    .spacer { flex: 0 0 auto; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
@@ -47,6 +52,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     .markdown td, .markdown th { border: 1px solid black; }
     .markdown blockquote {  padding-left: 1em;  margin-left: 1em; margin-right: 0; border-left: 2px solid gray; }
     .active-user { height: 1.5em; width: 1.5em; margin: 0.1em; }
+    #replying[data-id=""] { display: none; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -88,6 +94,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
       function pollChat() { updateChat(); setTimeout(pollChat, chatPollInterval); }
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('#poll').click(function(){ updateChat(); });
+      $('.reply').click(function(){ $('#replying').attr('data-id',$(this).closest('.message-wrapper').data('id')); return false; });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
@@ -108,9 +115,9 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
-<body style="display: flex; background-color: red;">
-  <main style="background-color: lightgreen; display: flex; flex-direction: column; flex: 0 0 60%;">
-    <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between;">
+<body style="display: flex;">
+  <main style="display: flex; flex-direction: column; flex: 0 0 60%;">
+    <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
       <div style="margin: 0.5em;">
         <span>TopAnswers: </span>
         <select id="community">
@@ -141,12 +148,21 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
     </header>
     <?if($uuid){?>
       <textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; border-top: 1px solid darkgrey;" rows="1" placeholder="type message here" autofocus></textarea>
+      <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-top: 1px solid darkgrey; font-style: italic; font-size: smaller;" data-id="">Replying to: </div>
     <?}?>
-    <div style="display: flex; flex: 1 1 auto; min-height: 0;">
+    <div style="display: flex; flex: 1 0 0; min-height: 0;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
-        <?foreach(db("select account_id,coalesce(nullif(account_name,''),'Anonymous') account_name,chat_markdown,account_is_me from chat natural join account where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
-          <div class="message-wrapper">
-            <small><?=($account_is_me==='t')?'<em>Me</em>':$account_name?>:</small>
+        <?foreach(db("select chat_id,account_id,coalesce(nullif(account_name,''),'Anonymous') account_name,chat_markdown,account_is_me from chat natural join account where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
+          <div class="message-wrapper" data-id="<?=$chat_id?>">
+            <small>
+              <span<?=($account_is_me==='t')?' class="me"':''?>><?=($account_is_me==='t')?'Me':$account_name?>:</span>
+              <?if($uuid){?>
+                <span>
+                  <a href="." class="reply">reply</a>
+                  <a href="." class="flag">flag</a>
+                </span>
+              <?}?>
+            </small>
             <img src="/identicon.php?id=<?=$account_id?>">
             <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
           </div>
