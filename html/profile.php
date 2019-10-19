@@ -18,9 +18,21 @@ isset($_COOKIE['uuid']) or die('Not registered');
 $uuid = $_COOKIE['uuid'];
 if($uuid) ccdb("select set_config('custom.uuid',$1,false)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
-  db("select change_account_name($1)",$_POST['name']);
-  header("Location: /profile");
-  exit;
+  if(isset($_POST['name'])){
+    db("select change_account_name($1)",$_POST['name']);
+    header("Location: /profile");
+    exit;
+  }
+  if(isset($_FILES['image'])){
+    //imagescale(imagecreatefrompng($_FILES['image']['tmp_name']),64,64);
+    //db("select change_account_image($1)",pg_escape_bytea(file_get_contents($_FILES['image']['tmp_name'])));
+    ob_start();
+    imagepng(imagescale(imagecreatefrompng($_FILES['image']['tmp_name']),64,64));
+    ob_end_clean();
+    db("select change_account_image($1)",pg_escape_bytea(ob_get_contents()));
+    header("Location: /profile");
+    exit;
+  }
 }
 ?>
 <!doctype html>
@@ -40,6 +52,11 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 <body>
   <form action="/profile" method="post">
     <input type="text" name="name" placeholder="name" value="<?=ccdb("select account_name from login where login_is_me")?>" autocomplete="off" autofocus>
+    <input type="submit" value="Save">
+  </form>
+  <br>
+  <form action="/profile" method="post" enctype="multipart/form-data">
+    <input type="file" name="image" accept=".png">
     <input type="submit" value="Save">
   </form>
 </body>   

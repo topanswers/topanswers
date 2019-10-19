@@ -44,6 +44,10 @@ create function change_account_name(nname text) returns void language sql securi
   update account set account_name = nname where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
 $$;
 --
+create function change_account_image(image bytea) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  update account set account_image = image where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+$$;
+--
 revoke all on all functions in schema world from public;
 do $$
 begin

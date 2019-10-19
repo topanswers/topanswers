@@ -20,6 +20,7 @@ create table account(
 , account_name text not null default ''
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
+, account_image bytea
 );
 
 create table account_history(
