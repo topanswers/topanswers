@@ -14,7 +14,7 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 --
 create view community as select community_name,community_room_id from db.community;
 create view chat as select room_id,account_id,chat_id,chat_at,chat_change_id,chat_change_at,chat_markdown from db.chat natural join db.account;
-create view login as select account_id, case when login_uuid=current_setting('custom.uuid',true)::uuid then login_uuid end login_uuid,account_name from db.login natural join db.account;
+create view login as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me,account_name from db.login natural join db.account;
 create view room as select room_id,room_name,community_name from db.room natural join db.community;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
@@ -38,6 +38,10 @@ $$;
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   with a as (insert into account default values returning account_id)
   insert into login(account_id,login_uuid) select account_id,luuid from a returning account_id;
+$$;
+--
+create function change_account_name(nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  update account set account_name = nname where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
 $$;
 --
 revoke all on all functions in schema world from public;

@@ -50,7 +50,6 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
   <script src="/highlightjs/highlight.js"></script>
-  <script src="/js.cookie.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
@@ -118,8 +117,8 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
         </select>
       </div>
       <div style="height: 100%">
-        <?if(!$uuid){?><input id="register" type="button" value="register"><?}?>
-        <a href="/profile"><img style="background-color: #d4dfec; padding: 0.2em; display: block;" src="/identicon.php?id=<?=crc32(ccdb("select account_id from login where login_uuid=$1",$uuid))?>"></a>
+        <?if(!$uuid){?><input id="register" type="button" value="register" style="margin: 0.5em;"><?}?>
+        <?if($uuid){?><a href="/profile"><img style="background-color: #d4dfec; padding: 0.2em; display: block;" src="/identicon.php?id=<?=crc32(ccdb("select account_id from login where login_is_me"))?>"></a><?}?>
       </div>
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
@@ -135,7 +134,7 @@ $room = $_GET['room'] ?? ccdb("select community_room_id from community where com
           <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
         <?}?>
       </select>
-      <?if($uuid) if(intval(ccdb("select account_id from login where login_uuid=$1",$uuid))<3){?><input id="poll" type="button" value="poll"><?}?>
+      <?if($uuid) if(intval(ccdb("select account_id from login where login_is_me"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($uuid){?>
       <textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; border-top: 1px solid darkgrey;" rows="1" placeholder="type message here" autofocus></textarea>

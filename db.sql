@@ -18,6 +18,16 @@ create table room(
 create table account(
   account_id integer generated always as identity primary key
 , account_name text not null default ''
+, account_create_at timestamptz not null default current_timestamp
+, account_change_at timestamptz not null default current_timestamp
+);
+
+create table account_history(
+  account_id integer references account
+, account_history_id integer generated always as identity
+, account_change_at timestamptz not null
+, account_history_name text not null default ''
+, primary key(account_id,account_history_id)
 );
 
 create table login(
@@ -58,7 +68,7 @@ create table chat_history(
 , chat_id bigint
 , chat_history_id bigint unique
 , chat_history_at timestamptz not null
-, chat_markdown text not null
+, chat_history_markdown text not null
 , primary key (community_id,room_id,account_id,chat_id,chat_history_id)
 , foreign key (community_id,room_id,account_id,chat_id) references chat
 );
