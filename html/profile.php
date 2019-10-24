@@ -19,7 +19,7 @@ $uuid = $_COOKIE['uuid'];
 if($uuid) ccdb("select set_config('custom.uuid',$1,false)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   if(isset($_POST['name'])){
-    db("select change_account_name($1)",$_POST['name']);
+    db("select change_account_name(nullif($1,''))",$_POST['name']);
     header("Location: /profile");
     exit;
   }

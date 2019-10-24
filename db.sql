@@ -20,7 +20,7 @@ create table room(
 
 create table account(
   account_id integer generated always as identity primary key
-, account_name text not null default ''
+, account_name text check (account_name~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]*[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea
