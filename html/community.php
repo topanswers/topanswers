@@ -100,7 +100,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
-      $('#chatbox').on('input', function(){ $(this).css('height', '0'); $(this).css('height', this.scrollHeight + 'px'); });
+      $('#chatbox').on('input', function(){ $(this).css('height', '0'); $(this).css('height',this.scrollHeight+'px'); });
       $('#chatbox').keydown(function(e){
         var t = $(this);
         if((e.keyCode || e.which) == 13) {
@@ -149,10 +149,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?if($uuid) if(intval(ccdb("select account_id from login where login_is_me"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($uuid){?>
-      <textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; border-top: 1px solid darkgrey;" rows="1" placeholder="type message here" autofocus></textarea>
-      <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-top: 1px solid darkgrey; font-style: italic; font-size: smaller;" data-id="">Replying to: </div>
+      <textarea id="chatbox" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" autofocus></textarea>
+      <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-bottom: 1px solid darkgrey; font-style: italic; font-size: smaller;" data-id="">Replying to: </div>
     <?}?>
-    <div style="display: flex; flex: 1 0 0; min-height: 0;">
+    <div style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
         <?foreach(db("select chat_id,account_id,coalesce(nullif(account_name,''),'Anonymous') account_name,chat_markdown,account_is_me from chat natural join account where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
           <div class="message-wrapper" data-id="<?=$chat_id?>">
