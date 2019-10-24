@@ -56,23 +56,26 @@ create table room_account_x(
 create table chat(
   community_id integer
 , room_id integer
-, account_id integer references account
 , chat_id bigint generated always as identity unique
-, chat_at timestamptz not null default current_timestamp
+, account_id integer not null references account
+, chat_reply_id integer
 , chat_change_id bigint generated always as identity unique
+, chat_at timestamptz not null default current_timestamp
 , chat_change_at timestamptz not null default current_timestamp
 , chat_markdown text not null
-, primary key (community_id,room_id,account_id,chat_id)
+, primary key (community_id,room_id,chat_id)
+, foreign key (community_id,room_id,chat_reply_id) references chat
 );
 
 create table chat_history(
   community_id integer
 , room_id integer
-, account_id integer
 , chat_id bigint
 , chat_history_id bigint unique
+, account_id integer not null
+, chat_reply_id integer
 , chat_history_at timestamptz not null
 , chat_history_markdown text not null
-, primary key (community_id,room_id,account_id,chat_id,chat_history_id)
-, foreign key (community_id,room_id,account_id,chat_id) references chat
+, primary key (community_id,room_id,chat_id,chat_history_id)
+, foreign key (community_id,room_id,chat_id) references chat
 );
