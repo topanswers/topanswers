@@ -81,7 +81,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           //console.log(chatChangeId + ' - ' + JSON.parse(r).chat_change_id + ' - ' + chatPollInterval + ' - ' + chatLastChange);
           if(chatChangeId!==JSON.parse(r).chat_change_id){
             $.get(window.location.href,function(data) {
-              $('#chat>div').html($('<div />').append(data).find('#chat>div'));
+              $('#chat>div').html($('<div />').append(data).find('#chat>div').children());
               $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
               chatChangeId = JSON.parse(r).chat_change_id;
               chatLastChange = 0;
