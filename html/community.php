@@ -43,12 +43,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.5em; width: 100%; display: flex; }
     .message-wrapper>small>span { display: flex; align-items: center; }
     .message-wrapper>small>span+span { margin-left: 1em; visibility: hidden; }
-    .message-wrapper:hover>div { box-shadow: 0 0 0 1px #<?=$colour_dark?>; }
     .message-wrapper:hover>small>span+span { visibility: visible; }
     .message-wrapper>small>span+span>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .me { color: #<?=$colour_dark?>; }
-    .thread>div { box-shadow: 0 0 0 1px red; }
+    .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
@@ -80,6 +79,17 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         else if(chatLastChange<3600) chatPollInterval = 30000;
         else chatPollInterval = 60000;
       }
+      function threadChat(){
+        $('.message-wrapper').each(function(){
+          var id = $(this).data('id'), rid = id;
+          function foo(b){
+            $(this).addClass('t'+id);
+            if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message-wrapper[data-id='+$(this).data('reply-id')+']')[0], true);
+            if(arguments.length===0 || b===false) $('.message-wrapper[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
+          }
+          foo.call(this);
+        });
+      }
       function updateChat(){
         $.get('/change?room=<?=$room?>',function(r){
           //console.log(chatChangeId + ' - ' + JSON.parse(r).chat_change_id + ' - ' + chatPollInterval + ' - ' + chatLastChange);
@@ -90,6 +100,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               chatChangeId = JSON.parse(r).chat_change_id;
               chatLastChange = 0;
               setChatPollInterval();
+              threadChat();
             },'html');
           }else{
             chatLastChange += Math.floor(chatPollInterval/1000);
@@ -98,11 +109,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         });
       }
       function pollChat() { updateChat(); setTimeout(pollChat, chatPollInterval); }
-      $('#chat-wrapper').on('mouseenter', '.message-wrapper',
-        function foo(){ if($(this).data('reply-id')) { $('.message-wrapper[data-id='+$(this).data('reply-id')+']').addClass('thread'); foo.call($('.message-wrapper[data-id='+$(this).data('reply-id')+']')[0]); } }
-      ).on('mouseleave', '.message-wrapper',
-        function(){ $('.thread').removeClass('thread'); }
-      );
+      $('#chat-wrapper').on('mouseenter', '.message-wrapper', function(){ $('.message-wrapper.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message-wrapper', function(){ $('.thread').removeClass('thread'); });
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('#poll').click(function(){ updateChat(); });
       $('.reply').click(function(){ $('#replying').attr('data-id',$(this).closest('.message-wrapper').data('id')).children('span').text($(this).closest('.message-wrapper').data('name')); });
@@ -124,6 +131,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
       setChatPollInterval();
       setTimeout(pollChat, chatPollInterval);
+      threadChat();
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -169,10 +177,15 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
-        <?foreach(db("select chat_id,account_id,chat_reply_id,coalesce(nullif(account_name,''),'Anonymous') account_name,chat_markdown,account_is_me from chat natural join account where room_id=$1 order by chat_at desc",$room) as $r){ extract($r);?>
+        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me
+                           , coalesce(nullif(account_name,''),'Anonymous') account_name
+                           , (select account_name from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+                      from chat c natural join account
+                      where room_id=$1
+                      order by chat_at desc limit 100",$room) as $r){ extract($r);?>
           <div class="message-wrapper" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small>
-              <span<?=($account_is_me==='t')?' class="me"':''?>><?=($account_is_me==='t')?'Me':$account_name?>:</span>
+              <span<?=($account_is_me==='t')?' class="me"':''?>><?=($account_is_me==='t')?'Me':$account_name?><?=$chat_reply_id?' to '.$reply_account_name:''?>:</span>
               <?if($uuid){?>
                 <span>
                   <button class="button reply" title="reply">&#x21b3;</button>
