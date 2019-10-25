@@ -117,7 +117,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('#chat-wrapper').on('mouseenter', '.message-wrapper', function(){ $('.message-wrapper.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message-wrapper', function(){ $('.thread').removeClass('thread'); });
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('#poll').click(function(){ updateChat(); });
-      $('.reply').click(function(){ $('#replying').attr('data-id',$(this).closest('.message-wrapper').data('id')).children('span').text($(this).closest('.message-wrapper').data('name')); });
+      $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message-wrapper').data('id')).children('span').text($(this).closest('.message-wrapper').data('name')); $('#chattext').focus(); });
       $('#replying>button').click(function(){ $('#replying').attr('data-id',''); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
@@ -127,7 +127,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         var t = $(this);
         if((e.keyCode || e.which) == 13) {
           if(!e.shiftKey) {
-            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').data('id') }).done(function(){ updateChat(); t.val(''); t.prop('disabled',false); });
+            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').attr('data-id') }).done(function(){ updateChat(); t.val(''); t.prop('disabled',false); });
             $('#replying').attr('data-id','');
             $(this).prop('disabled',true);
             return false;
@@ -207,7 +207,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           </div>
         <?}?>
       </div>
-      <div id="active-users" style="display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
+      <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
         <?foreach(db("select account_id from chat where room_id=$1 group by account_id having max(chat_at)>(current_timestamp-'1d'::interval) order by max(chat_at) desc",$room) as $r){ extract($r);?>
           <img class="active-user" src="/identicon.php?id=<?=$account_id?>">
         <?}?>
