@@ -50,6 +50,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     exit;
   }
 }
+$custompic = (ccdb("select account_image is null from login natural join account where login_is_me")==='f');
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
@@ -66,19 +67,27 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   <title>Profile | TopAnswers</title>
 </head>
 <body>
-  <form action="/profile" method="post">
-    <input type="text" name="name" placeholder="name" value="<?=ccdb("select account_name from login natural join account  where login_is_me")?>" autocomplete="off" autofocus>
-    <input type="submit" value="Save">
-  </form>
-  <br>
-  <form action="/profile" method="post" enctype="multipart/form-data">
+  <fieldset>
+    <legend>display name</legend>
+    <form action="/profile" method="post">
+      <input type="text" name="name" placeholder="name" value="<?=ccdb("select account_name from login natural join account  where login_is_me")?>" autocomplete="off" autofocus>
+      <input type="submit" value="Save">
+    </form>
+  </fieldset>
+  <fieldset>
+    <legend>picture</legend>
     <img src="/identicon.php?id=<?=ccdb("select account_id from login where login_is_me")?>">
-    <input type="file" name="image" accept=".png,.gif,.jpg,.jpeg">
-    <input type="submit" value="Save">
-  </form>
-  <form action="/profile" method="post">
-    <input type="hidden" name="image">
-    <input type="submit" value="Remove Picture">
-  </form>
+    <?if($custompic){?>
+      <form action="/profile" method="post">
+        <input type="hidden" name="image">
+        <input type="submit" value="Remove">
+      </form>
+    <?}?>
+    <hr>
+    <form action="/profile" method="post" enctype="multipart/form-data">
+      <input type="file" name="image" accept=".png,.gif,.jpg,.jpeg">
+      <input type="submit" value="Save">
+    </form>
+  </fieldset>
 </body>   
 </html>   
