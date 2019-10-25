@@ -50,7 +50,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
     .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_highlight?>; }
-    .spacer { flex: 0 0 auto; }
+    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.7em; width: 100%; }
+    .bigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
+    .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>; background-color: #<?=$colour_mid?>; padding: 0.2em; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
@@ -66,6 +68,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
   <script src="/highlightjs/highlight.js"></script>
+  <script src="/moment.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
@@ -134,6 +137,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       setChatPollInterval();
       setTimeout(pollChat, chatPollInterval);
       threadChat();
+      $('.bigspacer').each(function(){ $(this).children().text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -183,12 +187,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                            , coalesce(nullif(account_name,''),'Anonymous') account_name
                            , (select account_name from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                            , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
+                           , round(extract('epoch' from coalesce(lead(chat_at) over (order by chat_at), current_timestamp)-chat_at)) chat_gap
                       from chat c natural join account
                       where room_id=$1
                       order by chat_at desc limit 100",$room) as $r){ extract($r);?>
+          <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="height: <?=round(log(1+$chat_gap)/4)?>em;" data-gap="<?=$chat_gap?>"><span></span></div>
           <div class="message-wrapper" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small>
-              <span><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
+              <span><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
               <?if($uuid){?>
                 <span>
                   <button class="button reply" title="reply">&#x21b3;</button>
@@ -199,7 +205,6 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
             <img src="/identicon.php?id=<?=$account_id?>">
             <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
           </div>
-          <div class="spacer" style="height: 1em;"></div>
         <?}?>
       </div>
       <div id="active-users" style="display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
