@@ -20,6 +20,22 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   db("select new_chat($1,$2,$3,nullif($4,'')::integer)",$uuid,$_POST['room'],$_POST['msg'],$_POST['replyid']);
   exit;
 }
+if(isset($_GET['flagchatid'])){
+  db("select set_chat_flag($1)",$_GET['flagchatid']);
+  exit;
+}
+if(isset($_GET['unflagchatid'])){
+  db("select remove_chat_flag($1)",$_GET['unflagchatid']);
+  exit;
+}
+if(isset($_GET['starchatid'])){
+  db("select set_chat_star($1)",$_GET['starchatid']);
+  exit;
+}
+if(isset($_GET['unstarchatid'])){
+  db("select remove_chat_star($1)",$_GET['unstarchatid']);
+  exit;
+}
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
@@ -42,11 +58,13 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
     .message-wrapper { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
-    .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.5em; width: 100%; display: flex; }
-    .message-wrapper>small>span { display: flex; align-items: center; }
-    .message-wrapper>small>span+span { margin-left: 1em; visibility: hidden; }
-    .message-wrapper:hover>small>span+span { visibility: visible; }
-    .message-wrapper>small>span+span>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
+    .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.5em; width: 100%; display: flex; align-items: baseline; }
+    .xmessage-wrapper>small>span { display: flex; align-items: center; }
+    .message-wrapper>small>span.flags { margin-left: 1em; }
+    .message-wrapper>small>span.stars { margin-left: 1em; }
+    .message-wrapper>small>span.buttons { margin-left: 1em; visibility: hidden; }
+    .message-wrapper:hover>small>span.buttons { visibility: visible; }
+    .message-wrapper>small>span.buttons>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
     .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_highlight?>; }
@@ -96,29 +114,35 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         });
       }
       function updateChat(){
+        $.get(window.location.href,function(data) {
+          $('#chat').html($('<div />').append(data).find('#chat').children());
+          $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
+          chatLastChange = 0;
+          initChat();
+        },'html');
+      }
+      function checkChat(){
         $.get('/change?room=<?=$room?>',function(r){
-          //console.log(chatChangeId + ' - ' + JSON.parse(r).chat_change_id + ' - ' + chatPollInterval + ' - ' + chatLastChange);
           if(chatChangeId!==JSON.parse(r).chat_change_id){
-            $.get(window.location.href,function(data) {
-              $('#chat').html($('<div />').append(data).find('#chat').children());
-              $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
-              chatChangeId = JSON.parse(r).chat_change_id;
-              chatLastChange = 0;
-              initChat();
-            },'html');
+            chatChangeId = JSON.parse(r).chat_change_id;
+            updateChat();
           }else{
             chatLastChange += Math.floor(chatPollInterval/1000);
             setChatPollInterval();
           }
         });
       }
-      function pollChat() { updateChat(); setTimeout(pollChat, chatPollInterval); }
+      function pollChat() { checkChat(); setTimeout(pollChat, chatPollInterval); }
       function initChat() { setChatPollInterval(); threadChat(); $('.bigspacer').each(function(){ $(this).children().text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); }); }
       $('#chat-wrapper').on('mouseenter', '.message-wrapper', function(){ $('.message-wrapper.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message-wrapper', function(){ $('.thread').removeClass('thread'); });
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax({ type: "GET", url: '/uuid?pin='+pin, async: false }); location.reload(true); } });
-      $('#poll').click(function(){ updateChat(); });
+      $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message-wrapper').data('id')).children('span').text($(this).closest('.message-wrapper').data('name')); $('#chattext').focus(); });
+      $('#chat-wrapper').on('click','.flag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'flagchatid='+$(this).closest('.message-wrapper').data('id')).done(updateChat); });
+      $('#chat-wrapper').on('click','.unflag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unflagchatid='+$(this).closest('.message-wrapper').data('id')).done(updateChat); });
+      $('#chat-wrapper').on('click','.star', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'starchatid='+$(this).closest('.message-wrapper').data('id')).done(updateChat); });
+      $('#chat-wrapper').on('click','.unstar', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message-wrapper').data('id')).done(updateChat); });
       $('#replying>button').click(function(){ $('#replying').attr('data-id',''); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
@@ -182,22 +206,31 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
-        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me
+        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count
                            , coalesce(nullif(account_name,''),'Anonymous') account_name
                            , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                            , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
                            , round(extract('epoch' from coalesce(lead(chat_at) over (order by chat_at), current_timestamp)-chat_at)) chat_gap
-                      from chat c natural join account
+                           , chat_flag_at is not null is_flagged
+                           , chat_star_at is not null is_starred
+                      from chat c natural join account natural left join chat_flag natural left join chat_star
                       where room_id=$1
                       order by chat_at desc limit 100",$room) as $r){ extract($r);?>
           <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="height: <?=round(log(1+$chat_gap)/4)?>em;" data-gap="<?=$chat_gap?>"><span></span></div>
           <div class="message-wrapper" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small>
-              <span><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
+              <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
+              <?if($chat_flag_count>0){?><span class="flags"><?=($chat_flag_count>20)?str_repeat('&#x2691;',20).'+'.($chat_flag_count-20):str_repeat('&#x2691;',$chat_flag_count)?></span><?}?>
+              <?if($chat_star_count>0){?><span class="stars"><?=($chat_star_count>20)?str_repeat('&#x2605;',20).'+'.($chat_star_count-20):str_repeat('&#x2605;',$chat_star_count)?></span><?}?>
               <?if($uuid){?>
-                <span>
+                <span class="buttons">
                   <button class="button reply" title="reply">&#x21b3;</button>
-                  <button class="button flag" title="flag">&#x2690;</button>
+                  <?if($account_is_me==='f'){?>
+                    <?if($is_flagged==='f'){?><button class="button flag" title="flag">&#x2690;</button><?}?>
+                    <?if($is_flagged==='t'){?><button class="button unflag" title="remove flag">&#x2691;</button><?}?>
+                    <?if($is_starred==='f'){?><button class="button star" title="star">&#x2606;</button><?}?>
+                    <?if($is_starred==='t'){?><button class="button unstar" title="remove star">&#x2605;</button><?}?>
+                  <?}?>
                 </span>
               <?}?>
             </small>

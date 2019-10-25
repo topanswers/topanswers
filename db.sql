@@ -87,3 +87,24 @@ create table chat_history(
 , primary key (community_id,room_id,chat_id,chat_history_id)
 , foreign key (community_id,room_id,chat_id) references chat
 );
+
+create table chat_flag(
+  community_id integer
+, room_id integer
+, chat_id bigint
+, account_id integer references account
+, chat_flag_at timestamptz not null default current_timestamp
+, primary key (community_id,room_id,chat_id,account_id)
+, foreign key (community_id,room_id,chat_id) references chat
+);
+
+create table chat_star(
+  community_id integer
+, room_id integer
+, chat_id bigint
+, account_id integer references account
+, chat_star_at timestamptz not null default current_timestamp
+, primary key (community_id,room_id,chat_id,account_id)
+, foreign key (community_id,room_id,chat_id) references chat
+);
+  

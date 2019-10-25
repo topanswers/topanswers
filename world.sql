@@ -20,7 +20,15 @@ where community_name<>'meta' or current_setting('custom.uuid',true)::uuid is not
 create view login as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account;
 create view account as select account_id,account_name,account_image, account_id=(select account_id from login where login_is_me) account_is_me from db.account;
 create view room as select community_id,room_id,room_name from db.room where room_type<>'private' or exists (select * from db.room_account_x natural join account where account_is_me);
-create view chat as select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change_id,chat_change_at,chat_markdown from db.chat natural join room;
+--
+create view chat as
+select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change_id,chat_change_at,chat_markdown
+     , (select count(*) from db.chat_flag where chat_id=chat.chat_id) chat_flag_count
+     , (select count(*) from db.chat_star where chat_id=chat.chat_id) chat_star_count
+from db.chat natural join room;
+--
+create view chat_flag as select community_id,room_id,chat_id,chat_flag_at from db.chat_flag natural join account where account_is_me;
+create view chat_star as select community_id,room_id,chat_id,chat_star_at from db.chat_star natural join account where account_is_me;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
 declare
@@ -60,9 +68,31 @@ create function change_account_image(image bytea) returns void language sql secu
   update account set account_image = image where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
 $$;
 --
-create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,pg_temp as $$
+create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
   delete from pin where pin_number=num;
   insert into pin(pin_number,account_id) select num,account_id from world.account where account_is_me;
+$$;
+--
+create function set_chat_flag(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('cant flag own message') where exists(select * from chat where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  select _error('already flagged') where exists(select * from chat_flag where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  insert into chat_flag(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid) from chat where chat_id=cid;
+$$;
+--
+create function remove_chat_flag(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('not already flagged') where not exists(select * from chat_flag where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  delete from chat_flag where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+$$;
+--
+create function set_chat_star(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('cant star own message') where exists(select * from chat where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  select _error('already starred') where exists(select * from chat_star where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  insert into chat_star(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid) from chat where chat_id=cid;
+$$;
+--
+create function remove_chat_star(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('not already starred') where not exists(select * from chat_star where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  delete from chat_star where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
 $$;
 --
 revoke all on all functions in schema world from public;
