@@ -104,8 +104,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
               chatChangeId = JSON.parse(r).chat_change_id;
               chatLastChange = 0;
-              setChatPollInterval();
-              threadChat();
+              initChat();
             },'html');
           }else{
             chatLastChange += Math.floor(chatPollInterval/1000);
@@ -114,6 +113,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         });
       }
       function pollChat() { updateChat(); setTimeout(pollChat, chatPollInterval); }
+      function initChat() { setChatPollInterval(); threadChat(); $('.bigspacer').each(function(){ $(this).children().text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); }); }
       $('#chat-wrapper').on('mouseenter', '.message-wrapper', function(){ $('.message-wrapper.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message-wrapper', function(){ $('.thread').removeClass('thread'); });
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax({ type: "GET", url: '/uuid?pin='+pin, async: false }); location.reload(true); } });
@@ -128,17 +128,15 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         var t = $(this);
         if((e.keyCode || e.which) == 13) {
           if(!e.shiftKey) {
-            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').attr('data-id') }).done(function(){ updateChat(); t.val(''); t.prop('disabled',false); });
+            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').attr('data-id') }).done(function(){ updateChat(); t.val('').prop('disabled',false).focus(); });
             $('#replying').attr('data-id','');
             $(this).prop('disabled',true);
             return false;
           }
         }
       });
-      setChatPollInterval();
       setTimeout(pollChat, chatPollInterval);
-      threadChat();
-      $('.bigspacer').each(function(){ $(this).children().text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+      initChat();
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -186,7 +184,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <div style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
         <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me
                            , coalesce(nullif(account_name,''),'Anonymous') account_name
-                           , (select account_name from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+                           , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                            , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
                            , round(extract('epoch' from coalesce(lead(chat_at) over (order by chat_at), current_timestamp)-chat_at)) chat_gap
                       from chat c natural join account
