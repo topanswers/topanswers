@@ -24,7 +24,9 @@ if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
 $room = $_GET['room'] ?? ccdb("select community_room_id from community where community_name=$1",$community);
-extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light from community where community_name=$1",$community));
+extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
+             from community
+             where community_name=$1",$community));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
@@ -46,8 +48,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message-wrapper:hover>small>span+span { visibility: visible; }
     .message-wrapper>small>span+span>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
-    .message-wrapper .me { color: #<?=$colour_dark?>; }
-    .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_dark?>; }
+    .message-wrapper .dark { color: #<?=$colour_dark?>; }
+    .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_highlight?>; }
     .spacer { flex: 0 0 auto; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
@@ -180,12 +182,13 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me
                            , coalesce(nullif(account_name,''),'Anonymous') account_name
                            , (select account_name from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+                           , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
                       from chat c natural join account
                       where room_id=$1
                       order by chat_at desc limit 100",$room) as $r){ extract($r);?>
           <div class="message-wrapper" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small>
-              <span<?=($account_is_me==='t')?' class="me"':''?>><?=($account_is_me==='t')?'Me':$account_name?><?=$chat_reply_id?' to '.$reply_account_name:''?>:</span>
+              <span><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
               <?if($uuid){?>
                 <span>
                   <button class="button reply" title="reply">&#x21b3;</button>
