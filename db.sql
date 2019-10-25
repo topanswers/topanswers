@@ -40,6 +40,13 @@ create table login(
 , account_id integer not null references account
 );
 
+create table pin(
+  pin_number bigint
+, account_id integer references account
+, pin_at timestamptz default current_timestamp not null
+, primary key (pin_number,account_id)
+);
+
 create table account_community_x(
   account_id integer references account
 , community_id integer references community

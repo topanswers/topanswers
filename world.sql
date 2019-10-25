@@ -47,6 +47,10 @@ create function new_account(luuid uuid) returns integer language sql security de
   insert into login(account_id,login_uuid) select account_id,luuid from a returning account_id;
 $$;
 --
+create function link_account(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  insert into login(account_id,login_uuid) select account_id,luuid from pin where pin_number=pn and pin_at>current_timestamp-'1 min'::interval returning account_id;
+$$;
+--
 create function change_account_name(nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('invalid username') where nname is not null and not nname~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$';
   update account set account_name = nname where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
@@ -54,6 +58,11 @@ $$;
 --
 create function change_account_image(image bytea) returns void language sql security definer set search_path=db,world,pg_temp as $$
   update account set account_image = image where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+$$;
+--
+create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,pg_temp as $$
+  delete from pin where pin_number=num;
+  insert into pin(pin_number,account_id) select num,account_id from world.account where account_is_me;
 $$;
 --
 revoke all on all functions in schema world from public;

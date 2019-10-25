@@ -116,6 +116,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       function pollChat() { updateChat(); setTimeout(pollChat, chatPollInterval); }
       $('#chat-wrapper').on('mouseenter', '.message-wrapper', function(){ $('.message-wrapper.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message-wrapper', function(){ $('.thread').removeClass('thread'); });
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
+      $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax({ type: "GET", url: '/uuid?pin='+pin, async: false }); location.reload(true); } });
       $('#poll').click(function(){ updateChat(); });
       $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message-wrapper').data('id')).children('span').text($(this).closest('.message-wrapper').data('name')); $('#chattext').focus(); });
       $('#replying>button').click(function(){ $('#replying').attr('data-id',''); });
@@ -154,7 +155,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         </select>
       </div>
       <div style="height: 100%">
-        <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"><?}?>
+        <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"> or <input id="link" type="button" value="link" style="margin: 0.5em;"><?}?>
         <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login where login_is_me")?>"></a><?}?>
       </div>
     </header>

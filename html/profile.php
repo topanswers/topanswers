@@ -16,6 +16,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 isset($_COOKIE['uuid']) or die('Not registered');
 $uuid = $_COOKIE['uuid'];
+$pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
 if($uuid) ccdb("select set_config('custom.uuid',$1,false)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   if(isset($_POST['name'])){
@@ -50,6 +51,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     exit;
   }
 }
+if(isset($_GET['pin'])){
+  db("select authenticate_pin($1)",$_GET['pin']);
+  exit;
+}
 $custompic = (ccdb("select account_image is null from login natural join account where login_is_me")==='f');
 ?>
 <!doctype html>
@@ -62,7 +67,9 @@ $custompic = (ccdb("select account_image is null from login natural join account
   </style>
   <script src="/jquery.js"></script>
   <script>
-    $(function(){ });
+    $(function(){
+      $('#pin').click(function(){ $(this).prop('disabled',true); $.get('/profile?pin=<?=$pin?>').done(function(){ $('#pin').replaceWith('<code><?=$pin?></code>'); }); });
+    });
   </script>
   <title>Profile | TopAnswers</title>
 </head>
@@ -88,6 +95,13 @@ $custompic = (ccdb("select account_image is null from login natural join account
       <input type="file" name="image" accept=".png,.gif,.jpg,.jpeg">
       <input type="submit" value="Save">
     </form>
+  </fieldset>
+  <fieldset>
+    <legend>link another device/browser to this account</legend>
+    <ol>
+      <li>Go to https://topanswers.xyz on the other device and click 'link'</li>
+      <li>Enter this PIN (within 1 minute of generation): <input id="pin" type="button" value="generate PIN"></li>
+    </ol>
   </fieldset>
 </body>   
 </html>   
