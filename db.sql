@@ -107,4 +107,45 @@ create table chat_star(
 , primary key (community_id,room_id,chat_id,account_id)
 , foreign key (community_id,room_id,chat_id) references chat
 );
-  
+
+create table chat_year(
+  community_id integer
+, room_id integer
+, chat_year integer
+, chat_year_count integer not null
+, primary key (community_id,room_id,chat_year)
+);
+
+create table chat_month(
+  community_id integer
+, room_id integer
+, chat_year integer
+, chat_month integer
+, chat_month_count integer not null
+, primary key (community_id,room_id,chat_year,chat_month)
+, foreign key (community_id,room_id,chat_year) references chat_year
+);
+
+create table chat_day(
+  community_id integer
+, room_id integer
+, chat_year integer
+, chat_month integer
+, chat_day integer
+, chat_day_count integer not null
+, primary key (community_id,room_id,chat_year,chat_month,chat_day)
+, foreign key (community_id,room_id,chat_year,chat_month) references chat_month
+);
+
+create table chat_hour(
+  community_id integer
+, room_id integer
+, chat_year integer
+, chat_month integer
+, chat_day integer
+, chat_hour integer
+, chat_hour_count integer not null
+, primary key (community_id,room_id,chat_year,chat_month,chat_day,chat_hour)
+, foreign key (community_id,room_id,chat_year,chat_month,chat_day) references chat_day
+);
+

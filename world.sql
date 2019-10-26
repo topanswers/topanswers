@@ -29,6 +29,10 @@ from db.chat natural join room;
 --
 create view chat_flag as select community_id,room_id,chat_id,chat_flag_at from db.chat_flag natural join account where account_is_me;
 create view chat_star as select community_id,room_id,chat_id,chat_star_at from db.chat_star natural join account where account_is_me;
+create view chat_year as select community_id,room_id,chat_year,chat_year_count from db.chat_year;
+create view chat_month as select community_id,room_id,chat_year,chat_month,chat_month_count from db.chat_month;
+create view chat_day as select community_id,room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
+create view chat_hour as select community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
 declare
@@ -45,6 +49,27 @@ create function new_chat(luuid uuid, roomid integer, msg text, replyid integer) 
   select _error('room does not exist') where not exists(select * from room where room_id=roomid);
   select _error('not authorised to chat in this room') where (select room_type<>'public' from room where room_id=roomid) and not exists (select * from room_account_x natural join login where room_id=roomid and login_uuid=luuid);
   select _error('message too long') where length(msg)>500;
+  --
+  insert into chat_year(community_id,room_id,chat_year,chat_year_count)
+  select community_id,roomid,extract('year' from current_timestamp),1 from room where room_id=roomid on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
+  --
+  insert into chat_month(community_id,room_id,chat_year,chat_month,chat_month_count)
+  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),1
+  from room
+  where room_id=roomid
+  on conflict on constraint chat_month_pkey do update set chat_month_count = chat_month.chat_month_count+1;
+  --
+  insert into chat_day(community_id,room_id,chat_year,chat_month,chat_day,chat_day_count)
+  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),1
+  from room
+  where room_id=roomid
+  on conflict on constraint chat_day_pkey do update set chat_day_count = chat_day.chat_day_count+1;
+  --
+  insert into chat_hour(community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count)
+  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),extract('hour' from current_timestamp),1
+  from room
+  where room_id=roomid
+  on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
   --
   insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id) 
   select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid),msg,replyid from room where room_id=roomid returning chat_id;

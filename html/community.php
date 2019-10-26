@@ -68,7 +68,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
     .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_highlight?>; }
-    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.7em; width: 100%; }
+    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.5em; width: 100%; }
     .bigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
     .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>; background-color: #<?=$colour_mid?>; padding: 0.2em; }
     .markdown>:first-child { margin-top: 0; }
@@ -169,7 +169,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <main style="display: flex; flex-direction: column; flex: 0 0 60%;">
     <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
       <div style="margin: 0.5em;">
-        <span>TopAnswers: </span>
+        <span style="color: #<?=$colour_mid?>;">TopAnswers </span>
         <select id="community">
           <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
             <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
@@ -194,6 +194,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
         <?}?>
       </select>
+      <a href="/transcript?room=<?=$room?>" style="color: #<?=$colour_mid?>;">transcript</a>
       <?if($uuid) if(intval(ccdb("select account_id from login where login_is_me"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($uuid){?>
