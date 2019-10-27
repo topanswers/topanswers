@@ -75,12 +75,22 @@ create table chat(
 , foreign key (community_id,room_id,chat_reply_id) references chat
 );
 
+create table chat_notification(
+  community_id integer
+, room_id integer
+, chat_id bigint
+, account_id integer references account
+, chat_notification_at timestamptz not null default current_timestamp
+, primary key (community_id,room_id,chat_id,account_id)
+, foreign key (community_id,room_id,chat_id) references chat
+);
+
 create table chat_history(
   community_id integer
 , room_id integer
 , chat_id bigint
 , chat_history_id bigint unique
-, account_id integer not null
+, account_id integer not null references account
 , chat_reply_id integer
 , chat_history_at timestamptz not null
 , chat_history_markdown text not null

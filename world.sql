@@ -71,8 +71,10 @@ create function new_chat(luuid uuid, roomid integer, msg text, replyid integer) 
   where room_id=roomid
   on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
   --
-  insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id) 
-  select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid),msg,replyid from room where room_id=roomid returning chat_id;
+  with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id) 
+             select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid),msg,replyid from room where room_id=roomid returning community_id,room_id,chat_id)
+     , n as (insert into chat_notification(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null)
+  select chat_id from i;
 $$;
 --
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
