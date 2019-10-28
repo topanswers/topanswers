@@ -94,6 +94,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
     .thread>div { background-color: #<?=$colour_highlight?>40; }
+    .highlight>div { border: 0.3em solid #<?=$colour_highlight?>60; }
     .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.6em; width: 100%; }
     .bigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
     .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>; background-color: #<?=$colour_mid?>; padding: 0.2em; }
@@ -133,6 +134,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       threadChat();
       $('.bigspacer').each(function(){ $(this).children().text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+      $('.highlight')[0].scrollIntoView();
     });
   </script>
   <title><?=ccdb("select room_name from room where room_id=$1",$room)?> Transcript | TopAnswers</title>
@@ -202,7 +204,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                   from chat c natural join account natural left join chat_flag natural left join chat_star
                   where room_id=$1 and chat_at>=make_timestamp($2,$3,$4,$5,0,0) and chat_at<make_timestamp($6,$7,$8,$9,0,0)+'1h'::interval
                   order by chat_at",$room,$_GET['year']??1,$_GET['month']??1,$_GET['day']??1,$_GET['hour']??0,$_GET['year']??9999,$_GET['month']??12,$_GET['day']??$maxday,$_GET['hour']??23) as $r){ extract($r);?>
-      <div id="c<?=$chat_id?>" class="message-wrapper" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+      <div id="c<?=$chat_id?>" class="message-wrapper<?=($chat_id===($_GET['id']??''))?' highlight':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
         <small>
           <span><?=$chat_at?>&nbsp;</span>
           <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
