@@ -74,8 +74,10 @@ create function new_chat(luuid uuid, roomid integer, msg text, replyid integer, 
   --
   with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id) 
              select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid),msg,replyid from room where room_id=roomid returning community_id,room_id,chat_id)
-     , n as (insert into chat_notification(community_id,room_id,chat_id,account_id)
+     , r as (insert into chat_notification(community_id,room_id,chat_id,account_id)
              select community_id,room_id,chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
+     , p as (insert into chat_notification(community_id,room_id,chat_id,account_id)
+             select community_id,room_id,chat_id,account_id from i cross join (select account_id from world.account where account_id=any(pingids) and not account_is_me) z)
   select chat_id from i;
 $$;
 --
