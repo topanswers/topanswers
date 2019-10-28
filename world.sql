@@ -46,7 +46,7 @@ begin
   return cid;
 end$$;
 --
-create function new_chat(luuid uuid, roomid integer, msg text, replyid integer) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
+create function new_chat(luuid uuid, roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
   select _error('room does not exist') where not exists(select * from room where room_id=roomid);
   select _error('not authorised to chat in this room') where (select room_type<>'public' from room where room_id=roomid) and not exists (select * from room_account_x natural join login where room_id=roomid and login_uuid=luuid);
   select _error('message too long') where length(msg)>500;
