@@ -77,7 +77,7 @@ create function new_chat(luuid uuid, roomid integer, msg text, replyid integer, 
      , r as (insert into chat_notification(community_id,room_id,chat_id,account_id)
              select community_id,room_id,chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
      , p as (insert into chat_notification(community_id,room_id,chat_id,account_id)
-             select community_id,room_id,chat_id,account_id from i cross join (select account_id from world.account where account_id=any(pingids) and not account_is_me) z)
+             select community_id,room_id,chat_id,account_id from i cross join (select account_id from world.account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and not account_is_me) z)
   select chat_id from i;
 $$;
 --
