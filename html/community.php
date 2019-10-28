@@ -70,7 +70,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message-wrapper>small>span.buttons>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
     .message-wrapper>.message>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
-    .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_highlight?>; }
+    #chat .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_highlight?>; }
     .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.6em; width: 100%; }
     .bigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
     .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>; background-color: #<?=$colour_mid?>; padding: 0.2em; }
@@ -118,7 +118,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       }
       function updateChat(){
         $.get(window.location.href,function(data) {
-          $('#chat').html($('<div />').append(data).find('#chat').children());
+          $('#chat').replaceWith($('<div />').append(data).find('#chat'));
+          $('#notifications').replaceWith($('<div />').append(data).find('#notifications'));
           $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
           chatLastChange = 0;
           initChat();
