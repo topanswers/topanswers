@@ -56,19 +56,21 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; }
     .button { background: none; border: none; padding: 0; cursor: pointer; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
-    .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
-    .message-wrapper { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
-    .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.5em; width: 100%; display: flex; align-items: baseline; }
-    .xmessage-wrapper>small>span { display: flex; align-items: center; }
+    .message { display: flex; }
+    .message .markdown { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
+    .message-wrapper { width: 100%; xmargin-top: 0.2em; position: relative; flex: 0 0 auto; }
+    #notifications .message-wrapper { padding: 0.2em; border-radius: 0.2em; }
+    .message-wrapper>small { font-size: 0.6em; width: 100%; display: flex; align-items: baseline; }
+    #chat .message-wrapper>small { position: absolute; top: -1.5em; }
     .message-wrapper>small>span.flags { margin-left: 1em; }
     .message-wrapper>small>span.stars { margin-left: 1em; }
     .message-wrapper>small>span.buttons { margin-left: 1em; visibility: hidden; }
     .message-wrapper:hover>small>span.buttons { visibility: visible; }
     .message-wrapper>small>span.buttons>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
-    .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
+    .message-wrapper>.message>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
     .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_highlight?>; }
-    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.5em; width: 100%; }
+    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.6em; width: 100%; }
     .bigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
     .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>; background-color: #<?=$colour_mid?>; padding: 0.2em; }
     .markdown>:first-child { margin-top: 0; }
@@ -187,7 +189,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 0 0 40%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; xoverflow-x: auto; border-left: 2px solid black;">
+  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 0 0 40%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; auto; border-left: 2px solid black;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
       <select id="room">
         <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where community_name=$1 order by room_name desc",$community) as $r){ extract($r);?>
@@ -217,7 +219,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                       from chat c natural join account natural left join chat_flag natural left join chat_star
                       where room_id=$1
                       order by chat_at desc limit 100",$room) as $r){ extract($r);?>
-          <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="height: <?=round(log(1+$chat_gap)/4)?>em;" data-gap="<?=$chat_gap?>"><span></span></div>
+          <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"><span></span></div>
           <div class="message-wrapper" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small>
               <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
@@ -235,8 +237,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                 </span>
               <?}?>
             </small>
-            <img src="/identicon.php?id=<?=$account_id?>">
-            <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+            <div class="message">
+              <img src="/identicon.php?id=<?=$account_id?>">
+              <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+            </div>
           </div>
         <?}?>
       </div>
@@ -246,6 +250,42 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         <?}?>
       </div>
     </div>
+    <div style="position: relative;"><div style="position: absolute; height: 1em; xbottom: -1em; width: 100%; background: linear-gradient(darkgrey,#<?=$colour_mid?>00);"></div></div>
+    <?if($uuid){?>
+      <div id="notifications" style="display: flex; flex: 0 1 auto; min-height: 0; max-height: 20vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.5em; overflow: scroll;">
+        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count
+                           , coalesce(nullif(account_name,''),'Anonymous') account_name
+                           , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+                           , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
+                           , round(extract('epoch' from coalesce(lead(chat_at) over (order by chat_at), current_timestamp)-chat_at)) chat_gap
+                           , chat_flag_at is not null is_flagged
+                           , chat_star_at is not null is_starred
+                           , encode(community_mid_shade,'hex') chat_colour
+                      from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
+                      order by chat_at limit 100") as $r){ extract($r);?>
+          <div class="message-wrapper" style="background-color: #<?=$chat_colour?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+            <small>
+              <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
+              <?if($chat_flag_count>0){?><span class="flags"><?=($chat_flag_count>20)?str_repeat('&#x2691;',20).'+'.($chat_flag_count-20):str_repeat('&#x2691;',$chat_flag_count)?></span><?}?>
+              <?if($chat_star_count>0){?><span class="stars"><?=($chat_star_count>20)?str_repeat('&#x2605;',20).'+'.($chat_star_count-20):str_repeat('&#x2605;',$chat_star_count)?></span><?}?>
+              <span class="buttons">
+                <button class="button reply" title="reply">&#x21b3;</button>
+                <?if($account_is_me==='f'){?>
+                  <?if($is_flagged==='f'){?><button class="button flag" title="flag">&#x2690;</button><?}?>
+                  <?if($is_flagged==='t'){?><button class="button unflag" title="remove flag">&#x2691;</button><?}?>
+                  <?if($is_starred==='f'){?><button class="button star" title="star">&#x2606;</button><?}?>
+                  <?if($is_starred==='t'){?><button class="button unstar" title="remove star">&#x2605;</button><?}?>
+                <?}?>
+              </span>
+            </small>
+            <div class="message">
+              <img src="/identicon.php?id=<?=$account_id?>">
+              <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+            </div>
+          </div>
+        <?}?>
+      </div>
+    <?}?>
   </div>
 </body>   
 </html>   

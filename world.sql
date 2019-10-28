@@ -27,6 +27,7 @@ select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change
      , (select count(*) from db.chat_star where chat_id=chat.chat_id) chat_star_count
 from db.chat natural join room;
 --
+create view chat_notification as select community_id,room_id,chat_id,chat_notification_at from db.chat_notification natural join account where account_is_me;
 create view chat_flag as select community_id,room_id,chat_id,chat_flag_at from db.chat_flag natural join account where account_is_me;
 create view chat_star as select community_id,room_id,chat_id,chat_star_at from db.chat_star natural join account where account_is_me;
 create view chat_year as select community_id,room_id,chat_year,chat_year_count from db.chat_year;
