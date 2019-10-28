@@ -56,22 +56,25 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; }
     .button { background: none; border: none; padding: 0; cursor: pointer; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
-    .message { display: flex; }
-    .message .markdown { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
     .message-wrapper { width: 100%; position: relative; flex: 0 0 auto; }
     #notifications .message-wrapper { padding: 0.3em; border-radius: 0.2em; }
     #notifications .message-wrapper+.message-wrapper { margin-top: 0.2em; }
-    .message-wrapper>small { font-size: 0.6em; width: 100%; display: flex; align-items: baseline; }
-    #chat .message-wrapper>small { position: absolute; top: -1.5em; }
-    .message-wrapper>small>span.flags { margin-left: 1em; }
-    .message-wrapper>small>span.stars { margin-left: 1em; }
-    .message-wrapper>small>span.buttons { margin-left: 1em; visibility: hidden; }
-    .message-wrapper:hover>small>span.buttons { visibility: visible; }
+    .message-wrapper>small { font-size: 0.6em; width: 100%; }
+    #chat .message-wrapper>small { position: absolute; top: -1.2em; }
     .message-wrapper>small>span.buttons>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
+    .message-wrapper>.message { display: flex; }
     .message-wrapper>.message>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
+    .message-wrapper>.message .markdown-wrapper { position: relative; flex: 0 1 auto; max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
+    .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
+    .message-wrapper>.message button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
+    .message-wrapper:hover>.message button { visibility: visible; }
+    .message-wrapper>.message>.buttons>button { display: block; white-space: nowrap; }
+    .message-wrapper>.message>.buttons>button+button { margin-top: -0.3em; margin-left: 0.15em; }
+    /*.message-wrapper>.message>.buttons>span.flags { margin-left: 1em; }
+    .message-wrapper>.message>.buttons>span.stars { margin-left: 1em; }*/
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
     #chat .thread .markdown { background: #<?=$colour_highlight?>40; }
-    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.6em; width: 100%; }
+    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.8em; width: 100%; }
     .bigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
     .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>; background-color: #<?=$colour_mid?>; padding: 0.2em; }
     .markdown>:first-child { margin-top: 0; }
@@ -185,7 +188,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 <body style="display: flex;">
   <main style="display: flex; flex-direction: column; flex: 0 0 60%;">
     <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
-      <div style="margin: 0.5em;">
+      <div style="margin: 0.5em; margin-right: 0.1em;">
         <span style="color: #<?=$colour_mid?>;">TopAnswers </span>
         <select id="community">
           <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
@@ -238,23 +241,26 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <div class="message-wrapper" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small>
               <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
-              <?if($chat_flag_count>0){?><span class="flags"><?=($chat_flag_count>20)?str_repeat('&#x2691;',20).'+'.($chat_flag_count-20):str_repeat('&#x2691;',$chat_flag_count)?></span><?}?>
-              <?if($chat_star_count>0){?><span class="stars"><?=($chat_star_count>20)?str_repeat('&#x2605;',20).'+'.($chat_star_count-20):str_repeat('&#x2605;',$chat_star_count)?></span><?}?>
-              <?if($uuid){?>
-                <span class="buttons">
-                  <button class="button reply" title="reply">&#x21b3;</button>
-                  <?if($account_is_me==='f'){?>
-                    <?if($is_flagged==='f'){?><button class="button flag" title="flag">&#x2690;</button><?}?>
-                    <?if($is_flagged==='t'){?><button class="button unflag" title="remove flag">&#x2691;</button><?}?>
-                    <?if($is_starred==='f'){?><button class="button star" title="star">&#x2606;</button><?}?>
-                    <?if($is_starred==='t'){?><button class="button unstar" title="remove star">&#x2605;</button><?}?>
-                  <?}?>
-                </span>
-              <?}?>
             </small>
             <div class="message">
               <img src="/identicon.php?id=<?=$account_id?>">
-              <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+              <div class="markdown-wrapper">
+                <button class="button reply" title="reply">&#x21b3;</button>
+                <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+              </div>
+              <!--<?if($chat_flag_count>0){?><span class="flags"><?=($chat_flag_count>20)?str_repeat('&#x2691;',20).'+'.($chat_flag_count-20):str_repeat('&#x2691;',$chat_flag_count)?></span><?}?>
+              <?if($chat_star_count>0){?><span class="stars"><?=($chat_star_count>20)?str_repeat('&#x2605;',20).'+'.($chat_star_count-20):str_repeat('&#x2605;',$chat_star_count)?></span><?}?>-->
+              <?if($uuid){?>
+                <span class="buttons">
+                  <?if($account_is_me==='f'){?>
+                    <button title="star" class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><?=($is_starred==='t')?'&#x2605;':'&#x2606;'?><?=($chat_star_count>0)?$chat_star_count:''?></button>
+                    <button title="flag" class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><?=($is_flagged==='t')?'&#x2691;':'&#x2690;'?><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                  <?}else{?>
+                    <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>">&#x2605;<?=($chat_star_count>0)?$chat_star_count:''?></button>
+                    <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>">&#x2691;<?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                  <?}?>
+                </span>
+              <?}?>
             </div>
           </div>
         <?}?>
@@ -282,21 +288,19 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <div class="message-wrapper" style="background-color: #<?=$chat_colour?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small>
               <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
-              <?if($chat_flag_count>0){?><span class="flags"><?=($chat_flag_count>20)?str_repeat('&#x2691;',20).'+'.($chat_flag_count-20):str_repeat('&#x2691;',$chat_flag_count)?></span><?}?>
-              <?if($chat_star_count>0){?><span class="stars"><?=($chat_star_count>20)?str_repeat('&#x2605;',20).'+'.($chat_star_count-20):str_repeat('&#x2605;',$chat_star_count)?></span><?}?>
-              <span class="buttons">
-                <button class="button reply" title="reply">&#x21b3;</button>
-                <?if($account_is_me==='f'){?>
-                  <?if($is_flagged==='f'){?><button class="button flag" title="flag">&#x2690;</button><?}?>
-                  <?if($is_flagged==='t'){?><button class="button unflag" title="remove flag">&#x2691;</button><?}?>
-                  <?if($is_starred==='f'){?><button class="button star" title="star">&#x2606;</button><?}?>
-                  <?if($is_starred==='t'){?><button class="button unstar" title="remove star">&#x2605;</button><?}?>
-                <?}?>
-              </span>
             </small>
             <div class="message">
               <img src="/identicon.php?id=<?=$account_id?>">
               <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+              <span class="buttons">
+                <?if($account_is_me==='f'){?>
+                  <button title="star" class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><?=($is_starred==='t')?'&#x2605;':'&#x2606;'?><?=($chat_star_count>0)?$chat_star_count:''?></button>
+                  <button title="flag" class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><?=($is_flagged==='t')?'&#x2691;':'&#x2690;'?><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                <?}else{?>
+                  <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>">&#x2605;<?=($chat_star_count>0)?$chat_star_count:''?></button>
+                  <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>">&#x2691;<?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                <?}?>
+              </span>
             </div>
           </div>
         <?}?>
