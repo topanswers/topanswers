@@ -48,6 +48,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
   <link rel="stylesheet" href="/highlightjs/default.css">
+  <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
@@ -70,7 +71,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message-wrapper>.message button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
     .message-wrapper:hover>.message button { visibility: visible; }
     .message-wrapper>.message>.buttons>button,.message-wrapper .reply { display: block; white-space: nowrap; color: #<?=$colour_dark?>; }
-    .message-wrapper>.message>.buttons>button+button { margin-top: -0.3em; margin-left: 0.15em; }
+    .message-wrapper>.message>.buttons>button+button { margin-top: -0.3em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
     #chat .thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
     .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.8em; width: 100%; }
@@ -249,17 +250,17 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
             <div class="message">
               <img src="/identicon.php?id=<?=$account_id?>">
               <div class="markdown-wrapper">
-                <button class="button reply" title="reply">&#x21b3;</button>
+                <button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button>
                 <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
               </div>
               <?if($uuid){?>
                 <span class="buttons">
                   <?if($account_is_me==='f'){?>
-                    <button title="star" class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><?=($is_starred==='t')?'&#x2605;':'&#x2606;'?><?=($chat_star_count>0)?$chat_star_count:''?></button>
-                    <button title="flag" class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><?=($is_flagged==='t')?'&#x2691;':'&#x2690;'?><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                    <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
+                    <button class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag<?=($is_flagged==='t')?'':'-o'?>"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
                   <?}else{?>
-                    <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>">&#x2605;<?=($chat_star_count>0)?$chat_star_count:''?></button>
-                    <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>">&#x2691;<?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                    <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
+                    <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
                   <?}?>
                 </span>
               <?}?>
@@ -295,11 +296,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               <div class="markdown-wrapper"><div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div></div>
               <span class="buttons">
                 <?if($account_is_me==='f'){?>
-                  <button title="star" class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><?=($is_starred==='t')?'&#x2605;':'&#x2606;'?><?=($chat_star_count>0)?$chat_star_count:''?></button>
-                  <button title="flag" class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><?=($is_flagged==='t')?'&#x2691;':'&#x2690;'?><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                  <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
+                  <button class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag<?=($is_flagged==='t')?'':'-o'?>"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
                 <?}else{?>
-                  <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>">&#x2605;<?=($chat_star_count>0)?$chat_star_count:''?></button>
-                  <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>">&#x2691;<?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                  <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
+                  <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
                 <?}?>
               </span>
             </div>

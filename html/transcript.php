@@ -75,19 +75,22 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
   <link rel="stylesheet" href="/highlightjs/default.css">
+  <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+    .button { background: none; border: none; padding: 0; cursor: pointer; }
     .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
     .message-wrapper { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
     .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; display: flex; align-items: baseline; }
     .message-wrapper>small>span.flags { margin-left: 1em; }
     .message-wrapper>small>span.stars { margin-left: 1em; }
-    .message-wrapper>small>span.buttons { margin-left: 1em; visibility: hidden; }
-    .message-wrapper:hover>small>span.buttons { visibility: visible; }
+    .message-wrapper>small>span.buttons { margin-left: 1em; }
     .message-wrapper>small>span.buttons>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
+    .message-wrapper .buttons button,.message-wrapper .reply { display: block; white-space: nowrap; color: #<?=$colour_dark?>; }
+    .message-wrapper .buttons button+button { margin-top: -0.3em; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
     .thread>div { background-color: #<?=$colour_highlight?>40; }
@@ -203,11 +206,13 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         <small>
           <span><?=$chat_at?>&nbsp;</span>
           <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
-          <?if($chat_flag_count>0){?><span class="flags"><?=($chat_flag_count>20)?str_repeat('&#x2691;',20).'+'.($chat_flag_count-20):str_repeat('&#x2691;',$chat_flag_count)?></span><?}?>
-          <?if($chat_star_count>0){?><span class="stars"><?=($chat_star_count>20)?str_repeat('&#x2605;',20).'+'.($chat_star_count-20):str_repeat('&#x2605;',$chat_star_count)?></span><?}?>
         </small>
         <img src="/identicon.php?id=<?=$account_id?>">
         <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+        <span class="buttons">
+          <?if($chat_star_count>0){?><button title="star" class="button"><i class="fa fa-fw fa-star"></i><?=$chat_star_count?></button><?}?>
+          <?if($chat_flag_count>0){?><button title="flag" class="button"><i class="fa fa-fw fa-flag"></i><?=$chat_flag_count?></button><?}?>
+        </span>
       </div>
       <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="height: <?=round(log(1+$chat_gap)/4)?>em;" data-gap="<?=$chat_gap?>"><span></span></div>
     <?}?>
