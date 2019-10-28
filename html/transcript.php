@@ -82,7 +82,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
     .message-wrapper { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
-    .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1em; width: 100%; display: flex; align-items: baseline; }
+    .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; display: flex; align-items: baseline; }
     .message-wrapper>small>span.flags { margin-left: 1em; }
     .message-wrapper>small>span.stars { margin-left: 1em; }
     .message-wrapper>small>span.buttons { margin-left: 1em; visibility: hidden; }
@@ -90,8 +90,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message-wrapper>small>span.buttons>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
     .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message-wrapper .dark { color: #<?=$colour_dark?>; }
-    .thread>div { box-shadow: 0 0 0.1em 0.1em #<?=$colour_highlight?>; }
-    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.4em; width: 100%; }
+    .thread>div { background-color: #<?=$colour_highlight?>40; }
+    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.6em; width: 100%; }
     .bigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
     .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>; background-color: #<?=$colour_mid?>; padding: 0.2em; }
     .markdown>:first-child { margin-top: 0; }
