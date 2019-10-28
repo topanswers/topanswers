@@ -58,8 +58,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .message { display: flex; }
     .message .markdown { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
-    .message-wrapper { width: 100%; xmargin-top: 0.2em; position: relative; flex: 0 0 auto; }
-    #notifications .message-wrapper { padding: 0.2em; border-radius: 0.2em; }
+    .message-wrapper { width: 100%; position: relative; flex: 0 0 auto; }
+    #notifications .message-wrapper { padding: 0.3em; border-radius: 0.2em; }
+    #notifications .message-wrapper+.message-wrapper { margin-top: 0.2em; }
     .message-wrapper>small { font-size: 0.6em; width: 100%; display: flex; align-items: baseline; }
     #chat .message-wrapper>small { position: absolute; top: -1.5em; }
     .message-wrapper>small>span.flags { margin-left: 1em; }
@@ -108,7 +109,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         $('.message-wrapper').each(function(){
           var id = $(this).data('id'), rid = id;
           function foo(b){
-            $(this).addClass('t'+id);
+            if(arguments.length!==0) $(this).addClass('t'+id);
             if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message-wrapper[data-id='+$(this).data('reply-id')+']')[0], true);
             if(arguments.length===0 || b===false) $('.message-wrapper[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
           }
@@ -252,7 +253,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     </div>
     <div style="position: relative;"><div style="position: absolute; height: 1em; xbottom: -1em; width: 100%; background: linear-gradient(darkgrey,#<?=$colour_mid?>00);"></div></div>
     <?if($uuid){?>
-      <div id="notifications" style="display: flex; flex: 0 1 auto; min-height: 0; max-height: 20vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.5em; overflow: scroll;">
+      <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 20vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.3em; overflow: scroll;">
         <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count
                            , coalesce(nullif(account_name,''),'Anonymous') account_name
                            , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
