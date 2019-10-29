@@ -72,6 +72,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown table { border-collapse: collapse; }
     .markdown td, .markdown th { border: 1px solid black; }
     .markdown blockquote {  padding-left: 1em;  margin-left: 1em; margin-right: 0; border-left: 2px solid gray; }
+    .markdown code { display: inline-block; padding: 0.1em; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; }
     .active-user { height: 1.5em; width: 1.5em; margin: 0.1em; }
     .active-user.ping { outline: 1px solid #<?=$colour_highlight?>; }
 
@@ -93,7 +94,6 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
     #notifications .message .who { top: 0.5em; }
     #notifications .message+.message { margin-top: 0.2em; }
-    .message .markdown code { display: inline-block; padding: 0.1em; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -193,6 +193,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           }
         }
       });
+      $('#chattext').on('input',function(){
+        $('#preview .markdown').html(md.render($('#chattext').val()+' '));
+      });
       setTimeout(pollChat, chatPollInterval);
       initChat();
     });
@@ -237,6 +240,12 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         Replying to: 
         <span></span>
         <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>
+      </div>
+      <div id="preview" class="message" style="flex: 0 0 auto; width: 100%;">
+        <div class="markdown-wrapper">
+          <div class="markdown" data-markdown="">
+          </div>
+        </div>
       </div>
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
