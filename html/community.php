@@ -93,6 +93,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
     #notifications .message .who { top: 0.5em; }
     #notifications .message+.message { margin-top: 0.2em; }
+    .message .markdown code { display: inline-block; padding: 0.1em; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -276,7 +277,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       </div>
       <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
         <?foreach(db("select account_id,account_name,account_is_me
-                      from (select account_id from chat where room_id=$1 group by account_id having max(chat_at)>(current_timestamp-'7d'::interval) order by max(chat_at) desc) z natural join account",$room) as $r){ extract($r);?>
+                      from (select account_id, max(chat_at) max_chat_at from chat where room_id=$1 group by account_id having max(chat_at)>(current_timestamp-'7d'::interval)) z natural join account
+                      order by max_chat_at desc",$room) as $r){ extract($r);?>
           <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
         <?}?>
       </div>
