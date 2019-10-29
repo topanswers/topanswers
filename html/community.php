@@ -59,29 +59,12 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; }
+
     .button { background: none; border: none; padding: 0; cursor: pointer; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
-    .message-wrapper { width: 100%; position: relative; flex: 0 0 auto; }
-    #notifications .message-wrapper { padding: 0.3em; border-radius: 0.2em; }
-    #notifications .message-wrapper+.message-wrapper { margin-top: 0.2em; }
-    .message-wrapper>small { font-size: 0.6em; }
-    #chat .message-wrapper>small { position: absolute; top: -1.2em; }
-    .message-wrapper>.message { display: flex; }
-    .message-wrapper>.message>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
-    .message-wrapper.merged { margin-top: -1px; }
-    .message-wrapper.merged>.message>img,.message-wrapper.merged>small { visibility: hidden; }
-    .message-wrapper>.message .markdown-wrapper { position: relative; flex: 0 1 auto; max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
-    .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
-    .message-wrapper>.message button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
-    .message-wrapper:hover>.message button { visibility: visible; }
-    .message-wrapper>.message>.buttons>button,.message-wrapper .reply { display: block; white-space: nowrap; color: #<?=$colour_dark?>; }
-    .message-wrapper>.message>.buttons>button+button { margin-top: -0.3em; }
-    .message-wrapper .dark { color: #<?=$colour_dark?>; }
-    .message-wrapper .who { white-space: nowrap; }
-    #chat .thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
-    .spacer { flex: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; min-height: 0.8em; width: 100%; }
-    .xbigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
-    .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; padding: 0.2em; }
+    .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
+    #replying[data-id=""] { display: none; }
+
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
@@ -89,9 +72,28 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown table { border-collapse: collapse; }
     .markdown td, .markdown th { border: 1px solid black; }
     .markdown blockquote {  padding-left: 1em;  margin-left: 1em; margin-right: 0; border-left: 2px solid gray; }
+    .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
     .active-user { height: 1.5em; width: 1.5em; margin: 0.1em; }
     .active-user.ping { outline: 1px solid #<?=$colour_highlight?>; }
-    #replying[data-id=""] { display: none; }
+
+    .message-wrapper { width: 100%; position: relative; flex: 0 0 auto; }
+    .message-wrapper .who { white-space: nowrap; font-size: 0.6em; }
+    .message-wrapper .message { display: flex; }
+    .message-wrapper .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
+    .message-wrapper .markdown-wrapper { position: relative; flex: 0 1 auto; max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
+    .message-wrapper .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; }
+    .message-wrapper .button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
+    .message-wrapper .buttons button+button { margin-top: -0.3em; }
+    .message-wrapper:hover .button { visibility: visible; }
+    .message-wrapper.merged { margin-top: -1px; }
+    .message-wrapper.merged .who,
+    .message-wrapper.merged .identicon { visibility: hidden; }
+
+    #chat .message-wrapper .who { position: absolute; top: -1.2em; }
+    #chat .message-wrapper.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
+
+    #notifications .message-wrapper { padding: 0.3em; border-radius: 0.2em; }
+    #notifications .message-wrapper+.message-wrapper { margin-top: 0.2em; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -152,7 +154,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       function initChat() {
         setChatPollInterval();
         threadChat();
-        $('.bigspacer').each(function(){ $(this).children().text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+        $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
         $('.message-wrapper .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
       }
@@ -252,9 +254,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                             where room_id=$1) z
                       order by chat_at desc limit 100",$room) as $r){ extract($r);?>
           <div class="message-wrapper<?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
-            <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
+            <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span style="color: #'.$colour_dark.';">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
             <div class="message">
-              <img src="/identicon.php?id=<?=$account_id?>">
+              <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
               <div class="markdown-wrapper">
                 <button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button>
                 <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
@@ -272,7 +274,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               <?}?>
             </div>
           </div>
-          <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"><span></span></div><?}?>
+          <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
         <?}?>
       </div>
       <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
@@ -305,7 +307,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                 <span style="color: #<?=$chat_dark_shade?>;">(view <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" style="color: #<?=$chat_dark_shade?>;">transcript</a> or <a href='.' class="dismiss" style="color: #<?=$chat_dark_shade?>;">dismiss</a>)</span>
               </small>
               <div class="message">
-                <img src="/identicon.php?id=<?=$account_id?>">
+                <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
                 <div class="markdown-wrapper" data-id="<?=$chat_id?>">
                   <?if($room_id===$room){?><button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button><?}?>
                   <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
