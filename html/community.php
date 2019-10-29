@@ -183,7 +183,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           if(!e.shiftKey) {
             arr = [];
             $('.ping').each(function(){ arr.push($(this).data('id')); });
-            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').attr('data-id'), pings: arr }).done(function(){ updateChat(); t.val('').prop('disabled',false).focus(); });
+            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').attr('data-id'), pings: arr }).done(function(){ updateChat(); t.val('').prop('disabled',false).focus().css('height', 'auto'); });
             $('#replying').attr('data-id','');
             $('.ping').removeClass('ping');
             $(this).prop('disabled',true);
@@ -230,7 +230,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?if($uuid) if(intval(ccdb("select account_id from login where login_is_me"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($uuid){?>
-      <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" autofocus></textarea>
+      <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="1000" autofocus></textarea>
       <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-bottom: 1px solid darkgrey; font-style: italic; font-size: smaller;" data-id="">
         Replying to: 
         <span></span>
