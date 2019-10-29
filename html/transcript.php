@@ -81,23 +81,13 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+    body>div>div { margin: 0.5em; white-space: nowrap; }
+    body>div>div>span { font-size: smaller; font-style: italic; }
+    a:not([href]) { color: #<?=$colour_highlight?>; }
+
     .button { background: none; border: none; padding: 0; cursor: pointer; }
-    .message { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
-    .message-wrapper { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
-    .message-wrapper>small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; display: flex; align-items: baseline; }
-    .message-wrapper>small>span.flags { margin-left: 1em; }
-    .message-wrapper>small>span.stars { margin-left: 1em; }
-    .message-wrapper>small>span.buttons { margin-left: 1em; }
-    .message-wrapper>small>span.buttons>button { margin-left: 0.2em; color: #<?=$colour_dark?>; }
-    .message-wrapper .buttons button,.message-wrapper .reply { display: block; white-space: nowrap; color: #<?=$colour_dark?>; }
-    .message-wrapper .buttons button+button { margin-top: -0.3em; }
-    .message-wrapper>img { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
-    .message-wrapper .dark { color: #<?=$colour_dark?>; }
-    .thread>div { background-color: #<?=$colour_highlight?>40; }
-    .highlight>div { border: 0.3em solid #<?=$colour_highlight?>60; }
-    .spacer { flex: 0 0 auto; display: flex; justify-content: center; align-items: center; min-height: 0.6em; width: 100%; }
-    .bigspacer { background-image: url("data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk8AEAAFIATgDK/mEAAAAASUVORK5CYII="); background-position: 50% 0%;  background-repeat: repeat-y; }
-    .spacer>span { font-size: smaller; font-style: italic; color: #<?=$colour_dark?>; background-color: #<?=$colour_mid?>; padding: 0.2em; }
+    .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
+
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
@@ -105,9 +95,25 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown table { border-collapse: collapse; }
     .markdown td, .markdown th { border: 1px solid black; }
     .markdown blockquote {  padding-left: 1em;  margin-left: 1em; margin-right: 0; border-left: 2px solid gray; }
-    body>div>div { margin: 0.5em; white-space: nowrap; }
-    body>div>div>span { font-size: smaller; font-style: italic; }
-    a:not([href]) { color: #<?=$colour_highlight?>; }
+
+    .markdown-wrapper { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
+    .message { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
+    .message>small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; display: flex; align-items: baseline; }
+    .highlight>div { border: 0.3em solid #<?=$colour_highlight?>60; }
+
+    .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; margin-top: 0.2em; }
+    .message small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; display: flex; align-items: baseline; white-space: nowrap; }
+    .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
+    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
+    .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
+    .message .buttons { flex: 0 0 auto; }
+    .message .buttons button+button { margin-top: -0.3em; }
+    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; }
+    .message .button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
+    .message.merged { margin-top: -1px; }
+    .message.merged small,
+    .message.merged .identicon { visibility: hidden; }
+    .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -120,20 +126,20 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     $(function(){
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
       function threadChat(){
-        $('.message-wrapper').each(function(){
+        $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
           function foo(b){
             $(this).addClass('t'+id);
-            if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message-wrapper[data-id='+$(this).data('reply-id')+']')[0], true);
-            if(arguments.length===0 || b===false) $('.message-wrapper[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
+            if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
+            if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
           }
           foo.call(this);
         });
       }
-      $('main').on('mouseenter', '.message-wrapper', function(){ $('.message-wrapper.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message-wrapper', function(){ $('.thread').removeClass('thread'); });
+      $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       threadChat();
-      $('.bigspacer').each(function(){ $(this).children().text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+      $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
       $('.highlight')[0].scrollIntoView();
     });
   </script>
@@ -193,30 +199,34 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     </div>
   <?}?>
   <main style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>;">
-    <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count
-                       , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at
-                       , coalesce(nullif(account_name,''),'Anonymous') account_name
-                       , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
-                       , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                       , round(extract('epoch' from (lead(chat_at) over (order by chat_at))-chat_at)) chat_gap
-                       , chat_flag_at is not null is_flagged
-                       , chat_star_at is not null is_starred
-                  from chat c natural join account natural left join chat_flag natural left join chat_star
-                  where room_id=$1 and chat_at>=make_timestamp($2,$3,$4,$5,0,0) and chat_at<make_timestamp($6,$7,$8,$9,0,0)+'1h'::interval
+    <?foreach(db("select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
+                  from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at
+                             , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
+                             , coalesce(nullif(account_name,''),'Anonymous') account_name
+                             , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+                             , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
+                             , round(extract('epoch' from chat_at-(lag(chat_at) over (order by chat_at)))) chat_gap
+                             , chat_flag_at is not null is_flagged
+                             , chat_star_at is not null is_starred
+                             , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
+                        from chat c natural join account natural left join chat_flag natural left join chat_star
+                        where room_id=$1 and chat_at>=make_timestamp($2,$3,$4,$5,0,0) and chat_at<make_timestamp($6,$7,$8,$9,0,0)+'1h'::interval) z
                   order by chat_at",$room,$_GET['year']??1,$_GET['month']??1,$_GET['day']??1,$_GET['hour']??0,$_GET['year']??9999,$_GET['month']??12,$_GET['day']??$maxday,$_GET['hour']??23) as $r){ extract($r);?>
-      <div id="c<?=$chat_id?>" class="message-wrapper<?=($chat_id===($_GET['id']??''))?' highlight':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+      <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
+      <div id="c<?=$chat_id?>" class="message<?=($chat_account_is_repeat==='t')?' merged':''?><?=($chat_id===($_GET['id']??''))?' highlight':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
         <small>
-          <span><?=$chat_at?>&nbsp;</span>
+          <span><?=$chat_at_text?>&nbsp;</span>
           <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
         </small>
-        <img src="/identicon.php?id=<?=$account_id?>">
-        <div class="message markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+        <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
+        <div class="markdown-wrapper">
+          <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+        </div>
         <span class="buttons">
-          <?if($chat_star_count>0){?><button title="star" class="button"><i class="fa fa-fw fa-star"></i><?=$chat_star_count?></button><?}?>
-          <?if($chat_flag_count>0){?><button title="flag" class="button"><i class="fa fa-fw fa-flag"></i><?=$chat_flag_count?></button><?}?>
+          <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
+          <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
         </span>
       </div>
-      <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="height: <?=round(log(1+$chat_gap)/4)?>em;" data-gap="<?=$chat_gap?>"><span></span></div>
     <?}?>
   </main>
 </body>   
