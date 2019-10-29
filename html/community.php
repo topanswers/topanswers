@@ -65,28 +65,29 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
     #replying[data-id=""] { display: none; }
 
+    .markdown { overflow: auto; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
     .markdown img { max-height: 7em; }
     .markdown table { border-collapse: collapse; }
-    .markdown td, .markdown th { border: 1px solid black; }
+    .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; }
     .markdown blockquote {  padding-left: 1em;  margin-left: 1em; margin-right: 0; border-left: 2px solid gray; }
     .markdown code { display: inline-block; padding: 0.1em; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; }
     .active-user { height: 1.5em; width: 1.5em; margin: 0.1em; }
     .active-user.ping { outline: 1px solid #<?=$colour_highlight?>; }
 
-    .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; }
+    .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; }
     .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
-    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
+    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
     .message .buttons { flex: 0 0 auto; }
     .message .buttons button+button { margin-top: -0.3em; }
-    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; }
+    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; font-size: 0.8em; }
     .message .button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
     .message:hover .button { visibility: visible; }
-    .message.merged { margin-top: -1px; }
+    .message.merged { margin-top: -2px; }
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
     #chat .message .who { top: -1.2em; }
@@ -178,23 +179,28 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
-      $('#chattext').on('input', function(){ $(this).css('height', '0'); $(this).css('height',this.scrollHeight+'px'); });
+      $('#chattext').on('input', function(){
+        $(this).css('height', '0');
+        $(this).css('height',this.scrollHeight+'px');
+        if($(this).val()){ $('#preview .markdown').html(md.render($('#chattext').val())); $('#preview').show(); } else { $('#preview').hide(); }
+      });
       $('#chattext').keydown(function(e){
         var t = $(this);
         if((e.keyCode || e.which) == 13) {
           if(!e.shiftKey) {
             arr = [];
             $('.ping').each(function(){ arr.push($(this).data('id')); });
-            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').attr('data-id'), pings: arr }).done(function(){ updateChat(); t.val('').prop('disabled',false).focus().css('height', 'auto'); });
+            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').attr('data-id'), pings: arr }).done(function(){
+              updateChat();
+              t.val('').prop('disabled',false).focus().css('height', 'auto');
+              $('#preview').hide();
+            });
             $('#replying').attr('data-id','');
             $('.ping').removeClass('ping');
             $(this).prop('disabled',true);
             return false;
           }
         }
-      });
-      $('#chattext').on('input',function(){
-        $('#preview .markdown').html(md.render($('#chattext').val()+' '));
       });
       setTimeout(pollChat, chatPollInterval);
       initChat();
@@ -235,13 +241,13 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?if($uuid) if(intval(ccdb("select account_id from login where login_is_me"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($uuid){?>
-      <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="1000" autofocus></textarea>
+      <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
       <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-bottom: 1px solid darkgrey; font-style: italic; font-size: smaller;" data-id="">
         Replying to: 
         <span></span>
         <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>
       </div>
-      <div id="preview" class="message" style="flex: 0 0 auto; width: 100%;">
+      <div id="preview" class="message" style="flex: 0 0 auto; width: 100%; border-bottom: 1px solid darkgrey; padding: 0.2em; display: none;">
         <div class="markdown-wrapper">
           <div class="markdown" data-markdown="">
           </div>
@@ -249,7 +255,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       </div>
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
-      <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: scroll;">
+      <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: auto;">
         <?foreach(db("select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
                       from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at
                                  , coalesce(nullif(account_name,''),'Anonymous') account_name

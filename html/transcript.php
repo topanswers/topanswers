@@ -81,40 +81,38 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    body>div>div { margin: 0.5em; white-space: nowrap; }
+  /*body>div>div { margin: 0.5em; white-space: nowrap; }
     body>div>div>span { font-size: smaller; font-style: italic; }
-    a:not([href]) { color: #<?=$colour_highlight?>; }
+    a:not([href]) { color: #<?=$colour_highlight?>; }*/
 
     .button { background: none; border: none; padding: 0; cursor: pointer; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
+    .markdown { overflow: auto; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 1em; }
     .markdown img { max-height: 7em; }
     .markdown table { border-collapse: collapse; }
-    .markdown td, .markdown th { border: 1px solid black; }
+    .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; }
     .markdown blockquote {  padding-left: 1em;  margin-left: 1em; margin-right: 0; border-left: 2px solid gray; }
     .markdown code { display: inline-block; padding: 0.1em; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; }
 
-    .markdown-wrapper { flex: 0 0 auto; max-width: calc(100% - 1.7em); max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
-    .message { width: 100%; margin-top: 0.2em; position: relative; display: flex; flex: 0 0 auto; }
-    .message>small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; display: flex; align-items: baseline; }
-    .highlight>div { border: 0.3em solid #<?=$colour_highlight?>60; }
-
-    .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; margin-top: 0.2em; }
-    .message small { font-size: 0.6em; position: absolute; top: -1.2em; width: 100%; display: flex; align-items: baseline; white-space: nowrap; }
+    .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
+    .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; top: -1.2em; }
     .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
-    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; overflow: auto; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; }
+    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
     .message .buttons { flex: 0 0 auto; }
     .message .buttons button+button { margin-top: -0.3em; }
-    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; }
+    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; font-size: 0.8em; }
     .message .button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
-    .message.merged { margin-top: -1px; }
-    .message.merged small,
+    .message:hover .button { visibility: visible; }
+    .message.merged { margin-top: -2px; }
+    .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
     .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
+    .message.highlight .markdown-wrapper { border: 0.3em solid #<?=$colour_highlight?>60; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -130,7 +128,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
           function foo(b){
-            $(this).addClass('t'+id);
+            if(arguments.length!==0) $(this).addClass('t'+id);
             if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
             if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
           }
@@ -215,9 +213,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                   order by chat_at",$room,$_GET['year']??1,$_GET['month']??1,$_GET['day']??1,$_GET['hour']??0,$_GET['year']??9999,$_GET['month']??12,$_GET['day']??$maxday,$_GET['hour']??23) as $r){ extract($r);?>
       <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
       <div id="c<?=$chat_id?>" class="message<?=($chat_account_is_repeat==='t')?' merged':''?><?=($chat_id===($_GET['id']??''))?' highlight':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
-        <small>
-          <span><?=$chat_at_text?>&nbsp;</span>
-          <span class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span class="dark">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</span>
+        <small class="who">
+          <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
+          <?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span style="color: #'.$colour_dark.';">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:
         </small>
         <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
         <div class="markdown-wrapper">
