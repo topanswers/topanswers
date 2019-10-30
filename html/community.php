@@ -269,7 +269,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                                  , chat_star_at is not null is_starred
                                  , (lead(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lead(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
                             from chat c natural join account natural left join chat_flag natural left join chat_star
-                            where room_id=$1) z
+                            where room_id=$1".($uuid?"":" and chat_flag_count=0").") z
                       order by chat_at desc limit 100",$room) as $r){ extract($r);?>
           <div class="message<?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span style="color: #'.$colour_dark.';">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
