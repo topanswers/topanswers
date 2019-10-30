@@ -26,6 +26,7 @@ create table account(
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea
 , account_change_id bigint generated always as identity unique
+  account_uuid uuid not null default x_uuid_ossp.uuid_generate_v4()
 );
 
 create table account_history(

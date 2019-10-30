@@ -55,6 +55,9 @@ if(isset($_GET['pin'])){
   db("select authenticate_pin($1)",$_GET['pin']);
   exit;
 }
+if(isset($_GET['uuid'])){
+  exit(ccdb("select account_uuid from account where account_is_me"));
+}
 $custompic = (ccdb("select account_image is null from login natural join account where login_is_me")==='f');
 ?>
 <!doctype html>
@@ -69,6 +72,7 @@ $custompic = (ccdb("select account_image is null from login natural join account
   <script>
     $(function(){
       $('#pin').click(function(){ $(this).prop('disabled',true); $.get('/profile?pin=<?=$pin?>').done(function(){ $('#pin').replaceWith('<code><?=$pin?></code>'); }); });
+      $('#uuid').click(function(){ var t = $(this); $.get('/profile?uuid').done(function(r){ t.replaceWith('<span>'+r+'</span>'); }); });
     });
   </script>
   <title>Profile | TopAnswers</title>
@@ -102,6 +106,14 @@ $custompic = (ccdb("select account_image is null from login natural join account
       <li>Go to https://topanswers.xyz on the other device and click 'link'</li>
       <li>Enter this PIN (within 1 minute of generation): <input id="pin" type="button" value="generate PIN"></li>
     </ol>
+  </fieldset>
+  <fieldset>
+    <legend>account recovery</legend>
+    <ul>
+      <li>Your account recovery token should be kept confidential like a password</li>
+      <li>It can be used in the same way as a PIN, but does not expire</li>
+      <li><input id="uuid" type="button" value="show token"></li>
+    </ul>
   </fieldset>
 </body>   
 </html>   

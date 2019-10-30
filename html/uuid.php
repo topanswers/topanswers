@@ -15,7 +15,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 $uuid = exec('uuidgen');
 setcookie("uuid",$uuid,2147483647,'/',null,null,true);
 if(isset($_GET['pin'])){
-  db('select link_account($1,$2)',$uuid,$_GET['pin']);
+  if(is_numeric($_GET['pin'])) db('select link_account($1,$2)',$uuid,$_GET['pin']);
+  else db('select recover_account($1,$2)',$uuid,$_GET['pin']);
 }else{
   db('select new_account($1)',$uuid);
 }

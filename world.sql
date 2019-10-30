@@ -12,34 +12,37 @@ set local schema 'world';
 --
 create function _error(text) returns void language plpgsql as $$begin raise exception '%', $1 using errcode='H0403'; end;$$;
 --
-create view community as
+create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
 from db.community
 where community_name<>'meta' or current_setting('custom.uuid',true)::uuid is not null;
 --
-create view login as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account;
-create view account as select account_id,account_name,account_image,account_change_id, account_id=(select account_id from login where login_is_me) account_is_me from db.account;
+create view login with (security_barrier) as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account;
 --
-create view room as
+create view account with (security_barrier) as
+with w as (select *, account_id=(select account_id from login where login_is_me) account_is_me from db.account)
+select account_id,account_name,account_image,account_change_id,account_is_me, case when account_is_me then account_uuid end account_uuid from w;
+--
+create view room with (security_barrier) as
 select community_id,room_id,room_name,room_latest_chat_id
 from db.room natural join (select community_id,room_id,max(room_account_x_latest_chat_id) room_latest_chat_id from db.room_account_x group by community_id,room_id) z
 where room_type<>'private' or exists (select * from db.room_account_x natural join account where account_is_me and room_account_x_can_chat);
 --
-create view room_account_x as select community_id,room_id,account_id,room_account_x_latest_chat_at from db.room_account_x natural join world.room where room_account_x_latest_chat_at>(current_timestamp-'7d'::interval);
+create view room_account_x with (security_barrier) as select community_id,room_id,account_id,room_account_x_latest_chat_at from db.room_account_x natural join world.room where room_account_x_latest_chat_at>(current_timestamp-'7d'::interval);
 --
-create view chat as
+create view chat with (security_barrier) as
 select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change_id,chat_change_at,chat_markdown
      , (select count(*) from db.chat_flag where chat_id=chat.chat_id) chat_flag_count
      , (select count(*) from db.chat_star where chat_id=chat.chat_id) chat_star_count
 from db.chat natural join room;
 --
-create view chat_notification as select community_id,room_id,chat_id,chat_notification_at from db.chat_notification natural join account where account_is_me;
-create view chat_flag as select community_id,room_id,chat_id,chat_flag_at from db.chat_flag natural join account where account_is_me;
-create view chat_star as select community_id,room_id,chat_id,chat_star_at from db.chat_star natural join account where account_is_me;
-create view chat_year as select community_id,room_id,chat_year,chat_year_count from db.chat_year;
-create view chat_month as select community_id,room_id,chat_year,chat_month,chat_month_count from db.chat_month;
-create view chat_day as select community_id,room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
-create view chat_hour as select community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
+create view chat_notification with (security_barrier) as select community_id,room_id,chat_id,chat_notification_at from db.chat_notification natural join account where account_is_me;
+create view chat_flag with (security_barrier) as select community_id,room_id,chat_id,chat_flag_at from db.chat_flag natural join account where account_is_me;
+create view chat_star with (security_barrier) as select community_id,room_id,chat_id,chat_star_at from db.chat_star natural join account where account_is_me;
+create view chat_year with (security_barrier) as select community_id,room_id,chat_year,chat_year_count from db.chat_year;
+create view chat_month with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_month_count from db.chat_month;
+create view chat_day with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
+create view chat_hour with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
 declare
@@ -105,6 +108,10 @@ $$;
 --
 create function link_account(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   insert into login(account_id,login_uuid) select account_id,luuid from pin where pin_number=pn and pin_at>current_timestamp-'1 min'::interval returning account_id;
+$$;
+--
+create function recover_account(luuid uuid, auuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  insert into login(account_id,login_uuid) select account_id,luuid from account where account_uuid=auuid returning account_id;
 $$;
 --
 create function change_account_name(nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
