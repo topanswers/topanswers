@@ -61,7 +61,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; }
 
-    .button { background: none; border: none; padding: 0; cursor: pointer; }
+    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
     #replying[data-id=""] { display: none; }
@@ -83,12 +83,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
-    .message .buttons { flex: 0 0 auto; }
-    .message .buttons button+button { margin-top: -0.3em; }
-    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; font-size: 0.8em; }
-    .message .button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
+    .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
+    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
+    .message .button:not(.marked) { visibility: hidden; }
     .message:hover .button { visibility: visible; }
-    .message.merged { margin-top: -2px; }
+    .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
     #chat .message .who { top: -1.2em; }
@@ -174,7 +173,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('#chat-wrapper').on('click','.star', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'starchatid='+$(this).closest('.message').data('id')).done(updateChat); });
       $('#chat-wrapper').on('click','.unstar', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message').data('id')).done(updateChat); });
       $('#chat-wrapper').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
-      $('#chat-wrapper').on('click','.dismiss', function(){ $.post('/community', { id: $(this).closest('.message').attr('data-id') }).done(function(){ updateChat(); }); return false; });
+      $('#chat-wrapper').on('click','.dismiss', function(){
+        $.post('/community', { id: $(this).closest('.message').attr('data-id') }).done(function(){ updateChat(); });
+        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        return false;
+      });
       $('#replying>button').click(function(){ $('#replying').attr('data-id',''); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });

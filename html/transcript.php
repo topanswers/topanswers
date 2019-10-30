@@ -86,7 +86,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     body>div>div>span { font-size: smaller; font-style: italic; }
     a:not([href]) { color: #<?=$colour_highlight?>; }*/
 
-    .button { background: none; border: none; padding: 0; cursor: pointer; }
+    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     .markdown { overflow: auto; }
@@ -104,12 +104,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
-    .message .buttons { flex: 0 0 auto; }
-    .message .buttons button+button { margin-top: -0.3em; }
-    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; font-size: 0.8em; }
-    .message .button:not(.marked) { flex: 1 0 1em; visibility: hidden; }
-    .message:hover .button { visibility: visible; }
-    .message.merged { margin-top: -2px; }
+    .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
+    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
+    .message .button:not(.marked) { visibility: hidden; }
+    .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
     .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
