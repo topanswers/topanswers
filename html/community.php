@@ -44,6 +44,8 @@ if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
 $room = $_GET['room'] ?? ccdb("select community_room_id from community where community_name=$1",$community);
+$canchat = false;
+if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
              where community_name=$1",$community));
@@ -243,7 +245,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <a href="/transcript?room=<?=$room?>" style="color: #<?=$colour_mid?>;">transcript</a>
       <?if($uuid) if(intval(ccdb("select account_id from login where login_is_me"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
-    <?if($uuid){?>
+    <?if($canchat){?>
       <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
       <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-bottom: 1px solid darkgrey; font-style: italic; font-size: smaller;" data-id="">
         Replying to: 
@@ -275,10 +277,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
             <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span style="color: #'.$colour_dark.';">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
             <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
             <div class="markdown-wrapper">
-              <button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button>
+              <?if($canchat){?><button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button><?}?>
               <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
             </div>
-            <?if($uuid){?>
+            <?if($canchat){?>
               <span class="buttons">
                 <?if($account_is_me==='f'){?>
                   <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
@@ -324,7 +326,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               </small>
               <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
               <div class="markdown-wrapper">
-                <?if($room_id===$room){?><button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button><?}?>
+                <?if($canchat&&($room_id===$room)){?><button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button><?}?>
                 <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
               </div>
               <span class="buttons">
