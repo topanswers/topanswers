@@ -53,6 +53,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 <head>
   <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
+  <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
@@ -102,6 +103,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/markdown-it-sub.js"></script>
   <script src="/highlightjs/highlight.js"></script>
   <script src="/moment.js"></script>
+  <script src="/lightbox2/js/lightbox.min.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
@@ -116,17 +118,6 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         else if(chatLastChange<300) chatPollInterval = 10000;
         else if(chatLastChange<3600) chatPollInterval = 30000;
         else chatPollInterval = 60000;
-      }
-      function threadChat(){
-        $('.message').each(function(){
-          var id = $(this).data('id'), rid = id;
-          function foo(b){
-            if(arguments.length!==0) $(this).addClass('t'+id);
-            if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
-            if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
-          }
-          foo.call(this);
-        });
       }
       function updateChat(){
         $.get(window.location.href,function(data) {
@@ -154,7 +145,16 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       function pollChat() { checkChat(); setTimeout(pollChat, chatPollInterval); }
       function initChat() {
         setChatPollInterval();
-        threadChat();
+        $('.message').each(function(){
+          var id = $(this).data('id'), rid = id;
+          function foo(b){
+            if(arguments.length!==0) $(this).addClass('t'+id);
+            if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
+            if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
+          }
+          foo.call(this);
+        });
+        $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
         $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
         $('.message .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
         $('#messages').scrollTop($('#messages')[0].scrollHeight);

@@ -76,6 +76,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 <head>
   <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
+  <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
@@ -120,6 +121,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/markdown-it-sub.js"></script>
   <script src="/highlightjs/highlight.js"></script>
   <script src="/moment.js"></script>
+  <script src="/lightbox2/js/lightbox.min.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
@@ -138,6 +140,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       threadChat();
+      $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
       $('.highlight')[0].scrollIntoView();
     });
