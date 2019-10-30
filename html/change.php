@@ -17,5 +17,5 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select set_config('custom.uuid',$1,false)",$uuid);
 $room = $_GET['room'] or die('Missing room_id');
-echo ccdb("select json_build_object('question_change_id',1,'chat_change_id',coalesce(max(chat_change_id),0)) from chat where room_id=$1",$room);
+echo ccdb("select (select json_build_object('question_change_id',1,'chat_change_id',coalesce(room_latest_chat_id,0)) from room where room_id=$1)",$room);
 ?>

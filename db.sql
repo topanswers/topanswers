@@ -25,6 +25,7 @@ create table account(
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea
+, account_change_id bigint generated always as identity unique
 );
 
 create table account_history(
@@ -54,13 +55,6 @@ create table account_community_x(
 , foreign key (community_id,account_community_x_pinned_room_id) references room
 );
 
-create table room_account_x(
-  community_id integer
-, room_id integer
-, account_id integer references account on delete cascade
-, foreign key (community_id,room_id) references room on delete cascade
-);
-
 create table chat(
   community_id integer
 , room_id integer
@@ -74,6 +68,18 @@ create table chat(
 , primary key (community_id,room_id,chat_id)
 , foreign key (community_id,room_id,chat_reply_id) references chat
 );
+
+create table room_account_x(
+  community_id integer
+, room_id integer
+, account_id integer references account on delete cascade
+, room_account_x_can_chat boolean default false not null
+, room_account_x_latest_chat_at timestamptz not null default current_timestamp
+, room_account_x_latest_chat_id bigint
+, primary key (community_id,room_id,account_id)
+, foreign key (community_id,room_id,room_account_x_latest_chat_id) references chat
+);
+create index room_account_x_latest on room_account_x(room_id,room_account_x_latest_chat_at);
 
 create table chat_notification(
   community_id integer

@@ -18,8 +18,14 @@ from db.community
 where community_name<>'meta' or current_setting('custom.uuid',true)::uuid is not null;
 --
 create view login as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account;
-create view account as select account_id,account_name,account_image, account_id=(select account_id from login where login_is_me) account_is_me from db.account;
-create view room as select community_id,room_id,room_name from db.room where room_type<>'private' or exists (select * from db.room_account_x natural join account where account_is_me);
+create view account as select account_id,account_name,account_image,account_change_id, account_id=(select account_id from login where login_is_me) account_is_me from db.account;
+--
+create view room as
+select community_id,room_id,room_name,room_latest_chat_id
+from db.room natural join (select community_id,room_id,max(room_account_x_latest_chat_id) room_latest_chat_id from db.room_account_x group by community_id,room_id) z
+where room_type<>'private' or exists (select * from db.room_account_x natural join account where account_is_me and room_account_x_can_chat);
+--
+create view room_account_x as select community_id,room_id,account_id,room_account_x_latest_chat_at from db.room_account_x natural join world.room where room_account_x_latest_chat_at>(current_timestamp-'7d'::interval);
 --
 create view chat as
 select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change_id,chat_change_at,chat_markdown
@@ -80,6 +86,11 @@ create function new_chat(luuid uuid, roomid integer, msg text, replyid integer, 
              select community_id,room_id,chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
      , p as (insert into chat_notification(community_id,room_id,chat_id,account_id)
              select community_id,room_id,chat_id,account_id from i cross join (select account_id from world.account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and not account_is_me) z)
+     , a as (insert into room_account_x(community_id,room_id,account_id,room_account_x_latest_chat_id)
+             select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid),(select chat_id from i)
+             from room
+             where room_id=roomid
+             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default, room_account_x_latest_chat_id=(select chat_id from i))
   select chat_id from i;
 $$;
 --
@@ -98,11 +109,11 @@ $$;
 --
 create function change_account_name(nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('invalid username') where nname is not null and not nname~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$';
-  update account set account_name = nname where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+  update account set account_name = nname, account_change_id = default where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
 $$;
 --
 create function change_account_image(image bytea) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  update account set account_image = image where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+  update account set account_image = image, account_change_id = default  where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
 $$;
 --
 create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
