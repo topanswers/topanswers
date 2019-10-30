@@ -139,6 +139,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       threadChat();
       $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
+      $(".message .markdown a").attr('rel','nofollow');
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
       $('.highlight')[0].scrollIntoView();
     });
