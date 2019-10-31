@@ -17,6 +17,7 @@ create table room(
 , room_type room_type_enum not null default 'public'
 , room_name text
 , room_latest_change_id bigint generated always as identity not null
+, room_latest_change_at timestamptz default current_timestamp not null
 , primary key (community_id,room_id)
 );
 
@@ -80,7 +81,7 @@ create table room_account_x(
 , room_account_x_latest_chat_at timestamptz not null default current_timestamp
 , room_account_x_latest_chat_id bigint
 , primary key (community_id,room_id,account_id)
-, foreign key (community_id,room_id,room_account_x_latest_chat_id) references chat
+, foreign key (community_id,room_id) references room
 );
 create index room_account_x_latest on room_account_x(room_id,room_account_x_latest_chat_at);
 

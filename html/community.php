@@ -117,8 +117,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     hljs.initHighlightingOnLoad();
     $(function(){
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
-      var chatChangeId = <?=ccdb("select coalesce(max(chat_change_id),0) from chat where room_id=$1",$room)?>;
-      var chatLastChange = <?=ccdb("select extract(epoch from current_timestamp-coalesce(max(chat_change_at),current_timestamp))::integer from chat where room_id=$1",$room)?>;
+      var chatChangeId = <?=ccdb("select room_latest_change_id from room where room_id=$1",$room)?>;
+      var notificationChangeId = <?=ccdb("select coalesce(max(chat_id),0) from chat_notification natural join chat")?>;
+      var chatLastChange = <?=ccdb("select extract(epoch from current_timestamp-room_latest_change_at)::integer from room where room_id=$1",$room)?>;
       var chatPollInterval;
       function setChatPollInterval(){
         if(chatLastChange<5) chatPollInterval = 1000;
@@ -142,8 +143,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       }
       function checkChat(){
         $.get('/change?room=<?=$room?>',function(r){
-          if(chatChangeId!==JSON.parse(r).chat_change_id){
-            chatChangeId = JSON.parse(r).chat_change_id;
+          if((chatChangeId!==JSON.parse(r).chat)||(notificationChangeId!==JSON.parse(r).notification)){
+            chatChangeId = JSON.parse(r).chat;
+            notificationChangeId = JSON.parse(r).notification;
             updateChat();
           }else{
             chatLastChange += Math.floor(chatPollInterval/1000);

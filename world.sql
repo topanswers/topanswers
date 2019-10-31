@@ -26,7 +26,7 @@ with w as (select *, account_id=(select account_id from login where login_is_me)
 select account_id,account_name,account_image,account_change_id,account_is_me, case when account_is_me then account_uuid end account_uuid from w;
 --
 create view room with (security_barrier) as
-select community_id,room_id,room_name,room_latest_change_id, room_can_chat or room_type='public' room_can_chat,        1::bigint as room_latest_chat_id
+select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at, room_can_chat or room_type='public' room_can_chat
 from (select *, exists (select * from db.room_account_x natural join account where room_id=room.room_id and account_is_me and room_account_x_can_chat) room_can_chat from db.room ) z
 where room_type<>'private' or room_can_chat;
 --
@@ -91,11 +91,11 @@ create function new_chat(luuid uuid, roomid integer, msg text, replyid integer, 
              select community_id,room_id,chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
      , p as (insert into chat_notification(community_id,room_id,chat_id,account_id)
              select community_id,room_id,chat_id,account_id from i cross join (select account_id from world.account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and not account_is_me) z)
-     , a as (insert into room_account_x(community_id,room_id,account_id,room_account_x_latest_chat_id)
-             select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid),(select chat_id from i)
+     , a as (insert into room_account_x(community_id,room_id,account_id)
+             select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid)
              from room
              where room_id=roomid
-             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default, room_account_x_latest_chat_id=(select chat_id from i))
+             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default)
      , r as (update room set room_latest_change_id = default where room_id=(select room_id from i))
   select chat_id from i;
 $$;
