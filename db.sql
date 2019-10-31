@@ -68,7 +68,7 @@ create table chat(
 , chat_change_id bigint generated always as identity unique
 , chat_at timestamptz not null default current_timestamp
 , chat_change_at timestamptz not null default current_timestamp
-, chat_markdown text not null
+, chat_markdown text not null check (length(chat_markdown) between 1 and 5000)
 , primary key (community_id,room_id,chat_id)
 , foreign key (community_id,room_id,chat_reply_id) references chat
 );

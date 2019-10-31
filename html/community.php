@@ -72,7 +72,6 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
-    #replying[data-id=""] { display: none; }
 
     .markdown { overflow: auto; }
     .markdown>:first-child { margin-top: 0; }
@@ -180,7 +179,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
       $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax({ type: "GET", url: '/uuid?pin='+pin, async: false }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
-      $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message').data('id')).children('span').text($(this).closest('.message').data('name')); $('#chattext').focus(); });
+      $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message').data('id')).slideDown('fast').children('span').text($(this).closest('.message').data('name')); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.flag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'flagchatid='+$(this).closest('.message').data('id')).done(updateChat); });
       $('#chat-wrapper').on('click','.unflag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unflagchatid='+$(this).closest('.message').data('id')).done(updateChat); });
       $('#chat-wrapper').on('click','.star', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'starchatid='+$(this).closest('.message').data('id')).done(updateChat); });
@@ -191,29 +190,31 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
-      $('#replying>button').click(function(){ $('#replying').attr('data-id',''); });
+      $('#replying>button').click(function(){ $('#replying').attr('data-id','').slideUp('fast'); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
       $('#chattext').on('input', function(){
         $(this).css('height', '0');
         $(this).css('height',this.scrollHeight+'px');
-        if($(this).val()){ $('#preview .markdown').html(md.render($('#chattext').val())); $('#preview').show(); } else { $('#preview').hide(); }
+        if($(this).val().trim()){ $('#preview .markdown').html(md.render($('#chattext').val())); $('#preview').slideDown('fast'); } else { $('#preview').slideUp('fast'); }
       });
       $('#chattext').keydown(function(e){
         var t = $(this);
         if((e.keyCode || e.which) == 13) {
           if(!e.shiftKey) {
-            arr = [];
-            $('.ping').each(function(){ arr.push($(this).data('id')); });
-            $.post('/community', { room: <?=$room?>, msg: $('#chattext').val(), replyid: $('#replying').attr('data-id'), pings: arr }).done(function(){
-              updateChat();
-              t.val('').prop('disabled',false).focus().css('height', 'auto');
-              $('#preview').hide();
-            });
-            $('#replying').attr('data-id','');
-            $('.ping').removeClass('ping');
-            $(this).prop('disabled',true);
+            if(t.val().trim()){
+              arr = [];
+              $('.ping').each(function(){ arr.push($(this).data('id')); });
+              $.post('/community', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr }).done(function(){
+                updateChat();
+                t.val('').prop('disabled',false).focus().css('height', 'auto');
+                $('#preview').hide();
+              });
+              $('#replying').attr('data-id','').slideUp('fast');
+              $('.ping').removeClass('ping');
+              $(this).prop('disabled',true);
+            }
             return false;
           }
         }
@@ -259,7 +260,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     </header>
     <?if($canchat){?>
       <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
-      <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-bottom: 1px solid darkgrey; font-style: italic; font-size: smaller;" data-id="">
+      <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-bottom: 1px solid darkgrey; font-style: italic; font-size: smaller; display: none;" data-id="">
         Replying to: 
         <span></span>
         <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>

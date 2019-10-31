@@ -137,4 +137,3 @@ var Resizer = function () {
 Resizer.defaultOptions = {
     width: 8
 };
-//# sourceMappingURL=resizer.js.map
