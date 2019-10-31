@@ -159,7 +159,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           foo.call(this);
         });
         $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
-        $(".message .markdown a").attr('rel','nofollow');
+        $('.message .markdown a').attr('rel','nofollow').attr('target','_blank');
         $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
         $('.message .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
