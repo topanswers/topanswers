@@ -61,7 +61,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    header { font-size: 1rem; background-color: #<?=$colour_dark?>; }
+    header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     [data-rz-handle] { flex: 0 0 2px; background-color: black; }
     [data-rz-handle] div { width: 2px; background-color: black; }
 
