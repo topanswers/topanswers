@@ -118,8 +118,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
   <script src="/highlightjs/highlight.js"></script>
-  <script src="/moment.js"></script>
   <script src="/lightbox2/js/lightbox.min.js"></script>
+  <script src="/moment.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){

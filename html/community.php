@@ -62,6 +62,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; }
+    [data-rz-handle] { flex: 0 0 2px; background-color: black; }
+    [data-rz-handle] div { width: 2px; background-color: black; }
 
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
@@ -103,8 +105,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
   <script src="/highlightjs/highlight.js"></script>
-  <script src="/moment.js"></script>
   <script src="/lightbox2/js/lightbox.min.js"></script>
+  <script src="/moment.js"></script>
+  <script src="/resizer.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
@@ -208,6 +211,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           }
         }
       });
+      const myResizer = new Resizer('body');
       setTimeout(pollChat, chatPollInterval);
       initChat();
     });
@@ -215,7 +219,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex;">
-  <main style="display: flex; flex-direction: column; flex: 0 0 60%;">
+  <main style="display: flex; flex-direction: column; flex: 1 1 50%;">
     <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
       <div style="margin: 0.5em; margin-right: 0.1em;">
         <span style="color: #<?=$colour_mid?>;">TopAnswers </span>
@@ -236,7 +240,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 0 0 40%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; auto; border-left: 2px solid black;">
+  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 1 1 50%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; auto;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
       <select id="room">
         <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where community_name=$1 order by room_name desc",$community) as $r){ extract($r);?>
