@@ -114,6 +114,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
   <script src="/resizer.js"></script>
+  <script src="/favico.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
@@ -122,6 +123,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var notificationChangeId = <?=ccdb("select coalesce(max(chat_id),0) from chat_notification natural join chat")?>;
       var chatLastChange = <?=ccdb("select extract(epoch from current_timestamp-room_latest_change_at)::integer from room where room_id=$1",$room)?>;
       var chatPollInterval, title = document.title;
+      var favicon = new Favico({ animation: 'fade', position: 'up' });
       function setChatPollInterval(){
         if(chatLastChange<5) chatPollInterval = 1000;
         else if(chatLastChange<15) chatPollInterval = 3000;
@@ -168,10 +170,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           foo.call(this);
         });
         $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
-        $('.message .markdown a').attr('rel','nofollow').attr('target','_blank');
+        $('.message .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
         $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
         $('.message .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
+        favicon.badge($('#notifications .message').length);
       }
       function textareaInsertTextAtCursor(e,t) {
         var v = e.val(), s = e.prop('selectionStart')+t.length;
