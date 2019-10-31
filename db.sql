@@ -16,6 +16,7 @@ create table room(
 , room_id integer generated always as identity
 , room_type room_type_enum not null default 'public'
 , room_name text
+, room_latest_change_id bigint generated always as identity not null
 , primary key (community_id,room_id)
 );
 
