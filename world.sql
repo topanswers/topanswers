@@ -96,7 +96,7 @@ create function new_chat(luuid uuid, roomid integer, msg text, replyid integer, 
              from room
              where room_id=roomid
              on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default)
-     , r as (update room set room_latest_change_id = default where room_id=(select room_id from i))
+     , r as (update room set room_latest_change_id = default, room_latest_change_at = default where room_id=(select room_id from i))
   select chat_id from i;
 $$;
 --

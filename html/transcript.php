@@ -77,6 +77,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }

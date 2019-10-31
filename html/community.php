@@ -60,6 +60,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
@@ -119,7 +121,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var chatChangeId = <?=ccdb("select room_latest_change_id from room where room_id=$1",$room)?>;
       var notificationChangeId = <?=ccdb("select coalesce(max(chat_id),0) from chat_notification natural join chat")?>;
       var chatLastChange = <?=ccdb("select extract(epoch from current_timestamp-room_latest_change_at)::integer from room where room_id=$1",$room)?>;
-      var chatPollInterval;
+      var chatPollInterval, title = document.title;
       function setChatPollInterval(){
         if(chatLastChange<5) chatPollInterval = 1000;
         else if(chatLastChange<15) chatPollInterval = 3000;
@@ -136,6 +138,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           $('#notification-wrapper').replaceWith($('<div />').append(data).find('#notification-wrapper'));
           $.each(arr, function(k,v){ $('.active-user[data-id='+v+']').addClass('ping'); });
           $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
+          if(document.visibilityState==='hidden'){ document.title = '* '+title; }
           chatLastChange = 0;
           initChat();
         },'html');
@@ -219,6 +222,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           }
         }
       });
+      document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') document.title = title; }, false);
       const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
       setTimeout(pollChat, chatPollInterval);
       initChat();
