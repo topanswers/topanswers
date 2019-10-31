@@ -82,11 +82,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-  /*body>div>div { margin: 0.5em; white-space: nowrap; }
+    body>div>div { margin: 0.5em; white-space: nowrap; }
     body>div>div>span { font-size: smaller; font-style: italic; }
-    a:not([href]) { color: #<?=$colour_highlight?>; }*/
+    a:not([href]) { color: #<?=$colour_highlight?>; }
 
-    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
+    .button { background: none; border: none; padding: 0; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     .markdown { overflow: auto; }
@@ -224,8 +224,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
         </div>
         <span class="buttons">
-          <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
-          <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+          <button class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
+          <button class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
         </span>
       </div>
     <?}?>

@@ -90,10 +90,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
     .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
     .message .button:not(.marked) { visibility: hidden; }
-    .message:hover .button { visibility: visible; }
+    .message:not(.mine):hover .button { visibility: visible; }
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
+    .message.mine .buttons .button { cursor: default; }
     #chat .message .who { top: -1.2em; }
     #chat .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
     #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
@@ -278,7 +279,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                             from chat c natural join account natural left join chat_flag natural left join chat_star
                             where room_id=$1".($uuid?"":" and chat_flag_count=0").") z
                       order by chat_at desc limit 100",$room) as $r){ extract($r);?>
-          <div class="message<?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+          <div class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span style="color: #'.$colour_dark.';">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
             <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
             <div class="markdown-wrapper">
@@ -291,8 +292,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                   <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
                   <button class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag<?=($is_flagged==='t')?'':'-o'?>"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
                 <?}else{?>
-                  <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
-                  <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                  <button class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
+                  <button class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
                 <?}?>
               </span>
             <?}?>
@@ -335,13 +336,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                 <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
               </div>
               <span class="buttons">
-                <?if($account_is_me==='f'){?>
-                  <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
-                  <button class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag<?=($is_flagged==='t')?'':'-o'?>"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
-                <?}else{?>
-                  <button title="star" class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
-                  <button title="flag" class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
-                <?}?>
+                <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
+                <button class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag<?=($is_flagged==='t')?'':'-o'?>"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
               </span>
             </div>
           <?}?>
