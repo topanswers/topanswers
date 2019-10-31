@@ -122,7 +122,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var chatChangeId = <?=ccdb("select room_latest_change_id from room where room_id=$1",$room)?>;
       var notificationChangeId = <?=ccdb("select coalesce(max(chat_id),0) from chat_notification natural join chat")?>;
       var chatLastChange = <?=ccdb("select extract(epoch from current_timestamp-room_latest_change_at)::integer from room where room_id=$1",$room)?>;
-      var chatPollInterval, title = document.title;
+      var chatPollInterval, title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       function setChatPollInterval(){
         if(chatLastChange<5) chatPollInterval = 1000;
@@ -134,13 +134,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       }
       function updateChat(){
         $.get(window.location.href,function(data) {
-          arr = [];
+          var arr = [], newChats;
           $('.ping').each(function(){ arr.push($(this).data('id')); });
           $('#chat').replaceWith($('<div />').append(data).find('#chat'));
           $('#notification-wrapper').replaceWith($('<div />').append(data).find('#notification-wrapper'));
           $.each(arr, function(k,v){ $('.active-user[data-id='+v+']').addClass('ping'); });
           $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
-          if(document.visibilityState==='hidden'){ document.title = '* '+title; }
+          newChats = $('#messages .message[data-id="'+latestChatId+'"]').prevAll('.message').length;
+          if(document.visibilityState==='hidden'){ document.title = (newChats?('('+newChats+') '):'')+title; }
           chatLastChange = 0;
           initChat();
         },'html');
@@ -225,7 +226,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           }
         }
       });
-      document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') document.title = title; }, false);
+      document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
       const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
       setTimeout(pollChat, chatPollInterval);
       initChat();
