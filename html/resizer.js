@@ -83,12 +83,15 @@ var Resizer = function () {
         this.container.insertBefore(this.handle, this.target.nextElementSibling);
     };
     Resizer.prototype.setDragging = function (value) {
+        var w = this.handleX * 100 / window.innerWidth;
         if (value === void 0) {
             value = true;
         }
         if (this.dragging) {
             this.ghost.style.display = 'none';
-            this.target.style.flex = "0 0 " + this.handleX + "px";
+            this.target.style.flexBasis = w + "%";
+            this.target.nextElementSibling.nextElementSibling.style.flexBasis = (100 - w) + "%";
+            this.resizerOptions.callback(w);
         } else {
             this.ghost.style.display = 'block';
         }

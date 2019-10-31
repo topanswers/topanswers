@@ -17,7 +17,9 @@ select community_id,community_name,community_room_id,community_dark_shade,commun
 from db.community
 where community_name<>'meta' or current_setting('custom.uuid',true)::uuid is not null;
 --
-create view login with (security_barrier) as select account_id, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account;
+create view login with (security_barrier) as
+select account_id,login_is_me,case when login_is_me then login_resizer_percent end login_resizer_percent
+from (select account_id,login_resizer_percent, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account) z;
 --
 create view account with (security_barrier) as
 with w as (select *, account_id=(select account_id from login where login_is_me) account_is_me from db.account)
@@ -122,6 +124,11 @@ $$;
 --
 create function change_account_image(image bytea) returns void language sql security definer set search_path=db,world,pg_temp as $$
   update account set account_image = image, account_change_id = default  where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+$$;
+--
+create function change_resizer(perc integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('invalid percent') where perc<0 or perc>100;
+  update login set login_resizer_percent = perc where login_uuid=current_setting('custom.uuid',true)::uuid;
 $$;
 --
 create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$

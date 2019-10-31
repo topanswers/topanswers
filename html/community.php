@@ -40,6 +40,10 @@ if(isset($_GET['unstarchatid'])){
   db("select remove_chat_star($1)",$_GET['unstarchatid']);
   exit;
 }
+if(isset($_GET['resizer'])){
+  db("select change_resizer($1)",$_GET['resizer']);
+  exit;
+}
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
@@ -212,7 +216,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           }
         }
       });
-      const myResizer = new Resizer('body');
+      const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
       setTimeout(pollChat, chatPollInterval);
       initChat();
     });
@@ -220,7 +224,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex;">
-  <main style="display: flex; flex-direction: column; flex: 1 1 50%;">
+  <main style="display: flex; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login where login_is_me"):'50'?>%;">
     <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
       <div style="margin: 0.5em; margin-right: 0.1em;">
         <span style="color: #<?=$colour_mid?>;">TopAnswers </span>
@@ -241,7 +245,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 1 1 50%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; auto;">
+  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login where login_is_me"):'50'?>%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; auto;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
       <select id="room">
         <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where community_name=$1 order by room_name desc",$community) as $r){ extract($r);?>
