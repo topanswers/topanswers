@@ -63,15 +63,11 @@ var Resizer = function () {
     };
     Resizer.prototype.setup = function () {
         var _this = this;
+        this.mup = function (e) { return _this.onUp(e,_this); };
+        this.mmove = function (e) { return _this.onMove(e,_this); };
         this.setupDom();
         this.handle.addEventListener('mousedown', function (e) {
             return _this.onDown(e);
-        });
-        this.container.addEventListener('mouseup', function (e) {
-            return _this.onUp(e);
-        });
-        this.container.addEventListener('mousemove', function (e) {
-            return _this.onMove(e);
         });
         this.container.Resizer = this;
     };
@@ -113,23 +109,27 @@ var Resizer = function () {
             this.offsetX = e.offsetX;
             this.setHandleX(e.pageX - this.container.getBoundingClientRect().left - this.offsetX);
             this.setDragging(true);
+            this.container.addEventListener('mouseup', this.mup);
+            this.container.addEventListener('mousemove', this.mmove);
         }
     };
-    Resizer.prototype.onUp = function (e) {
+    Resizer.prototype.onUp = function (e,t) {
         e.preventDefault();
-        if (this.dragging) {
-            this.setHandleX(e.pageX - this.container.getBoundingClientRect().left - this.offsetX);
-            this.setDragging(false);
+        if (t.dragging) {
+            t.setHandleX(e.pageX - t.container.getBoundingClientRect().left - t.offsetX);
+            t.setDragging(false);
+            this.container.removeEventListener('mouseup', this.mup);
+            this.container.removeEventListener('mousemove', this.mmove);
         }
     };
-    Resizer.prototype.onMove = function (e) {
+    Resizer.prototype.onMove = function (e,t) {
         e.preventDefault();
-        if (this.dragging) {
-            var x = e.pageX - this.container.getBoundingClientRect().left - this.offsetX;
+        if (t.dragging) {
+            var x = e.pageX - t.container.getBoundingClientRect().left - t.offsetX;
             if (e.shiftKey) {
                 x = Math.ceil(x / 20) * 20;
             }
-            this.setHandleX(x);
+            t.setHandleX(x);
         }
     };
     return Resizer;
