@@ -11,7 +11,7 @@ function db($query,...$params) {
 function cdb($query,...$params){ return current(db($query,...$params)); }
 function ccdb($query,...$params){ return current(cdb($query,...$params)); }
 isset($_COOKIE['uuid']) || exit('no account cookie set');
-db("select login($1)",$uuid);
+db("select login($1)",$_COOKIE['uuid']);
 isset($_FILES['image']) || exit('no file uploaded');
 $hash = hash_file('sha256',$_FILES['image']['tmp_name']);
 $path = '/srv/uploads/'.substr($hash,0,2).'/'.substr($hash,2,2).'/'.substr($hash,4,2);
