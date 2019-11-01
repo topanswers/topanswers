@@ -146,6 +146,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           if(document.visibilityState==='hidden'){ document.title = (newChats?('('+newChats+') '):'')+title; }
           chatLastChange = 0;
           initChat();
+          $('#chattext').trigger('input');
         },'html');
       }
       function checkChat(){
@@ -219,7 +220,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               $.post('/community', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr }).done(function(){
                 updateChat();
                 t.val('').prop('disabled',false).focus().css('height', 'auto');
-                $('#preview').hide();
+                $('#preview').slideUp('fast');
               });
               $('#replying').attr('data-id','').slideUp('fast');
               $('.ping').removeClass('ping');

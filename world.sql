@@ -22,7 +22,7 @@ create view account with (security_barrier) as select account_id,account_name,ac
 create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
-select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at, room_type='public' or account_id is not null room_can_chat
+select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at, current_setting('custom.account_id',true)::integer is not null and (room_type='public' or account_id is not null) room_can_chat
 from db.room natural left outer join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) z
 where room_type<>'private' or account_id is not null;
 --
@@ -104,51 +104,8 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
   select chat_id from i;
 $$;
 --
-create function new_chat(luuid uuid, roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('room does not exist') where not exists(select * from room where room_id=roomid);
-  select _error('access denied') where not exists(select * from world.room where room_id=roomid and room_can_chat);
-  select _error('message too long') where length(msg)>5000;
-  --
-  delete from chat_notification where chat_id=replyid and account_id=current_setting('custom.account_id',true)::integer;
-  --
-  insert into chat_year(community_id,room_id,chat_year,chat_year_count)
-  select community_id,roomid,extract('year' from current_timestamp),1 from room where room_id=roomid on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
-  --
-  insert into chat_month(community_id,room_id,chat_year,chat_month,chat_month_count)
-  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),1
-  from room
-  where room_id=roomid
-  on conflict on constraint chat_month_pkey do update set chat_month_count = chat_month.chat_month_count+1;
-  --
-  insert into chat_day(community_id,room_id,chat_year,chat_month,chat_day,chat_day_count)
-  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),1
-  from room
-  where room_id=roomid
-  on conflict on constraint chat_day_pkey do update set chat_day_count = chat_day.chat_day_count+1;
-  --
-  insert into chat_hour(community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count)
-  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),extract('hour' from current_timestamp),1
-  from room
-  where room_id=roomid
-  on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
-  --
-  with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id) 
-             select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid),msg,replyid from room where room_id=roomid returning community_id,room_id,chat_id)
-     , n as (insert into chat_notification(community_id,room_id,chat_id,account_id)
-             select community_id,room_id,chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
-     , p as (insert into chat_notification(community_id,room_id,chat_id,account_id)
-             select community_id,room_id,chat_id,account_id from i cross join (select account_id from world.account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and not account_is_me) z)
-     , a as (insert into room_account_x(community_id,room_id,account_id)
-             select community_id,roomid,(select account_id from login natural join account where login_uuid=luuid)
-             from room
-             where room_id=roomid
-             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default)
-     , r as (update room set room_latest_change_id = default, room_latest_change_at = default where room_id=(select room_id from i))
-  select chat_id from i;
-$$;
---
 create function dismiss_notification(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  delete from chat_notification where chat_id=id and account_id=(select account_id from world.account where account_is_me);
+  delete from chat_notification where chat_id=id and account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
@@ -168,11 +125,11 @@ $$;
 --
 create function change_account_name(nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('invalid username') where nname is not null and not nname~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$';
-  update account set account_name = nname, account_change_id = default where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+  update account set account_name = nname, account_change_id = default where account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
 create function change_account_image(image bytea) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  update account set account_image = image, account_change_id = default  where account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+  update account set account_image = image, account_change_id = default where account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
 create function change_resizer(perc integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -186,33 +143,33 @@ create function authenticate_pin(num bigint) returns void language sql security 
 $$;
 --
 create function set_chat_flag(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('cant flag own message') where exists(select * from chat where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
-  select _error('already flagged') where exists(select * from chat_flag where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  select _error('cant flag own message') where exists(select * from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('already flagged') where exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid);
-  insert into chat_flag(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid) from chat where chat_id=cid;
+  insert into chat_flag(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
 $$;
 --
 create function remove_chat_flag(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('not already flagged') where not exists(select * from chat_flag where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  select _error('not already flagged') where not exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid);
-  delete from chat_flag where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+  delete from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
 create function set_chat_star(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('cant star own message') where exists(select * from chat where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
-  select _error('already starred') where exists(select * from chat_star where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  select _error('cant star own message') where exists(select * from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('already starred') where exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid);
-  insert into chat_star(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid) from chat where chat_id=cid;
+  insert into chat_star(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
 $$;
 --
 create function remove_chat_star(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('not already starred') where not exists(select * from chat_star where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid));
+  select _error('not already starred') where not exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid);
-  delete from chat_star where chat_id=cid and account_id=(select account_id from login where login_uuid=current_setting('custom.uuid',true)::uuid);
+  delete from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
 revoke all on all functions in schema world from public;
