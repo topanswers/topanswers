@@ -18,7 +18,7 @@ $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select login($1)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   if(isset($_POST['msg'])){
-    db("select new_chat($1,$2,$3,nullif($4,'')::integer,('{'||$5||'}')::integer[])",$uuid,$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):'');
+    db("select new_chat($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):'');
   }else{
     db("select dismiss_notification($1)",$_POST['id']);
   }

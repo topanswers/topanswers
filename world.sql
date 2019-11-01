@@ -60,12 +60,56 @@ begin
   return cid;
 end$$;
 --
+create function new_chat(roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('room does not exist') where not exists(select * from room where room_id=roomid);
+  select _error('access denied') where not exists(select * from world.room where room_id=roomid and room_can_chat);
+  select _error('message too long') where length(msg)>5000;
+  --
+  delete from chat_notification where chat_id=replyid and account_id=current_setting('custom.account_id',true)::integer;
+  --
+  insert into chat_year(community_id,room_id,chat_year,chat_year_count)
+  select community_id,roomid,extract('year' from current_timestamp),1 from room where room_id=roomid on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
+  --
+  insert into chat_month(community_id,room_id,chat_year,chat_month,chat_month_count)
+  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),1
+  from room
+  where room_id=roomid
+  on conflict on constraint chat_month_pkey do update set chat_month_count = chat_month.chat_month_count+1;
+  --
+  insert into chat_day(community_id,room_id,chat_year,chat_month,chat_day,chat_day_count)
+  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),1
+  from room
+  where room_id=roomid
+  on conflict on constraint chat_day_pkey do update set chat_day_count = chat_day.chat_day_count+1;
+  --
+  insert into chat_hour(community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count)
+  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),extract('hour' from current_timestamp),1
+  from room
+  where room_id=roomid
+  on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
+  --
+  with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id) 
+             select community_id,roomid,current_setting('custom.account_id',true)::integer,msg,replyid from room where room_id=roomid returning community_id,room_id,chat_id)
+     , n as (insert into chat_notification(community_id,room_id,chat_id,account_id)
+             select community_id,room_id,chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
+     , p as (insert into chat_notification(community_id,room_id,chat_id,account_id)
+             select community_id,room_id,chat_id,account_id
+             from i cross join (select account_id from world.account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and not account_is_me) z)
+     , a as (insert into room_account_x(community_id,room_id,account_id)
+             select community_id,roomid,current_setting('custom.account_id',true)::integer
+             from room
+             where room_id=roomid
+             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default)
+     , r as (update room set room_latest_change_id = default, room_latest_change_at = default where room_id=(select room_id from i))
+  select chat_id from i;
+$$;
+--
 create function new_chat(luuid uuid, roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
   select _error('room does not exist') where not exists(select * from room where room_id=roomid);
   select _error('access denied') where not exists(select * from world.room where room_id=roomid and room_can_chat);
   select _error('message too long') where length(msg)>5000;
   --
-  delete from chat_notification where chat_id=replyid and account_id=(select account_id from world.account where account_is_me);
+  delete from chat_notification where chat_id=replyid and account_id=current_setting('custom.account_id',true)::integer;
   --
   insert into chat_year(community_id,room_id,chat_year,chat_year_count)
   select community_id,roomid,extract('year' from current_timestamp),1 from room where room_id=roomid on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
