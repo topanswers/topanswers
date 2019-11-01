@@ -113,10 +113,12 @@ create function new_account(luuid uuid) returns integer language sql security de
 $$;
 --
 create function link_account(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('invalid pin') where not exists (select * from pin where pin_number=pn);
   insert into login(account_id,login_uuid) select account_id,luuid from pin where pin_number=pn and pin_at>current_timestamp-'1 min'::interval returning account_id;
 $$;
 --
 create function recover_account(luuid uuid, auuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('invalid recovery key') where not exists (select * from account where account_uuid=auuid);
   insert into login(account_id,login_uuid) select account_id,luuid from account where account_uuid=auuid returning account_id;
 $$;
 --
