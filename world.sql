@@ -15,15 +15,15 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
 from db.community
-where community_name<>'meta' or current_setting('custom.uuid',true)::uuid is not null;
+where community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null;
 --
-create view login with (security_barrier) as
-select account_id,login_is_me,case when login_is_me then login_resizer_percent end login_resizer_percent
-from (select account_id,login_resizer_percent, login_uuid=current_setting('custom.uuid',true)::uuid login_is_me from db.login natural join db.account) z;
+create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
 --
 create view account with (security_barrier) as
 with w as (select *, account_id=(select account_id from login where login_is_me) account_is_me from db.account)
 select account_id,account_name,account_image,account_change_id,account_is_me, case when account_is_me then account_uuid end account_uuid from w;
+--
+create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
 select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at, room_can_chat or room_type='public' room_can_chat

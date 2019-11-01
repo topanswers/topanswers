@@ -56,9 +56,9 @@ if(isset($_GET['pin'])){
   exit;
 }
 if(isset($_GET['uuid'])){
-  exit(ccdb("select account_uuid from account where account_is_me"));
+  exit(ccdb("select account_uuid from my_account"));
 }
-$custompic = (ccdb("select account_image is null from login natural join account where login_is_me")==='f');
+$custompic = (ccdb("select account_image is null from my_account")==='f');
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
@@ -83,13 +83,13 @@ $custompic = (ccdb("select account_image is null from login natural join account
   <fieldset>
     <legend>display name</legend>
     <form action="/profile" method="post">
-      <input type="text" name="name" placeholder="name" value="<?=ccdb("select account_name from login natural join account  where login_is_me")?>" autocomplete="off" autofocus>
+      <input type="text" name="name" placeholder="name" value="<?=ccdb("select account_name from my_account")?>" autocomplete="off" autofocus>
       <input type="submit" value="Save">
     </form>
   </fieldset>
   <fieldset>
     <legend>picture</legend>
-    <img src="/identicon.php?id=<?=ccdb("select account_id from login where login_is_me")?>">
+    <img src="/identicon.php?id=<?=ccdb("select account_id from my_account")?>">
     <?if($custompic){?>
       <form action="/profile" method="post">
         <input type="hidden" name="image">
