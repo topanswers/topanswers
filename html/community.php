@@ -87,6 +87,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .active-user { height: 1.5em; width: 1.5em; margin: 0.1em; }
     .active-user:not(.me):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
     .active-user.ping { outline: 1px solid #<?=$colour_highlight?>; }
+    #chattext-wrapper:not(:hover) button { display: none; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; }
@@ -182,6 +183,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         var v = e.val(), s = e.prop('selectionStart')+t.length;
         e.val(v.substring(0,e.prop('selectionStart'))+t+v.substring(e.prop('selectionEnd'),v.length));
         e.prop('selectionStart',s).prop('selectionEnd',s);
+        e.trigger('input');
       }
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }); location.reload(true); } });
@@ -231,6 +233,21 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
       setTimeout(pollChat, chatPollInterval);
       initChat();
+      $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
+      $('#chatuploadfile').change(function() {
+        if(this.files[0].size > 2097152){
+          alert("File is too big — maximum 2MB");
+          $(this).val('');
+        }else{
+          $(this).closest('form').submit();
+        };
+      });
+      $('#chatuploadfile').closest('form').submit(function(){
+        var d = new FormData($(this)[0]);
+        $('#chattext').prop('disabled',true);
+        $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){ $('#chattext').prop('disabled',false).focus(); textareaInsertTextAtCursor($('#chattext'),'!['+d.get('image').name+'](/image?hash='+r+')'); });
+        return false;
+      });
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -268,7 +285,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?if($uuid) if(intval(ccdb("select account_id from login where login_is_me"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($canchat){?>
-      <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
+      <div id="chattext-wrapper" style="position: relative;">
+        <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
+        <button id="chatupload" class="button" style="position: absolute; right: 0.2em; font-size: 1.5em;" title="upload image"><i class="fa fa-picture-o"></i></button>
+        <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
+      </div>
       <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-bottom: 1px solid darkgrey; font-style: italic; font-size: smaller; display: none;" data-id="">
         Replying to: 
         <span></span>
