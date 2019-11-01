@@ -73,13 +73,20 @@ create table chat(
 , foreign key (community_id,room_id,chat_reply_id) references chat
 );
 
+create table account_room_x(
+  account_id integer references account on delete cascade
+, community_id integer
+, room_id integer
+, primary key (account_id,community_id,room_id)
+, unique (account_id,room_id)
+, foreign key (community_id,room_id) references room
+);
+
 create table room_account_x(
   community_id integer
 , room_id integer
 , account_id integer references account on delete cascade
-, room_account_x_can_chat boolean default false not null
 , room_account_x_latest_chat_at timestamptz not null default current_timestamp
-, room_account_x_latest_chat_id bigint
 , primary key (community_id,room_id,account_id)
 , foreign key (community_id,room_id) references room
 );
