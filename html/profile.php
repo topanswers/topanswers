@@ -17,7 +17,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 isset($_COOKIE['uuid']) or die('Not registered');
 $uuid = $_COOKIE['uuid'];
 $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
-if($uuid) ccdb("select set_config('custom.uuid',$1,false)",$uuid);
+if($uuid) ccdb("select login($1)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   if(isset($_POST['name'])){
     db("select change_account_name(nullif($1,''))",$_POST['name']);

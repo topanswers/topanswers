@@ -46,6 +46,12 @@ create view chat_month with (security_barrier) as select community_id,room_id,ch
 create view chat_day with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
 create view chat_hour with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
 --
+create function login(luuid uuid) returns void language sql strict security definer set search_path=db,world,pg_temp as $$
+  select _error('login uuid does not exist') where not exists(select * from login where login_uuid=luuid);
+  select set_config('custom.uuid',luuid::text,false);
+  select set_config('custom.account_id',account_id::text,false) from login where login_uuid=luuid;
+$$;
+--
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
 declare
   rid integer;
