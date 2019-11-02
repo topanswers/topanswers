@@ -142,34 +142,34 @@ create function authenticate_pin(num bigint) returns void language sql security 
   insert into pin(pin_number,account_id) select num,account_id from world.account where account_is_me;
 $$;
 --
-create function set_chat_flag(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
+create function set_chat_flag(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
   select _error('cant flag own message') where exists(select * from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('already flagged') where exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
-  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid);
   insert into chat_flag(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
+  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
-create function remove_chat_flag(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
+create function remove_chat_flag(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
   select _error('not already flagged') where not exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
-  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid);
   delete from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
+  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
-create function set_chat_star(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
+create function set_chat_star(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
   select _error('cant star own message') where exists(select * from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('already starred') where exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
-  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid);
   insert into chat_star(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
+  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
-create function remove_chat_star(cid bigint) returns void language sql security definer set search_path=db,world,pg_temp as $$
+create function remove_chat_star(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
   select _error('not already starred') where not exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
-  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid);
   delete from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
+  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
 revoke all on all functions in schema world from public;

@@ -25,20 +25,16 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   exit;
 }
 if(isset($_GET['flagchatid'])){
-  db("select set_chat_flag($1)",$_GET['flagchatid']);
-  exit;
+  exit(ccdb("select set_chat_flag($1)",$_GET['flagchatid']));
 }
 if(isset($_GET['unflagchatid'])){
-  db("select remove_chat_flag($1)",$_GET['unflagchatid']);
-  exit;
+  exit(ccdb("select remove_chat_flag($1)",$_GET['unflagchatid']));
 }
 if(isset($_GET['starchatid'])){
-  db("select set_chat_star($1)",$_GET['starchatid']);
-  exit;
+  exit(ccdb("select set_chat_star($1)",$_GET['starchatid']));
 }
 if(isset($_GET['unstarchatid'])){
-  db("select remove_chat_star($1)",$_GET['unstarchatid']);
-  exit;
+  exit(ccdb("select remove_chat_star($1)",$_GET['unstarchatid']));
 }
 if(isset($_GET['resizer'])){
   db("select change_resizer($1)",$_GET['resizer']);
@@ -135,6 +131,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         else chatPollInterval = 60000;
       }
       function updateChat(){
+        var tempScrollTop = $('#messages .message:first').position().top, firstId = $('#messages .message:first').data('id');
         $.get(window.location.href,function(data) {
           var arr = [], newChats;
           $('.ping').each(function(){ arr.push($(this).data('id')); });
@@ -146,6 +143,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           if(document.visibilityState==='hidden'){ document.title = (newChats?('('+newChats+') '):'')+title; }
           chatLastChange = 0;
           initChat();
+          if(($('#messages .message:first').data('id') === firstId) || (($('#messages')[0].scrollHeight+40) > ($('#messages').scrollTop()+$('#messages').outerHeight()))){
+            $('#messages').scrollTop($('#messages').scrollTop()-tempScrollTop+$('#messages .message[data-id="'+firstId+'"]').position().top);
+          }
           $('#chattext').trigger('input');
         },'html');
       }
@@ -191,10 +191,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax({ type: "GET", url: '/uuid?pin='+pin, async: false }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message').data('id')).slideDown('fast').children('span').text($(this).closest('.message').data('name')); $('#chattext').focus(); });
-      $('#chat-wrapper').on('click','.flag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'flagchatid='+$(this).closest('.message').data('id')).done(updateChat); });
-      $('#chat-wrapper').on('click','.unflag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unflagchatid='+$(this).closest('.message').data('id')).done(updateChat); });
-      $('#chat-wrapper').on('click','.star', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'starchatid='+$(this).closest('.message').data('id')).done(updateChat); });
-      $('#chat-wrapper').on('click','.unstar', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message').data('id')).done(updateChat); });
+      $('#chat-wrapper').on('click','.flag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'flagchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
+      $('#chat-wrapper').on('click','.unflag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unflagchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
+      $('#chat-wrapper').on('click','.star', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'starchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
+      $('#chat-wrapper').on('click','.unstar', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
       $('#chat-wrapper').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.dismiss', function(){
         $.post('/community', { id: $(this).closest('.message').attr('data-id') }).done(function(){ updateChat(); });
