@@ -42,6 +42,8 @@ create view chat_year with (security_barrier) as select community_id,room_id,cha
 create view chat_month with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_month_count from db.chat_month;
 create view chat_day with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
 create view chat_hour with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
+create view question_type_enums as select unnest(enum_range(null::db.question_type_enum)) question_type;
+--
 --
 create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('login uuid does not exist') where not exists(select * from login where login_uuid=luuid);
@@ -170,6 +172,16 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   delete from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
+$$;
+--
+create function new_question(cid integer, typ db.question_type_enum, title text, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid community') where not exists (select * from community where community_id=cid);
+  --
+  with r as (insert into room(community_id) values(cid) returning room_id)
+     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id)
+             select cid, current_setting('custom.account_id',true)::integer, typ, title, markdown, room_id from r returning question_id)
+  select question_id from q;
 $$;
 --
 revoke all on all functions in schema world from public;

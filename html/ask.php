@@ -16,6 +16,11 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
+if($_SERVER['REQUEST_METHOD']==='POST'){
+  var_dump(ccdb("select * from community"));
+  db("select new_question((select community_id from community where community_name=$1),(select question_type from question_type_enums where question_type=$2),$3,$4)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown']);
+  exit;
+}
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
@@ -79,6 +84,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true });
+      $('textarea[name="markdown"]').show().css({ position: 'absolute', top: 0 });
       var map;
       $('#community').change(function(){ window.location = '/ask?community='+$(this).val().toLowerCase(); });
       cm.on('change',function(){
@@ -87,6 +93,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         map = [];
         $('#markdown [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         localStorage.setItem('<?=$community?>.ask',cm.getValue());
+        $('textarea[name="markdown"]').val(cm.getValue()).show();
       });
       cm.on('scroll', _.throttle(function(){
         var rect = cm.getWrapperElement().getBoundingClientRect();
@@ -95,12 +102,16 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#markdown').animate({ scrollTop: $('#markdown').prop("scrollHeight")-$('#markdown').height() });
         else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
       },200));
+      $('input[name="title"]').on('input',function(){ localStorage.setItem('<?=$community?>.ask.title',$(this).val()); });
       if(localStorage.getItem('<?=$community?>.ask')) cm.setValue(localStorage.getItem('<?=$community?>.ask'));
+      if(localStorage.getItem('<?=$community?>.ask.title')) $('input[name="title"]').val(localStorage.getItem('<?=$community?>.ask.title'));
+      if(localStorage.getItem('<?=$community?>.ask.type')) $('#type').val(localStorage.getItem('<?=$community?>.ask.type'));
+      $('#type').change(function(){ $('#ask').val('submit '+$(this).val()); $('input[name="type"').val($(this).children(":selected").text()); localStorage.setItem('<?=$community?>.ask.type',$(this).val()) }).trigger('change');;
     });
   </script>
   <title>Ask | <?=ucfirst($community)?> | TopAnswers</title>
 </head>
-<body style="display: flex; flex-direction: column; font-size: larger; background-color: #abc; height: 100%;">
+<body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div style="margin: 0.5em; margin-right: 0.1em;">
       <span style="color: #<?=$colour_mid?>;">TopAnswers </span>
@@ -110,16 +121,24 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         <?}?>
       </select>
     </div>
-    <div style="display: flex; height: 100%;">
-      <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
+    <div style="display: flex; align-items: center; height: 100%;">
+      <select id="type"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select>
+      <input id="ask" type="submit" form="form" value="submit" style="margin: 0.5em;">
+      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
-  <main style="display: flex; justify-content: center; flex: 1 0 0; background-color: #<?=$colour_mid?>; padding: 2vmin; overflow-y: auto;">
-    <div style="flex: 0 1 60em; max-width: calc(50vw - 3vmin);">
-      <textarea autofocus style="width: 100%; height: 100%;" placeholder="type question here using markdown (this is just a demo for now to test the editor, preview and scrolling sync)"></textarea>
-    </div>
+  <form id="form" method="POST" action="/ask" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
+    <input name="community" type="hidden" value="<?=$community?>">
+    <input name="type" type="hidden" value="question">
+    <input name="title" style="flex 0 0 auto;" placeholder="title" minlength="5" maxlength="200" autofocus required>
     <div style="flex: 0 0 2vmin;"></div>
-    <div id="markdown" style="flex: 0 1 60em; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow-y: auto;"></div>
-  </main>
+    <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
+      <div style="flex: 0 1 60em; max-width: calc(50vw - 3vmin);">
+        <textarea name="markdown" minlength="50" maxlength="50000" rows="1" required placeholder="type question here using markdown (this is just a demo for now to test the editor, preview and scrolling sync)"></textarea>
+      </div>
+      <div style="flex: 0 0 2vmin;"></div>
+      <div id="markdown" style="flex: 0 1 60em; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow-y: auto;"></div>
+    </main>
+  </form>
 </body>   
 </html>   
