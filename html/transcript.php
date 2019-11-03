@@ -98,8 +98,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown img { max-height: 7em; }
     .markdown table { border-collapse: collapse; }
     .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; }
-    .markdown blockquote {  padding-left: 1em;  margin-left: 1em; margin-right: 0; border-left: 2px solid gray; }
-    .markdown code { display: inline-block; padding: 0.1em; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; }
+    .markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
+    .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
+    .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; top: -1.2em; }
