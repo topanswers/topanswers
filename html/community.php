@@ -213,6 +213,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
       $('#chattext').keydown(function(e){
         var t = $(this);
+        $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast');
         if((e.keyCode || e.which) == 13) {
           if(!e.shiftKey) {
             if(t.val().trim()){
