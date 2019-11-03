@@ -176,3 +176,27 @@ create table chat_hour(
 , foreign key (community_id,room_id,chat_year,chat_month,chat_day) references chat_day
 );
 
+create type question_type_enum as enum ('question','meta','blog');
+
+create table question(
+  community_id integer
+, account_id integer references account
+, question_id integer generated always as identity unique
+, question_type question_type_enum not null default 'question'
+, question_at timestamptz not null default current_timestamp
+, question_markdown text not null check (length(question_markdown) between 1 and 50000)
+, question_change_id bigint generated always as identity unique
+, question_change_at timestamptz not null default current_timestamp
+, primary key (community_id,account_id,question_id)
+);
+
+create table question_history(
+  community_id integer
+, account_id integer references account
+, question_id integer
+, question_change_id bigint unique
+, question_history_markdown text not null
+, question_history_change_at timestamptz not null
+, primary key (community_id,account_id,question_id,question_change_id)
+, foreign key (community_id,account_id,question_id) references question
+);

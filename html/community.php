@@ -265,13 +265,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <?}?>
         </select>
       </div>
-      <div style="height: 100%">
+      <div style="display: flex; height: 100%;">
         <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"> or <input id="link" type="button" value="link" style="margin: 0.5em;"><?}?>
+        <?if($uuid){?><form method="GET" action="/ask"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question" style="margin: 0.5em;"></form><?}?>
         <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
-      <?for($x = 1; $x<100; $x++){?>
+      <?for($x = 1; $x<10; $x++){?>
         <div class="question">Question <?=$x?></div>
       <?}?>
     </div>
