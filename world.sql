@@ -28,8 +28,7 @@ select community_id,room_id,room_name,room_latest_change_id,room_latest_change_a
 from db.room natural left outer join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) z
 where room_type<>'private' or account_id is not null;
 --
-create view room_account_x with (security_barrier) as
-select community_id,room_id,account_id,room_account_x_latest_chat_at from db.room_account_x natural join world.room where room_account_x_latest_chat_at>(current_timestamp-'7d'::interval);
+create view room_account_x with (security_barrier) as select room_id,account_id,room_account_x_latest_chat_at from db.room_account_x natural join world.room where room_account_x_latest_chat_at>(current_timestamp-'7d'::interval);
 --
 create view chat with (security_barrier) as
 select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change_id,chat_change_at,chat_markdown
@@ -37,18 +36,16 @@ select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change
      , (select count(*) from db.chat_star where chat_id=chat.chat_id) chat_star_count
 from db.chat natural join room;
 --
-create view chat_notification with (security_barrier) as select community_id,room_id,chat_id,chat_notification_at from db.chat_notification natural join account where account_is_me;
-create view chat_flag with (security_barrier) as select community_id,room_id,chat_id,chat_flag_at from db.chat_flag natural join account where account_is_me;
-create view chat_star with (security_barrier) as select community_id,room_id,chat_id,chat_star_at from db.chat_star natural join account where account_is_me;
-create view chat_year with (security_barrier) as select community_id,room_id,chat_year,chat_year_count from db.chat_year;
-create view chat_month with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_month_count from db.chat_month;
-create view chat_day with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
-create view chat_hour with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
+create view chat_notification with (security_barrier) as select chat_id,chat_notification_at from db.chat_notification where account_id=current_setting('custom.account_id',true)::integer;
+create view chat_flag with (security_barrier) as select chat_id,chat_flag_at from db.chat_flag where account_id=current_setting('custom.account_id',true)::integer;
+create view chat_star with (security_barrier) as select chat_id,chat_star_at from db.chat_star where account_id=current_setting('custom.account_id',true)::integer;
+create view chat_year with (security_barrier) as select room_id,chat_year,chat_year_count from db.chat_year;
+create view chat_month with (security_barrier) as select room_id,chat_year,chat_month,chat_month_count from db.chat_month;
+create view chat_day with (security_barrier) as select room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
+create view chat_hour with (security_barrier) as select room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
 create view question with (security_barrier) as select community_id,account_id,question_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_id,question_change_at from db.question;
---
-create view question_history with (security_barrier) as
-select community_id,account_id,question_id,question_history_account_id,question_history_change_id,question_history_title,question_history_markdown,question_history_change_at from db.question_history;
+create view question_history with (security_barrier) as select question_id,account_id,question_history_change_id,question_history_title,question_history_markdown,question_history_change_at from db.question_history;
 --
 --
 create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -75,36 +72,33 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
   --
   delete from chat_notification where chat_id=replyid and account_id=current_setting('custom.account_id',true)::integer;
   --
-  insert into chat_year(community_id,room_id,chat_year,chat_year_count)
-  select community_id,roomid,extract('year' from current_timestamp),1 from room where room_id=roomid on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
+  insert into chat_year(room_id,chat_year,chat_year_count)
+  select roomid,extract('year' from current_timestamp),1 from room where room_id=roomid on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
   --
-  insert into chat_month(community_id,room_id,chat_year,chat_month,chat_month_count)
-  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),1
-  from room
-  where room_id=roomid
-  on conflict on constraint chat_month_pkey do update set chat_month_count = chat_month.chat_month_count+1;
+  insert into chat_month(room_id,chat_year,chat_month,chat_month_count)
+  select roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),1 from room where room_id=roomid on conflict on constraint chat_month_pkey do update set chat_month_count = chat_month.chat_month_count+1;
   --
-  insert into chat_day(community_id,room_id,chat_year,chat_month,chat_day,chat_day_count)
-  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),1
+  insert into chat_day(room_id,chat_year,chat_month,chat_day,chat_day_count)
+  select roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),1
   from room
   where room_id=roomid
   on conflict on constraint chat_day_pkey do update set chat_day_count = chat_day.chat_day_count+1;
   --
-  insert into chat_hour(community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count)
-  select community_id,roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),extract('hour' from current_timestamp),1
+  insert into chat_hour(room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count)
+  select roomid,extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),extract('hour' from current_timestamp),1
   from room
   where room_id=roomid
   on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
   --
   with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id) 
              select community_id,roomid,current_setting('custom.account_id',true)::integer,msg,replyid from room where room_id=roomid returning community_id,room_id,chat_id)
-     , n as (insert into chat_notification(community_id,room_id,chat_id,account_id)
-             select community_id,room_id,chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
-     , p as (insert into chat_notification(community_id,room_id,chat_id,account_id)
-             select community_id,room_id,chat_id,account_id
+     , n as (insert into chat_notification(chat_id,account_id)
+             select chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
+     , p as (insert into chat_notification(chat_id,account_id)
+             select chat_id,account_id
              from i cross join (select account_id from world.account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and not account_is_me) z)
-     , a as (insert into room_account_x(community_id,room_id,account_id)
-             select community_id,roomid,current_setting('custom.account_id',true)::integer
+     , a as (insert into room_account_x(room_id,account_id)
+             select roomid,current_setting('custom.account_id',true)::integer
              from room
              where room_id=roomid
              on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default)
@@ -154,7 +148,7 @@ create function set_chat_flag(cid bigint) returns bigint language sql security d
   select _error('cant flag own message') where exists(select * from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('already flagged') where exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
-  insert into chat_flag(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
+  insert into chat_flag(chat_id,account_id) select chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
@@ -169,7 +163,7 @@ create function set_chat_star(cid bigint) returns bigint language sql security d
   select _error('cant star own message') where exists(select * from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('already starred') where exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
-  insert into chat_star(community_id,room_id,chat_id,account_id) select community_id,room_id,chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
+  insert into chat_star(chat_id,account_id) select chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
@@ -194,8 +188,8 @@ create function change_question(id integer, title text, markdown text) returns v
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('only author can edit blog post') where not exists (select * from question where question_id=id and question_type='blog' and account_id=current_setting('custom.account_id',true)::integer);
   --
-  insert into question_history(community_id,account_id,question_id,question_history_account_id,question_history_change_id,question_history_title,question_history_markdown,question_history_change_at)
-  select community_id,account_id,question_id,current_setting('custom.account_id',true)::integer,question_change_id,question_title,question_markdown,question_change_at
+  insert into question_history(question_id,account_id,question_history_change_id,question_history_title,question_history_markdown,question_history_change_at)
+  select question_id,current_setting('custom.account_id',true)::integer,question_change_id,question_title,question_markdown,question_change_at
   from question
   where question_id=id;
   --
