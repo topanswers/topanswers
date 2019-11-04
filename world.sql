@@ -15,7 +15,7 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
 from db.community
-where community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null;
+where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or current_setting('custom.account_id',true)::integer in (1,4));
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
 create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
@@ -180,7 +180,7 @@ $$;
 create function new_question(cid integer, typ db.question_type_enum, title text, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid community') where not exists (select * from community where community_id=cid);
-  select _error('rate limit') where exists (select * from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval);
+  select _error('rate limit') where exists (select * from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id<>1);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
      , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id)
@@ -190,8 +190,10 @@ $$;
 --
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('only author can edit blog post') where not exists (select * from question where question_id=id and question_type='blog' and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('rate limit') where exists (select * from question_history where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval);
+  select _error('only author can edit blog post') where exists (select * from question where question_id=id and question_type='blog' and account_id<>current_setting('custom.account_id',true)::integer);
+  select _error('rate limit') where exists (select *
+                                            from question_history natural join (select question_id from question where account_id<>current_setting('custom.account_id',true)::integer) z
+                                            where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval);
   --
   insert into question_history(question_id,account_id,question_history_at,question_history_title,question_history_markdown)
   select question_id,current_setting('custom.account_id',true)::integer,question_change_at,question_title,question_markdown

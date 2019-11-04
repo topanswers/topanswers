@@ -20,11 +20,27 @@ $id = $_GET['id']??$_POST['id']??'0';
 if($_SERVER['REQUEST_METHOD']==='POST'){
   if($id){
     db("select change_question($1,$2,$3)",$id,$_POST['title'],$_POST['markdown']);
+    header('Location: /'.ccdb("select community_name from question natural join community where question_id=$1",$id).'?q='.$id);
+    exit;
   }else{
     $id=ccdb("select new_question((select community_id from community where community_name=$1),(select question_type from question_type_enums where question_type=$2),$3,$4)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown']);
+    if($id){
+?>
+<!doctype html>
+<html>
+<head>
+  <script>
+    localStorage.removeItem('<?=$_POST['community']?>.ask');
+    localStorage.removeItem('<?=$_POST['community']?>.ask.title');
+    localStorage.removeItem('<?=$_POST['community']?>.ask.type');
+    window.location.href = '/<?=$_POST['community']?>?q=<?=$id?>';
+  </script>
+</head>
+</html>
+<?
+      exit;
+    }
   }
-  header('Location: /'.ccdb("select community_name from question natural join community where question_id=$1",$id).'?q='.$id);
-  exit;
 }
 if($id) {
   ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
@@ -156,11 +172,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <input name="community" type="hidden" value="<?=$community?>">
       <input name="type" type="hidden" value="question">
     <?}?>
-    <input name="title" style="flex 0 0 auto;" placeholder="title" minlength="5" maxlength="200" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
+    <input name="title" style="flex 0 0 auto;" placeholder="title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
     <div style="flex: 0 0 2vmin;"></div>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1 60em; max-width: calc(50vw - 3vmin);">
-        <textarea name="markdown" minlength="50" maxlength="50000" rows="1" required placeholder="type question here using markdown (this is just a demo for now to test the editor, preview and scrolling sync)"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
+        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="type question here using markdown (this is just a demo for now to test the editor, preview and scrolling sync)"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
       <div id="markdown" style="flex: 0 1 60em; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow-y: auto;"></div>
