@@ -46,7 +46,7 @@ create view chat_hour with (security_barrier) as select room_id,chat_year,chat_m
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
 create view question with (security_barrier) as select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at from db.question;
 create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history;
-create view answer with (security_barrier) as select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_id,answer_change_at from db.answer;
+create view answer with (security_barrier) as select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at from db.answer;
 --
 --
 create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$

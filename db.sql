@@ -173,3 +173,22 @@ create table question_history(
 , question_history_markdown text not null
 );
 create unique index question_history_rate_limit_ind on question_history(account_id,question_history_at);
+
+create table answer(
+  answer_id integer generated always as identity unique primary key
+, question_id integer not null references question
+, account_id integer not null references account
+, answer_at timestamptz not null default current_timestamp
+, answer_markdown text not null check (length(answer_markdown) between 1 and 50000)
+, answer_change_at timestamptz not null default current_timestamp
+);
+create unique index answer_rate_limit_ind on answer(account_id,answer_at);
+
+create table answer_history(
+  answer_history_id bigint generated always as identity unique primary key
+, answer_id integer not null references answer
+, account_id integer not null references account
+, answer_history_at timestamptz not null
+, answer_history_markdown text not null
+);
+create unique index answer_history_rate_limit_ind on answer_history(account_id,answer_history_at);
