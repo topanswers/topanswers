@@ -15,7 +15,7 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
 from db.community
-where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or current_setting('custom.account_id',true)::integer in (1,4));
+where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or current_setting('custom.account_id',true)::integer in (1,2,4,11));
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
 create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
@@ -25,7 +25,7 @@ create view room with (security_barrier) as
 select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at
      , current_setting('custom.account_id',true)::integer is not null and (room_type='public' or account_id is not null) room_can_chat
      , exists(select * from db.question where question_room_id=room_id) room_is_for_question
-from db.room natural left outer join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) z
+from db.room natural join world.community natural left outer join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) z
 where room_type<>'private' or account_id is not null;
 --
 create view room_account_x with (security_barrier) as select room_id,account_id,room_account_x_latest_chat_at from db.room_account_x natural join world.room where room_account_x_latest_chat_at>(current_timestamp-'7d'::interval);
