@@ -283,10 +283,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account
                        where question_id=$1",$question));?>
-        <div id="question" style="margin-bottom: 0.5em; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; color: #<?=$colour_dark?>;">
+        <div id="question" style="margin-bottom: 0.5em; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger;">
           <div style="">
-            <div style="font-size: larger; margin-bottom: 0.4em; text-shadow: 0 0 0.1em #<?=$colour_mid?>;"><?=$question_type.': '.htmlspecialchars($question_title)?></div>
-            <div style="font-size: 0.6em; margin: 2em 0; padding: 0.6em 0; border: 0 solid #<?=$colour_dark?>; border-width: 2px 0;">
+            <div style="font-size: larger; margin-bottom: 0.4em; text-shadow: 0.1em 0.1em 0.1em grey;"><?=$question_type.': '.htmlspecialchars($question_title)?></div>
+            <div style="font-size: 0.6em; margin: 2em 0; padding: 0.6em 0; border: 0 solid #<?=$colour_dark?>; border-width: 1px 0;">
               <?=htmlspecialchars($account_name)?>,
               <span class="when" data-seconds="<?=$question_when?>"></span>
               <?if($account_is_me==='t'){?><a href="/question?id=<?=$question?>">edit</a><?}?>
