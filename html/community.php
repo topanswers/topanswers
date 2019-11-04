@@ -70,7 +70,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     [data-rz-handle] div { width: 2px; background-color: black; }
 
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { display: block; text-decoration: none; margin-bottom: 0.5em; padding: 1em; border: 1px solid darkgrey; border-radius: 0.2em; font-size: larger; color: #<?=$colour_dark?>; white-space: nowrap; overflow: hidden; }
+    .question { display: block; text-decoration: none; margin-bottom: 0.5em; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; color: black; white-space: nowrap; overflow: hidden; }
+    .answer { margin-bottom: 2em; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.2em 0.2em 0.7em #a794b4; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     .markdown { overflow: auto; }
@@ -254,7 +255,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){ $('#chattext').prop('disabled',false).focus(); textareaInsertTextAtCursor($('#chattext'),'!['+d.get('image').name+'](/image?hash='+r+')'); });
         return false;
       });
-      $('#question .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
+      $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -279,13 +280,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,account_name,account_is_me
-                            , case question_type when 'question' then 'Question' when 'meta' then 'Meta Question' when 'blog' then 'Blog Post' end question_type
+                            , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
+                            , question_type='blog' question_is_blog
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account
                        where question_id=$1",$question));?>
-        <div id="question" style="margin-bottom: 0.5em; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger;">
+        <div id="question" style="padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.2em 0.2em 0.7em #<?=$colour_mid?>;">
           <div style="">
-            <div style="font-size: larger; margin-bottom: 0.4em; text-shadow: 0.1em 0.1em 0.1em grey;"><?=$question_type.': '.htmlspecialchars($question_title)?></div>
+            <div style="font-size: larger; margin-bottom: 0.4em; text-shadow: 0.1em 0.1em 0.1em grey;"><?=$question_type.htmlspecialchars($question_title)?></div>
             <div style="font-size: 0.6em; margin: 2em 0; padding: 0.6em 0; border: 0 solid #<?=$colour_dark?>; border-width: 1px 0;">
               <?=htmlspecialchars($account_name)?>,
               <span class="when" data-seconds="<?=$question_when?>"></span>
@@ -294,6 +296,19 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
         </div>
+        <?if($uuid && ($question_is_blog==='f')){?><form method="GET" action="/answer"><input type="hidden" name="question" value="<?=$question?>"><input id="answer" type="submit" value="answer this question" style="margin: 2em auto; display: block;"></form><?}?>
+        <?foreach(db("select answer_id, answer_markdown, extract('epoch' from current_timestamp-answer_at) answer_when from answer where question_id=$1",$question) as $r){ extract($r);?>
+          <div class="answer">
+            <div style="">
+              <div style="font-size: 0.6em; margin-bottom: 2em; padding-bottom: 0.6em; border-bottom: 1px solid #<?=$colour_dark?>;">
+                <?=htmlspecialchars($account_name)?>,
+                <span class="when" data-seconds="<?=$answer_when?>"></span>
+                <a href="/answer?id=<?=$answer_id?>">edit</a>
+              </div>
+            </div>
+            <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
+          </div>
+        <?}?>
       <?}else{?>
         <?if(ccdb("select count(*) from question natural join community where community_name=$1",$community)==="0"){?>
           <?for($x = 1; $x<10; $x++){?>
@@ -301,10 +316,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <?}?>
         <?}else{?>
           <?foreach(db("select question_id,question_at,question_title
-                             , case question_type when 'question' then 'Question' when 'meta' then 'Meta Question' when 'blog' then 'Blog Post' end question_type
+                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                         from question natural join community
                         where community_name=$1",$community) as $r){ extract($r);?>
-            <a href="/<?=$community?>?q=<?=$question_id?>" class="question"><?=$question_type.': '.$question_title?></a>
+            <a href="/<?=$community?>?q=<?=$question_id?>" class="question"<?=$question_type?(' style="background-color: #'.$colour_light.';"'):''?>><?=$question_type.$question_title?></a>
           <?}?>
         <?}?>
       <?}?>

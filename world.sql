@@ -205,6 +205,23 @@ create function change_question(id integer, title text, markdown text) returns v
   where question_id=id;
 $$;
 --
+create function new_answer(qid integer, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid question') where not exists (select * from question where question_id=qid);
+  select _error('rate limit') where exists (select * from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id<>1);
+  insert into answer(question_id,account_id,answer_markdown) values(qid, current_setting('custom.account_id',true)::integer, markdown) returning answer_id;
+$$;
+--
+create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('rate limit') where exists (select *
+                                            from answer_history natural join (select answer_id from answer where account_id<>current_setting('custom.account_id',true)::integer) z
+                                            where account_id=current_setting('custom.account_id',true)::integer and answer_history_at>current_timestamp-'1m'::interval);
+  --
+  insert into answer_history(answer_id,account_id,answer_history_at,answer_history_markdown) select answer_id,current_setting('custom.account_id',true)::integer,answer_change_at,answer_markdown from answer where answer_id=id;
+  update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
+$$;
+--
 --
 revoke all on all functions in schema world from public;
 do $$
