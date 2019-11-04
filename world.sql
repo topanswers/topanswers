@@ -44,8 +44,9 @@ create view chat_month with (security_barrier) as select room_id,chat_year,chat_
 create view chat_day with (security_barrier) as select room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
 create view chat_hour with (security_barrier) as select room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
-create view question with (security_barrier) as select community_id,account_id,question_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_id,question_change_at from db.question;
-create view question_history with (security_barrier) as select question_id,account_id,question_history_change_id,question_history_title,question_history_markdown,question_history_change_at from db.question_history;
+create view question with (security_barrier) as select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at from db.question;
+create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history;
+create view answer with (security_barrier) as select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_id,answer_change_at from db.answer;
 --
 --
 create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -111,6 +112,8 @@ create function dismiss_notification(id integer) returns void language sql secur
 $$;
 --
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('rate limit') where exists (select * from account where account_create_at>current_timestamp-'1m'::interval);
+  --
   with a as (insert into account default values returning account_id)
   insert into login(account_id,login_uuid) select account_id,luuid from a returning account_id;
 $$;
@@ -177,6 +180,7 @@ $$;
 create function new_question(cid integer, typ db.question_type_enum, title text, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid community') where not exists (select * from community where community_id=cid);
+  select _error('rate limit') where exists (select * from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
      , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id)
@@ -187,16 +191,18 @@ $$;
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('only author can edit blog post') where not exists (select * from question where question_id=id and question_type='blog' and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('rate limit') where exists (select * from question_history where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval);
   --
-  insert into question_history(question_id,account_id,question_history_change_id,question_history_title,question_history_markdown,question_history_change_at)
-  select question_id,current_setting('custom.account_id',true)::integer,question_change_id,question_title,question_markdown,question_change_at
+  insert into question_history(question_id,account_id,question_history_at,question_history_title,question_history_markdown)
+  select question_id,current_setting('custom.account_id',true)::integer,question_change_at,question_title,question_markdown
   from question
   where question_id=id;
   --
   update question
-  set question_title = title, question_markdown = markdown, question_change_id = default, question_change_at = default
+  set question_title = title, question_markdown = markdown, question_change_at = default
   where question_id=id;
 $$;
+--
 --
 revoke all on all functions in schema world from public;
 do $$
