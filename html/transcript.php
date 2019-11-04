@@ -94,7 +94,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown { overflow: auto; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
-    .markdown ul { padding-left: 1em; }
+    .markdown ul { padding-left: 2em; }
     .markdown img { max-height: 7em; }
     .markdown table { border-collapse: collapse; }
     .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; }

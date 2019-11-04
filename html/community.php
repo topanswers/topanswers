@@ -43,7 +43,9 @@ if(isset($_GET['resizer'])){
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
-$room = $_GET['room'] ?? ccdb("select community_room_id from community where community_name=$1",$community);
+$question = $_GET['q']??'0';
+if($question) ccdb("select count(*) from question where question_id=$1",$question)==='1' || die('invalid question id');;
+$room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
 $canchat = false;
 if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
@@ -68,13 +70,13 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     [data-rz-handle] div { width: 2px; background-color: black; }
 
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
+    .question { display: block; text-decoration: none; margin-bottom: 0.5em; padding: 1em; border: 1px solid darkgrey; border-radius: 0.2em; font-size: larger; color: #<?=$colour_dark?>; white-space: nowrap; overflow: hidden; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     .markdown { overflow: auto; }
     .markdown>:first-child { margin-top: 0; }
     .markdown>:last-child { margin-bottom: 0; }
-    .markdown ul { padding-left: 1em; }
+    .markdown ul { padding-left: 2em; }
     .markdown img { max-height: 7em; }
     .markdown table { border-collapse: collapse; }
     .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; }
@@ -252,6 +254,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){ $('#chattext').prop('disabled',false).focus(); textareaInsertTextAtCursor($('#chattext'),'!['+d.get('image').name+'](/image?hash='+r+')'); });
         return false;
       });
+      $('#question .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -260,7 +263,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <main style="display: flex; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%;">
     <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
       <div style="margin: 0.5em; margin-right: 0.1em;">
-        <span style="color: #<?=$colour_mid?>;">TopAnswers </span>
+        <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
         <select id="community">
           <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
             <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
@@ -269,20 +272,51 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       </div>
       <div style="display: flex; height: 100%;">
         <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"> or <input id="link" type="button" value="link" style="margin: 0.5em;"><?}?>
-        <?if($uuid){?><form method="GET" action="/ask"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question" style="margin: 0.5em;"></form><?}?>
+        <?if($uuid){?><form method="GET" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question" style="margin: 0.5em;"></form><?}?>
         <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
-      <?for($x = 1; $x<10; $x++){?>
-        <div class="question">Question <?=$x?></div>
+      <?if($question){?>
+        <?extract(cdb("select question_title,question_markdown,account_name,account_is_me
+                            , case question_type when 'question' then 'Question' when 'meta' then 'Meta Question' when 'blog' then 'Blog Post' end question_type
+                            , extract('epoch' from current_timestamp-question_at) question_when
+                       from question natural join account
+                       where question_id=$1",$question));?>
+        <div id="question" style="margin-bottom: 0.5em; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; color: #<?=$colour_dark?>;">
+          <div style="">
+            <div style="font-size: larger; margin-bottom: 0.4em; text-shadow: 0 0 0.1em #<?=$colour_mid?>;"><?=$question_type.': '.htmlspecialchars($question_title)?></div>
+            <div style="font-size: 0.6em; margin: 2em 0; padding: 0.6em 0; border: 0 solid #<?=$colour_dark?>; border-width: 2px 0;">
+              <?=htmlspecialchars($account_name)?>,
+              <span class="when" data-seconds="<?=$question_when?>"></span>
+              <?if($account_is_me==='t'){?><a href="/question?id=<?=$question?>">edit</a><?}?>
+            </div>
+          </div>
+          <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
+        </div>
+      <?}else{?>
+        <?if(ccdb("select count(*) from question natural join community where community_name=$1",$community)==="0"){?>
+          <?for($x = 1; $x<10; $x++){?>
+            <div class="question">Question <?=$x?></div>
+          <?}?>
+        <?}else{?>
+          <?foreach(db("select question_id,question_at,question_title
+                             , case question_type when 'question' then 'Question' when 'meta' then 'Meta Question' when 'blog' then 'Blog Post' end question_type
+                        from question natural join community
+                        where community_name=$1",$community) as $r){ extract($r);?>
+            <a href="/<?=$community?>?q=<?=$question_id?>" class="question"><?=$question_type.': '.$question_title?></a>
+          <?}?>
+        <?}?>
       <?}?>
     </div>
   </main>
   <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
       <select id="room">
-        <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where community_name=$1 order by room_name desc",$community) as $r){ extract($r);?>
+        <?foreach(db("select room_id, case when room_is_for_question then 'question room' else coalesce(room_name,initcap(community_name)||' Chat') end room_name
+                      from room natural join community
+                      where community_name=$1 and (not room_is_for_question or room_id=$2)
+                      order by room_name desc",$community,$room) as $r){ extract($r);?>
           <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
         <?}?>
       </select>

@@ -16,14 +16,25 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
 $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
+$id = $_GET['id']??$_POST['id']??'0';
 if($_SERVER['REQUEST_METHOD']==='POST'){
-  var_dump(ccdb("select * from community"));
-  db("select new_question((select community_id from community where community_name=$1),(select question_type from question_type_enums where question_type=$2),$3,$4)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown']);
+  if($id){
+    db("select change_question($1,$2,$3)",$id,$_POST['title'],$_POST['markdown']);
+  }else{
+    $id=ccdb("select new_question((select community_id from community where community_name=$1),(select question_type from question_type_enums where question_type=$2),$3,$4)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown']);
+  }
+  header('Location: /'.ccdb("select community_name from question natural join community where question_id=$1",$id).'?q='.$id);
   exit;
 }
-if(!isset($_GET['community'])) die('Community not set');
-$community = $_GET['community'];
-ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
+if($id) {
+  ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
+  $community = ccdb("select community_name from question natural join community where question_id=$1",$id);
+  extract(cdb("select question_type,question_title,question_markdown from question where question_id=$1",$id));
+}else{
+  if(!isset($_GET['community'])) die('Community not set');
+  $community = $_GET['community'];
+  ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
+}
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
              where community_name=$1",$community));
@@ -49,6 +60,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     #markdown ul { padding-left: 2em; }
+    #markdown li { margin: 0.5em 0; }
     #markdown img { max-height: 20em; max-width: 100%; }
     #markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
     #markdown table { border-collapse: collapse; table-layout: fixed; }
@@ -86,13 +98,16 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true });
       $('textarea[name="markdown"]').show().css({ position: 'absolute', top: 0 });
       var map;
-      $('#community').change(function(){ window.location = '/ask?community='+$(this).val().toLowerCase(); });
-      cm.on('change',function(){
+      function render(){
         $('#markdown').html(md.render(cm.getValue()));
         $('#markdown table').wrap('<div class="tablewrapper">');
         map = [];
         $('#markdown [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
-        localStorage.setItem('<?=$community?>.ask',cm.getValue());
+        <?if(!$id){?>localStorage.setItem('<?=$community?>.ask',cm.getValue());<?}?>
+      }
+      $('#community').change(function(){ window.location = '?community='+$(this).val().toLowerCase(); });
+      cm.on('change',function(){
+        render();
         $('textarea[name="markdown"]').val(cm.getValue()).show();
       });
       cm.on('scroll', _.throttle(function(){
@@ -102,11 +117,18 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#markdown').animate({ scrollTop: $('#markdown').prop("scrollHeight")-$('#markdown').height() });
         else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
       },200));
-      $('input[name="title"]').on('input',function(){ localStorage.setItem('<?=$community?>.ask.title',$(this).val()); });
-      if(localStorage.getItem('<?=$community?>.ask')) cm.setValue(localStorage.getItem('<?=$community?>.ask'));
-      if(localStorage.getItem('<?=$community?>.ask.title')) $('input[name="title"]').val(localStorage.getItem('<?=$community?>.ask.title'));
-      if(localStorage.getItem('<?=$community?>.ask.type')) $('#type').val(localStorage.getItem('<?=$community?>.ask.type'));
-      $('#type').change(function(){ $('#ask').val('submit '+$(this).val()); $('input[name="type"').val($(this).children(":selected").text()); localStorage.setItem('<?=$community?>.ask.type',$(this).val()) }).trigger('change');;
+      <?if(!$id){?>$('input[name="title"]').on('input',function(){ localStorage.setItem('<?=$community?>.ask.title',$(this).val()); });<?}?>
+      <?if(!$id){?>
+        if(localStorage.getItem('<?=$community?>.ask')) cm.setValue(localStorage.getItem('<?=$community?>.ask'));
+        if(localStorage.getItem('<?=$community?>.ask.title')) $('input[name="title"]').val(localStorage.getItem('<?=$community?>.ask.title'));
+        if(localStorage.getItem('<?=$community?>.ask.type')) $('#type').val(localStorage.getItem('<?=$community?>.ask.type'));
+      <?}?>
+      $('#type').change(function(){
+        $('#submit').val('submit '+$(this).val());
+        $('input[name="type"').val($(this).children(":selected").text());
+        <?if(!$id){?> localStorage.setItem('<?=$community?>.ask.type',$(this).val());<?}?>
+      }).trigger('change');;
+      render();
     });
   </script>
   <title>Ask | <?=ucfirst($community)?> | TopAnswers</title>
@@ -114,7 +136,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div style="margin: 0.5em; margin-right: 0.1em;">
-      <span style="color: #<?=$colour_mid?>;">TopAnswers </span>
+      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
       <select id="community">
         <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
           <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
@@ -122,19 +144,23 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       </select>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
-      <select id="type"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select>
-      <input id="ask" type="submit" form="form" value="submit" style="margin: 0.5em;">
+      <?if(!$id){?><select id="type"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select><?}?>
+      <input id="submit" type="submit" form="form" value="<?=$id?('update '.$question_type.(($question_type==='meta')?' question':(($question_type==='blog')?' post':''))):'submit'?>" style="margin: 0.5em;">
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
-  <form id="form" method="POST" action="/ask" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
-    <input name="community" type="hidden" value="<?=$community?>">
-    <input name="type" type="hidden" value="question">
-    <input name="title" style="flex 0 0 auto;" placeholder="title" minlength="5" maxlength="200" autofocus required>
+  <form id="form" method="POST" action="/question" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
+    <?if($id){?>
+      <input name="id" type="hidden" value="<?=$id?>">
+    <?}else{?>
+      <input name="community" type="hidden" value="<?=$community?>">
+      <input name="type" type="hidden" value="question">
+    <?}?>
+    <input name="title" style="flex 0 0 auto;" placeholder="title" minlength="5" maxlength="200" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
     <div style="flex: 0 0 2vmin;"></div>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1 60em; max-width: calc(50vw - 3vmin);">
-        <textarea name="markdown" minlength="50" maxlength="50000" rows="1" required placeholder="type question here using markdown (this is just a demo for now to test the editor, preview and scrolling sync)"></textarea>
+        <textarea name="markdown" minlength="50" maxlength="50000" rows="1" required placeholder="type question here using markdown (this is just a demo for now to test the editor, preview and scrolling sync)"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
       <div id="markdown" style="flex: 0 1 60em; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow-y: auto;"></div>

@@ -197,10 +197,11 @@ create table question_history(
   community_id integer
 , account_id integer references account
 , question_id integer
-, question_change_id bigint unique
-, question_history text not null
+, question_history_account_id integer references account
+, question_history_change_id bigint unique
+, question_history_title text not null
 , question_history_markdown text not null
 , question_history_change_at timestamptz not null
-, primary key (community_id,account_id,question_id,question_change_id)
+, primary key (community_id,account_id,question_id,question_history_account_id,question_history_change_id)
 , foreign key (community_id,account_id,question_id) references question
 );

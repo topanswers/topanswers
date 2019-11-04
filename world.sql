@@ -22,7 +22,9 @@ create view account with (security_barrier) as select account_id,account_name,ac
 create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
-select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at, current_setting('custom.account_id',true)::integer is not null and (room_type='public' or account_id is not null) room_can_chat
+select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at
+     , current_setting('custom.account_id',true)::integer is not null and (room_type='public' or account_id is not null) room_can_chat
+     , exists(select * from db.question where question_room_id=room_id) room_is_for_question
 from db.room natural left outer join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) z
 where room_type<>'private' or account_id is not null;
 --
@@ -42,7 +44,11 @@ create view chat_year with (security_barrier) as select community_id,room_id,cha
 create view chat_month with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_month_count from db.chat_month;
 create view chat_day with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
 create view chat_hour with (security_barrier) as select community_id,room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
-create view question_type_enums as select unnest(enum_range(null::db.question_type_enum)) question_type;
+create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
+create view question with (security_barrier) as select community_id,account_id,question_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_id,question_change_at from db.question;
+--
+create view question_history with (security_barrier) as
+select community_id,account_id,question_id,question_history_account_id,question_history_change_id,question_history_title,question_history_markdown,question_history_change_at from db.question_history;
 --
 --
 create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -182,6 +188,20 @@ create function new_question(cid integer, typ db.question_type_enum, title text,
      , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id)
              select cid, current_setting('custom.account_id',true)::integer, typ, title, markdown, room_id from r returning question_id)
   select question_id from q;
+$$;
+--
+create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('only author can edit blog post') where not exists (select * from question where question_id=id and question_type='blog' and account_id=current_setting('custom.account_id',true)::integer);
+  --
+  insert into question_history(community_id,account_id,question_id,question_history_account_id,question_history_change_id,question_history_title,question_history_markdown,question_history_change_at)
+  select community_id,account_id,question_id,current_setting('custom.account_id',true)::integer,question_change_id,question_title,question_markdown,question_change_at
+  from question
+  where question_id=id;
+  --
+  update question
+  set question_title = title, question_markdown = markdown, question_change_id = default, question_change_at = default
+  where question_id=id;
 $$;
 --
 revoke all on all functions in schema world from public;
