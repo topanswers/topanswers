@@ -266,7 +266,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex;">
-  <main style="display: flex; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%;">
+  <main style="display: flex; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
     <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
       <div style="margin: 0.5em; margin-right: 0.1em;">
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
@@ -326,7 +326,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0;">
+  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
       <select id="room">
         <?foreach(db("select room_id, case when room_is_for_question then 'question room' else coalesce(room_name,initcap(community_name)||' Chat') end room_name
