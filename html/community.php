@@ -71,8 +71,13 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .question { display: block; text-decoration: none; margin-bottom: 0.5em; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; color: black; white-space: nowrap; overflow: hidden; }
-    .answer { margin-bottom: 2em; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.2em 0.2em 0.7em #a794b4; }
+    .answer { margin-bottom: 2em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #a794b4; }
+    .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
+
+    #qa .bar { font-size: 0.6em; padding: 0.6rem; background: #<?=$colour_light?>; }
+    #qa .markdown { padding: 0.6rem; }
+    #qa .when { color: #<?=$colour_dark?>; }
 
     .markdown { overflow: auto; }
     .markdown>:first-child { margin-top: 0; }
@@ -285,28 +290,24 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account
                        where question_id=$1",$question));?>
-        <div id="question" style="padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.2em 0.2em 0.7em #<?=$colour_mid?>;">
-          <div style="">
-            <div style="font-size: larger; margin-bottom: 0.4em; text-shadow: 0.1em 0.1em 0.1em grey;"><?=$question_type.htmlspecialchars($question_title)?></div>
-            <div style="font-size: 0.6em; margin: 2em 0; padding: 0.6em 0; border: 0 solid #<?=$colour_dark?>; border-width: 1px 0;">
-              <?=htmlspecialchars($account_name)?>,
-              <span class="when" data-seconds="<?=$question_when?>"></span>
-              <?if($account_is_me==='t'){?><a href="/question?id=<?=$question?>">edit</a><?}?>
-            </div>
+        <div id="question" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #<?=$colour_mid?>;">
+          <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem; border-bottom: 1px solid #<?=$colour_dark?>;"><?=$question_type.htmlspecialchars($question_title)?></div>
+          <div class="bar" style="border-bottom: 1px solid #<?=$colour_dark?>;">
+            <?=htmlspecialchars($account_name)?>,
+            <span class="when" data-seconds="<?=$question_when?>"></span>
+            <?if($account_is_me==='t'){?><a href="/question?id=<?=$question?>">edit</a><?}?>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
         </div>
         <?if($uuid && ($question_is_blog==='f')){?><form method="GET" action="/answer"><input type="hidden" name="question" value="<?=$question?>"><input id="answer" type="submit" value="answer this question" style="margin: 2em auto; display: block;"></form><?}?>
         <?foreach(db("select answer_id, answer_markdown, extract('epoch' from current_timestamp-answer_at) answer_when from answer where question_id=$1",$question) as $r){ extract($r);?>
           <div class="answer">
-            <div style="">
-              <div style="font-size: 0.6em; margin-bottom: 2em; padding-bottom: 0.6em; border-bottom: 1px solid #<?=$colour_dark?>;">
-                <?=htmlspecialchars($account_name)?>,
-                <span class="when" data-seconds="<?=$answer_when?>"></span>
-                <a href="/answer?id=<?=$answer_id?>">edit</a>
-              </div>
+            <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
+            <div class="bar">
+              <?=htmlspecialchars($account_name)?>,
+              <span class="when" data-seconds="<?=$answer_when?>"></span>
+              <a href="/answer?id=<?=$answer_id?>">edit</a>
             </div>
-            <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
           </div>
         <?}?>
       <?}else{?>
