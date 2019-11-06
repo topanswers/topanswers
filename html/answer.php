@@ -42,12 +42,12 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 }
 if($id) {
   ccdb("select count(*) from answer where answer_id=$1",$id)==='1' || die('invalid answer id');
-  extract(cdb("select community_name community, question_id question, answer_markdown from answer natural join (select question_id,community_id from question) z natural join community where answer_id=$1",$id));
+  extract(cdb("select community_name community, question_id question, question_title, question_markdown, answer_markdown from answer natural join (select question_id,community_id,question_title,question_markdown from question) z natural join community where answer_id=$1",$id));
 }else{
   if(!isset($_GET['question'])) die('question not set');
   $question = $_GET['question'];
   ccdb("select count(*) from question where question_id=$1",$question)==='1' or die('invalid question');
-  $community = ccdb("select community_name from question natural join community where question_id=$1",$question);
+  extract(cdb("select community_name community, question_title, question_markdown from question natural join community where question_id=$1",$question));
 }
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
@@ -73,16 +73,16 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .answer { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
-    #markdown ul { padding-left: 2em; }
-    #markdown li { margin: 0.5em 0; }
-    #markdown img { max-height: 20em; max-width: 100%; }
-    #markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
-    #markdown table { border-collapse: collapse; table-layout: fixed; }
-    #markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    #markdown td, .markdown th { white-space: nowrap; border: 1px solid black; padding: 0.2em; }
-    #markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
-    #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
-    #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
+    .markdown ul { padding-left: 2em; }
+    .markdown li { margin: 0.5em 0; }
+    .markdown img { max-height: 20em; max-width: 100%; }
+    .markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
+    .markdown table { border-collapse: collapse; table-layout: fixed; }
+    .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
+    .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; padding: 0.2em; }
+    .markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
+    .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
+    .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
 
     .CodeMirror { height: 100%; border: 0.2rem solid #<?=$colour_dark?>; font-size: 1.1em; }
     .CodeMirror pre.CodeMirror-placeholder { color: #<?=$colour_mid?>; }
@@ -113,10 +113,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('textarea[name="markdown"]').show().css({ position: 'absolute', top: 0 });
       var map;
       function render(){
-        $('#markdown').html(md.render(cm.getValue()));
-        $('#markdown table').wrap('<div class="tablewrapper">');
+        $('#answer').html(md.render(cm.getValue()));
+        $('#answer table').wrap('<div class="tablewrapper">');
         map = [];
-        $('#markdown [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
+        $('#answer [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$id){?>localStorage.setItem('<?=$community?>.answer.<?=$question?>',cm.getValue());<?}?>
       }
       $('#community').change(function(){ window.location = '?community='+$(this).val().toLowerCase(); });
@@ -127,14 +127,16 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       cm.on('scroll', _.throttle(function(){
         var rect = cm.getWrapperElement().getBoundingClientRect();
         var m = Math.round(cm.lineAtHeight(rect.top,"window")+cm.lineAtHeight(rect.bottom,"window"))/2;
-        if(cm.getScrollInfo().top<10) $('#markdown').animate({ scrollTop: 0 });
-        else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#markdown').animate({ scrollTop: $('#markdown').prop("scrollHeight")-$('#markdown').height() });
-        else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if(cm.getScrollInfo().top<10) $('#answer').animate({ scrollTop: 0 });
+        else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#answer').animate({ scrollTop: $('#answer').prop("scrollHeight")-$('#answer').height() });
+        else $('#answer [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
       },200));
       <?if(!$id){?>
         if(localStorage.getItem('<?=$community?>.answer.<?=$question?>')) cm.setValue(localStorage.getItem('<?=$community?>.answer.<?=$question?>'));
       <?}?>
       render();
+      $('#question .markdown').html(md.render($('#question .markdown').data('markdown')));
+      $('#question .markdown table').wrap('<div class="tablewrapper">');
     });
   </script>
   <title>Answer | <?=ucfirst($community)?> | TopAnswers</title>
@@ -162,11 +164,17 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <input name="question" type="hidden" value="<?=$question?>">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
-      <div style="flex: 0 1 60em; max-width: calc(50vw - 3vmin);">
+      <div id="question" style="display: flex; flex-direction: column; flex: 0 1.5 60em; background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow: hidden;">
+        <div style="flex: 0 0 auto;"><?=htmlspecialchars($question_title)?></div>
+        <hr style="width: 100%;">
+        <div class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>" style="flex: 1 0 0; overflow-y: auto;"></div>
+      </div>
+      <div style="flex: 0 0 2vmin;"></div>
+      <div style="flex: 0 1 60em; xmax-width: calc(40vw - 2.67vmin);">
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="type answer here using markdown"><?=$id?htmlspecialchars($answer_markdown):''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="markdown" style="flex: 0 1 60em; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow-y: auto;"></div>
+      <div id="answer" class="markdown" style="flex: 0 1 60em; xmax-width: calc(40vw - 2.67vmin); background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow-y: auto;"></div>
     </main>
   </form>
 </body>   

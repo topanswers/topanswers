@@ -295,7 +295,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <div class="bar" style="border-bottom: 1px solid #<?=$colour_dark?>;">
             <?=htmlspecialchars($account_name)?>,
             <span class="when" data-seconds="<?=$question_when?>"></span>
-            <?if($account_is_me==='t'){?><a href="/question?id=<?=$question?>">edit</a><?}?>
+            <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a href="/question?id=<?=$question?>">edit</a><?}?>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
         </div>
