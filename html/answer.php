@@ -73,6 +73,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .answer { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
+    .markdown > :first-child { margin-top: 0; }
+    .markdown > :last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 2em; }
     .markdown li { margin: 0.5em 0; }
     .markdown img { max-height: 20em; max-width: 100%; }
@@ -84,8 +86,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
 
-    .CodeMirror { height: 100%; border: 0.2rem solid #<?=$colour_dark?>; font-size: 1.1em; }
-    .CodeMirror pre.CodeMirror-placeholder { color: #<?=$colour_mid?>; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; font-size: 1.1em; }
+    .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
   <script src="/lodash.js"></script>
@@ -110,7 +112,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true });
-      $('textarea[name="markdown"]').show().css({ position: 'absolute', top: 0 });
+      $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' });
       var map;
       function render(){
         $('#answer').html(md.render(cm.getValue()));
@@ -144,12 +146,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div style="margin: 0.5em; margin-right: 0.1em;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
-      <select id="community">
-        <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
-          <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
-        <?}?>
-      </select>
+      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <input id="submit" type="submit" form="form" value="<?=$id?'update answer':'post answer'?>" style="margin: 0.5em;">
@@ -164,17 +161,18 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <input name="question" type="hidden" value="<?=$question?>">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
-      <div id="question" style="display: flex; flex-direction: column; flex: 0 1.5 60em; background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow: hidden;">
-        <div style="flex: 0 0 auto;"><?=htmlspecialchars($question_title)?></div>
-        <hr style="width: 100%;">
-        <div class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>" style="flex: 1 0 0; overflow-y: auto;"></div>
+      <div style="flex: 0 1.5 50em; max-width: 20vw; overflow: hidden;">
+        <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow: hidden;">
+          <div style="flex: 0 0 auto; padding: 1rem; font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; border-bottom: 1px solid #<?=$colour_dark?>;"><?=htmlspecialchars($question_title)?></div>
+          <div class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>" style="flex: 1 0 auto; overflow-y: auto; padding: 1em;"></div>
+        </div>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div style="flex: 0 1 60em; xmax-width: calc(40vw - 2.67vmin);">
-        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="type answer here using markdown"><?=$id?htmlspecialchars($answer_markdown):''?></textarea>
+      <div style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); position: relative;">
+        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your answer"><?=$id?htmlspecialchars($answer_markdown):''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="answer" class="markdown" style="flex: 0 1 60em; xmax-width: calc(40vw - 2.67vmin); background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow-y: auto;"></div>
+      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
     </main>
   </form>
 </body>   

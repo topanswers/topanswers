@@ -76,6 +76,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     #markdown > :first-child { margin-top: 0; }
+    #markdown > :last-child { margin-bottom: 0; }
     #markdown ul { padding-left: 2em; }
     #markdown li { margin: 0.5em 0; }
     #markdown img { max-height: 20em; max-width: 100%; }
