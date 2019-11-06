@@ -78,11 +78,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
-    .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 1.1em; border-radius: 0 1em 1em 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
+    .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
     .tag i::before { border-radius: 50%; }
-    <?if($uuid){?>.tag:hover i { visibility: visible; }<?}?>
+    <?if($uuid&&$question){?>.tag:hover i { visibility: visible; }<?}?>
     .newtag { position: relative; cursor: pointer; }
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
@@ -359,7 +359,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                              , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                         from question natural join community
                         where community_name=$1",$community) as $r){ extract($r);?>
-            <a href="/<?=$community?>?q=<?=$question_id?>" class="question"<?=$question_type?(' style="background-color: #'.$colour_light.';"'):''?>><?=$question_type.$question_title?></a>
+            <a href="/<?=$community?>?q=<?=$question_id?>" class="question"<?=$question_type?(' style="background-color: #'.$colour_light.';"'):''?>>
+              <div><?=$question_type.$question_title?></div>
+              <div>
+                <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question_id) as $r){ extract($r);?>
+                  <span class="tag" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+                <?}?>
+              </div>
+            </a>
           <?}?>
         <?}?>
       <?}?>
