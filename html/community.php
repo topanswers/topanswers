@@ -78,11 +78,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
-    .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 1.1em; border-radius: 0 1em 1em 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; }
+    .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 1.1em; border-radius: 0 1em 1em 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
     .tag i::before { border-radius: 50%; }
-    .tag:hover i { visibility: visible; }
+    <?if($uuid){?>.tag:hover i { visibility: visible; }<?}?>
+    .newtag { position: relative; cursor: pointer; }
+    .newtag .tag { opacity: 0.4; margin: 0; }
+    .newtag:hover .tag { opacity: 1; }
 
     #qa .bar { font-size: 0.6em; padding: 0.6rem; background: #<?=$colour_light?>; }
     #qa .markdown { padding: 0.6rem; }
@@ -222,8 +225,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         return false;
       });
       $('#replying>button').click(function(){ $('#replying').attr('data-id','').slideUp('fast'); });
-      $('.tag').click(function(){ $(this).find('div').css('visibility','visible'); });
-      $(document).click(function(e){ if((!$(e.target).closest('.tag').length) && (!$(e.target).closest('.dropdown').length)){ $('.tag').find('div').css('visibility','hidden'); } });
+      $('.tag').click(function(){ $(this).prev('div').css('visibility','visible'); });
+      $(document).click(function(e){ if((!$(e.target).closest('.newtag').find('div').length) && (!$(e.target).closest('.dropdown').length)){ $('.tag').prev('div').css('visibility','hidden'); } });
       $('select.tags').select2();
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
@@ -311,22 +314,24 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <div class="bar" style="border-bottom: 1px solid #<?=$colour_dark?>;">
             <?=htmlspecialchars($account_name)?>,
             <span class="when" data-seconds="<?=$question_when?>"></span>
-            <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a href="/question?id=<?=$question?>">edit</a><?}?>
+            <?if($uuid && (($account_is_me==='t')||($question_is_blog==='f'))){?><a href="/question?id=<?=$question?>">edit</a><?}?>
             <div style="margin-top: 0.4rem; display: flex; flex-wrap: wrap;">
               <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question) as $r){ extract($r);?>
                 <span class="tag" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
               <?}?>
-              <span class="tag addtag" style="position: relative; cursor: pointer;">
-                &#65291;&nbsp;&nbsp;&nbsp;&nbsp;
-                <div style="position: absolute; top: -2px; left: -2px; z-index: 1; visibility: hidden;">
-                  <select class="tags" data-question-id="<?=$question?>">
-                    <option value="0" disabled selected><?=(ccdb("select exists (select tag_id,tag_name from tag natural join community where community_name=$1)",$community))?'select tag':''?></option>
-                    <?foreach(db("select tag_id,tag_name from tag natural join community where community_name=$1 and tag_id not in (select tag_id from question_tag_x where question_id=$2)",$community,$question) as $r){ extract($r);?>
-                      <option value="<?=$tag_id?>"><?=$tag_name?></option>
-                    <?}?>
-                  </select>
-                </div>
-              </span>
+              <?if($uuid){?>
+                <span class="newtag" style="margin-right: 0.2rem; margin-bottom: 0.1rem;">
+                  <div style="position: absolute; top: -2px; left: -2px; z-index: 1; visibility: hidden;">
+                    <select class="tags" data-question-id="<?=$question?>">
+                      <option value="0" disabled selected><?=(ccdb("select exists (select tag_id,tag_name from tag natural join community where community_name=$1)",$community))?'select tag':''?></option>
+                      <?foreach(db("select tag_id,tag_name from tag natural join community where community_name=$1 and tag_id not in (select tag_id from question_tag_x where question_id=$2)",$community,$question) as $r){ extract($r);?>
+                        <option value="<?=$tag_id?>"><?=$tag_name?></option>
+                      <?}?>
+                    </select>
+                  </div>
+                  <span class="tag">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                </span>
+              <?}?>
             </div>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
