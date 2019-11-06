@@ -75,6 +75,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
+    #markdown > :first-child { margin-top: 0; }
     #markdown ul { padding-left: 2em; }
     #markdown li { margin: 0.5em 0; }
     #markdown img { max-height: 20em; max-width: 100%; }
@@ -86,8 +87,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
 
-    .CodeMirror { height: 100%; border: 0.2rem solid #<?=$colour_dark?>; font-size: 1.1em; }
-    .CodeMirror pre.CodeMirror-placeholder { color: #<?=$colour_mid?>; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1em; border-radius: 0.2em; }
+    .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
   <script src="/lodash.js"></script>
@@ -152,12 +153,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div style="margin: 0.5em; margin-right: 0.1em;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
-      <select id="community">
-        <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
-          <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
-        <?}?>
-      </select>
+      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <?if(!$id){?><select id="type"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select><?}?>
@@ -172,14 +168,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <input name="community" type="hidden" value="<?=$community?>">
       <input name="type" type="hidden" value="question">
     <?}?>
-    <input name="title" style="flex 0 0 auto;" placeholder="title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
+    <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 0.2em;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
     <div style="flex: 0 0 2vmin;"></div>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1 60em; max-width: calc(50vw - 3vmin);">
-        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="type question here using markdown (this is just a demo for now to test the editor, preview and scrolling sync)"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
+        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="markdown" style="flex: 0 1 60em; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 0.2rem solid #<?=$colour_dark?>; overflow-y: auto;"></div>
+      <div id="markdown" style="flex: 0 1 60em; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
     </main>
   </form>
 </body>   
