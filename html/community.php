@@ -109,7 +109,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; }
     .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
-    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
+    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 20vh; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
     .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
     .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
@@ -451,7 +451,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     </div>
     <div id="notification-wrapper">
       <?if($uuid&&(ccdb("select count(*)>0 from chat_notification")==='t')){?>
-        <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 20vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.3em; overflow: scroll;">
+        <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.3em; overflow-x: hidden; overflow-y: scroll;">
           <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,room_name,community_name
                              , coalesce(nullif(account_name,''),'Anonymous') account_name
                              , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
