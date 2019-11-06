@@ -256,6 +256,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               $(this).prop('disabled',true);
             }
             return false;
+          }else{
+            textareaInsertTextAtCursor($(this),'  ');
           }
         }
       });
