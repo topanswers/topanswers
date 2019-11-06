@@ -232,7 +232,13 @@ create function new_question_tag(qid integer, tid integer) returns void language
                                             from question_tag_x_history
                                             where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
   --
-  insert into question_tag_x(question_id,tag_id,community_id,account_id) select qid,tid,community_id,current_setting('custom.account_id',true)::integer from question where question_id=qid;
+  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
+                                                  union all
+                                                  select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
+  insert into question_tag_x(question_id,tag_id,community_id,account_id)
+  select qid,tag_id,community_id,current_setting('custom.account_id',true)::integer
+  from w natural join tag
+  where tag_id not in (select tag_id from question_tag_x where question_id=qid);
 $$;
 --
 create function remove_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -242,6 +248,10 @@ create function remove_question_tag(qid integer, tid integer) returns void langu
   select _error('rate limit') where exists (select *
                                             from question_tag_x_history
                                             where question_tag_x_history_removed_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_removed_at>current_timestamp-'1s'::interval);
+  --
+  select remove_question_tag(qid,tag_implies_id)
+  from question_tag_x natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
+  where question_id=qid and tag_id=tid and tag_name like parent_name||'%' and not exists(select * from question_tag_x natural join tag where question_id=qid and tag_id<>tid and tag_implies_id=t.tag_implies_id);
   --
   insert into question_tag_x_history(question_id,tag_id,community_id,question_tag_x_history_added_by_account_id,question_tag_x_history_removed_by_account_id,question_tag_x_added_at)
   select qid,tid,community_id,account_id,current_setting('custom.account_id',true)::integer,question_tag_x_at from question_tag_x where question_id=qid and tag_id=tid;
