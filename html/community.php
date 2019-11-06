@@ -313,7 +313,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
             <span class="when" data-seconds="<?=$question_when?>"></span>
             <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a href="/question?id=<?=$question?>">edit</a><?}?>
             <div style="margin-top: 0.4rem; display: flex; flex-wrap: wrap;">
-              <?foreach(db("select tag_id,tag_name from question_tag_x natural join tag where question_id=$1",$question) as $r){ extract($r);?>
+              <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question) as $r){ extract($r);?>
                 <span class="tag" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
               <?}?>
               <span class="tag addtag" style="position: relative; cursor: pointer;">

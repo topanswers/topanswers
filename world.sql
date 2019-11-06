@@ -50,6 +50,10 @@ create view answer with (security_barrier) as select answer_id,question_id,accou
 create view tag with (security_barrier) as select tag_id,community_id,tag_name,tag_implies_id from db.tag natural join community;
 create view question_tag_x with (security_barrier) as select question_id,tag_id from db.question_tag_x natural join community;
 --
+create view question_tag_x_not_implied with (security_barrier) as
+select question_id,tag_id from db.question_tag_x qt natural join db.tag t natural join community
+where not exists (select * from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
+--
 --
 create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('login uuid does not exist') where not exists(select * from login where login_uuid=luuid);
@@ -93,7 +97,7 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
   where room_id=roomid
   on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
   --
-  with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id) 
+  with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
              select community_id,roomid,current_setting('custom.account_id',true)::integer,msg,replyid from room where room_id=roomid returning community_id,room_id,chat_id)
      , n as (insert into chat_notification(chat_id,account_id)
              select chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
