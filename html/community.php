@@ -17,12 +17,14 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select login($1)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
-  if(isset($_POST['msg'])){
-    db("select new_chat($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):'');
-  }else{
-    db("select dismiss_notification($1)",$_POST['id']);
+  isset($_POST['action']) or die('posts must have an "action" parameter');
+  switch($_POST['action']) {
+    case 'dismiss': exit(db("select dismiss_notification($1)",$_POST['id']));
+    case 'new-chat': exit(db("select new_chat($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
+    case 'new-tag': exit(db("select new_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
+    case 'remove-tag': exit(db("select remove_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
+    default: die('unrecognized action');
   }
-  exit;
 }
 if(isset($_GET['flagchatid'])){
   exit(ccdb("select set_chat_flag($1)",$_GET['flagchatid']));
@@ -58,6 +60,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
+  <link rel="stylesheet" href="/select2.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
@@ -74,6 +77,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .answer { margin-bottom: 2em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #a794b4; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
+    .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 1.1em; border-top-right-radius: 1em; border-bottom-right-radius: 1em; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; }
+    .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
+    .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
+    .tag i::before { border-radius: 50%; }
+    .tag:hover i { visibility: visible; }
+
+    .select2-results__option { white-space: nowrap; }
+    .select2-results__options { overflow-x: hidden; }
 
     #qa .bar { font-size: 0.6em; padding: 0.6rem; background: #<?=$colour_light?>; }
     #qa .markdown { padding: 0.6rem; }
@@ -123,6 +134,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/moment.js"></script>
   <script src="/resizer.js"></script>
   <script src="/favico.js"></script>
+  <script src="/select2.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
@@ -207,13 +219,18 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('#chat-wrapper').on('click','.unstar', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
       $('#chat-wrapper').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.dismiss', function(){
-        $.post('/community', { id: $(this).closest('.message').attr('data-id') }).done(function(){ updateChat(); });
+        $.post('/community', { id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateChat(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
       $('#replying>button').click(function(){ $('#replying').attr('data-id','').slideUp('fast'); });
+      $('.tag').click(function(){ $(this).find('div').fadeIn(); });
+      $(document).click(function(e){ if((!$(e.target).closest('.tag').length) && (!$(e.target).closest('.dropdown').length)){ $('.tag').find('div').fadeOut(); } });
+      $('.tag select').select2({ dropdownCssClass: 'dropdown' });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
+      $('select.tags').change(function(){ if($(this).val()!=='0'){ $.post(window.location.href, { questionid: $(this).data('question-id'), tagid: $(this).val(), action: 'new-tag' }).done(function(){ window.location.reload(); }); } });
+      $('.tag i').click(function(){ $.post(window.location.href, { questionid: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
       $('#chattext').on('input', function(){
         $(this).css('height', '0');
@@ -228,7 +245,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
             if(t.val().trim()){
               arr = [];
               $('.ping').each(function(){ arr.push($(this).data('id')); });
-              $.post('/community', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr }).done(function(){
+              $.post('/community', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr, action: 'new-chat' }).done(function(){
                 updateChat();
                 t.val('').prop('disabled',false).focus().css('height', 'auto');
                 $('#preview').slideUp('fast');
@@ -261,6 +278,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         return false;
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
+      $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -296,6 +314,22 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
             <?=htmlspecialchars($account_name)?>,
             <span class="when" data-seconds="<?=$question_when?>"></span>
             <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a href="/question?id=<?=$question?>">edit</a><?}?>
+            <div style="margin-top: 0.4rem; display: flex; flex-wrap: wrap;">
+              <?foreach(db("select tag_id,tag_name from question_tag_x natural join tag where question_id=$1",$question) as $r){ extract($r);?>
+                <span class="tag" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+              <?}?>
+              <span class="tag addtag" style="position: relative; cursor: pointer;">
+                &#65291;&nbsp;&nbsp;&nbsp;&nbsp;
+                <div style="position: absolute; top: -2px; left: -2px; z-index: 1; display: none;">
+                  <select class="tags" data-question-id="<?=$question?>">
+                    <option value="0" disabled selected><?=(ccdb("select exists (select tag_id,tag_name from tag natural join community where community_name=$1)",$community))?'select tag':''?>&nbsp;&nbsp;</option>
+                    <?foreach(db("select tag_id,tag_name from tag natural join community where community_name=$1 and tag_id not in (select tag_id from question_tag_x where question_id=$2)",$community,$question) as $r){ extract($r);?>
+                      <option value="<?=$tag_id?>"><?=$tag_name?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                    <?}?>
+                  </select>
+                </div>
+              </span>
+            </div>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
         </div>

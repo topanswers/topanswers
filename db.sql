@@ -160,6 +160,7 @@ create table question(
 , question_markdown text not null check (length(question_markdown) between 1 and 50000)
 , question_room_id integer not null references room deferrable initially deferred
 , question_change_at timestamptz not null default current_timestamp
+, unique (community_id,question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
@@ -192,3 +193,39 @@ create table answer_history(
 , answer_history_markdown text not null
 );
 create unique index answer_history_rate_limit_ind on answer_history(account_id,answer_history_at);
+
+create table tag(
+  tag_id integer generated always as identity primary key
+, community_id integer not null references community
+, tag_at timestamptz not null default current_timestamp
+, tag_name text not null check (tag_name~'^[a-z][-0-9a-z]{1,18}[0-9a-z]$')
+, tag_description text default '' not null check (length(tag_description)<101)
+, tag_implies_id integer
+, unique (community_id,tag_id)
+, unique (community_id,tag_name)
+, foreign key (community_id,tag_implies_id) references tag (community_id,tag_id)
+);
+
+create table question_tag_x(
+  question_id integer
+, tag_id integer
+, community_id integer not null
+, account_id integer not null references account
+, question_tag_x_at timestamptz not null default current_timestamp
+, primary key (question_id,tag_id)
+, foreign key (community_id,question_id) references question (community_id,question_id)
+, foreign key (community_id,tag_id) references tag (community_id,tag_id)
+);
+
+create table question_tag_x_history(
+  question_tag_x_history_id integer generated always as identity primary key
+, question_id integer
+, tag_id integer
+, community_id integer not null
+, question_tag_x_history_added_by_account_id integer not null references account
+, question_tag_x_history_removed_by_account_id integer not null references account
+, question_tag_x_added_at timestamptz not null
+, question_tag_x_removed_at timestamptz not null default current_timestamp
+, foreign key (community_id,question_id) references question (community_id,question_id)
+, foreign key (community_id,tag_id) references tag (community_id,tag_id)
+);

@@ -44,9 +44,11 @@ create view chat_month with (security_barrier) as select room_id,chat_year,chat_
 create view chat_day with (security_barrier) as select room_id,chat_year,chat_month,chat_day,chat_day_count from db.chat_day;
 create view chat_hour with (security_barrier) as select room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour;
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
-create view question with (security_barrier) as select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at from db.question;
-create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history;
-create view answer with (security_barrier) as select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at from db.answer;
+create view question with (security_barrier) as select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at from db.question natural join community;
+create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history natural join (select question_id from question) z;
+create view answer with (security_barrier) as select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at from db.answer natural join (select question_id from question) z;
+create view tag with (security_barrier) as select tag_id,community_id,tag_name,tag_implies_id from db.tag natural join community;
+create view question_tag_x with (security_barrier) as select question_id,tag_id from db.question_tag_x natural join community;
 --
 --
 create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -207,7 +209,7 @@ $$;
 --
 create function new_answer(qid integer, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid question') where not exists (select * from question where question_id=qid);
+  select _error('invalid question') where not exists (select * from world.question where question_id=qid);
   select _error('rate limit') where exists (select * from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id<>1);
   insert into answer(question_id,account_id,answer_markdown) values(qid, current_setting('custom.account_id',true)::integer, markdown) returning answer_id;
 $$;
@@ -220,6 +222,31 @@ create function change_answer(id integer, markdown text) returns void language s
   --
   insert into answer_history(answer_id,account_id,answer_history_at,answer_history_markdown) select answer_id,current_setting('custom.account_id',true)::integer,answer_change_at,answer_markdown from answer where answer_id=id;
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
+$$;
+--
+create function new_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid question') where not exists (select * from world.question where question_id=qid);
+  select _error('invalid tag') where not exists (select * from world.tag where tag_id=tid);
+  select _error('rate limit') where exists (select *
+                                            from question_tag_x_history
+                                            where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
+  --
+  insert into question_tag_x(question_id,tag_id,community_id,account_id) select qid,tid,community_id,current_setting('custom.account_id',true)::integer from question where question_id=qid;
+$$;
+--
+create function remove_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid question') where not exists (select * from world.question where question_id=qid);
+  select _error('invalid tag') where not exists (select * from world.tag where tag_id=tid);
+  select _error('rate limit') where exists (select *
+                                            from question_tag_x_history
+                                            where question_tag_x_history_removed_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_removed_at>current_timestamp-'1s'::interval);
+  --
+  insert into question_tag_x_history(question_id,tag_id,community_id,question_tag_x_history_added_by_account_id,question_tag_x_history_removed_by_account_id,question_tag_x_added_at)
+  select qid,tid,community_id,account_id,current_setting('custom.account_id',true)::integer,question_tag_x_at from question_tag_x where question_id=qid and tag_id=tid;
+  --
+  delete from question_tag_x where question_id=qid and tag_id=tid;
 $$;
 --
 --
