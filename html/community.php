@@ -374,14 +374,16 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   </main>
   <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
-      <select id="room">
-        <?foreach(db("select room_id, case when room_is_for_question then 'question room' else coalesce(room_name,initcap(community_name)||' Chat') end room_name
-                      from room natural join community
-                      where community_name=$1 and (not room_is_for_question or room_id=$2)
-                      order by room_name desc",$community,$room) as $r){ extract($r);?>
-          <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
-        <?}?>
-      </select>
+      <?if(!$question){?>
+        <select id="room">
+          <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name
+                        from room natural join community
+                        where community_name=$1 and (not room_is_for_question or room_id=$2)
+                        order by room_name desc",$community,$room) as $r){ extract($r);?>
+            <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
+          <?}?>
+        </select>
+      <?}?>
       <a href="/transcript?room=<?=$room?>" style="color: #<?=$colour_mid?>;">transcript</a>
       <?if($uuid) if(intval(ccdb("select account_id from login"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
