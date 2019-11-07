@@ -235,7 +235,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
       $('#chat-wrapper').on('click','.who a', function(){
         if(($('#messages').outerHeight() > $('#messages')[0].scrollHeight - 5)||($(this).closest('div.message').data('reply-id')<$('#messages .message:last').data('id'))){
-          window.location.href = '/transcript?room=<?=$_GET['room']?>&id='+$(this).closest('div.message').data('reply-id')+$(this).attr('href'); return false;
+          window.location.href = '/transcript?room=<?=$room?>&id='+$(this).closest('div.message').data('reply-id')+$(this).attr('href'); return false;
         }
       });
       $('#chat-wrapper').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
