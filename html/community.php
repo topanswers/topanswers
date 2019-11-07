@@ -1,4 +1,4 @@
-<?    
+<?
 $connection = pg_connect('dbname=postgres user=world') or die(header('HTTP/1.0 500 Internal Server Error'));
 function db($query,...$params) {
   global $connection;
@@ -154,7 +154,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         else chatPollInterval = 60000;
       }
       function updateChat(){
-        var tempScrollTop = $('#messages .message:first').position().top, firstId = $('#messages .message:first').data('id');
+        var tempScrollTop = $('#messages').scrollTop(), tempPositionTop = $('#messages .message:first').position().top, firstId = $('#messages .message:first').data('id');
         $.get(window.location.href,function(data) {
           var arr = [], newChats;
           $('.ping').each(function(){ arr.push($(this).data('id')); });
@@ -166,8 +166,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           if(document.visibilityState==='hidden'){ document.title = (newChats?('('+newChats+') '):'')+title; }
           chatLastChange = 0;
           initChat();
-          if(($('#messages .message:first').data('id') === firstId) || (($('#messages')[0].scrollHeight+40) > ($('#messages').scrollTop()+$('#messages').outerHeight()))){
-            $('#messages').scrollTop($('#messages').scrollTop()-tempScrollTop+$('#messages .message[data-id="'+firstId+'"]').position().top);
+          if( ($('#messages .message:first').data('id')===firstId) || ($('#messages')[0].scrollHeight > (tempScrollTop+$('#messages').outerHeight()+window.innerHeight/2)) ) {
+            $('#messages').scrollTop($('#messages').scrollTop()-tempPositionTop+$('#messages .message[data-id="'+firstId+'"]').position().top);
           }
           $('#chattext').trigger('input');
         },'html');
