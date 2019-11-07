@@ -144,6 +144,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
       $('.message .markdown a').attr('rel','nofollow').attr('target','_blank');
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+      setTimeout(function(){ $('.message:target')[0].scrollIntoView(); }, 0);
     });
   </script>
   <title><?=ccdb("select room_name from room where room_id=$1",$room)?> Transcript | TopAnswers</title>

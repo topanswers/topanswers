@@ -146,6 +146,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var chatLastChange = <?=ccdb("select extract(epoch from current_timestamp-room_latest_change_at)::integer from room where room_id=$1",$room)?>;
       var chatPollInterval, title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
+
       function setChatPollInterval(){
         if(chatLastChange<5) chatPollInterval = 1000;
         else if(chatLastChange<15) chatPollInterval = 3000;
@@ -210,15 +211,33 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         e.prop('selectionStart',s).prop('selectionEnd',s);
         e.trigger('input');
       }
-      $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
+
       $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
       $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax({ type: "GET", url: '/uuid?pin='+pin, async: false }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
+      $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message').data('id')).slideDown('fast').children('span').text($(this).closest('.message').data('name')); $('#chattext').focus(); });
-      $('#chat-wrapper').on('click','.flag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'flagchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
-      $('#chat-wrapper').on('click','.unflag', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unflagchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
-      $('#chat-wrapper').on('click','.star', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'starchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
-      $('#chat-wrapper').on('click','.unstar', function(){ var url = window.location.href; $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); }); });
+      $('#chat-wrapper').on('click','.flag', function(){
+        var url = window.location.href;
+        $.get(url+((url.indexOf('?')===-1)?'?':'&')+'flagchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
+      });
+      $('#chat-wrapper').on('click','.unflag', function(){
+        var url = window.location.href;
+        $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unflagchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
+      });
+      $('#chat-wrapper').on('click','.star', function(){
+        var url = window.location.href;
+        $.get(url+((url.indexOf('?')===-1)?'?':'&')+'starchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
+      });
+      $('#chat-wrapper').on('click','.unstar', function(){
+        var url = window.location.href;
+        $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
+      });
+      $('#chat-wrapper').on('click','.who a', function(){
+        if(($('#messages').outerHeight() > $('#messages')[0].scrollHeight - 5)||($(this).closest('div.message').data('reply-id')<$('#messages .message:last').data('id'))){
+          window.location.href = '/transcript?room=<?=$_GET['room']?>&id='+$(this).closest('div.message').data('reply-id')+$(this).attr('href'); return false;
+        }
+      });
       $('#chat-wrapper').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.dismiss', function(){
         $.post('/community', { id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateChat(); });
@@ -407,7 +426,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       </div>
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
-      <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: auto;">
+      <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: auto; scroll-behavior: smooth;">
         <?foreach(db("select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
                       from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at
                                  , coalesce(nullif(account_name,''),'Anonymous') account_name
