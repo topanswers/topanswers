@@ -27,9 +27,17 @@ create table account(
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea check(length(account_image)>0)
 , account_change_id bigint generated always as identity unique
-  account_uuid uuid not null default x_uuid_ossp.uuid_generate_v4()
+, account_uuid uuid not null default x_uuid_ossp.uuid_generate_v4()
+, account_is_dev boolean default false not null
 );
 create unique index account_rate_limit_ind on account(account_create_at);
+
+create table account_community(
+  account_id integer references account
+, community_id integer references community
+, account_community_repute integer default 0 not null
+, primary key (account_id,community_id)
+);
 
 create table account_history(
   account_history_id integer generated always as identity primary key
@@ -160,6 +168,8 @@ create table question(
 , question_markdown text not null check (length(question_markdown) between 1 and 50000)
 , question_room_id integer not null references room deferrable initially deferred
 , question_change_at timestamptz not null default current_timestamp
+, question_votes integer default 0 not null
+, question_repute integer default 0 not null
 , unique (community_id,question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
 );
@@ -229,3 +239,26 @@ create table question_tag_x_history(
 , foreign key (community_id,question_id) references question (community_id,question_id)
 , foreign key (community_id,tag_id) references tag (community_id,tag_id)
 );
+
+create table question_vote(
+  question_id integer references question
+, account_id integer references account
+, question_vote_at timestamptz default current_timestamp not null
+, question_vote_direction integer not null check (question_vote_direction in(-1,0,1))
+, question_vote_repute integer not null check (question_vote_repute>=0)
+, primary key (question_id,account_id)
+, unique (account_id,question_id)
+);
+
+create table question_vote_history(
+  question_vote_history_id integer generated always as identity primary key
+, question_id integer not null
+, account_id integer not null
+, question_vote_history_at timestamptz not null
+, question_vote_history_direction integer not null check (question_vote_history_direction in(-1,0,1))
+, question_vote_history_repute integer not null check (question_vote_history_repute>=0)
+, foreign key(question_id,account_id) references question_vote
+);
+
+
+

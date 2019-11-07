@@ -14,12 +14,13 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 --
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
-from db.community
-where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or current_setting('custom.account_id',true)::integer in (1,2,4,11));
+     , round(ln(greatest(account_community_repute,0)+1))+(case when account_is_dev then 1 else 0 end) community_my_power
+from db.community cross join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_repute from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
+where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or account_is_dev);
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
 create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
-create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid from db.account where account_id=current_setting('custom.account_id',true)::integer;
+create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid,account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
 select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at
@@ -261,6 +262,31 @@ create function remove_question_tag(qid integer, tid integer) returns void langu
   select qid,tid,community_id,account_id,current_setting('custom.account_id',true)::integer,question_tag_x_at from question_tag_x where question_id=qid and tag_id=tid;
   --
   delete from question_tag_x where question_id=qid and tag_id=tid;
+$$;
+--
+create function vote_question(qid integer, direction integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid direction') where direction not in (-1,0,1);
+  select _error('invalid question') where not exists (select * from world.question where question_id=qid);
+  select _error('cant vote on own question') where exists (select * from world.question where question_id=qid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('cant vote on this question type') where exists (select * from world.question where question_id=qid and question_type='question');
+  select _error('rate limit') where exists (select * from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'10s'::interval);
+  --
+  with d as (delete from question_vote where question_id=qid and account_id=current_setting('custom.account_id',true)::integer returning *)
+     , r as (select question_id,community_id,q.account_id,question_vote_repute from d join question q using(question_id))
+     , q as (update question set question_votes = question_votes-question_vote_direction, question_repute = question_repute-question_vote_repute from d where question.question_id=qid)
+     , a as (insert into account_community(account_id,community_id,account_community_repute)
+             select account_id,community_id,-question_vote_repute from r
+             on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute)
+  insert into question_vote_history(question_id,account_id,question_vote_history_at,question_vote_history_direction,question_vote_history_repute)
+  select question_id,account_id,question_vote_at,question_vote_direction,question_vote_repute from d;
+  --
+  with i as (insert into question_vote(question_id,account_id,question_vote_direction,question_vote_repute)
+             select qid,current_setting('custom.account_id',true)::integer,direction,community_my_power from question natural join world.community where question_id=qid returning *)
+     , q as (update question set question_votes = question_votes+question_vote_direction, question_repute = question_repute+question_vote_repute from i where question.question_id=qid)
+  insert into account_community(account_id,community_id,account_community_repute)
+  select account_id,community_id,question_vote_repute from (select question_id,community_id,q.account_id,question_vote_repute from i join question q using(question_id)) z
+  on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute;
 $$;
 --
 --
