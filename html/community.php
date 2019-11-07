@@ -233,7 +233,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         var url = window.location.href;
         $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
       });
-      $('#chat-wrapper').on('click','.who a', function(){
+      $('#chat').on('click','.who a', function(){
         if(($('#messages').outerHeight() > $('#messages')[0].scrollHeight - 5)||($(this).closest('div.message').data('reply-id')<$('#messages .message:last').data('id'))){
           window.location.href = '/transcript?room=<?=$room?>&id='+$(this).closest('div.message').data('reply-id')+$(this).attr('href'); return false;
         }
