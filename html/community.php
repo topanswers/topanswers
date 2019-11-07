@@ -141,6 +141,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/select2.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
+    moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
       var chatChangeId = <?=ccdb("select room_latest_change_id from room where room_id=$1",$room)?>;
@@ -202,7 +203,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         });
         $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
         $('.message .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
-        $('.bigspacer').each(function(){ $(this).children(':first-child').text(moment().subtract($(this).data('gap'),'seconds').calendar()).end().children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+        $('.bigspacer').each(function(){ $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'LT', lastDay: '[Yesterday] LT', lastWeek: '[Last] dddd LT', sameElse: 'LLLL' })).end()
+                                                .children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
         $('.message .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
         favicon.badge($('#notifications .message').length);
@@ -460,7 +462,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               </span>
             <?}?>
           </div>
-          <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"><span></span><span></span></div><?}?>
+          <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>" data-at="<?=$chat_at?>"><span></span><span></span></div><?}?>
         <?}?>
       </div>
       <?if($uuid){?>
