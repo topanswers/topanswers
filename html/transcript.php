@@ -88,10 +88,12 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     body>div>div>span { font-size: smaller; font-style: italic; }
     a:not([href]) { color: #<?=$colour_highlight?>; }
 
+    .period { border: 2px solid #<?=$colour_mid?>; border-right: none; }
+
     .button { background: none; border: none; padding: 0; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
-    .markdown { overflow: auto; }
+    .markdown { overflow: auto; padding-right: 2px; }
     .markdown>:first-child { margin-top: 1px; }
     .markdown>:last-child { margin-bottom: 1px; }
     .markdown ul { padding-left: 2em; }
@@ -144,14 +146,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
       $('.message .markdown a').attr('rel','nofollow').attr('target','_blank');
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-      setTimeout(function(){ $('.message:target')[0].scrollIntoView(); }, 0);
+      setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
     });
   </script>
   <title><?=ccdb("select room_name from room where room_id=$1",$room)?> Transcript | TopAnswers</title>
 </head>
 <body style="display: flex; background-color: #<?=$colour_light?>; padding: 2em;">
   <?if(isset($_GET['year'])){?>
-    <div style="flex 0 0 auto;">
+    <div class="period" style="flex 0 0 auto;">
       <div>
         <div>year</div>
       </div>
@@ -164,20 +166,20 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     </div>
   <?}?>
   <?if(isset($_GET['month'])){?>
-    <div style="flex 0 0 auto;">
+    <div class="period" style="flex 0 0 auto;">
       <div>
         <div>month</div>
       </div>
-      <?foreach(db("select chat_month,chat_month_count from chat_month where room_id=$1 and chat_year=$2 order by chat_month",$room,$_GET['year']) as $r){extract($r);?>
+      <?foreach(db("select chat_month,chat_month_count,to_char(to_timestamp(chat_month::text,'MM'),'Month') month_text from chat_month where room_id=$1 and chat_year=$2 order by chat_month",$room,$_GET['year']) as $r){extract($r);?>
         <div>
-          <a<?if($chat_month!==$_GET['month']){?>  href="/transcript?room=<?=$room?>&year=<?=$_GET['year']?>&month=<?=$chat_month?>"<?}?>><?=$chat_month?></a>
+          <a class="month"<?if($chat_month!==$_GET['month']){?>  href="/transcript?room=<?=$room?>&year=<?=$_GET['year']?>&month=<?=$chat_month?>"<?}?>><?=$month_text?></a>
           <span>(<?=$chat_month_count?>)</span>
         </div>
       <?}?>
     </div>
   <?}?>
   <?if(isset($_GET['day'])){?>
-    <div style="flex 0 0 auto;">
+    <div class="period" style="flex 0 0 auto;">
       <div>
         <div>day</div>
       </div>
@@ -190,7 +192,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     </div>
   <?}?>
   <?if(isset($_GET['hour'])){?>
-    <div style="flex 0 0 auto;">
+    <div class="period" style="flex 0 0 auto;">
       <div>
         <div>hour</div>
       </div>

@@ -93,7 +93,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     #qa .markdown { padding: 0.6rem; }
     #qa .when { color: #<?=$colour_dark?>; }
 
-    .markdown { overflow: auto; }
+    .markdown { overflow: auto; padding-right: 2px; }
     .markdown>:first-child { margin-top: 1px; }
     .markdown>:last-child { margin-bottom: 1px; }
     .markdown ul { padding-left: 2em; }
