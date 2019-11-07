@@ -92,8 +92,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     .markdown { overflow: auto; }
-    .markdown>:first-child { margin-top: 0; }
-    .markdown>:last-child { margin-bottom: 0; }
+    .markdown>:first-child { margin-top: 1px; }
+    .markdown>:last-child { margin-bottom: 1px; }
     .markdown ul { padding-left: 2em; }
     .markdown img { max-height: 7em; }
     .markdown table { border-collapse: collapse; }
