@@ -77,6 +77,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .answer { margin-bottom: 2em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #a794b4; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
+    .bigspacer:not(:hover)>span:first-child { display: none; }
+    .bigspacer:hover>span:last-child { display: none; }
 
     .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
@@ -200,7 +202,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         });
         $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
         $('.message .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
-        $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+        $('.bigspacer').each(function(){ $(this).children(':first-child').text(moment().subtract($(this).data('gap'),'seconds').calendar()).end().children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
         $('.message .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
         $('#messages').scrollTop($('#messages')[0].scrollHeight);
         favicon.badge($('#notifications .message').length);
@@ -458,7 +460,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               </span>
             <?}?>
           </div>
-          <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
+          <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"><span></span><span></span></div><?}?>
         <?}?>
       </div>
       <?if($uuid){?>

@@ -15,7 +15,7 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
      , round(ln(greatest(account_community_repute,0)+1))+(case when account_is_dev then 1 else 0 end) community_my_power
-from db.community cross join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_repute from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
+from db.community natural left join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_repute from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
 where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or account_is_dev);
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
