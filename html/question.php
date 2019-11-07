@@ -114,7 +114,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true });
-      $('textarea[name="markdown"]').show().css({ position: 'absolute', top: 0 });
+      $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, 'margin-top': '4px', 'margin-left': '10px' }).attr('tabindex','-1');
       var map;
       function render(){
         $('#markdown').html(md.render(cm.getValue()));
@@ -162,21 +162,23 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
-  <form id="form" method="POST" action="/question" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
+  <form id="form" method="POST" action="/question" style="display: flex; justify-content: center; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
     <?if($id){?>
       <input name="id" type="hidden" value="<?=$id?>">
     <?}else{?>
       <input name="community" type="hidden" value="<?=$community?>">
       <input name="type" type="hidden" value="question">
     <?}?>
-    <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 0.2em;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
-    <div style="flex: 0 0 2vmin;"></div>
-    <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
-      <div style="flex: 0 1 60em; max-width: calc(50vw - 3vmin);">
-        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
-      </div>
+    <main style="display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column;">
+      <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 0.2em;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="markdown" style="flex: 0 1 60em; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
+      <div style="display: flex; flex: 1 0 0; overflow: hidden;">
+        <div style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin);">
+          <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
+        </div>
+        <div style="flex: 0 0 2vmin;"></div>
+        <div id="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
+      </div>
     </main>
   </form>
 </body>   

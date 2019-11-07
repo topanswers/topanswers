@@ -112,11 +112,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true });
-      $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' });
+      $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');
       var map;
       function render(){
         $('#answer').html(md.render(cm.getValue()));
-        $('#answer table').wrap('<div class="tablewrapper">');
+        $('#answer table').wrap('<div class="tablewrapper" tabindex="-1">');
         map = [];
         $('#answer [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$id){?>localStorage.setItem('<?=$community?>.answer.<?=$question?>',cm.getValue());<?}?>
@@ -138,7 +138,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <?}?>
       render();
       $('#question .markdown').html(md.render($('#question .markdown').data('markdown')));
-      $('#question .markdown table').wrap('<div class="tablewrapper">');
+      $('#question .markdown table').wrap('<div class="tablewrapper" tabindex="-1">');
     });
   </script>
   <title>Answer | <?=ucfirst($community)?> | TopAnswers</title>
@@ -169,7 +169,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       </div>
       <div style="flex: 0 0 2vmin;"></div>
       <div style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); position: relative;">
-        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your answer"><?=$id?htmlspecialchars($answer_markdown):''?></textarea>
+        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$id?htmlspecialchars($answer_markdown):''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
       <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
