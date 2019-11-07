@@ -114,7 +114,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
     .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
-    .message.highlight .markdown-wrapper { border: 0.3em solid #<?=$colour_highlight?>60; }
+    .message:target .markdown-wrapper { box-shadow: 0 0 1px 1px #<?=$colour_highlight?> inset; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
@@ -126,7 +126,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
-      var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
+      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
       function threadChat(){
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
@@ -144,7 +144,6 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
       $('.message .markdown a').attr('rel','nofollow').attr('target','_blank');
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-      $('.highlight')[0].scrollIntoView();
     });
   </script>
   <title><?=ccdb("select room_name from room where room_id=$1",$room)?> Transcript | TopAnswers</title>
@@ -217,10 +216,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                         where room_id=$1 and chat_at>=make_timestamp($2,$3,$4,$5,0,0) and chat_at<make_timestamp($6,$7,$8,$9,0,0)+'1h'::interval".($uuid?"":" and chat_flag_count=0").") z
                   order by chat_at",$room,$_GET['year']??1,$_GET['month']??1,$_GET['day']??1,$_GET['hour']??0,$_GET['year']??9999,$_GET['month']??12,$_GET['day']??$maxday,$_GET['hour']??23) as $r){ extract($r);?>
       <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
-      <div id="c<?=$chat_id?>" class="message<?=($chat_account_is_repeat==='t')?' merged':''?><?=($chat_id===($_GET['id']??''))?' highlight':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+      <div id="c<?=$chat_id?>" class="message<?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
         <small class="who">
           <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
-          <?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span style="color: #'.$colour_dark.';">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:
+          <?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:
         </small>
         <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
         <div class="markdown-wrapper">

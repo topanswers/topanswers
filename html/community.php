@@ -119,6 +119,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
     .message.mine .buttons .button { cursor: default; }
+    .message:target .markdown-wrapper { box-shadow: 0 0 1px 1px #<?=$colour_highlight?> inset; }
     #chat .message .who { top: -1.2em; }
     #chat .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
     #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
@@ -419,8 +420,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                             from chat c natural join account natural left join chat_flag natural left join chat_star
                             where room_id=$1".($uuid?"":" and chat_flag_count=0").") z
                       order by chat_at desc limit 100",$room) as $r){ extract($r);?>
-          <div class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
-            <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<span style="color: #'.$colour_dark.';">&nbsp;replying to&nbsp;</span>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
+          <div id="c<?=$chat_id?>" class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+            <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
             <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
             <div class="markdown-wrapper">
               <?if($canchat){?><button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button><?}?>
