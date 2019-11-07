@@ -19,10 +19,10 @@ if($uuid) ccdb("select login($1)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   isset($_POST['action']) or die('posts must have an "action" parameter');
   switch($_POST['action']) {
-    case 'dismiss': exit(db("select dismiss_notification($1)",$_POST['id']));
-    case 'new-chat': exit(db("select new_chat($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
-    case 'new-tag': exit(db("select new_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
-    case 'remove-tag': exit(db("select remove_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
+    case 'dismiss': exit(ccdb("select dismiss_notification($1)",$_POST['id']));
+    case 'new-chat': exit(ccdb("select new_chat($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
+    case 'new-tag': exit(ccdb("select new_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
+    case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
     default: die('unrecognized action');
   }
 }
