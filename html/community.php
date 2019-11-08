@@ -171,8 +171,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           if(document.visibilityState==='hidden'){ document.title = (newChats?('('+newChats+') '):'')+title; }
           chatLastChange = 0;
           initChat();
-          if( ($('#messages .message:first').data('id')===firstId) || ($('#messages')[0].scrollHeight > (tempScrollTop+$('#messages').outerHeight()+window.innerHeight/2)) ) {
-            $('#messages').scrollTop($('#messages').scrollTop()-tempPositionTop+$('#messages .message[data-id="'+firstId+'"]').position().top);
+          if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1){
+            if( ($('#messages .message:first').data('id')===firstId) || ($('#messages')[0].scrollHeight < (tempScrollTop+$('#messages').outerHeight()+window.innerHeight/2)) ) {
+              $('#messages').scrollTop($('#messages').scrollTop()+tempPositionTop-$('#messages .message[data-id="'+firstId+'"]').position().top);
+            }
+          }else{
+            if( ($('#messages .message:first').data('id')===firstId) || ($('#messages')[0].scrollHeight > (tempScrollTop+$('#messages').outerHeight()+window.innerHeight/2)) ) {
+              $('#messages').scrollTop($('#messages').scrollTop()-tempPositionTop+$('#messages .message[data-id="'+firstId+'"]').position().top);
+            }
           }
           $('#chattext').trigger('input');
         },'html');
@@ -192,6 +198,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       function pollChat() { checkChat(); setTimeout(pollChat, chatPollInterval); }
       function initChat() {
         setChatPollInterval();
+        if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1){
+          $('#messages').css({ 'flex-direction': 'column', 'justify-content': 'flex-end safe' }).each(function(){ $(this).append($(this).children().get().reverse()); });
+        }
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
           function foo(b){
@@ -264,7 +273,6 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
       $('#chattext').keydown(function(e){
         var t = $(this);
-        $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast');
         if((e.keyCode || e.which) == 13) {
           if(!e.shiftKey) {
             if(t.val().trim()){
@@ -274,6 +282,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                 updateChat();
                 t.val('').prop('disabled',false).focus().css('height', 'auto');
                 $('#preview').slideUp('fast');
+                setTimeout(function(){ $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast'); },200);
               });
               $('#replying').attr('data-id','').slideUp('fast');
               $('.ping').removeClass('ping');
@@ -285,10 +294,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           }
         }
       });
+      $('#chattext').on('input',function(e){
+        $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast');
+      });
       document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
       const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
       setTimeout(pollChat, chatPollInterval);
       initChat();
+      setTimeout(function(){ $('#messages').each(function(){ $(this).scrollTop($(this).prop("scrollHeight")); }); });
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
       $('#chatuploadfile').change(function() {
         if(this.files[0].size > 2097152){
@@ -430,7 +443,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       </div>
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
-      <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column-reverse; padding: 0.5em; overflow: auto;">
+      <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column-reverse; padding: 0.5em; overflow: auto;">
         <?foreach(db("select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
                       from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at
                                  , coalesce(nullif(account_name,''),'Anonymous') account_name
