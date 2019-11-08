@@ -269,7 +269,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('#chattext').on('input', function(){
         $(this).css('height', '0');
         $(this).css('height',this.scrollHeight+'px');
-        if($(this).val().trim()){ $('#preview .markdown').html(md.render($('#chattext').val())); $('#preview').slideDown('fast'); } else { $('#preview').slideUp('fast'); }
+        if($(this).val().trim()){ $('#preview .markdown').html(md.render($('#chattext').val())); $('#preview:hidden').slideDown('fast'); } else { $('#preview:visible').slideUp('fast'); }
       });
       $('#chattext').keydown(function(e){
         var t = $(this);
@@ -281,7 +281,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
               $.post('/community', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr, action: 'new-chat' }).done(function(){
                 updateChat();
                 t.val('').prop('disabled',false).focus().css('height', 'auto');
-                $('#preview').slideUp('fast');
+                $('#preview:visible').slideUp('fast');
                 setTimeout(function(){ $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast'); },200);
               });
               $('#replying').attr('data-id','').slideUp('fast');
@@ -295,7 +295,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         }
       });
       $('#chattext').on('input',function(e){
-        $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast');
+        if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1){
+          if(($('#messages').scrollTop()+$('#messages').innerHeight()+2)<$('#messages').prop("scrollHeight")) $('#messages').scrollTop($('#messages').prop("scrollHeight")-$('#messages').innerHeight());
+        }else{
+          if(($('#messages').scrollTop()+$('#messages').innerHeight()+2)<$('#messages').prop("scrollHeight")) $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight")-$('#messages').innerHeight() }, 'fast');
+        }
       });
       document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
       const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
