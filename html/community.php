@@ -19,7 +19,6 @@ if($uuid) ccdb("select login($1)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   isset($_POST['action']) or die('posts must have an "action" parameter');
   switch($_POST['action']) {
-    case 'dismiss': exit(ccdb("select dismiss_notification($1)",$_POST['id']));
     case 'new-chat': exit(ccdb("select new_chat($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
     case 'new-tag': exit(ccdb("select new_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
     case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
@@ -121,7 +120,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
     .message.mine .buttons .button { cursor: default; }
-    .message:target .markdown-wrapper { box-shadow: 0 0 1px 1px #<?=$colour_highlight?> inset; }
+    .message:target .markdown-wrapper { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
     #chat .message .who { top: -1.2em; }
     #chat .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
     #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
@@ -129,7 +128,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     #notifications .message+.message { margin-top: 0.2em; }
     #chatupload:active i { color: #<?=$colour_mid?>; }
   </style>
+  <script src="/lodash.js"></script>
   <script src="/jquery.js"></script>
+  <script src="/jquery.waitforimages.js"></script>
   <script src="/markdown-it.js"></script>
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
@@ -144,79 +145,112 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
-      var chatChangeId = <?=ccdb("select room_latest_change_id from room where room_id=$1",$room)?>;
-      var notificationChangeId = <?=ccdb("select coalesce(max(chat_id),0) from chat_notification natural join chat")?>;
-      var chatLastChange = <?=ccdb("select extract(epoch from current_timestamp-room_latest_change_at)::integer from room where room_id=$1",$room)?>;
-      var chatPollInterval, title = document.title, latestChatId;
+      //var notificationChangeId = <?=ccdb("select coalesce(max(chat_id),0) from chat_notification natural join chat")?>;
+      var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
+      var chatTimer, maxChatChangeID = 0, maxNotificationID = '<?=ccdb("select max(chat_notification_at) from chat_notification")?>';
 
-      function setChatPollInterval(){
-        if(chatLastChange<5) chatPollInterval = 1000;
-        else if(chatLastChange<15) chatPollInterval = 3000;
+      function setChatPollTimeout(){
+        var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
+       console.log(chatLastChange);
+        if(chatLastChange<8) chatPollInterval = 1000;
+        else if(chatLastChange<18) chatPollInterval = 3000;
         else if(chatLastChange<30) chatPollInterval = 5000;
         else if(chatLastChange<300) chatPollInterval = 10000;
         else if(chatLastChange<3600) chatPollInterval = 30000;
         else chatPollInterval = 60000;
+       console.log(chatPollInterval);
+        clearTimeout(chatTimer);
+        chatTimer = setTimeout(checkChat,chatPollInterval);
       }
-      function updateChat(){
-        var tempScrollTop = $('#messages').scrollTop(), tempPositionTop = $('#messages .message:first').position().top, firstId = $('#messages .message:first').data('id');
-        $.get(window.location.href,function(data) {
-          var arr = [], newChats;
-          $('.ping').each(function(){ arr.push($(this).data('id')); });
-          $('#chat').replaceWith($('<div />').append(data).find('#chat'));
-          $('#notification-wrapper').replaceWith($('<div />').append(data).find('#notification-wrapper'));
-          $.each(arr, function(k,v){ $('.active-user[data-id='+v+']').addClass('ping'); });
-          $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
-          newChats = $('#messages .message[data-id="'+latestChatId+'"]').prevAll('.message').length;
-          if(document.visibilityState==='hidden'){ document.title = (newChats?('('+newChats+') '):'')+title; }
-          chatLastChange = 0;
-          initChat();
-          if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1){
-            if( ($('#messages .message:first').data('id')===firstId) || ($('#messages')[0].scrollHeight < (tempScrollTop+$('#messages').outerHeight()+window.innerHeight/2)) ) {
-              $('#messages').scrollTop($('#messages').scrollTop()+tempPositionTop-$('#messages .message[data-id="'+firstId+'"]').position().top);
-            }
-          }else{
-            if( ($('#messages .message:first').data('id')===firstId) || ($('#messages')[0].scrollHeight > (tempScrollTop+$('#messages').outerHeight()+window.innerHeight/2)) ) {
-              $('#messages').scrollTop($('#messages').scrollTop()-tempPositionTop+$('#messages .message[data-id="'+firstId+'"]').position().top);
-            }
+      function updateChat(scroll){
+        var maxChat = $('#messages>.message:last-child').data('id');
+        if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
+        $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
+          if($('#messages>.message:last-child').data('id')===maxChat){
+            var newchat = $(data).appendTo($('#messages')).css('opacity','0').find('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); }).end(), numnewchat = newchat.filter('.message').length;
+            newchat.find('img').waitForImages(true).done(function(){
+              newchat.css('opacity','1');
+              if(scroll){
+                setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+              }else{
+                $('#chat').css('border-bottom','3px solid #<?=$colour_highlight?>');
+                $('#messages').scroll(_.debounce(function(){ $('#chat').css('border-bottom','1px solid darkgrey'); }));
+              }
+            });
+            if(document.visibilityState==='hidden'){ document.title = '('+numnewchat+') '+title; }
+            $('.message').each(function(){
+              var id = $(this).data('id'), rid = id;
+              function foo(b){
+                if(arguments.length!==0) $(this).addClass('t'+id);
+                if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
+                if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
+              }
+              foo.call(this);
+            });
+            newchat.filter('.message').find('.markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
+            newchat.filter('.message').find('.markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
+            newchat.filter('.bigspacer').each(function(){
+              $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'LT', lastDay: '[Yesterday] LT', lastWeek: '[Last] dddd LT', sameElse: 'LLLL' })).end()
+                     .children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+            newchat.filter('.message').find('.when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
+            newchat.filter('.message').find('.who a').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
+              var id = $(this).attr('href').substring(2);
+              $(this).attr('href','/transcript?room=<?=$room?>&id='+id+'#c'+id);
+            });
+            if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
+            if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+            setChatPollTimeout();
           }
-          $('#chattext').trigger('input');
-        },'html');
+        },'html').fail(setChatPollTimeout);
+      }
+      function updateChatChangeIDs(){
+        $.get('/chat?changes&id='+maxChatChangeID,function(r){
+          _(JSON.parse(r)).forEach(function(e){ $('#c'+e[0]).each(function(){ if(e[1]>$(this).data('change-id')) $(this).addClass('changed'); }); });
+          setChatPollTimeout();
+        }).fail(setChatPollTimeout);
+      }
+      function actionChatChange(id){
+        $.get('/chat?change&id='+id,function(r){
+          var j = JSON.parse(r), t = $('#c'+id), s = t.find('.buttons>.button').first(), f = t.find('.buttons>.button').last();
+          s.toggleClass('star',!j.i_starred).children('i').toggleClass('fa-star-o',!j.i_starred);
+          s.toggleClass('unstar',j.i_starred).children('i').toggleClass('fa-star',j.i_starred);
+          f.toggleClass('flag',!j.i_flagged).children('i').toggleClass('fa-flag-o',!j.i_flagged);
+          f.toggleClass('unflag',j.i_flagged).children('i').toggleClass('fa-flag',j.i_flagged);
+          s.toggleClass('marked',j.stars>0);
+          f.toggleClass('marked',j.flags>0);
+          s.children('span').text((j.stars)||'');
+          f.children('span').text((j.flags)||'');
+          t.removeClass('changed');
+          setChatPollTimeout();
+        }).fail(setChatPollTimeout);
+      }
+      function updateNotifications(){
+        $.get(window.location.href,function(r){
+          var scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
+          $('#notification-wrapper').replaceWith($('<div />').append(r).find('#notification-wrapper'));
+          $('#notification-wrapper .markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
+          if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+          setChatPollTimeout();
+        }).fail(setChatPollTimeout);
       }
       function checkChat(){
-        $.get('/change?room=<?=$room?>',function(r){
-          if((chatChangeId!==JSON.parse(r).chat)||(notificationChangeId!==JSON.parse(r).notification)){
-            chatChangeId = JSON.parse(r).chat;
-            notificationChangeId = JSON.parse(r).notification;
+        $.get('/chat?room=<?=$room?>&poll').done(function(r){
+          var j = JSON.parse(r);
+          if(j.c>+$('#messages>.message:last-child').data('id')){
             updateChat();
+          }else if(j.n>maxNotificationID){
+            updateNotifications();
+            maxNotificationID = j.n;
+          }else if(j.cc>maxChatChangeID){
+            updateChatChangeIDs();
+            maxChatChangeID = j.cc
+          }else if($('.message.changed').length){
+            actionChatChange($('.message.changed').last().data('id'));
           }else{
-            chatLastChange += Math.floor(chatPollInterval/1000);
-            setChatPollInterval();
+            setChatPollTimeout();
           }
-        });
-      }
-      function pollChat() { checkChat(); setTimeout(pollChat, chatPollInterval); }
-      function initChat() {
-        setChatPollInterval();
-        if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1){
-          $('#messages').css({ 'flex-direction': 'column', 'justify-content': 'flex-end safe' }).each(function(){ $(this).append($(this).children().get().reverse()); });
-        }
-        $('.message').each(function(){
-          var id = $(this).data('id'), rid = id;
-          function foo(b){
-            if(arguments.length!==0) $(this).addClass('t'+id);
-            if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
-            if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
-          }
-          foo.call(this);
-        });
-        $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
-        $('.message .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
-        $('.bigspacer').each(function(){ $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'LT', lastDay: '[Yesterday] LT', lastWeek: '[Last] dddd LT', sameElse: 'LLLL' })).end()
-                                                .children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-        $('.message .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
-        $('#messages').scrollTop($('#messages')[0].scrollHeight);
-        favicon.badge($('#notifications .message').length);
+        }).fail(setChatPollTimeout);
       }
       function textareaInsertTextAtCursor(e,t) {
         var v = e.val(), s = e.prop('selectionStart')+t.length;
@@ -231,29 +265,24 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message').data('id')).slideDown('fast').children('span').text($(this).closest('.message').data('name')); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.flag', function(){
-        var url = window.location.href;
-        $.get(url+((url.indexOf('?')===-1)?'?':'&')+'flagchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
+        var t = $(this);
+        $.post('/chat',{ action: 'flag', id: t.closest('.message').data('id') }).done(function(r){ t.addClass('marked').children('i').toggleClass('fa-flag fa-flag-o').next().each(function(){ $(this).text(+$(this).text()+1);}); });
       });
       $('#chat-wrapper').on('click','.unflag', function(){
-        var url = window.location.href;
-        $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unflagchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
+        var t = $(this);
+        $.post('/chat',{ action: 'unflag', id: t.closest('.message').data('id') }).done(function(r){ t.children('i').toggleClass('fa-flag fa-flag-o').next().each(function(){ $(this).text(+$(this).text()-1);}); });
       });
       $('#chat-wrapper').on('click','.star', function(){
-        var url = window.location.href;
-        $.get(url+((url.indexOf('?')===-1)?'?':'&')+'starchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
+        var t = $(this);
+        $.post('/chat',{ action: 'star', id: t.closest('.message').data('id') }).done(function(r){ t.addClass('marked').children('i').toggleClass('fa-star fa-star-o').next().each(function(){ $(this).text(+$(this).text()+1);}); });
       });
       $('#chat-wrapper').on('click','.unstar', function(){
-        var url = window.location.href;
-        $.get(url+((url.indexOf('?')===-1)?'?':'&')+'unstarchatid='+$(this).closest('.message').data('id')).done(function(r){ chatChangeId = +r; updateChat(); });
-      });
-      $('#chat').on('click','.who a', function(){
-        if(($('#messages').outerHeight() > $('#messages')[0].scrollHeight - 5)||($(this).closest('div.message').data('reply-id')<$('#messages .message:last').data('id'))){
-          window.location.href = '/transcript?room=<?=$room?>&id='+$(this).closest('div.message').data('reply-id')+$(this).attr('href'); return false;
-        }
+        var t = $(this);
+        $.post('/chat',{ action: 'unstar', id: t.closest('.message').data('id') }).done(function(r){ t.children('i').toggleClass('fa-star fa-star-o').next().each(function(){ $(this).text(+$(this).text()-1);}); });
       });
       $('#chat-wrapper').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.dismiss', function(){
-        $.post('/community', { id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateChat(); });
+        $.post('/chat', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
@@ -267,22 +296,21 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       $('.tag i').click(function(){ $.post(window.location.href, { questionid: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
       $('#chattext').on('input', function(){
-        $(this).css('height', '0');
-        $(this).css('height',this.scrollHeight+'px');
+        if(this.scrollHeight>$(this).outerHeight()) $(this).css("min-height",this.scrollHeight);
         if($(this).val().trim()){ $('#preview .markdown').html(md.render($('#chattext').val())); $('#preview:hidden').slideDown('fast'); } else { $('#preview:visible').slideUp('fast'); }
+        setTimeout(function(){ $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast'); },0);
       });
       $('#chattext').keydown(function(e){
         var t = $(this);
         if((e.keyCode || e.which) == 13) {
           if(!e.shiftKey) {
             if(t.val().trim()){
+              clearTimeout(chatTimer);
               arr = [];
               $('.ping').each(function(){ arr.push($(this).data('id')); });
               $.post('/community', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr, action: 'new-chat' }).done(function(){
+                t.val('').prop('disabled',false).focus().css('height', 'auto').trigger('input').css('min-height',0);
                 updateChat();
-                t.val('').prop('disabled',false).focus().css('height', 'auto');
-                $('#preview:visible').slideUp('fast');
-                setTimeout(function(){ $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast'); },200);
               });
               $('#replying').attr('data-id','').slideUp('fast');
               $('.ping').removeClass('ping');
@@ -294,18 +322,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           }
         }
       });
-      $('#chattext').on('input',function(e){
-        if(navigator.userAgent.toLowerCase().indexOf('firefox')>-1){
-          if(($('#messages').scrollTop()+$('#messages').innerHeight()+2)<$('#messages').prop("scrollHeight")) $('#messages').scrollTop($('#messages').prop("scrollHeight")-$('#messages').innerHeight());
-        }else{
-          if(($('#messages').scrollTop()+$('#messages').innerHeight()+2)<$('#messages').prop("scrollHeight")) $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight")-$('#messages').innerHeight() }, 'fast');
-        }
-      });
       document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
       const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
-      setTimeout(pollChat, chatPollInterval);
-      initChat();
-      setTimeout(function(){ $('#messages').each(function(){ $(this).scrollTop($(this).prop("scrollHeight")); }); });
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
       $('#chatuploadfile').change(function() {
         if(this.files[0].size > 2097152){
@@ -323,6 +341,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
+      updateChat(true);
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -447,41 +466,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       </div>
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
-      <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column-reverse; padding: 0.5em; overflow: auto;">
-        <?foreach(db("select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
-                      from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at
-                                 , coalesce(nullif(account_name,''),'Anonymous') account_name
-                                 , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
-                                 , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                                 , round(extract('epoch' from chat_at-coalesce(lag(chat_at) over (order by chat_at), current_timestamp))) chat_gap
-                                 , chat_flag_at is not null is_flagged
-                                 , chat_star_at is not null is_starred
-                                 , (lead(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lead(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
-                            from chat c natural join account natural left join chat_flag natural left join chat_star
-                            where room_id=$1".($uuid?"":" and chat_flag_count=0").") z
-                      order by chat_at desc limit 100",$room) as $r){ extract($r);?>
-          <div id="c<?=$chat_id?>" class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
-            <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
-            <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
-            <div class="markdown-wrapper">
-              <?if($canchat){?><button class="button reply" title="reply"><i class="fa fa-reply fa-rotate-180"></i></button><?}?>
-              <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
-            </div>
-            <?if($canchat){?>
-              <span class="buttons">
-                <?if($account_is_me==='f'){?>
-                  <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
-                  <button class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag<?=($is_flagged==='t')?'':'-o'?>"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
-                <?}else{?>
-                  <button class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
-                  <button class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
-                <?}?>
-              </span>
-            <?}?>
-          </div>
-          <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>" data-at="<?=$chat_at?>"><span></span><span></span></div><?}?>
-        <?}?>
-      </div>
+      <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;"><div style="flex: 1 1 0;"></div></div>
       <?if($uuid){?>
         <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
           <?foreach(db("select account_id,account_name,account_is_me from room_account_x natural join account where room_id=$1 order by room_account_x_latest_chat_at desc",$room) as $r){ extract($r);?>
@@ -507,7 +492,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
             <div class="message" style="background-color: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
               <small class="who">
                 <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
-                <?=$chat_reply_id?'<span style="color: #'.$chat_dark_shade.';">replying to</span> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
+                <?if($room_id!==$room){?>
+                  <?=$chat_reply_id?' replying to</span> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
+                <?}else{?>
+                  <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$chat_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
+                <?}?>
                 <?if($room_id!==$room){?><span style="color: #<?=$chat_dark_shade?>;">in&nbsp;</span><a href="/<?=$community_name?>?room=<?=$room_id?>" style="color: #<?=$chat_dark_shade?>;"><?=$room_name?></a><?}?>
                 —
                 <span class="when" data-seconds="<?=$chat_ago?>"></span>

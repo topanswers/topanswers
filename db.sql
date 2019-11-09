@@ -73,6 +73,7 @@ create table chat(
 , foreign key (community_id,room_id) references room(community_id,room_id)
 , foreign key (room_id,chat_reply_id) references chat(room_id,chat_id)
 );
+create index chat_latest_ind on chat(room_id,chat_at);
 
 create table account_room_x(
   account_id integer references account
@@ -94,6 +95,7 @@ create table chat_notification(
 , chat_notification_at timestamptz not null default current_timestamp
 , primary key (chat_id,account_id)
 );
+create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at);
 
 /*
 create table chat_history(

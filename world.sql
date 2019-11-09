@@ -159,6 +159,7 @@ create function set_chat_flag(cid bigint) returns bigint language sql security d
   select _error('already flagged') where exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   insert into chat_flag(chat_id,account_id) select chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
+  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
@@ -166,6 +167,7 @@ create function remove_chat_flag(cid bigint) returns bigint language sql securit
   select _error('not already flagged') where not exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   delete from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
+  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
@@ -174,6 +176,7 @@ create function set_chat_star(cid bigint) returns bigint language sql security d
   select _error('already starred') where exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   insert into chat_star(chat_id,account_id) select chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
+  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
@@ -181,6 +184,7 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
   select _error('not already starred') where not exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   delete from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
+  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
   update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --

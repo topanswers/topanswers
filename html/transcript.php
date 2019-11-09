@@ -116,7 +116,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
     .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
-    .message:target .markdown-wrapper { box-shadow: 0 0 1px 1px #<?=$colour_highlight?> inset; }
+    .message:target .markdown-wrapper { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
   </style>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
