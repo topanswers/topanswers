@@ -88,7 +88,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
 
-    #qa .bar { font-size: 0.6em; padding: 0.6rem; background: #<?=$colour_light?>; }
+    #qa .bar { font-size: 0.6em; padding: 0.1rem; background: #<?=$colour_light?>; display: flex; align-items: center; }
+    #qa .bar>* { margin-right: 0.4rem; }
     #qa .markdown { padding: 0.6rem; }
     #qa .when { color: #<?=$colour_dark?>; }
 
@@ -102,7 +103,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
-    .active-user { height: 1.5em; width: 1.5em; margin: 0.1em; }
+    .active-user { height: 1.5rem; width: 1.5rem; margin: 0.1rem; }
     .active-user:not(.me):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
     .active-user.ping { outline: 1px solid #<?=$colour_highlight?>; }
     #chattext-wrapper:not(:hover) button { display: none; }
@@ -124,7 +125,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     #chat .message .who { top: -1.2em; }
     #chat .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
     #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
-    #notifications .message .who { top: 0.5em; }
+    #notifications .message .who { top: 0.3rem; }
     #notifications .message+.message { margin-top: 0.2em; }
     #chatupload:active i { color: #<?=$colour_mid?>; }
   </style>
@@ -280,7 +281,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         var t = $(this);
         $.post('/chat',{ action: 'unstar', id: t.closest('.message').data('id') }).done(function(r){ t.children('i').toggleClass('fa-star fa-star-o').next().each(function(){ $(this).text(+$(this).text()-1);}); });
       });
-      $('#chat-wrapper').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
+      $('body').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.dismiss', function(){
         $.post('/chat', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
@@ -365,7 +366,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
       <?if($question){?>
-        <?extract(cdb("select question_title,question_markdown,account_name,account_is_me
+        <?extract(cdb("select question_title,question_markdown,account_id,account_name,account_is_me
                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                             , question_type='blog' question_is_blog
                             , extract('epoch' from current_timestamp-question_at) question_when
@@ -374,7 +375,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         <div id="question" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #<?=$colour_mid?>;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem; border-bottom: 1px solid #<?=$colour_dark?>;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar" style="border-bottom: 1px solid #<?=$colour_dark?>;">
-            <?=htmlspecialchars($account_name)?>,
+            <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+            <span><?=htmlspecialchars($account_name)?></span>
             <span class="when" data-seconds="<?=$question_when?>"></span>
             <?if($uuid && (($account_is_me==='t')||($question_is_blog==='f'))){?><a href="/question?id=<?=$question?>">edit</a><?}?>
             <div style="margin-top: 0.4rem; display: flex; flex-wrap: wrap;">
@@ -399,11 +401,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
         </div>
         <?if($uuid && ($question_is_blog==='f')){?><form method="GET" action="/answer"><input type="hidden" name="question" value="<?=$question?>"><input id="answer" type="submit" value="answer this question" style="margin: 2em auto; display: block;"></form><?}?>
-        <?foreach(db("select answer_id,answer_markdown,account_name, extract('epoch' from current_timestamp-answer_at) answer_when from answer natural join account where question_id=$1",$question) as $r){ extract($r);?>
+        <?foreach(db("select answer_id,answer_markdown,account_id,account_name,account_is_me, extract('epoch' from current_timestamp-answer_at) answer_when
+                      from answer natural join account
+                      where question_id=$1",$question) as $r){ extract($r);?>
           <div class="answer">
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
             <div class="bar">
-              <?=htmlspecialchars($account_name)?>,
+              <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+              <span><?=htmlspecialchars($account_name)?></span>
               <span class="when" data-seconds="<?=$answer_when?>"></span>
               <a href="/answer?id=<?=$answer_id?>">edit</a>
             </div>
@@ -478,7 +483,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     <div id="notification-wrapper">
       <?if($uuid&&(ccdb("select count(*)>0 from chat_notification")==='t')){?>
         <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.3em; overflow-x: hidden; overflow-y: scroll;">
-          <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,room_name,community_name
+          <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,community_name,question_id
+                             , question_id is not null is_question_room
+                             , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) room_name
                              , coalesce(nullif(account_name,''),'Anonymous') account_name
                              , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                              , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
@@ -488,6 +495,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                              , encode(community_mid_shade,'hex') chat_mid_shade
                              , encode(community_dark_shade,'hex') chat_dark_shade
                         from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
+                             natural left join (select question_room_id room_id, question_id, question_title from question) q
                         order by chat_at limit 100") as $r){ extract($r);?>
             <div class="message" style="background-color: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
               <small class="who">
@@ -497,7 +505,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                 <?}else{?>
                   <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$chat_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
                 <?}?>
-                <?if($room_id!==$room){?><span style="color: #<?=$chat_dark_shade?>;">in&nbsp;</span><a href="/<?=$community_name?>?room=<?=$room_id?>" style="color: #<?=$chat_dark_shade?>;"><?=$room_name?></a><?}?>
+                <?if($room_id!==$room){?>
+                  <span style="color: #<?=$chat_dark_shade?>;">in&nbsp;</span>
+                  <a href="/<?=$community_name?>?<?=($is_question_room==='t')?'q='.$question_id:'room='.$room_id?>" style="color: #<?=$chat_dark_shade?>;"><?=$room_name?></a>
+                <?}?>
                 —
                 <span class="when" data-seconds="<?=$chat_ago?>"></span>
                 <span style="color: #<?=$chat_dark_shade?>;">(view <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" style="color: #<?=$chat_dark_shade?>;">transcript</a> or <a href='.' class="dismiss" style="color: #<?=$chat_dark_shade?>;">dismiss</a>)</span>
