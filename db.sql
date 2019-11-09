@@ -192,6 +192,8 @@ create table answer(
 , answer_at timestamptz not null default current_timestamp
 , answer_markdown text not null check (length(answer_markdown) between 1 and 50000)
 , answer_change_at timestamptz not null default current_timestamp
+, answer_votes integer default 0 not null
+, answer_repute integer default 0 not null
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 
@@ -257,8 +259,25 @@ create table question_vote_history(
 , question_vote_history_at timestamptz not null
 , question_vote_history_direction integer not null check (question_vote_history_direction in(-1,0,1))
 , question_vote_history_repute integer not null check (question_vote_history_repute>=0)
-, foreign key(question_id,account_id) references question_vote
+, foreign key(question_id,account_id) references question_vote deferrable initially deferred
 );
 
+create table answer_vote(
+  answer_id integer references answer
+, account_id integer references account
+, answer_vote_at timestamptz default current_timestamp not null
+, answer_vote_direction integer not null check (answer_vote_direction in(-1,0,1))
+, answer_vote_repute integer not null check (answer_vote_repute>=0)
+, primary key (answer_id,account_id)
+, unique (account_id,answer_id)
+);
 
-
+create table answer_vote_history(
+  answer_vote_history_id integer generated always as identity primary key
+, answer_id integer not null
+, account_id integer not null
+, answer_vote_history_at timestamptz not null
+, answer_vote_history_direction integer not null check (answer_vote_history_direction in(-1,0,1))
+, answer_vote_history_repute integer not null check (answer_vote_history_repute>=0)
+, foreign key(answer_id,account_id) references answer_vote deferrable initially deferred
+);

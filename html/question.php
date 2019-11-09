@@ -18,28 +18,34 @@ $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id']??$_POST['id']??'0';
 if($_SERVER['REQUEST_METHOD']==='POST'){
-  if($id){
-    db("select change_question($1,$2,$3)",$id,$_POST['title'],$_POST['markdown']);
-    header('Location: /'.ccdb("select community_name from question natural join community where question_id=$1",$id).'?q='.$id);
-    exit;
-  }else{
-    $id=ccdb("select new_question((select community_id from community where community_name=$1),(select question_type from question_type_enums where question_type=$2),$3,$4)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown']);
-    if($id){
-?>
-<!doctype html>
-<html>
-<head>
-  <script>
-    localStorage.removeItem('<?=$_POST['community']?>.ask');
-    localStorage.removeItem('<?=$_POST['community']?>.ask.title');
-    localStorage.removeItem('<?=$_POST['community']?>.ask.type');
-    window.location.href = '/<?=$_POST['community']?>?q=<?=$id?>';
-  </script>
-</head>
-</html>
-<?
+  isset($_POST['action']) or die('posts must have an "action" parameter');
+  switch($_POST['action']) {
+    case 'new':
+      $id=ccdb("select new_question((select community_id from community where community_name=$1),(select question_type from question_type_enums where question_type=$2),$3,$4)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown']);
+      if($id){?>
+        <!doctype html>
+        <html>
+        <head>
+          <script>
+            localStorage.removeItem('<?=$_POST['community']?>.ask');
+            localStorage.removeItem('<?=$_POST['community']?>.ask.title');
+            localStorage.removeItem('<?=$_POST['community']?>.ask.type');
+            window.location.href = '/<?=$_POST['community']?>?q=<?=$id?>';
+          </script>
+        </head>
+        </html><?}
       exit;
-    }
+    case 'change':
+      db("select change_question($1,$2,$3)",$id,$_POST['title'],$_POST['markdown']);
+      header('Location: /'.ccdb("select community_name from question natural join community where question_id=$1",$id).'?q='.$id);
+      exit;
+    case 'upvote':
+      ccdb("select vote_question($1,1)",$_POST['id']);
+      exit(ccdb("select json_build_object('rep',question_repute,'votes',question_votes) from question where question_id=$1",$_POST['id']));
+    case 'unvote': 
+      ccdb("select vote_question($1,0)",$_POST['id']);
+      exit(ccdb("select json_build_object('rep',question_repute,'votes',question_votes) from question where question_id=$1",$_POST['id']));
+    default: die('unrecognized action');
   }
 }
 if($id) {
@@ -164,10 +170,12 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   </header>
   <form id="form" method="POST" action="/question" style="display: flex; justify-content: center; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
     <?if($id){?>
-      <input name="id" type="hidden" value="<?=$id?>">
+      <input type="hidden" name="action" value="change">
+      <input type="hidden" name="id" value="<?=$id?>">
     <?}else{?>
-      <input name="community" type="hidden" value="<?=$community?>">
-      <input name="type" type="hidden" value="question">
+      <input type="hidden" name="action" value="new">
+      <input type="hidden" name="community" value="<?=$community?>">
+      <input type="hidden" name="type" value="question">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column;">
       <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 0.2em;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>

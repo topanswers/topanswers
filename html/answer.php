@@ -18,26 +18,32 @@ $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id']??$_POST['id']??'0';
 if($_SERVER['REQUEST_METHOD']==='POST'){
-  if($id){
-    db("select change_answer($1,$2)",$id,$_POST['markdown']);
-    header('Location: /'.ccdb("select community_name from answer natural join (select question_id,community_id from question) z natural join community where answer_id=$1",$id).'?q='.ccdb("select question_id from answer where answer_id=$1",$id));
-    exit;
-  }else{
-    $id=ccdb("select new_answer($1,$2)",$_POST['question'],$_POST['markdown']);
-    if($id){
-?>
-<!doctype html>
-<html>
-<head>
-  <script>
-    localStorage.removeItem('<?=$_POST['community']?>.answer.<?=$_POST['question']?>');
-    window.location.href = '/<?=$_POST['community']?>?q=<?=$_POST['question']?>';
-  </script>
-</head>
-</html>
-<?
+  isset($_POST['action']) or die('posts must have an "action" parameter');
+  switch($_POST['action']) {
+    case 'new':
+      $id=ccdb("select new_answer($1,$2)",$_POST['question'],$_POST['markdown']);
+      if($id){?>
+        <!doctype html>
+        <html>
+        <head>
+          <script>
+            localStorage.removeItem('<?=$_POST['community']?>.answer.<?=$_POST['question']?>');
+            window.location.href = '/<?=$_POST['community']?>?q=<?=$_POST['question']?>';
+          </script>
+        </head>
+        </html><?}
       exit;
-    }
+    case 'change':
+      db("select change_answer($1,$2)",$id,$_POST['markdown']);
+      header('Location: /'.ccdb("select community_name from answer natural join (select question_id,community_id from question) z natural join community where answer_id=$1",$id).'?q='.ccdb("select question_id from answer where answer_id=$1",$id));
+      exit;
+    case 'upvote':
+      ccdb("select vote_answer($1,1)",$_POST['id']);
+      exit(ccdb("select json_build_object('rep',answer_repute,'votes',answer_votes) from answer where answer_id=$1",$_POST['id']));
+    case 'unvote': 
+      ccdb("select vote_answer($1,0)",$_POST['id']);
+      exit(ccdb("select json_build_object('rep',answer_repute,'votes',answer_votes) from answer where answer_id=$1",$_POST['id']));
+    default: die('unrecognized action');
   }
 }
 if($id) {
@@ -155,10 +161,12 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   </header>
   <form id="form" method="POST" action="/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
     <?if($id){?>
-      <input name="id" type="hidden" value="<?=$id?>">
+      <input type="hidden" name="action" value="change">
+      <input type="hidden" name="id" value="<?=$id?>">
     <?}else{?>
-      <input name="community" type="hidden" value="<?=$community?>">
-      <input name="question" type="hidden" value="<?=$question?>">
+      <input type="hidden" name="action" value="new">
+      <input type="hidden" name="community" value="<?=$community?>">
+      <input type="hidden" name="question" value="<?=$question?>">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1.5 50em; max-width: 20vw; overflow: hidden;">

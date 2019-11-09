@@ -49,7 +49,8 @@ if($question) ccdb("select count(*) from question where question_id=$1",$questio
 $room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
 $canchat = false;
 if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
-extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
+extract(cdb("select community_my_power
+                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
              where community_name=$1",$community));
 ?>
@@ -78,7 +79,12 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
     .bigspacer:not(:hover)>span:first-child { display: none; }
     .bigspacer:hover>span:last-child { display: none; }
+    #question:not(.voted) .unvote { display: none; }
+    #question.voted .upvote { display: none; }
+    .answer:not(.voted) .unvote { display: none; }
+    .answer.voted .upvote { display: none; }
 
+    .tags { display: flex; flex-wrap: wrap; margin-left: 0.25rem; }
     .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
@@ -88,10 +94,12 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
 
-    #qa .bar { font-size: 0.6em; padding: 0.1rem; background: #<?=$colour_light?>; display: flex; align-items: center; }
-    #qa .bar>* { margin-right: 0.4rem; }
+    #qa .bar { font-size: 0.7rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
+    #qa .bar>* { display: flex; align-items: center; }
+    #qa .bar>div>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .markdown { padding: 0.6rem; }
-    #qa .when { color: #<?=$colour_dark?>; }
+    #qa .vote { height: 1.5rem; width: 1.5rem; margin: 1px; cursor: pointer; }
+    #qa .cantvote { opacity: 0.2; }
 
     .markdown { overflow: auto; padding-right: 2px; }
     .markdown>:first-child { margin-top: 1px; }
@@ -103,7 +111,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
-    .active-user { height: 1.5rem; width: 1.5rem; margin: 0.1rem; }
+    .active-user { height: 1.5rem; width: 1.5rem; margin: 1px; }
     .active-user:not(.me):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
     .active-user.ping { outline: 1px solid #<?=$colour_highlight?>; }
     #chattext-wrapper:not(:hover) button { display: none; }
@@ -342,6 +350,26 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
+      $('#question .upvote').click(function(){ var t = $(this); $.post('/question',{ action: 'upvote', id: <?=$question?> }).done(function(r){
+        var j = JSON.parse(r);
+        $('#question').addClass('voted');
+        t.siblings('.score').html('<span>score: '+j.rep+'.<small>'+j.votes+'</small></span>'); });
+      });
+      $('#question .unvote').click(function(){ var t = $(this); $.post('/question',{ action: 'unvote', id: <?=$question?> }).done(function(r){
+        var j = JSON.parse(r);
+        $('#question').removeClass('voted');
+        t.siblings('.score').html('<span>score: '+j.rep+'.<small>'+j.votes+'</small></span>'); });
+      });
+      $('#qa .answer .upvote').click(function(){ var t = $(this), a = t.closest('.answer'); $.post('/answer',{ action: 'upvote', id: a.data('id') }).done(function(r){
+        var j = JSON.parse(r);
+        a.addClass('voted');
+        t.siblings('.score').html('<span>score: '+j.rep+'.<small>'+j.votes+'</small></span>'); });
+      });
+      $('#qa .answer .unvote').click(function(){ var t = $(this), a = t.closest('.answer'); $.post('/answer',{ action: 'unvote', id: a.data('id') }).done(function(r){
+        var j = JSON.parse(r);
+        a.removeClass('voted');
+        t.siblings('.score').html('<span>score: '+j.rep+'.<small>'+j.votes+'</small></span>'); });
+      });
       updateChat(true);
     });
   </script>
@@ -366,51 +394,91 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
       <?if($question){?>
-        <?extract(cdb("select question_title,question_markdown,account_id,account_name,account_is_me
+        <?extract(cdb("select question_title,question_markdown,question_votes,question_repute,question_have_voted,question_repute_from_me,account_id,account_name,account_is_me
                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
+                            , question_type<>'question' question_is_votable
                             , question_type='blog' question_is_blog
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account
                        where question_id=$1",$question));?>
-        <div id="question" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #<?=$colour_mid?>;">
+        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #<?=$colour_mid?>;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem; border-bottom: 1px solid #<?=$colour_dark?>;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar" style="border-bottom: 1px solid #<?=$colour_dark?>;">
-            <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
-            <span><?=htmlspecialchars($account_name)?></span>
-            <span class="when" data-seconds="<?=$question_when?>"></span>
-            <?if($uuid && (($account_is_me==='t')||($question_is_blog==='f'))){?><a href="/question?id=<?=$question?>">edit</a><?}?>
-            <div style="margin-top: 0.4rem; display: flex; flex-wrap: wrap;">
-              <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question) as $r){ extract($r);?>
-                <span class="tag" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
-              <?}?>
-              <?if($uuid){?>
-                <span class="newtag" style="margin-right: 0.2rem; margin-bottom: 0.1rem;">
-                  <div style="position: absolute; top: -2px; left: -2px; z-index: 1; visibility: hidden;">
-                    <select class="tags" data-question-id="<?=$question?>">
-                      <option value="0" disabled selected><?=(ccdb("select exists (select tag_id,tag_name from tag natural join community where community_name=$1)",$community))?'select tag':''?></option>
-                      <?foreach(db("select tag_id,tag_name from tag natural join community where community_name=$1 and tag_id not in (select tag_id from question_tag_x where question_id=$2)",$community,$question) as $r){ extract($r);?>
-                        <option value="<?=$tag_id?>"><?=$tag_name?></option>
-                      <?}?>
-                    </select>
-                  </div>
-                  <span class="tag">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                </span>
-              <?}?>
+            <div>
+              <div class="tags">
+                <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question) as $r){ extract($r);?>
+                  <span class="tag" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+                <?}?>
+                <?if($uuid){?>
+                  <span class="newtag" style="margin-right: 0.2rem; margin-bottom: 0.1rem;">
+                    <div style="position: absolute; top: -2px; left: -2px; z-index: 1; visibility: hidden;">
+                      <select class="tags" data-question-id="<?=$question?>">
+                        <option value="0" disabled selected><?=(ccdb("select exists (select tag_id,tag_name from tag natural join community where community_name=$1)",$community))?'select tag':''?></option>
+                        <?foreach(db("select tag_id,tag_name from tag natural join community where community_name=$1 and tag_id not in (select tag_id from question_tag_x where question_id=$2)",$community,$question) as $r){ extract($r);?>
+                          <option value="<?=$tag_id?>"><?=$tag_name?></option>
+                        <?}?>
+                      </select>
+                    </div>
+                    <span class="tag">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                  </span>
+                <?}?>
+              </div>
+            </div>
+            <div>
+              <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
+              <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
             </div>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
+          <div class="bar" style="border-top: 1px solid #<?=$colour_dark?>;">
+            <div>
+              <?if($question_is_votable==='t'){?>
+                <?if($account_is_me==='t'){?>
+                  <svg class="vote cantvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
+                <?}else{?>
+                  <svg class="vote unvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/></svg>
+                  <?if(($question_repute_from_me>0)&&($community_my_power>$question_repute_from_me)){?>
+                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/><polygon points="25 50 50 7 75 50" fill="#<?=$colour_dark?>"/></svg>
+                  <?}else{?>
+                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
+                  <?}?>
+                <?}?>
+                <span class="score">score: <?=$question_repute?>.<small><?=$question_votes?></small></span>
+              <?}?>
+              <span></span>
+              <?if($uuid && (($account_is_me==='t')||($question_is_blog==='f'))){?><a href="/question?id=<?=$question?>">edit</a><?}?>
+            </div>
+            <div>
+            </div>
+          </div>
         </div>
         <?if($uuid && ($question_is_blog==='f')){?><form method="GET" action="/answer"><input type="hidden" name="question" value="<?=$question?>"><input id="answer" type="submit" value="answer this question" style="margin: 2em auto; display: block;"></form><?}?>
-        <?foreach(db("select answer_id,answer_markdown,account_id,account_name,account_is_me, extract('epoch' from current_timestamp-answer_at) answer_when
+        <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_repute,answer_have_voted,answer_repute_from_me,account_name,account_is_me
+                           , extract('epoch' from current_timestamp-answer_at) answer_when
                       from answer natural join account
                       where question_id=$1",$question) as $r){ extract($r);?>
-          <div class="answer">
+          <div class="answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
             <div class="bar">
-              <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
-              <span><?=htmlspecialchars($account_name)?></span>
-              <span class="when" data-seconds="<?=$answer_when?>"></span>
-              <a href="/answer?id=<?=$answer_id?>">edit</a>
+              <div>
+                <?if($account_is_me==='t'){?>
+                  <svg class="vote cantvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
+                <?}else{?>
+                  <svg class="vote unvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/></svg>
+                  <?if(($answer_repute_from_me>0)&&($community_my_power>$answer_repute_from_me)){?>
+                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/><polygon points="25 50 50 7 75 50" fill="#<?=$colour_dark?>"/></svg>
+                  <?}else{?>
+                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
+                  <?}?>
+                <?}?>
+                <span class="score">score: <?=$answer_repute?>.<small><?=$answer_votes?></small></span>
+                <span></span>
+                <a href="/answer?id=<?=$answer_id?>">edit</a>
+              </div>
+              <div>
+                <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
+                <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+              </div>
             </div>
           </div>
         <?}?>
