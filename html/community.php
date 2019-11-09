@@ -399,7 +399,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
         </div>
         <?if($uuid && ($question_is_blog==='f')){?><form method="GET" action="/answer"><input type="hidden" name="question" value="<?=$question?>"><input id="answer" type="submit" value="answer this question" style="margin: 2em auto; display: block;"></form><?}?>
-        <?foreach(db("select answer_id, answer_markdown, extract('epoch' from current_timestamp-answer_at) answer_when from answer where question_id=$1",$question) as $r){ extract($r);?>
+        <?foreach(db("select answer_id,answer_markdown,account_name, extract('epoch' from current_timestamp-answer_at) answer_when from answer natural join account where question_id=$1",$question) as $r){ extract($r);?>
           <div class="answer">
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
             <div class="bar">
