@@ -179,7 +179,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                 $('#messages').scroll(_.debounce(function(){ $('#chat').css('border-bottom','1px solid darkgrey'); }));
               }
             });
-            if(document.visibilityState==='hidden'){ document.title = '('+numnewchat+') '+title; }
+            if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numnewchat+') '+title; }
             $('.message').each(function(){
               var id = $(this).data('id'), rid = id;
               function foo(b){

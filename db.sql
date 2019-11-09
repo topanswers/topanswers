@@ -15,8 +15,6 @@ create table room(
 , community_id integer not null references community deferrable initially deferred
 , room_type room_type_enum not null default 'public'
 , room_name text
-, room_latest_change_id bigint generated always as identity not null
-, room_latest_change_at timestamptz default current_timestamp not null
 , unique (community_id,room_id)
 );
 

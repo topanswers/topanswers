@@ -14,7 +14,7 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 --
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
-     , round(ln(greatest(account_community_repute,0)+1))+(case when account_is_dev then 1 else 0 end) community_my_power
+     , (current_setting('custom.account_id',true)::integer<100)::integer+trunc(ln(greatest(account_community_repute,0)+1)) community_my_power
 from db.community natural left join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_repute from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
 where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or account_is_dev);
 --
@@ -23,7 +23,7 @@ create view account with (security_barrier) as select account_id,account_name,ac
 create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid,account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
-select community_id,room_id,room_name,room_latest_change_id,room_latest_change_at
+select community_id,room_id,room_name
      , current_setting('custom.account_id',true)::integer is not null and (room_type='public' or account_id is not null) room_can_chat
      , exists(select * from db.question where question_room_id=room_id) room_is_for_question
 from db.room natural join world.community natural left outer join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) z
@@ -110,7 +110,6 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
              from room
              where room_id=roomid
              on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default)
-     , r as (update room set room_latest_change_id = default, room_latest_change_at = default where room_id=(select room_id from i))
   select chat_id from i;
 $$;
 --
@@ -160,7 +159,6 @@ create function set_chat_flag(cid bigint) returns bigint language sql security d
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   insert into chat_flag(chat_id,account_id) select chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
-  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
 create function remove_chat_flag(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
@@ -168,7 +166,6 @@ create function remove_chat_flag(cid bigint) returns bigint language sql securit
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   delete from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
-  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
 create function set_chat_star(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
@@ -177,7 +174,6 @@ create function set_chat_star(cid bigint) returns bigint language sql security d
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   insert into chat_star(chat_id,account_id) select chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
-  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
 create function remove_chat_star(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
@@ -185,7 +181,6 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
   select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
   delete from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
-  update room set room_latest_change_id = default where room_id=(select room_id from chat where chat_id=cid) returning room_latest_change_id;
 $$;
 --
 create function new_question(cid integer, typ db.question_type_enum, title text, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
