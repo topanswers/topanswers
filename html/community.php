@@ -94,7 +94,7 @@ extract(cdb("select community_my_power
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
 
-    #qa .bar { font-size: 0.7rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
+    #qa .bar { font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .bar>* { display: flex; align-items: center; }
     #qa .bar>div>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .markdown { padding: 0.6rem; }
@@ -353,22 +353,22 @@ extract(cdb("select community_my_power
       $('#question .upvote').click(function(){ var t = $(this); $.post('/question',{ action: 'upvote', id: <?=$question?> }).done(function(r){
         var j = JSON.parse(r);
         $('#question').addClass('voted');
-        t.siblings('.score').html('<span>score: '+j.rep+'.<small>'+j.votes+'</small></span>'); });
+        t.siblings('.score').html('<span>score: '+j.rep+'</span>'); });
       });
       $('#question .unvote').click(function(){ var t = $(this); $.post('/question',{ action: 'unvote', id: <?=$question?> }).done(function(r){
         var j = JSON.parse(r);
         $('#question').removeClass('voted');
-        t.siblings('.score').html('<span>score: '+j.rep+'.<small>'+j.votes+'</small></span>'); });
+        t.siblings('.score').html('<span>score: '+j.rep+'</span>'); });
       });
       $('#qa .answer .upvote').click(function(){ var t = $(this), a = t.closest('.answer'); $.post('/answer',{ action: 'upvote', id: a.data('id') }).done(function(r){
         var j = JSON.parse(r);
         a.addClass('voted');
-        t.siblings('.score').html('<span>score: '+j.rep+'.<small>'+j.votes+'</small></span>'); });
+        t.siblings('.score').html('<span>score: '+j.rep+'</span>'); });
       });
       $('#qa .answer .unvote').click(function(){ var t = $(this), a = t.closest('.answer'); $.post('/answer',{ action: 'unvote', id: a.data('id') }).done(function(r){
         var j = JSON.parse(r);
         a.removeClass('voted');
-        t.siblings('.score').html('<span>score: '+j.rep+'.<small>'+j.votes+'</small></span>'); });
+        t.siblings('.score').html('<span>score: '+j.rep+'</span>'); });
       });
       updateChat(true);
     });
@@ -438,12 +438,12 @@ extract(cdb("select community_my_power
                 <?}else{?>
                   <svg class="vote unvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/></svg>
                   <?if(($question_repute_from_me>0)&&($community_my_power>$question_repute_from_me)){?>
-                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/><polygon points="25 50 50 7 75 50" fill="#<?=$colour_dark?>"/></svg>
+                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 10 76 90 76 100 93" fill="#<?=$colour_highlight?>"/><polygon points="10 76 50 7 90 76" fill="#<?=$colour_dark?>"/></svg>
                   <?}else{?>
                     <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
                   <?}?>
                 <?}?>
-                <span class="score">score: <?=$question_repute?>.<small><?=$question_votes?></small></span>
+                <span class="score"><span>score: <?=$question_repute?></span>
               <?}?>
               <span></span>
               <?if($uuid && (($account_is_me==='t')||($question_is_blog==='f'))){?><a href="/question?id=<?=$question?>">edit</a><?}?>
@@ -456,7 +456,8 @@ extract(cdb("select community_my_power
         <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_repute,answer_have_voted,answer_repute_from_me,account_name,account_is_me
                            , extract('epoch' from current_timestamp-answer_at) answer_when
                       from answer natural join account
-                      where question_id=$1",$question) as $r){ extract($r);?>
+                      where question_id=$1
+                      order by answer_repute desc, answer_votes desc, answer_id desc",$question) as $r){ extract($r);?>
           <div class="answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
             <div class="bar">
@@ -466,12 +467,12 @@ extract(cdb("select community_my_power
                 <?}else{?>
                   <svg class="vote unvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/></svg>
                   <?if(($answer_repute_from_me>0)&&($community_my_power>$answer_repute_from_me)){?>
-                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/><polygon points="25 50 50 7 75 50" fill="#<?=$colour_dark?>"/></svg>
+                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 10 76 90 76 100 93" fill="#<?=$colour_highlight?>"/><polygon points="10 76 50 7 90 76" fill="#<?=$colour_dark?>"/></svg>
                   <?}else{?>
                     <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
                   <?}?>
                 <?}?>
-                <span class="score">score: <?=$answer_repute?>.<small><?=$answer_votes?></small></span>
+                <span class="score">score: <?=$answer_repute?></span>
                 <span></span>
                 <a href="/answer?id=<?=$answer_id?>">edit</a>
               </div>
