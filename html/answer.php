@@ -111,7 +111,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     $(function(){
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
-      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true });
+      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, extraKeys: { Home: "goLineLeft", End: "goLineRight" } });
       $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');
       var map;
       function render(){
