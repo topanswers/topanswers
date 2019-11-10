@@ -61,6 +61,7 @@ extract(cdb("select community_my_power
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/select2.css">
+  <link rel="stylesheet" href="/jquery.rateyo.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
@@ -79,10 +80,6 @@ extract(cdb("select community_my_power
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
     .bigspacer:not(:hover)>span:first-child { display: none; }
     .bigspacer:hover>span:last-child { display: none; }
-    #question:not(.voted) .unvote { display: none; }
-    #question.voted .upvote { display: none; }
-    .answer:not(.voted) .unvote { display: none; }
-    .answer.voted .upvote { display: none; }
 
     .tags { display: flex; flex-wrap: wrap; margin-left: 0.25rem; }
     .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
@@ -98,8 +95,6 @@ extract(cdb("select community_my_power
     #qa .bar>* { display: flex; align-items: center; }
     #qa .bar>div>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .markdown { padding: 0.6rem; }
-    #qa .vote { height: 1.5rem; width: 1.5rem; margin: 1px; cursor: pointer; }
-    #qa .cantvote { opacity: 0.2; }
 
     .markdown { overflow: auto; padding-right: 2px; }
     .markdown>:first-child { margin-top: 1px; }
@@ -149,6 +144,7 @@ extract(cdb("select community_my_power
   <script src="/resizer.js"></script>
   <script src="/favico.js"></script>
   <script src="/select2.js"></script>
+  <script src="/jquery.rateyo.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     moment.locale(window.navigator.userLanguage || window.navigator.language);
@@ -350,21 +346,23 @@ extract(cdb("select community_my_power
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
-      $('#question .upvote').click(function(){ var t = $(this); $.post('/question',{ action: 'upvote', id: <?=$question?> }).done(function(r){
-        $('#question').addClass('voted');
-        t.siblings('.score').html('<span>score: '+r+'</span>'); });
+      $('#question .stars').each(function(){
+        var t = $(this), v = t.data('votes');
+        t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>'
+                 , onSet: function(){ var n = t.rateYo('rating'); if(n!==v){ t.css('opacity',0.3).rateYo('option','readOnly',true); $.post('/question',{ action: 'vote', id: <?=$question?>, votes: n }).done(function(r){
+             t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
+             v = n;
+           }); } } })
+         .removeAttr('style');
       });
-      $('#question .unvote').click(function(){ var t = $(this); $.post('/question',{ action: 'unvote', id: <?=$question?> }).done(function(r){
-        $('#question').removeClass('voted');
-        t.siblings('.score').html('<span>score: '+r+'</span>'); });
-      });
-      $('#qa .answer .upvote').click(function(){ var t = $(this), a = t.closest('.answer'); $.post('/answer',{ action: 'upvote', id: a.data('id') }).done(function(r){
-        a.addClass('voted');
-        t.siblings('.score').html('<span>score: '+r+'</span>'); });
-      });
-      $('#qa .answer .unvote').click(function(){ var t = $(this), a = t.closest('.answer'); $.post('/answer',{ action: 'unvote', id: a.data('id') }).done(function(r){
-        a.removeClass('voted');
-        t.siblings('.score').html('<span>score: '+r+'</span>'); });
+      $('#qa .answer .stars').each(function(){
+        var t = $(this), v = t.data('votes');
+        t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>'
+                 , onSet: function(){ var n = t.rateYo('rating'); if(n!==v){ t.css('opacity',0.3).rateYo('option','readOnly',true); $.post('/answer',{ action: 'vote', id: t.closest('.answer').data('id'), votes: n }).done(function(r){
+             t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
+             v = n;
+           }); } } })
+         .removeAttr('style');
       });
       updateChat(true);
     });
@@ -428,17 +426,8 @@ extract(cdb("select community_my_power
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
           <div class="bar" style="border-top: 1px solid #<?=$colour_dark?>;">
             <div>
-              <?if($question_is_votable==='t'){?>
-                <?if($account_is_me==='t'){?>
-                  <svg class="vote cantvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
-                <?}else{?>
-                  <svg class="vote unvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/></svg>
-                  <?if(($question_votes_from_me>0)&&($community_my_power>$question_votes_from_me)){?>
-                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 10 76 90 76 100 93" fill="#<?=$colour_highlight?>"/><polygon points="10 76 50 7 90 76" fill="#<?=$colour_dark?>"/></svg>
-                  <?}else{?>
-                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
-                  <?}?>
-                <?}?>
+              <?if(($question_is_votable==='t')&&($account_is_me==='f')){?>
+                <div class="stars" data-votes="<?=$question_votes_from_me?>"></div>
                 <span class="score"><span>score: <?=$question_votes?></span>
               <?}?>
               <span></span>
@@ -458,17 +447,10 @@ extract(cdb("select community_my_power
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
             <div class="bar">
               <div>
-                <?if($account_is_me==='t'){?>
-                  <svg class="vote cantvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
-                <?}else{?>
-                  <svg class="vote unvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_highlight?>"/></svg>
-                  <?if(($answer_votes_from_me>0)&&($community_my_power>$answer_votes_from_me)){?>
-                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 10 76 90 76 100 93" fill="#<?=$colour_highlight?>"/><polygon points="10 76 50 7 90 76" fill="#<?=$colour_dark?>"/></svg>
-                  <?}else{?>
-                    <svg class="vote upvote" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg"><polygon points="0 93 50 7 100 93" fill="#<?=$colour_dark?>"/></svg>
-                  <?}?>
+                <?if($account_is_me==='f'){?>
+                  <div class="stars" data-votes="<?=$answer_votes_from_me?>"></div>
+                  <span class="score">score: <?=$answer_votes?></span>
                 <?}?>
-                <span class="score">score: <?=$answer_votes?></span>
                 <span></span>
                 <a href="/answer?id=<?=$answer_id?>">edit</a>
               </div>
