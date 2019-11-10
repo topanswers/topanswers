@@ -10,12 +10,13 @@ function db($query,...$params) {
 }
 function cdb($query,...$params){ return current(db($query,...$params)); }
 function ccdb($query,...$params){ return current(cdb($query,...$params)); }
-header('X-Powered-By: ');
-header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 
 isset($_GET['id']) or die('id not set');
 $id = intval($_GET['id']);
 $id>0 or die('id not positive integer');
+
+header('X-Powered-By: ');
+header('Last-Modified: '.ccdb("select to_char(account_change_at,'fmDy, dd Mon YYYY HH24:MI:SS') from account where account_id=$1",$id)." GMT");
 
 if(ccdb("select account_image is null from account where account_id=$1",$id)==='f'){
   header("Content-Type: image/jpeg");

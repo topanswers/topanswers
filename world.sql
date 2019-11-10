@@ -10,7 +10,8 @@ create schema world;
 grant usage on schema world to world;
 set local schema 'world';
 --
-create function _error(text) returns void language plpgsql as $$begin raise exception '%', $1 using errcode='H0403'; end;$$;
+create function _error(integer,text) returns void language plpgsql as $$begin raise exception '%', $2 using errcode='H0'||$1; end;$$;
+create function _error(text) returns void language sql as $$select _error(500,$1);$$;
 --
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
@@ -19,7 +20,7 @@ from db.community natural left join (select account_is_dev from db.account where
 where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or account_is_dev);
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
-create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
+create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id,account_change_at, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
 create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid,account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
@@ -68,10 +69,15 @@ select question_id,tag_id from db.question_tag_x qt natural join db.tag t natura
 where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
 --
-create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('login uuid does not exist') where not exists(select 1 from login where login_uuid=luuid);
-  select set_config('custom.uuid',luuid::text,false);
-  select set_config('custom.account_id',account_id::text,false) from login where login_uuid=luuid;
+create function login(luuid uuid) returns boolean language plpgsql security definer set search_path=db,world,pg_temp as $$
+declare e boolean = exists(select 1 from login where login_uuid=luuid);
+begin
+  if e then
+    perform set_config('custom.uuid',luuid::text,false);
+    perform set_config('custom.account_id',account_id::text,false) from login where login_uuid=luuid;
+  end if;
+  return e;
+end;
 $$;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
@@ -148,11 +154,11 @@ $$;
 --
 create function change_account_name(nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('invalid username') where nname is not null and not nname~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$';
-  update account set account_name = nname, account_change_id = default where account_id=current_setting('custom.account_id',true)::integer;
+  update account set account_name = nname, account_change_id = default, account_change_at = default where account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
 create function change_account_image(image bytea) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  update account set account_image = image, account_change_id = default where account_id=current_setting('custom.account_id',true)::integer;
+  update account set account_image = image, account_change_id = default, account_change_at = default where account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
 create function change_resizer(perc integer) returns void language sql security definer set search_path=db,world,pg_temp as $$

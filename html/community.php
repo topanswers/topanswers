@@ -1,10 +1,19 @@
 <?
-$connection = pg_connect('dbname=postgres user=world') or die(header('HTTP/1.0 500 Internal Server Error'));
+function fail($code = 500,$msg = ''){
+  switch($code){
+    case 403: header('HTTP/1.0 403 Forbidden'); break;
+    case 429: header('HTTP/1.0 429 Too Many Requests'); break;
+    case 500: header('HTTP/1.0 500 Internal Server Error'); break;
+    default: error_log('invalid http status code'); header('HTTP/1.0 500 Internal Server Error');
+  }
+  exit($msg);
+}
+$connection = pg_connect('dbname=postgres user=world') or fail(423);
 function db($query,...$params) {
   global $connection;
   pg_send_query_params($connection, $query, $params);
   $res = pg_get_result($connection);
-  if(pg_result_error($res)){ header('HTTP/1.0 500 Internal Server Error'); exit(pg_result_error_field($res,PGSQL_DIAG_SQLSTATE).htmlspecialchars(pg_result_error($res))); }
+  if(pg_result_error($res)) fail(intval(substr(pg_result_error_field($res,PGSQL_DIAG_SQLSTATE),2)),htmlspecialchars(pg_result_error($res)));
   ($rows = pg_fetch_all($res)) || ($rows = []);
   return $rows;
 }
@@ -157,14 +166,12 @@ extract(cdb("select community_my_power
 
       function setChatPollTimeout(){
         var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
-       console.log(chatLastChange);
         if(chatLastChange<8) chatPollInterval = 1000;
         else if(chatLastChange<18) chatPollInterval = 3000;
         else if(chatLastChange<30) chatPollInterval = 5000;
         else if(chatLastChange<300) chatPollInterval = 10000;
         else if(chatLastChange<3600) chatPollInterval = 30000;
         else chatPollInterval = 60000;
-       console.log(chatPollInterval);
         clearTimeout(chatTimer);
         chatTimer = setTimeout(checkChat,chatPollInterval);
       }
@@ -205,7 +212,7 @@ extract(cdb("select community_my_power
             });
             if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
             if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
-            setChatPollTimeout();
+            <?if($uuid){?>setChatPollTimeout();<?}?>
           }
         },'html').fail(setChatPollTimeout);
       }
@@ -346,24 +353,26 @@ extract(cdb("select community_my_power
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
-      $('#question .stars').each(function(){
-        var t = $(this), v = t.data('votes');
-        t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>'
-                 , onSet: function(){ var n = t.rateYo('rating'); if(n!==v){ t.css('opacity',0.3).rateYo('option','readOnly',true); $.post('/question',{ action: 'vote', id: <?=$question?>, votes: n }).done(function(r){
-             t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
-             v = n;
-           }); } } })
-         .removeAttr('style');
-      });
-      $('#qa .answer .stars').each(function(){
-        var t = $(this), v = t.data('votes');
-        t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>'
-                 , onSet: function(){ var n = t.rateYo('rating'); if(n!==v){ t.css('opacity',0.3).rateYo('option','readOnly',true); $.post('/answer',{ action: 'vote', id: t.closest('.answer').data('id'), votes: n }).done(function(r){
-             t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
-             v = n;
-           }); } } })
-         .removeAttr('style');
-      });
+      <?if($uuid){?>
+        $('#question .stars').each(function(){
+          var t = $(this), v = t.data('votes');
+          t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>'
+                   , onSet: function(){ var n = t.rateYo('rating'); if(n!==v){ t.css('opacity',0.3).rateYo('option','readOnly',true); $.post('/question',{ action: 'vote', id: <?=$question?>, votes: n }).done(function(r){
+               t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
+               v = n;
+             }); } } })
+           .removeAttr('style');
+        });
+        $('#qa .answer .stars').each(function(){
+          var t = $(this), v = t.data('votes');
+          t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>'
+                   , onSet: function(){ var n = t.rateYo('rating'); if(n!==v){ t.css('opacity',0.3).rateYo('option','readOnly',true); $.post('/answer',{ action: 'vote', id: t.closest('.answer').data('id'), votes: n }).done(function(r){
+               t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
+               v = n;
+             }); } } })
+           .removeAttr('style');
+        });
+      <?}?>
       updateChat(true);
     });
   </script>

@@ -1,10 +1,19 @@
 <?    
+function fail($code = 500,$msg = ''){
+  switch($code){
+    case 403: header('HTTP/1.0 403 Forbidden'); break;
+    case 429: header('HTTP/1.0 429 Too Many Requests'); break;
+    case 500: header('HTTP/1.0 500 Internal Server Error'); break;
+    default: error_log('invalid http status code'); header('HTTP/1.0 500 Internal Server Error');
+  }
+  exit($msg);
+}
 $connection = pg_connect('dbname=postgres user=world') or die(header('HTTP/1.0 500 Internal Server Error'));
 function db($query,...$params) {
   global $connection;
   pg_send_query_params($connection, $query, $params);
   $res = pg_get_result($connection);
-  if(pg_result_error($res)){ header('HTTP/1.0 500 Internal Server Error'); exit(pg_result_error_field($res,PGSQL_DIAG_SQLSTATE).htmlspecialchars(pg_result_error($res))); }
+  if(pg_result_error($res)) fail(intval(substr(pg_result_error_field($res,PGSQL_DIAG_SQLSTATE),2)),htmlspecialchars(pg_result_error($res)));
   ($rows = pg_fetch_all($res)) || ($rows = []);
   return $rows;
 }

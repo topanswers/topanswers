@@ -1,5 +1,6 @@
 <?    
 header('X-Powered-By: ');
+header('Cache-Control: max-age=31536000');
 header("Content-type: image");
 $hash = $_GET['hash'] ?? false;
 $hash || exit('missing hash');
