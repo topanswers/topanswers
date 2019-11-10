@@ -1,15 +1,5 @@
 <?
-$connection = pg_connect('dbname=postgres user=world') or die(header('HTTP/1.0 500 Internal Server Error'));
-function db($query,...$params) {
-  global $connection;
-  pg_send_query_params($connection, $query, $params);
-  $res = pg_get_result($connection);
-  if(pg_result_error($res)){ header('HTTP/1.0 500 Internal Server Error'); exit(pg_result_error_field($res,PGSQL_DIAG_SQLSTATE).htmlspecialchars(pg_result_error($res))); }
-  ($rows = pg_fetch_all($res)) || ($rows = []);
-  return $rows;
-}
-function cdb($query,...$params){ return current(db($query,...$params)); }
-function ccdb($query,...$params){ return current(cdb($query,...$params)); }
+include '../db.php';
 isset($_COOKIE['uuid']) || exit('no account cookie set');
 db("select login($1)",$_COOKIE['uuid']);
 isset($_FILES['image']) || exit('no file uploaded');
