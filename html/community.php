@@ -249,8 +249,8 @@ extract(cdb("select community_my_power
         e.trigger('input');
       }
 
-      $('#join').click(function(){ if(confirm('This will set a cookie')) { $.ajax({ type: "GET", url: '/uuid', async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
-      $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax({ type: "GET", url: '/uuid?pin='+pin, async: false }); location.reload(true); } });
+      $('#join').click(function(){ if(confirm('This will set a cookie to identify your account')) { $.ajax({ type: "POST", url: '/uuid', async: false }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); }); location.reload(true); } });
+      $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax('/uuid',{ type: "POST", data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message').data('id')).slideDown('fast').children('span').text($(this).closest('.message').data('name')); $('#chattext').focus(); });
@@ -332,23 +332,19 @@ extract(cdb("select community_my_power
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
       <?if($uuid){?>
-        $('#question .stars').each(function(){
+        $('#question .stars, #qa .answer .stars').each(function(){
           var t = $(this), v = t.data('votes');
-          t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>'
-                   , onSet: function(){ var n = t.rateYo('rating'); if(n!==v){ t.css('opacity',0.3).rateYo('option','readOnly',true); $.post('/question',{ action: 'vote', id: <?=$question?>, votes: n }).done(function(r){
-               t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
-               v = n;
-             }); } } })
-           .removeAttr('style');
-        });
-        $('#qa .answer .stars').each(function(){
-          var t = $(this), v = t.data('votes');
-          t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>'
-                   , onSet: function(){ var n = t.rateYo('rating'); if(n!==v){ t.css('opacity',0.3).rateYo('option','readOnly',true); $.post('/answer',{ action: 'vote', id: t.closest('.answer').data('id'), votes: n }).done(function(r){
-               t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
-               v = n;
-             }); } } })
-           .removeAttr('style');
+          t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>' })
+           .rateYo('option','onSet',function(){
+            var n = t.rateYo('rating');
+            if(n!==v){
+              t.css('opacity',0.3).rateYo('option','readOnly',true);
+              $.post('/'+t.data('type'),{ action: 'vote', id: t.data('id'), votes: n }).done(function(r){
+                t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
+                v = n;
+              }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); t.css('opacity',1).rateYo('option','readOnly',false).rateYo('option','rating',v); });
+            }
+          }).removeAttr('style');
         });
       <?}?>
       updateChat(true);
@@ -414,7 +410,7 @@ extract(cdb("select community_my_power
           <div class="bar" style="border-top: 1px solid #<?=$colour_dark?>;">
             <div>
               <?if(($question_is_votable==='t')&&($account_is_me==='f')){?>
-                <div class="stars" data-votes="<?=$question_votes_from_me?>"></div>
+                <div class="stars" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>"></div>
                 <span class="score"><span>score: <?=$question_votes?></span>
               <?}?>
               <span></span>
@@ -435,7 +431,7 @@ extract(cdb("select community_my_power
             <div class="bar">
               <div>
                 <?if($account_is_me==='f'){?>
-                  <div class="stars" data-votes="<?=$answer_votes_from_me?>"></div>
+                  <div class="stars" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>"></div>
                   <span class="score">score: <?=$answer_votes?></span>
                 <?}?>
                 <span></span>

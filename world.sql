@@ -287,7 +287,8 @@ create function vote_question(qid integer, votes integer) returns integer langua
   select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
   select _error('cant vote on own question') where exists (select 1 from world.question where question_id=qid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('cant vote on this question type') where exists (select 1 from world.question where question_id=qid and question_type='question');
-  select _error(429,'rate limit') where exists (select 1 from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'10s'::interval);
+  select _error(429,'rate limit') where (select 1 from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'1m'::interval)>4;
+  select _error(429,'rate limit') where (select 1 from question_vote_history where account_id=current_setting('custom.account_id',true)::integer and question_vote_history_at>current_timestamp-'1m'::interval)>10;
   --
   with d as (delete from question_vote where question_id=qid and account_id=current_setting('custom.account_id',true)::integer returning *)
      , r as (select question_id,community_id,q.account_id,question_vote_votes from d join question q using(question_id))
@@ -310,7 +311,8 @@ create function vote_answer(aid integer, votes integer) returns integer language
   select _error('invalid number of votes cast') where votes<0 or votes>(select community_my_power from answer natural join (select question_id,community_id from question) q natural join world.community where answer_id=aid);
   select _error('invalid answer') where not exists (select 1 from world.answer where answer_id=aid);
   select _error('cant vote on own answer') where exists (select 1 from world.answer where answer_id=aid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error(429,'rate limit') where exists (select 1 from answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_at>current_timestamp-'10s'::interval);
+  select _error(429,'rate limit') where (select count(*) from answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_at>current_timestamp-'1m'::interval)>4;
+  select _error(429,'rate limit') where (select count(*) from answer_vote_history where account_id=current_setting('custom.account_id',true)::integer and answer_vote_history_at>current_timestamp-'1m'::interval)>10;
   --
   with d as (delete from answer_vote where answer_id=aid and account_id=current_setting('custom.account_id',true)::integer returning *)
      , r as (select answer_id,community_id,a.account_id,answer_vote_votes from d join answer a using(answer_id) natural join (select question_id,community_id from question) q )
