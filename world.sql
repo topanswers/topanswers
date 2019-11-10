@@ -14,8 +14,8 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 --
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
-     , (current_setting('custom.account_id',true)::integer<100)::integer+trunc(log(greatest(account_community_repute,0)+1)) community_my_power
-from db.community natural left join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_repute from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
+     , (current_setting('custom.account_id',true)::integer<100)::integer+trunc(log(greatest(account_community_votes,0)+1)) community_my_power
+from db.community natural left join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_votes from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
 where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or account_is_dev);
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
@@ -25,7 +25,7 @@ create view my_account with (security_barrier) as select account_id,account_name
 create view room with (security_barrier) as
 select community_id,room_id,room_name
      , current_setting('custom.account_id',true)::integer is not null and (room_type='public' or account_id is not null) room_can_chat
-     , exists(select * from db.question where question_room_id=room_id) room_is_for_question
+     , exists(select 1 from db.question where question_room_id=room_id) room_is_for_question
 from db.room natural join world.community natural left outer join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) z
 where room_type<>'private' or account_id is not null;
 --
@@ -47,31 +47,29 @@ create view chat_hour with (security_barrier) as select room_id,chat_year,chat_m
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
 --
 create view question with (security_barrier) as
-select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,question_repute
-     , question_vote_repute>=community_my_power question_have_voted
-     , coalesce(question_vote_repute,0) question_repute_from_me
-     , coalesce(question_vote_repute,0) question_votes_from_me
-from db.question natural join community natural left join (select question_id,question_vote_repute from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_direction=1) z;
+select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes
+     , question_votes>=community_my_power question_have_voted
+     , coalesce(question_vote_votes,0) question_votes_from_me
+from db.question natural join community natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) z;
 --
 create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history natural join (select question_id from question) z;
 --
 create view answer with (security_barrier) as
-select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,answer_repute
-     , answer_vote_repute>=community_my_power answer_have_voted
-     , coalesce(answer_vote_repute,0) answer_repute_from_me
-     , coalesce(answer_vote_repute,0) answer_votes_from_me
-from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_repute from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_direction=1) zz;
+select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes
+     , answer_vote_votes>=community_my_power answer_have_voted
+     , coalesce(answer_vote_votes,0) answer_votes_from_me
+from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
 --
 create view tag with (security_barrier) as select tag_id,community_id,tag_name,tag_implies_id from db.tag natural join community;
 create view question_tag_x with (security_barrier) as select question_id,tag_id from db.question_tag_x natural join community;
 --
 create view question_tag_x_not_implied with (security_barrier) as
 select question_id,tag_id from db.question_tag_x qt natural join db.tag t natural join community
-where not exists (select * from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
+where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
 --
 create function login(luuid uuid) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('login uuid does not exist') where not exists(select * from login where login_uuid=luuid);
+  select _error('login uuid does not exist') where not exists(select 1 from login where login_uuid=luuid);
   select set_config('custom.uuid',luuid::text,false);
   select set_config('custom.account_id',account_id::text,false) from login where login_uuid=luuid;
 $$;
@@ -88,8 +86,8 @@ begin
 end$$;
 --
 create function new_chat(roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('room does not exist') where not exists(select * from room where room_id=roomid);
-  select _error('access denied') where not exists(select * from world.room where room_id=roomid and room_can_chat);
+  select _error('room does not exist') where not exists(select 1 from room where room_id=roomid);
+  select _error('access denied') where not exists(select 1 from world.room where room_id=roomid and room_can_chat);
   select _error('message too long') where length(msg)>5000;
   --
   delete from chat_notification where chat_id=replyid and account_id=current_setting('custom.account_id',true)::integer;
@@ -132,19 +130,19 @@ create function dismiss_notification(id integer) returns void language sql secur
 $$;
 --
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('rate limit') where exists (select * from account where account_create_at>current_timestamp-'1m'::interval);
+  select _error('rate limit') where exists (select 1 from account where account_create_at>current_timestamp-'1m'::interval);
   --
   with a as (insert into account default values returning account_id)
   insert into login(account_id,login_uuid) select account_id,luuid from a returning account_id;
 $$;
 --
 create function link_account(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('invalid pin') where not exists (select * from pin where pin_number=pn);
+  select _error('invalid pin') where not exists (select 1 from pin where pin_number=pn);
   insert into login(account_id,login_uuid) select account_id,luuid from pin where pin_number=pn and pin_at>current_timestamp-'1 min'::interval returning account_id;
 $$;
 --
 create function recover_account(luuid uuid, auuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('invalid recovery key') where not exists (select * from account where account_uuid=auuid);
+  select _error('invalid recovery key') where not exists (select 1 from account where account_uuid=auuid);
   insert into login(account_id,login_uuid) select account_id,luuid from account where account_uuid=auuid returning account_id;
 $$;
 --
@@ -168,39 +166,39 @@ create function authenticate_pin(num bigint) returns void language sql security 
 $$;
 --
 create function set_chat_flag(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('cant flag own message') where exists(select * from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('already flagged') where exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
+  select _error('cant flag own message') where exists(select 1 from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('already flagged') where exists(select 1 from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('access denied') where not exists(select 1 from chat natural join world.room where chat_id=cid and room_can_chat);
   insert into chat_flag(chat_id,account_id) select chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
 create function remove_chat_flag(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('not already flagged') where not exists(select * from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
+  select _error('not already flagged') where not exists(select 1 from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('access denied') where not exists(select 1 from chat natural join world.room where chat_id=cid and room_can_chat);
   delete from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
 create function set_chat_star(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('cant star own message') where exists(select * from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('already starred') where exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
+  select _error('cant star own message') where exists(select 1 from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('already starred') where exists(select 1 from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('access denied') where not exists(select 1 from chat natural join world.room where chat_id=cid and room_can_chat);
   insert into chat_star(chat_id,account_id) select chat_id,current_setting('custom.account_id',true)::integer from chat where chat_id=cid;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
 create function remove_chat_star(cid bigint) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('not already starred') where not exists(select * from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('access denied') where not exists(select * from chat natural join world.room where chat_id=cid and room_can_chat);
+  select _error('not already starred') where not exists(select 1 from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('access denied') where not exists(select 1 from chat natural join world.room where chat_id=cid and room_can_chat);
   delete from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
 create function new_question(cid integer, typ db.question_type_enum, title text, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid community') where not exists (select * from community where community_id=cid);
-  select _error('rate limit') where exists (select * from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id<>1);
+  select _error('invalid community') where not exists (select 1 from community where community_id=cid);
+  select _error('rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id<>1);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
      , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id)
@@ -210,8 +208,8 @@ $$;
 --
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('only author can edit blog post') where exists (select * from question where question_id=id and question_type='blog' and account_id<>current_setting('custom.account_id',true)::integer);
-  select _error('rate limit') where exists (select *
+  select _error('only author can edit blog post') where exists (select 1 from question where question_id=id and question_type='blog' and account_id<>current_setting('custom.account_id',true)::integer);
+  select _error('rate limit') where exists (select 1
                                             from question_history natural join (select question_id from question where account_id<>current_setting('custom.account_id',true)::integer) z
                                             where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval);
   --
@@ -227,14 +225,14 @@ $$;
 --
 create function new_answer(qid integer, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid question') where not exists (select * from world.question where question_id=qid);
-  select _error('rate limit') where exists (select * from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id<>1);
+  select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
+  select _error('rate limit') where exists (select 1 from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id<>1);
   insert into answer(question_id,account_id,answer_markdown) values(qid, current_setting('custom.account_id',true)::integer, markdown) returning answer_id;
 $$;
 --
 create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('rate limit') where exists (select *
+  select _error('rate limit') where exists (select 1
                                             from answer_history natural join (select answer_id from answer where account_id<>current_setting('custom.account_id',true)::integer) z
                                             where account_id=current_setting('custom.account_id',true)::integer and answer_history_at>current_timestamp-'1m'::interval);
   --
@@ -244,9 +242,9 @@ $$;
 --
 create function new_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid question') where not exists (select * from world.question where question_id=qid);
-  select _error('invalid tag') where not exists (select * from world.tag where tag_id=tid);
-  select _error('rate limit') where exists (select *
+  select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
+  select _error('invalid tag') where not exists (select 1 from world.tag where tag_id=tid);
+  select _error('rate limit') where exists (select 1
                                             from question_tag_x_history
                                             where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
   --
@@ -261,15 +259,15 @@ $$;
 --
 create function remove_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid question') where not exists (select * from world.question where question_id=qid);
-  select _error('invalid tag') where not exists (select * from world.tag where tag_id=tid);
-  select _error('rate limit') where exists (select *
+  select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
+  select _error('invalid tag') where not exists (select 1 from world.tag where tag_id=tid);
+  select _error('rate limit') where exists (select 1
                                             from question_tag_x_history
                                             where question_tag_x_history_removed_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_removed_at>current_timestamp-'1s'::interval);
   --
   select remove_question_tag(qid,tag_implies_id)
   from question_tag_x natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
-  where question_id=qid and tag_id=tid and tag_name like parent_name||'%' and not exists(select * from question_tag_x natural join tag where question_id=qid and tag_id<>tid and tag_implies_id=t.tag_implies_id);
+  where question_id=qid and tag_id=tid and tag_name like parent_name||'%' and not exists(select 1 from question_tag_x natural join tag where question_id=qid and tag_id<>tid and tag_implies_id=t.tag_implies_id);
   --
   insert into question_tag_x_history(question_id,tag_id,community_id,question_tag_x_history_added_by_account_id,question_tag_x_history_removed_by_account_id,question_tag_x_added_at)
   select qid,tid,community_id,account_id,current_setting('custom.account_id',true)::integer,question_tag_x_at from question_tag_x where question_id=qid and tag_id=tid;
@@ -277,56 +275,52 @@ create function remove_question_tag(qid integer, tid integer) returns void langu
   delete from question_tag_x where question_id=qid and tag_id=tid;
 $$;
 --
-create function vote_question(qid integer, direction integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+create function vote_question(qid integer, votes integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid direction') where direction not in (0,1);
-  select _error('invalid question') where not exists (select * from world.question where question_id=qid);
-  select _error('cant vote on own question') where exists (select * from world.question where question_id=qid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('cant vote on this question type') where exists (select * from world.question where question_id=qid and question_type='question');
-  select _error('rate limit') where exists (select * from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'10s'::interval);
+  select _error('invalid number of votes cast') where votes<0 or votes>(select community_my_power from question natural join world.community where question_id=qid);
+  select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
+  select _error('cant vote on own question') where exists (select 1 from world.question where question_id=qid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('cant vote on this question type') where exists (select 1 from world.question where question_id=qid and question_type='question');
+  select _error('rate limit') where exists (select 1 from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'10s'::interval);
   --
   with d as (delete from question_vote where question_id=qid and account_id=current_setting('custom.account_id',true)::integer returning *)
-     , r as (select question_id,community_id,q.account_id,question_vote_repute from d join question q using(question_id))
-     , q as (update question set question_votes = question_votes-question_vote_direction, question_repute = question_repute-question_vote_repute from d where question.question_id=qid)
-     , a as (insert into account_community(account_id,community_id,account_community_repute)
-             select account_id,community_id,-question_vote_repute from r
-             on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute)
-  insert into question_vote_history(question_id,account_id,question_vote_history_at,question_vote_history_direction,question_vote_history_repute)
-  select question_id,account_id,question_vote_at,question_vote_direction,question_vote_repute from d;
+     , r as (select question_id,community_id,q.account_id,question_vote_votes from d join question q using(question_id))
+     , q as (update question set question_votes = question_votes-question_vote_votes from d where question.question_id=qid)
+     , a as (insert into account_community(account_id,community_id,account_community_votes)
+             select account_id,community_id,-question_vote_votes from r
+             on conflict on constraint account_community_pkey do update set account_community_votes = excluded.account_community_votes)
+  insert into question_vote_history(question_id,account_id,question_vote_history_at,question_vote_history_votes)
+  select question_id,account_id,question_vote_at,question_vote_votes from d;
   --
-  with i as (insert into question_vote(question_id,account_id,question_vote_direction,question_vote_repute)
-             select qid,current_setting('custom.account_id',true)::integer,direction,direction*community_my_power from question natural join world.community where question_id=qid returning *)
-     , c as (insert into account_community(account_id,community_id,account_community_repute)
-             select account_id,community_id,question_vote_repute from (select question_id,community_id,q.account_id,question_vote_repute from i join question q using(question_id)) z
-             on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute)
-  update question set question_votes = question_votes+question_vote_direction, question_repute = question_repute+question_vote_repute from i where question.question_id=qid returning question_repute;
+  with i as (insert into question_vote(question_id,account_id,question_vote_votes) values(qid,current_setting('custom.account_id',true)::integer,votes) returning *)
+     , c as (insert into account_community(account_id,community_id,account_community_votes)
+             select account_id,community_id,question_vote_votes from (select question_id,community_id,q.account_id,question_vote_votes from i join question q using(question_id)) z
+             on conflict on constraint account_community_pkey do update set account_community_votes = excluded.account_community_votes)
+  update question set question_votes = question_votes+question_vote_votes from i where question.question_id=qid returning question_votes;
 $$;
 --
-create function vote_answer(aid integer, direction integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+create function vote_answer(aid integer, votes integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid direction') where direction not in (0,1);
-  select _error('invalid answer') where not exists (select * from world.answer where answer_id=aid);
-  select _error('cant vote on own answer') where exists (select * from world.answer where answer_id=aid and account_id=current_setting('custom.account_id',true)::integer);
-  select _error('rate limit') where exists (select * from answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_at>current_timestamp-'10s'::interval);
+  select _error('invalid number of votes cast') where votes<0 or votes>(select community_my_power from answer natural join (select question_id,community_id from question) q natural join world.community where answer_id=aid);
+  select _error('invalid answer') where not exists (select 1 from world.answer where answer_id=aid);
+  select _error('cant vote on own answer') where exists (select 1 from world.answer where answer_id=aid and account_id=current_setting('custom.account_id',true)::integer);
+  select _error('rate limit') where exists (select 1 from answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_at>current_timestamp-'10s'::interval);
   --
   with d as (delete from answer_vote where answer_id=aid and account_id=current_setting('custom.account_id',true)::integer returning *)
-     , r as (select answer_id,community_id,a.account_id,answer_vote_repute from d join answer a using(answer_id) natural join (select question_id,community_id from question) q )
-     , q as (update answer set answer_votes = answer_votes-answer_vote_direction, answer_repute = answer_repute-answer_vote_repute from d where answer.answer_id=aid)
-     , a as (insert into account_community(account_id,community_id,account_community_repute)
-             select account_id,community_id,-answer_vote_repute from r
-             on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute)
-  insert into answer_vote_history(answer_id,account_id,answer_vote_history_at,answer_vote_history_direction,answer_vote_history_repute)
-  select answer_id,account_id,answer_vote_at,answer_vote_direction,answer_vote_repute from d;
+     , r as (select answer_id,community_id,a.account_id,answer_vote_votes from d join answer a using(answer_id) natural join (select question_id,community_id from question) q )
+     , q as (update answer set answer_votes = answer_votes-answer_vote_votes from d where answer.answer_id=aid)
+     , a as (insert into account_community(account_id,community_id,account_community_votes)
+             select account_id,community_id,-answer_vote_votes from r
+             on conflict on constraint account_community_pkey do update set account_community_votes = excluded.account_community_votes)
+  insert into answer_vote_history(answer_id,account_id,answer_vote_history_at,answer_vote_history_votes)
+  select answer_id,account_id,answer_vote_at,answer_vote_votes from d;
   --
-  with i as (insert into answer_vote(answer_id,account_id,answer_vote_direction,answer_vote_repute)
-             select aid,current_setting('custom.account_id',true)::integer,direction,direction*community_my_power
-             from answer natural join (select question_id,community_id from question) q natural join world.community
-             where answer_id=aid returning *)
-     , c as (insert into account_community(account_id,community_id,account_community_repute)
-             select account_id,community_id,answer_vote_repute
-             from (select answer_id,community_id,a.account_id,answer_vote_repute from i join answer a using(answer_id) natural join (select question_id,community_id from question) q) z
-             on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute)
-  update answer set answer_votes = answer_votes+answer_vote_direction, answer_repute = answer_repute+answer_vote_repute from i where answer.answer_id=aid returning answer_repute;
+  with i as (insert into answer_vote(answer_id,account_id,answer_vote_votes) values(aid,current_setting('custom.account_id',true)::integer,votes) returning *)
+     , c as (insert into account_community(account_id,community_id,account_community_votes)
+             select account_id,community_id,answer_vote_votes
+             from (select answer_id,community_id,a.account_id,answer_vote_votes from i join answer a using(answer_id) natural join (select question_id,community_id from question) q) z
+             on conflict on constraint account_community_pkey do update set account_community_votes = excluded.account_community_votes)
+  update answer set answer_votes = answer_votes+answer_vote_votes from i where answer.answer_id=aid returning answer_votes;
 $$;
 --
 --
