@@ -39,12 +39,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       db("select change_question($1,$2,$3)",$id,$_POST['title'],$_POST['markdown']);
       header('Location: /'.ccdb("select community_name from question natural join community where question_id=$1",$id).'?q='.$id);
       exit;
-    case 'upvote':
-      ccdb("select vote_question($1,1)",$_POST['id']);
-      exit(ccdb("select json_build_object('rep',question_repute,'votes',question_votes) from question where question_id=$1",$_POST['id']));
-    case 'unvote': 
-      ccdb("select vote_question($1,0)",$_POST['id']);
-      exit(ccdb("select json_build_object('rep',question_repute,'votes',question_votes) from question where question_id=$1",$_POST['id']));
+    case 'upvote': exit(ccdb("select vote_question($1,1)",$_POST['id']));
+    case 'unvote': exit(ccdb("select vote_question($1,0)",$_POST['id']));
     default: die('unrecognized action');
   }
 }

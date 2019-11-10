@@ -14,7 +14,7 @@ create function _error(text) returns void language plpgsql as $$begin raise exce
 --
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
-     , (current_setting('custom.account_id',true)::integer<100)::integer+trunc(ln(greatest(account_community_repute,0)+1)) community_my_power
+     , (current_setting('custom.account_id',true)::integer<100)::integer+trunc(log(greatest(account_community_repute,0)+1)) community_my_power
 from db.community natural left join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_repute from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
 where (community_name<>'meta' or current_setting('custom.account_id',true)::integer is not null) and (community_name<>'private' or account_is_dev);
 --
@@ -50,6 +50,7 @@ create view question with (security_barrier) as
 select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,question_repute
      , question_vote_repute>=community_my_power question_have_voted
      , coalesce(question_vote_repute,0) question_repute_from_me
+     , coalesce(question_vote_repute,0) question_votes_from_me
 from db.question natural join community natural left join (select question_id,question_vote_repute from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_direction=1) z;
 --
 create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history natural join (select question_id from question) z;
@@ -58,6 +59,7 @@ create view answer with (security_barrier) as
 select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,answer_repute
      , answer_vote_repute>=community_my_power answer_have_voted
      , coalesce(answer_vote_repute,0) answer_repute_from_me
+     , coalesce(answer_vote_repute,0) answer_votes_from_me
 from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_repute from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_direction=1) zz;
 --
 create view tag with (security_barrier) as select tag_id,community_id,tag_name,tag_implies_id from db.tag natural join community;
@@ -294,10 +296,10 @@ create function vote_question(qid integer, direction integer) returns void langu
   --
   with i as (insert into question_vote(question_id,account_id,question_vote_direction,question_vote_repute)
              select qid,current_setting('custom.account_id',true)::integer,direction,direction*community_my_power from question natural join world.community where question_id=qid returning *)
-     , q as (update question set question_votes = question_votes+question_vote_direction, question_repute = question_repute+question_vote_repute from i where question.question_id=qid)
-  insert into account_community(account_id,community_id,account_community_repute)
-  select account_id,community_id,question_vote_repute from (select question_id,community_id,q.account_id,question_vote_repute from i join question q using(question_id)) z
-  on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute;
+     , c as (insert into account_community(account_id,community_id,account_community_repute)
+             select account_id,community_id,question_vote_repute from (select question_id,community_id,q.account_id,question_vote_repute from i join question q using(question_id)) z
+             on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute)
+  update question set question_votes = question_votes+question_vote_direction, question_repute = question_repute+question_vote_repute from i where question.question_id=qid returning question_repute;
 $$;
 --
 create function vote_answer(aid integer, direction integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -317,11 +319,14 @@ create function vote_answer(aid integer, direction integer) returns void languag
   select answer_id,account_id,answer_vote_at,answer_vote_direction,answer_vote_repute from d;
   --
   with i as (insert into answer_vote(answer_id,account_id,answer_vote_direction,answer_vote_repute)
-             select aid,current_setting('custom.account_id',true)::integer,direction,direction*community_my_power from answer natural join (select question_id,community_id from question) q natural join world.community where answer_id=aid returning *)
-     , a as (update answer set answer_votes = answer_votes+answer_vote_direction, answer_repute = answer_repute+answer_vote_repute from i where answer.answer_id=aid)
-  insert into account_community(account_id,community_id,account_community_repute)
-  select account_id,community_id,answer_vote_repute from (select answer_id,community_id,a.account_id,answer_vote_repute from i join answer a using(answer_id) natural join (select question_id,community_id from question) q) z
-  on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute;
+             select aid,current_setting('custom.account_id',true)::integer,direction,direction*community_my_power
+             from answer natural join (select question_id,community_id from question) q natural join world.community
+             where answer_id=aid returning *)
+     , c as (insert into account_community(account_id,community_id,account_community_repute)
+             select account_id,community_id,answer_vote_repute
+             from (select answer_id,community_id,a.account_id,answer_vote_repute from i join answer a using(answer_id) natural join (select question_id,community_id from question) q) z
+             on conflict on constraint account_community_pkey do update set account_community_repute = excluded.account_community_repute)
+  update answer set answer_votes = answer_votes+answer_vote_direction, answer_repute = answer_repute+answer_vote_repute from i where answer.answer_id=aid returning answer_repute;
 $$;
 --
 --
