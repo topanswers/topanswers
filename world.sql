@@ -277,7 +277,7 @@ create function remove_question_tag(qid integer, tid integer) returns void langu
   delete from question_tag_x where question_id=qid and tag_id=tid;
 $$;
 --
-create function vote_question(qid integer, direction integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+create function vote_question(qid integer, direction integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid direction') where direction not in (0,1);
   select _error('invalid question') where not exists (select * from world.question where question_id=qid);
@@ -302,7 +302,7 @@ create function vote_question(qid integer, direction integer) returns void langu
   update question set question_votes = question_votes+question_vote_direction, question_repute = question_repute+question_vote_repute from i where question.question_id=qid returning question_repute;
 $$;
 --
-create function vote_answer(aid integer, direction integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+create function vote_answer(aid integer, direction integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid direction') where direction not in (0,1);
   select _error('invalid answer') where not exists (select * from world.answer where answer_id=aid);
