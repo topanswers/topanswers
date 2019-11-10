@@ -59,7 +59,7 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
                          where room_id=$1 and chat_id>=$2".($uuid?"":" and chat_flag_count=0").") z ) z
               where chat_id>$2
               order by chat_at",$room,$id) as $r){ extract($r);?>
-  <?if($chat_gap&&($chat_account_is_repeat==='f')){?>
+  <?if($chat_account_is_repeat==='f'){?>
     <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>" data-at="<?=$chat_at_iso?>"><span></span><span></span></div>
   <?}?>
   <div id="c<?=$chat_id?>" class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>" data-change-id="<?=$chat_change_id?>" data-at="<?=$chat_at_iso?>">
