@@ -1,6 +1,6 @@
 <?    
-include '../db.php';
-include '../nocache.php';
+include 'db.php';
+include 'nocache.php';
 $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id']??$_POST['id']??'0';

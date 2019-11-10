@@ -1,5 +1,5 @@
 <?php
-include '../db.php';
+include 'db.php';
 
 isset($_GET['id']) or die('id not set');
 $id = intval($_GET['id']);
