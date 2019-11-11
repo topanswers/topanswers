@@ -1,6 +1,6 @@
 <?    
-include '../db.php';
-include '../nocache.php';
+include 'db.php';
+include 'nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select login($1)",$uuid);
 if(isset($_GET['flagchatid'])){
