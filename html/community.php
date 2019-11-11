@@ -297,15 +297,17 @@ extract(cdb("select community_my_power
         setTimeout(function(){ $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast'); },0);
       });
       $('#chattext').keydown(function(e){
-        var t = $(this);
+        var t = $(this), replyid = $('#replying').attr('data-id');
         if((e.keyCode || e.which) == 13) {
           if(!e.shiftKey) {
             if(t.val().trim()){
               clearTimeout(chatTimer);
               arr = [];
               $('.ping').each(function(){ arr.push($(this).data('id')); });
-              $.post('/chat', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr, action: 'new' }).done(function(){
+              $.post('/chat', { room: <?=$room?>, msg: t.val(), replyid: replyid, pings: arr, action: 'new' }).done(function(){
                 t.val('').prop('disabled',false).focus().css('height', 'auto').trigger('input').css('min-height',0);
+                $('#notifications .message[data-id='+replyid+']').remove();
+                if($('#notifications .message').children().length===0) $('#notification-wrapper').children().remove();
                 updateChat();
               }).fail(function(r){
                 alert(r.status+' '+r.statusText+'\n'+r.responseText);
