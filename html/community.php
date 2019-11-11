@@ -187,6 +187,8 @@ extract(cdb("select community_my_power
               var id = $(this).attr('href').substring(2);
               $(this).attr('href','/transcript?room=<?=$room?>&id='+id+'#c'+id);
             });
+            if(!maxChatChangeID) $('#messages').children().first().next().filter('.spacer').remove();
+            if(!maxChatChangeID) $('#messages>.message').first().removeClass('merged');
             if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
             if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
             <?if($uuid){?>setChatPollTimeout();<?}?>
@@ -514,7 +516,7 @@ extract(cdb("select community_my_power
       </div>
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
-      <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;"><div style="flex: 1 1 0;"></div></div>
+      <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;"><div style="flex: 1 0 0.5em;"></div></div>
       <?if($uuid){?>
         <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
           <?foreach(db("select account_id,account_name,account_is_me from room_account_x natural join account where room_id=$1 order by room_account_x_latest_chat_at desc",$room) as $r){ extract($r);?>
