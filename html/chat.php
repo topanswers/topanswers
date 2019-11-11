@@ -6,12 +6,13 @@ if($uuid) ccdb("select login($1)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   isset($_POST['action']) or die('posts must have an "action" parameter');
   switch($_POST['action']) {
+    case 'new': exit(ccdb("select new_chat($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
     case 'flag': exit(ccdb("select set_chat_flag($1)",$_POST['id']));
     case 'unflag': exit(ccdb("select remove_chat_flag($1)",$_POST['id']));
     case 'star': exit(ccdb("select set_chat_star($1)",$_POST['id']));
     case 'unstar': exit(ccdb("select remove_chat_star($1)",$_POST['id']));
     case 'dismiss': exit(ccdb("select dismiss_notification($1)",$_POST['id']));
-    default: die('unrecognized action');
+    default: fail(400,'unrecognized action');
   }
 }
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]') from chat where chat_change_id>$1",$_GET['id']));

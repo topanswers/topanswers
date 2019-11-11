@@ -1,5 +1,5 @@
 <?
-include '../db.php';
+include 'db.php';
 isset($_COOKIE['uuid']) || exit('no account cookie set');
 db("select login($1)",$_COOKIE['uuid']);
 isset($_FILES['image']) || exit('no file uploaded');

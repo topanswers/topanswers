@@ -27,7 +27,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       header('Location: /'.ccdb("select community_name from question natural join community where question_id=$1",$id).'?q='.$id);
       exit;
     case 'vote': exit(ccdb("select vote_question($1,$2)",$_POST['id'],$_POST['votes']));
-    default: die('unrecognized action');
+    default: fail(400,'unrecognized action');
   }
 }
 if($id) {

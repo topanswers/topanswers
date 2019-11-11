@@ -6,10 +6,9 @@ if($uuid) ccdb("select login($1)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
   isset($_POST['action']) or die('posts must have an "action" parameter');
   switch($_POST['action']) {
-    case 'new-chat': exit(ccdb("select new_chat($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['room'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
     case 'new-tag': exit(ccdb("select new_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
     case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
-    default: die('unrecognized action');
+    default: fail(400,'unrecognized action');
   }
 }
 if(isset($_GET['flagchatid'])){
@@ -249,7 +248,12 @@ extract(cdb("select community_my_power
         e.trigger('input');
       }
 
-      $('#join').click(function(){ if(confirm('This will set a cookie to identify your account')) { $.ajax({ type: "POST", url: '/uuid', async: false }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); }); location.reload(true); } });
+      $('#join').click(function(){
+        if(confirm('This will set a cookie to identify your account')) { $.ajax({ type: "POST", url: '/uuid', async: false }).fail(function(r){
+          alert((r.status)===429?'Rate limit hit, please try again later':responseText);
+        }) };
+        location.reload(true);
+      });
       $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax('/uuid',{ type: "POST", data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
@@ -298,9 +302,12 @@ extract(cdb("select community_my_power
               clearTimeout(chatTimer);
               arr = [];
               $('.ping').each(function(){ arr.push($(this).data('id')); });
-              $.post('/community', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr, action: 'new-chat' }).done(function(){
+              $.post('/chat', { room: <?=$room?>, msg: t.val(), replyid: $('#replying').attr('data-id'), pings: arr, action: 'new' }).done(function(){
                 t.val('').prop('disabled',false).focus().css('height', 'auto').trigger('input').css('min-height',0);
                 updateChat();
+              }).fail(function(r){
+                alert(r.status+' '+r.statusText+'\n'+r.responseText);
+                t.prop('disabled',false).focus();
               });
               $('#replying').attr('data-id','').slideUp('fast');
               $('.ping').removeClass('ping');
@@ -326,7 +333,13 @@ extract(cdb("select community_my_power
       $('#chatuploadfile').closest('form').submit(function(){
         var d = new FormData($(this)[0]);
         $('#chattext').prop('disabled',true);
-        $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){ $('#chattext').prop('disabled',false).focus(); textareaInsertTextAtCursor($('#chattext'),'!['+d.get('image').name+'](/image?hash='+r+')'); });
+        $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){
+          $('#chattext').prop('disabled',false).focus();
+          textareaInsertTextAtCursor($('#chattext'),'!['+d.get('image').name+'](/image?hash='+r+')');
+        }).fail(function(r){
+          alert(r.status+' '+r.statusText+'\n'+r.responseText);
+          $('#chattext').prop('disabled',false).focus();
+        });
         return false;
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
