@@ -3,47 +3,37 @@ include 'db.php';
 include 'nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select login($1)",$uuid);
-if(isset($_GET['flagchatid'])){
-  db("select set_chat_flag($1)",$_GET['flagchatid']);
-  exit;
-}
-if(isset($_GET['unflagchatid'])){
-  db("select remove_chat_flag($1)",$_GET['unflagchatid']);
-  exit;
-}
-if(isset($_GET['starchatid'])){
-  db("select set_chat_star($1)",$_GET['starchatid']);
-  exit;
-}
-if(isset($_GET['unstarchatid'])){
-  db("select remove_chat_star($1)",$_GET['unstarchatid']);
-  exit;
-}
 if(!isset($_GET['room'])) die('Room not set');
 $room = $_GET['room'];
 $max = 500;
 ccdb("select count(*) from room where room_id=$1",$room)==='1' or die('invalid room');
+$id = $_GET['id']??0;
+if($id){ ccdb("select count(*) from chat where room_id=$1 and chat_id=$2",$room,$id)==='1' or die('invalid id'); }
 if(!isset($_GET['year'])){
   if(ccdb("select sum(chat_year_count) from chat_year where room_id=$1",$room)>=$max){
-    header("Location: ".$_SERVER['REQUEST_URI'].'&year='.ccdb("select max(chat_year) from chat_year where room_id=$1",$room));
+    if($id) header("Location: ".$_SERVER['REQUEST_URI'].'&year='.ccdb("select extract('year' from chat_at) from chat where chat_id=$1",$id));
+    else header("Location: ".$_SERVER['REQUEST_URI'].'&year='.ccdb("select max(chat_year) from chat_year where room_id=$1",$room));
     exit;
   }
 }else{
   if(!isset($_GET['month'])){
     if(ccdb("select chat_year_count from chat_year where room_id=$1 and chat_year=$2",$room,$_GET['year'])>=$max){
-      header("Location: ".$_SERVER['REQUEST_URI'].'&month='.ccdb("select max(chat_month) from chat_month where room_id=$1 and chat_year=$2",$room,$_GET['year']));
+      if($id) header("Location: ".$_SERVER['REQUEST_URI'].'&month='.ccdb("select extract('month' from chat_at) from chat where chat_id=$1",$id));
+      else header("Location: ".$_SERVER['REQUEST_URI'].'&month='.ccdb("select max(chat_month) from chat_month where room_id=$1 and chat_year=$2",$room,$_GET['year']));
       exit;
     }
   }else{
     if(!isset($_GET['day'])){
       if(ccdb("select chat_month_count from chat_month where room_id=$1 and chat_year=$2 and chat_month=$3",$room,$_GET['year'],$_GET['month'])>=$max){
-        header("Location: ".$_SERVER['REQUEST_URI'].'&day='.ccdb("select max(chat_day) from chat_day where room_id=$1 and chat_year=$2 and chat_month=$3",$room,$_GET['year'],$_GET['month']));
+        if($id) header("Location: ".$_SERVER['REQUEST_URI'].'&day='.ccdb("select extract('day' from chat_at) from chat where chat_id=$1",$id));
+        else header("Location: ".$_SERVER['REQUEST_URI'].'&day='.ccdb("select max(chat_day) from chat_day where room_id=$1 and chat_year=$2 and chat_month=$3",$room,$_GET['year'],$_GET['month']));
         exit;
       }
     }else{
       if(!isset($_GET['hour'])){
         if(ccdb("select chat_day_count from chat_day where room_id=$1 and chat_year=$2 and chat_month=$3 and chat_day=$4",$room,$_GET['year'],$_GET['month'],$_GET['day'])>=$max){
-          header("Location: ".$_SERVER['REQUEST_URI'].'&hour='.ccdb("select max(chat_hour) from chat_hour where room_id=$1 and chat_year=$2 and chat_month=$3 and chat_day=$4",$room,$_GET['year'],$_GET['month'],$_GET['day']));
+          if($id) header("Location: ".$_SERVER['REQUEST_URI'].'&hour='.ccdb("select extract('hour' from chat_at) from chat where chat_id=$1",$id));
+          else header("Location: ".$_SERVER['REQUEST_URI'].'&hour='.ccdb("select max(chat_hour) from chat_hour where room_id=$1 and chat_year=$2 and chat_month=$3 and chat_day=$4",$room,$_GET['year'],$_GET['month'],$_GET['day']));
           exit;
         }
       }
@@ -202,6 +192,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                              , chat_flag_at is not null is_flagged
                              , chat_star_at is not null is_starred
                              , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
+                             , chat_reply_id<(min(chat_id) over()) reply_is_different_segment
                         from chat c natural join account natural left join chat_flag natural left join chat_star
                         where room_id=$1 and chat_at>=make_timestamp($2,$3,$4,$5,0,0) and chat_at<make_timestamp($6,$7,$8,$9,0,0)+'1h'::interval".($uuid?"":" and chat_flag_count=0").") z
                   order by chat_at",$room,$_GET['year']??1,$_GET['month']??1,$_GET['day']??1,$_GET['hour']??0,$_GET['year']??9999,$_GET['month']??12,$_GET['day']??$maxday,$_GET['hour']??23) as $r){ extract($r);?>
@@ -209,7 +200,15 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <div id="c<?=$chat_id?>" class="message<?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
         <small class="who">
           <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
-          <?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:
+          <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
+          <?if($chat_reply_id){?>
+            <?if($reply_is_different_segment==='t'){?>
+              <a href="/transcript?room=<?=$room?>&id=<?=$chat_reply_id?>#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
+            <?}else{?>
+              <a href="#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
+            <?}?>
+            <?=($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name?>
+          <?}?>
         </small>
         <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
         <div class="markdown-wrapper">
