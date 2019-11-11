@@ -44,8 +44,7 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
                               , chat_star_at is not null is_starred
                               , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
                          from chat c natural join account natural left join chat_flag natural left join chat_star
-                         where room_id=$1 and chat_id>=$2".($uuid?"":" and chat_flag_count=0").") z ) z
-              where chat_id>$2
+                         where room_id=$1 and chat_id>$2".($uuid?"":" and chat_flag_count=0").") z ) z
               order by chat_at",$room,$id) as $r){ extract($r);?>
   <?if($chat_account_is_repeat==='f'){?>
     <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>" data-at="<?=$chat_at_iso?>"><span></span><span></span></div>
