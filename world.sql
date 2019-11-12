@@ -48,7 +48,7 @@ create view chat_hour with (security_barrier) as select room_id,chat_year,chat_m
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
 --
 create view question with (security_barrier) as
-select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,question_license_id,question_codelicense_id
+select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,question_license_id license_id,question_codelicense_id codelicense_id
      , question_votes>=community_my_power question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
 from db.question natural join community natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) z;
@@ -56,7 +56,7 @@ from db.question natural join community natural left join (select question_id,qu
 create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history natural join (select question_id from question) z;
 --
 create view answer with (security_barrier) as
-select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,answer_license_id,answer_codelicense_id
+select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,answer_license_id license_id,answer_codelicense_id codelicense_id
      , answer_vote_votes>=community_my_power answer_have_voted
      , coalesce(answer_vote_votes,0) answer_votes_from_me
 from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
@@ -68,8 +68,8 @@ create view question_tag_x_not_implied with (security_barrier) as
 select question_id,tag_id from db.question_tag_x qt natural join db.tag t natural join community
 where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
-create view license with (security_barrier) as select license_id,license_name,license_question_id from db.license;
-create view codelicense with (security_barrier) as select codelicense_id,codelicense_name,codelicense_question_id from db.codelicense;
+create view license with (security_barrier) as select license_id,license_name,license_href from db.license;
+create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
 --
 --
 create function login(luuid uuid) returns boolean language plpgsql security definer set search_path=db,world,pg_temp as $$

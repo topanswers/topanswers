@@ -403,12 +403,13 @@ extract(cdb("select community_my_power
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em; scroll-behavior: smooth;">
       <?if($question){?>
-        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,account_id,account_name,account_is_me
+        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,license_name,license_href,codelicense_name,account_id,account_name,account_is_me
+                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                             , question_type<>'question' question_is_votable
                             , question_type='blog' question_is_blog
                             , extract('epoch' from current_timestamp-question_at) question_when
-                       from question natural join account
+                       from question natural join account natural join license natural join codelicense
                        where question_id=$1",$question));?>
         <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
@@ -416,6 +417,10 @@ extract(cdb("select community_my_power
             <div>
               <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
               <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
+              <span>
+                <a href="<?=$license_href?>"><?=$license_name?></a>
+                <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
+              </span>
             </div>
             <div>
               <div class="tags">
@@ -457,9 +462,10 @@ extract(cdb("select community_my_power
           </div>
         </div>
         <?if($uuid && ($question_is_blog==='f')){?><form method="GET" action="/answer"><input type="hidden" name="question" value="<?=$question?>"><input id="answer" type="submit" value="answer this question" style="margin: 2em auto; display: block;"></form><?}?>
-        <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,account_name,account_is_me
+        <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,license_name,codelicense_name,account_name,account_is_me
                            , extract('epoch' from current_timestamp-answer_at) answer_when
-                      from answer natural join account
+                           , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
+                      from answer natural join account natural join license natural join codelicense
                       where question_id=$1
                       order by answer_votes desc, answer_votes desc, answer_id desc",$question) as $r){ extract($r);?>
           <div id="a<?=$answer_id?>" class="answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
@@ -476,6 +482,10 @@ extract(cdb("select community_my_power
                 <a href="/answer?id=<?=$answer_id?>">edit</a>
               </div>
               <div>
+                <span>
+                  <a href="<?=$license_href?>"><?=$license_name?></a>
+                  <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
+                </span>
                 <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
                 <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
               </div>
