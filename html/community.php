@@ -309,7 +309,7 @@ extract(cdb("select community_my_power
       $('#chattext').on('input', function(){
         if(this.scrollHeight>$(this).outerHeight()) $(this).css("min-height",this.scrollHeight);
         if($(this).val().trim()){ $('#preview .markdown').html(md.render($('#chattext').val())); $('#preview:hidden').slideDown('fast'); } else { $('#preview:visible').slideUp('fast'); }
-        setTimeout(function(){ $('#messages').animate({ scrollTop: $('#messages').prop("scrollHeight") }, 'fast'); },0);
+        setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       });
       $('#chattext').keydown(function(e){
         var t = $(this), replyid = $('#replying').attr('data-id');
