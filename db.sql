@@ -182,8 +182,8 @@ create table question(
 , question_room_id integer not null references room deferrable initially deferred
 , question_change_at timestamptz not null default current_timestamp
 , question_votes integer default 0 not null
-, question_license_id integer references license not null
-, question_codelicense_id integer references codelicense not null
+, license_id integer references license not null
+, codelicense_id integer references codelicense not null
 , unique (community_id,question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
 );
@@ -207,8 +207,8 @@ create table answer(
 , answer_markdown text not null check (length(answer_markdown) between 1 and 50000)
 , answer_change_at timestamptz not null default current_timestamp
 , answer_votes integer default 0 not null
-, answer_license_id integer references license not null
-, answer_codelicense_id integer references codelicense not null
+, license_id integer references license not null
+, codelicense_id integer references codelicense not null
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 

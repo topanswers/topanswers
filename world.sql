@@ -48,7 +48,7 @@ create view chat_hour with (security_barrier) as select room_id,chat_year,chat_m
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
 --
 create view question with (security_barrier) as
-select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,question_license_id license_id,question_codelicense_id codelicense_id
+select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id
      , question_votes>=community_my_power question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
 from db.question natural join community natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) z;
@@ -56,7 +56,7 @@ from db.question natural join community natural left join (select question_id,qu
 create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history natural join (select question_id from question) z;
 --
 create view answer with (security_barrier) as
-select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,answer_license_id license_id,answer_codelicense_id codelicense_id
+select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,license_id,codelicense_id
      , answer_vote_votes>=community_my_power answer_have_voted
      , coalesce(answer_vote_votes,0) answer_votes_from_me
 from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
@@ -218,7 +218,7 @@ create function new_question(cid integer, typ db.question_type_enum, title text,
   select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id>2);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
-     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,question_license_id,question_codelicense_id)
+     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id)
              select cid, current_setting('custom.account_id',true)::integer, typ, title, markdown, room_id, lic, codelic from r returning question_id)
   select question_id from q;
 $$;
@@ -255,7 +255,7 @@ create function new_answer(qid integer, markdown text, lic integer, codelic inte
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
   select _error(429,'rate limit') where exists (select 1 from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id>2);
-  insert into answer(question_id,account_id,answer_markdown,answer_license_id,answer_codelicense_id) values(qid, current_setting('custom.account_id',true)::integer, markdown, lic, codelic) returning answer_id;
+  insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id) values(qid, current_setting('custom.account_id',true)::integer, markdown, lic, codelic) returning answer_id;
 $$;
 --
 create function new_answer(qid integer, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
