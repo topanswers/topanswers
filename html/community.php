@@ -150,6 +150,7 @@ extract(cdb("select community_my_power
     moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
+      var mdsummary = window.markdownit('zero').enable(['emphasis']);
       //var notificationChangeId = <?=ccdb("select coalesce(max(chat_id),0) from chat_notification natural join chat")?>;
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
@@ -378,6 +379,7 @@ extract(cdb("select community_my_power
           }).removeAttr('style');
         });
       <?}?>
+      $('#qa .summary span[data-markdown]').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
       updateChat(true);
       setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
     });
@@ -518,7 +520,7 @@ extract(cdb("select community_my_power
                           where question_id=$1
                           order by answer_votes desc, answer_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
               <div class="minibar">
-                <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <?=htmlspecialchars(strtok($answer_markdown,"\n"));?></a>
+                <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n"));?>"></span></a>
                 <div>
                   <?if($answer_votes){?><span class="score"><?=$answer_votes?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span><?}?>
                   <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
