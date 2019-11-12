@@ -150,8 +150,8 @@ extract(cdb("select community_my_power
     moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
+      md.linkify.tlds('kiwi',true).tlds('xyz',true);
       var mdsummary = window.markdownit('zero').enable(['emphasis']);
-      //var notificationChangeId = <?=ccdb("select coalesce(max(chat_id),0) from chat_notification natural join chat")?>;
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxNotificationID = '<?=ccdb("select max(chat_notification_at) from chat_notification")?>';
