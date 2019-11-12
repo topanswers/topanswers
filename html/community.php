@@ -60,8 +60,8 @@ extract(cdb("select community_my_power
     [data-rz-handle] div { width: 2px; background-color: black; }
 
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { margin-bottom: 2rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.2rem 0.2rem 0.1rem 0em #<?=$colour_dark?>; }
-    .answer { margin-bottom: 2em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #a794b4; }
+    .question { margin-bottom: 2rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>; }
+    .answer { margin-bottom: 2em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
     .bigspacer:not(:hover)>span:first-child { display: none; }
@@ -367,7 +367,7 @@ extract(cdb("select community_my_power
       <?if($uuid){?>
         $('#question .stars, #qa .answer .stars').each(function(){
           var t = $(this), v = t.data('votes');
-          t.rateYo({ starWidth: '1.5rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>' })
+          t.rateYo({ starWidth: '1.3rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>' })
            .rateYo('option','onSet',function(){
             var n = t.rateYo('rating');
             if(n!==v){
@@ -412,7 +412,7 @@ extract(cdb("select community_my_power
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account
                        where question_id=$1",$question));?>
-        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.2em #<?=$colour_mid?>;">
+        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
@@ -504,7 +504,7 @@ extract(cdb("select community_my_power
                           where question_id=$1
                           order by answer_votes desc, answer_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
               <div class="minibar">
-                <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary"><?=htmlspecialchars(strtok($answer_markdown,"\n"));?></a>
+                <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <?=htmlspecialchars(strtok($answer_markdown,"\n"));?></a>
                 <div>
                   <span class="score"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span>
                   <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
