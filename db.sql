@@ -31,7 +31,7 @@ create table codelicense(
 
 create table account(
   account_id integer generated always as identity primary key
-,< account_name text check (account_name~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
+, account_name text check (account_name~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea check(length(account_image)>0)
@@ -228,6 +228,7 @@ create table tag(
 , tag_name text not null check (tag_name~'^[a-z][-0-9a-z]{1,18}[0-9a-z]$')
 , tag_description text default '' not null check (length(tag_description)<101)
 , tag_implies_id integer
+, tag_question_count integer default 0 not null
 , unique (community_id,tag_id)
 , unique (community_id,tag_name)
 , foreign key (community_id,tag_implies_id) references tag (community_id,tag_id)

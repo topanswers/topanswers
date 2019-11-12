@@ -61,7 +61,7 @@ select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_
      , coalesce(answer_vote_votes,0) answer_votes_from_me
 from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
 --
-create view tag with (security_barrier) as select tag_id,community_id,tag_name,tag_implies_id from db.tag natural join community;
+create view tag with (security_barrier) as select tag_id,community_id,tag_name,tag_implies_id,tag_question_count from db.tag natural join community;
 create view question_tag_x with (security_barrier) as select question_id,tag_id from db.question_tag_x natural join community;
 --
 create view question_tag_x_not_implied with (security_barrier) as
@@ -286,10 +286,12 @@ create function new_question_tag(qid integer, tid integer) returns void language
   with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
                                                   union all
                                                   select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
-  insert into question_tag_x(question_id,tag_id,community_id,account_id)
-  select qid,tag_id,community_id,current_setting('custom.account_id',true)::integer
-  from w natural join tag
-  where tag_id not in (select tag_id from question_tag_x where question_id=qid);
+     , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id)
+             select qid,tag_id,community_id,current_setting('custom.account_id',true)::integer
+             from w natural join tag
+             where tag_id not in (select tag_id from question_tag_x where question_id=qid)
+             returning tag_id)
+  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
 $$;
 --
 create function remove_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -308,6 +310,7 @@ create function remove_question_tag(qid integer, tid integer) returns void langu
   select qid,tid,community_id,account_id,current_setting('custom.account_id',true)::integer,question_tag_x_at from question_tag_x where question_id=qid and tag_id=tid;
   --
   delete from question_tag_x where question_id=qid and tag_id=tid;
+  update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
 $$;
 --
 create function vote_question(qid integer, votes integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$

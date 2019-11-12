@@ -67,7 +67,7 @@ extract(cdb("select community_my_power
     .bigspacer:not(:hover)>span:first-child { display: none; }
     .bigspacer:hover>span:last-child { display: none; }
 
-    .tags { display: flex; xflex-wrap: wrap; margin-left: 0.25rem; margin-top: 1px; white-space: nowrap; overflow-x: hidden; }
+    .tags { display: flex; margin-left: 0.25rem; margin-top: 1px; white-space: nowrap; overflow-x: hidden; }
     .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
@@ -76,6 +76,7 @@ extract(cdb("select community_my_power
     .newtag { position: relative; cursor: pointer; }
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
+    .select2-dropdown { border: 1px solid #<?=$colour_dark?> !important; box-shadow: 0 0 0.2rem 0.3rem white; }
 
     #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .bar:last-child { border-bottom: none; border-radius: 0 0 0.2rem 0.2rem; }
@@ -298,12 +299,13 @@ extract(cdb("select community_my_power
         return false;
       });
       $('#replying>button').click(function(){ $('#replying').attr('data-id','').slideUp('fast'); });
-      $('.tag').click(function(){ $(this).prev('div').css('visibility','visible'); });
-      $(document).click(function(e){ if((!$(e.target).closest('.newtag').find('div').length) && (!$(e.target).closest('.dropdown').length)){ $('.tag').prev('div').css('visibility','hidden'); } });
-      $('select.tags').select2();
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
-      $('select.tags').change(function(){ if($(this).val()!=='0'){ $.post(window.location.href, { questionid: $(this).data('question-id'), tagid: $(this).val(), action: 'new-tag' }).done(function(){ window.location.reload(); }); } });
+      $('#tags').select2({ placeholder: "select a tag" });
+      function tagdrop(){ $('#tags').select2('open'); };
+      $('#tags').on('select2:close', function (e) { setTimeout(function(){ $('.newtag').one('click',tagdrop); },200); });
+      $('#tags').change(function(){ $.post(window.location.href, { questionid: $(this).data('question-id'), tagid: $(this).val(), action: 'new-tag' }).done(function(){ window.location.reload(); }); });
+      $('.newtag').one('click',tagdrop);
       $('.tag i').click(function(){ $.post(window.location.href, { questionid: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
       $('#chattext').on('input', function(){
@@ -429,9 +431,12 @@ extract(cdb("select community_my_power
                 <?if($uuid){?>
                   <span class="newtag" style="margin-right: 0.2rem; margin-bottom: 0.1rem;">
                     <div style="position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden;">
-                      <select class="tags" data-question-id="<?=$question?>">
-                        <option value="0" disabled selected><?=(ccdb("select exists (select tag_id,tag_name from tag natural join community where community_name=$1)",$community))?'select tag':''?></option>
-                        <?foreach(db("select tag_id,tag_name from tag natural join community where community_name=$1 and tag_id not in (select tag_id from question_tag_x where question_id=$2)",$community,$question) as $r){ extract($r);?>
+                      <select id="tags" data-question-id="<?=$question?>">
+                        <option></option>
+                        <?foreach(db("select tag_id,tag_name
+                                      from tag natural join community
+                                      where community_name=$1 and tag_id not in (select tag_id from question_tag_x where question_id=$2)
+                                      order by tag_question_count desc,tag_name",$community,$question) as $r){ extract($r);?>
                           <option value="<?=$tag_id?>"><?=$tag_name?></option>
                         <?}?>
                       </select>
