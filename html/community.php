@@ -78,7 +78,7 @@ extract(cdb("select community_my_power
     .newtag:hover .tag { opacity: 1; }
 
     #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
-    #qa .bar:last-child { border-bottom: none; }
+    #qa .bar:last-child { border-bottom: none; border-radius: 0 0 0.2rem 0.2rem; }
     #qa .bar+.bar { border-top: none; }
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
@@ -441,9 +441,13 @@ extract(cdb("select community_my_power
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
           <div class="bar">
             <div>
-              <?if(($question_is_votable==='t')&&($account_is_me==='f')){?>
-                <div class="stars" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>"></div>
-                <span class="score"><span>score: <?=$question_votes?></span>
+              <?if($question_is_votable==='t'){?>
+                <?if($account_is_me==='f'){?>
+                  <div class="stars" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>"></div>
+                <?}else{?>
+                  <span></span>
+                <?}?>
+                <span class="score">score: <?=$question_votes?></span>
               <?}?>
               <span></span>
               <?if($uuid && (($account_is_me==='t')||($question_is_blog==='f'))){?><a href="/question?id=<?=$question?>">edit</a><?}?>
@@ -464,8 +468,10 @@ extract(cdb("select community_my_power
               <div>
                 <?if($account_is_me==='f'){?>
                   <div class="stars" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>"></div>
-                  <span class="score">score: <?=$answer_votes?></span>
+                <?}else{?>
+                  <span></span>
                 <?}?>
+                <span class="score">score: <?=$answer_votes?></span>
                 <span></span>
                 <a href="/answer?id=<?=$answer_id?>">edit</a>
               </div>
@@ -504,7 +510,7 @@ extract(cdb("select community_my_power
               <div class="minibar">
                 <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <?=htmlspecialchars(strtok($answer_markdown,"\n"));?></a>
                 <div>
-                  <span class="score"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span>
+                  <?if($answer_votes){?><span class="score"><?=$answer_votes?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span><?}?>
                   <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
                   <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
                 </div>
