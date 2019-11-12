@@ -83,9 +83,6 @@ extract(cdb("select community_my_power
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .markdown { padding: 0.6rem; }
-
-    #qa .question>a:first-child { display: block; padding: 0.6rem; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-
     #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .minibar:last-child { border-bottom: none; }
     #qa .minibar+.minibar { border-top: none; }
@@ -97,6 +94,7 @@ extract(cdb("select community_my_power
     #qa .minibar>:last-child { flex: 0 0 auto; margin-left: 1rem; }
     #qa .minibar .score { color: #<?=$colour_highlight?>; }
     #qa .minibar>a:first-child { display: block; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.2rem; }
+    #qa .question>a:first-child { display: block; padding: 0.6rem; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
     .markdown { overflow: auto; padding-right: 2px; }
     .markdown>:first-child { margin-top: 1px; }
@@ -121,7 +119,7 @@ extract(cdb("select community_my_power
     .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
     .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
     .message .button:not(.marked) { visibility: hidden; }
-    .message:not(.mine):hover .button { visibility: visible; }
+    <?if($canchat){?>.message:not(.mine):hover .button { visibility: visible; }<?}else{?>.message .button { cursor: default; }<?}?>
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
@@ -177,7 +175,7 @@ extract(cdb("select community_my_power
             newchat.find('img').waitForImages(true).done(function(){
               newchat.css('opacity','1');
               if(scroll){
-                setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+                setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
               }else{
                 $('#chat').css('border-bottom','3px solid #<?=$colour_highlight?>');
                 $('#messages').scroll(_.debounce(function(){ $('#chat').css('border-bottom','1px solid darkgrey'); }));
@@ -403,7 +401,7 @@ extract(cdb("select community_my_power
         <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
-    <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em;">
+    <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em; scroll-behavior: smooth;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,account_id,account_name,account_is_me
                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
@@ -550,7 +548,7 @@ extract(cdb("select community_my_power
         </div>
       </div>
     <?}?>
-    <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0; border-bottom: 1px solid darkgrey;">
+    <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;<?=($canchat)?'border-bottom: 1px solid darkgrey;':''?>">
       <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;"><div style="flex: 1 0 0.5em;"></div></div>
       <?if($uuid){?>
         <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">

@@ -66,7 +66,6 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     a:not([href]) { color: #<?=$colour_highlight?>; }
 
     .period { border: 2px solid #<?=$colour_mid?>; border-right: none; }
-
     .button { background: none; border: none; padding: 0; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
