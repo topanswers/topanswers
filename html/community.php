@@ -522,7 +522,7 @@ extract(cdb("select community_my_power
               <div class="minibar">
                 <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n"));?>"></span></a>
                 <div>
-                  <?if($answer_votes){?><span class="score"><?=$answer_votes?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span><?}?>
+                  <?if($answer_votes){?><span class="score"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span><?}?>
                   <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
                   <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
                 </div>
