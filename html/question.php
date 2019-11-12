@@ -8,7 +8,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   isset($_POST['action']) or die('posts must have an "action" parameter');
   switch($_POST['action']) {
     case 'new':
-      $id=ccdb("select new_question((select community_id from community where community_name=$1),(select question_type from question_type_enums where question_type=$2),$3,$4)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown']);
+      $id=ccdb("select new_question((select community_id from community where community_name=$1),(select question_type from question_type_enums where question_type=$2),$3,$4,$5,$6)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
       if($id){?>
         <!doctype html>
         <html>
@@ -42,6 +42,7 @@ if($id) {
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
              where community_name=$1",$community));
+extract(cdb("select account_license_id,account_codelicense_id from my_account"));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
@@ -58,10 +59,11 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
+    header select { margin-right: 0.5rem; }
 
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { margin-bottom: 0.5em; padding: 0.5em; border: 1px solid darkgrey; }
-    .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
+    .question { margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid darkgrey; }
+    .spacer { flex: 0 0 auto; min-height: 1rem; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     #markdown > :first-child { margin-top: 0; }
     #markdown > :last-child { margin-bottom: 0; }
@@ -76,7 +78,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1em; border-radius: 0.2em; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -133,7 +135,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         $('#submit').val('submit '+$(this).val());
         $('input[name="type"').val($(this).children(":selected").text());
         <?if(!$id){?> localStorage.setItem('<?=$community?>.ask.type',$(this).val());<?}?>
-      }).trigger('change');;
+      }).trigger('change');
+      $('#license').change(function(){ $('input[name="license"').val($(this).val()); });
+      $('#codelicense').change(function(){ $('input[name="codelicense"').val($(this).val()); });
       render();
     });
   </script>
@@ -141,13 +145,25 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
-    <div style="margin: 0.5em; margin-right: 0.1em;">
+    <div style="margin: 0.5rem; margin-right: 0.1rem;">
       <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
-      <?if(!$id){?><select id="type"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select><?}?>
-      <input id="submit" type="submit" form="form" value="<?=$id?('update '.$question_type.(($question_type==='meta')?' question':(($question_type==='blog')?' post':''))):'submit'?>" style="margin: 0.5em;">
-      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
+      <?if(!$id){?>
+        <select id="type"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select>
+        <select id="license">
+          <?foreach(db("select license_id,license_name from license") as $r){ extract($r);?>
+            <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
+          <?}?>
+        </select>
+        <select id="codelicense">
+          <?foreach(db("select codelicense_id,codelicense_name from codelicense") as $r){ extract($r);?>
+            <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
+          <?}?>
+        </select>
+      <?}?>
+      <input id="submit" type="submit" form="form" value="<?=$id?('update '.$question_type.(($question_type==='meta')?' question':(($question_type==='blog')?' post':''))):'submit'?>" style="margin: 0.5rem;">
+      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
   <form id="form" method="POST" action="/question" style="display: flex; justify-content: center; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
@@ -158,16 +174,18 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <input type="hidden" name="action" value="new">
       <input type="hidden" name="community" value="<?=$community?>">
       <input type="hidden" name="type" value="question">
+      <input type="hidden" name="license" value="<?=$account_license_id?>">
+      <input type="hidden" name="codelicense" value="<?=$account_codelicense_id?>">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column;">
-      <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 0.2em;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
+      <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 0.2rem;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
       <div style="flex: 0 0 2vmin;"></div>
       <div style="display: flex; flex: 1 0 0; overflow: hidden;">
         <div style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin);">
           <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
         </div>
         <div style="flex: 0 0 2vmin;"></div>
-        <div id="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
+        <div id="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 1rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
       </div>
     </main>
   </form>

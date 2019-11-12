@@ -18,6 +18,20 @@ create table room(
 , unique (community_id,room_id)
 );
 
+create table license(
+  license_id integer generated always as identity unique primary key
+, license_name text unique not null
+, license_question_id integer references question
+, license_is_default boolean default false not null
+);
+create unique index license_default_ind on license (license_is_default) where license_is_default;
+
+create table codelicense(
+  codelicense_id integer generated always as identity unique primary key
+, codelicense_name text unique not null
+, codelicense_question_id integer references question
+);
+
 create table account(
   account_id integer generated always as identity primary key
 , account_name text check (account_name~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
@@ -27,6 +41,8 @@ create table account(
 , account_change_id bigint generated always as identity unique
 , account_uuid uuid not null default x_uuid_ossp.uuid_generate_v4()
 , account_is_dev boolean default false not null
+, account_license_id integer references license default 4 not null
+, account_codelicense_id integer references codelicense default 1 not null
 );
 create unique index account_rate_limit_ind on account(account_create_at);
 
@@ -169,6 +185,8 @@ create table question(
 , question_room_id integer not null references room deferrable initially deferred
 , question_change_at timestamptz not null default current_timestamp
 , question_votes integer default 0 not null
+, question_license_id integer references license
+, question_codelicense_id integer references codelicense
 , unique (community_id,question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
 );
@@ -192,6 +210,8 @@ create table answer(
 , answer_markdown text not null check (length(answer_markdown) between 1 and 50000)
 , answer_change_at timestamptz not null default current_timestamp
 , answer_votes integer default 0 not null
+, answer_license_id integer references license
+, answer_codelicense_id integer references codelicense
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 

@@ -37,6 +37,16 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     header("Location: /profile");
     exit;
   }
+  if(isset($_POST['license'])){
+    db("select change_account_license_id($1)",$_POST['license']);
+    header("Location: /profile");
+    exit;
+  }
+  if(isset($_POST['codelicense'])){
+    db("select change_account_codelicense_id($1)",$_POST['codelicense']);
+    header("Location: /profile");
+    exit;
+  }
 }
 if(isset($_GET['pin'])){
   db("select authenticate_pin($1)",$_GET['pin']);
@@ -45,7 +55,7 @@ if(isset($_GET['pin'])){
 if(isset($_GET['uuid'])){
   exit(ccdb("select account_uuid from my_account"));
 }
-$custompic = (ccdb("select account_image is null from my_account")==='f');
+extract(cdb("select account_name,account_license_id,account_codelicense_id, account_image is null account_has_image from my_account"));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
@@ -56,6 +66,7 @@ $custompic = (ccdb("select account_image is null from my_account")==='f');
     *:not(hr) { box-sizing: inherit; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+    fieldset { margin-bottom: 1rem; }
   </style>
   <script src="/jquery.js"></script>
   <script>
@@ -70,14 +81,14 @@ $custompic = (ccdb("select account_image is null from my_account")==='f');
   <fieldset>
     <legend>display name</legend>
     <form action="/profile" method="post">
-      <input type="text" name="name" placeholder="name" value="<?=ccdb("select account_name from my_account")?>" autocomplete="off" autofocus>
+      <input type="text" name="name" placeholder="name" value="<?=$account_name?>" autocomplete="off" autofocus>
       <input type="submit" value="Save">
     </form>
   </fieldset>
   <fieldset>
     <legend>picture</legend>
     <img src="/identicon.php?id=<?=ccdb("select account_id from my_account")?>">
-    <?if($custompic){?>
+    <?if($account_has_image==='t'){?>
       <form action="/profile" method="post">
         <input type="hidden" name="image">
         <input type="submit" value="Remove">
@@ -86,6 +97,28 @@ $custompic = (ccdb("select account_image is null from my_account")==='f');
     <hr>
     <form action="/profile" method="post" enctype="multipart/form-data">
       <input type="file" name="image" accept=".png,.gif,.jpg,.jpeg">
+      <input type="submit" value="Save">
+    </form>
+  </fieldset>
+  <fieldset>
+    <legend>default license for new posts</legend>
+    <form action="/profile" method="post">
+      <select name="license">
+        <?foreach(db("select license_id,license_name from license") as $r){ extract($r);?>
+          <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
+        <?}?>
+      </select>
+      <input type="submit" value="Save">
+    </form>
+  </fieldset>
+  <fieldset>
+    <legend>default additional license for code in new posts</legend>
+    <form action="/profile" method="post">
+      <select name="codelicense">
+        <?foreach(db("select codelicense_id,codelicense_name from codelicense") as $r){ extract($r);?>
+          <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
+        <?}?>
+      </select>
       <input type="submit" value="Save">
     </form>
   </fieldset>

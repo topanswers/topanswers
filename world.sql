@@ -21,7 +21,7 @@ where (community_name<>'meta' or current_setting('custom.account_id',true)::inte
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
 create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id,account_change_at, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
-create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid,account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer;
+create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid,account_is_dev,account_license_id,account_codelicense_id from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
 select community_id,room_id,room_name
@@ -48,7 +48,7 @@ create view chat_hour with (security_barrier) as select room_id,chat_year,chat_m
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
 --
 create view question with (security_barrier) as
-select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes
+select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,question_license_id,question_codelicense_id
      , question_votes>=community_my_power question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
 from db.question natural join community natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) z;
@@ -56,7 +56,7 @@ from db.question natural join community natural left join (select question_id,qu
 create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history natural join (select question_id from question) z;
 --
 create view answer with (security_barrier) as
-select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes
+select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,answer_license_id,answer_codelicense_id
      , answer_vote_votes>=community_my_power answer_have_voted
      , coalesce(answer_vote_votes,0) answer_votes_from_me
 from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
@@ -67,6 +67,9 @@ create view question_tag_x with (security_barrier) as select question_id,tag_id 
 create view question_tag_x_not_implied with (security_barrier) as
 select question_id,tag_id from db.question_tag_x qt natural join db.tag t natural join community
 where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
+--
+create view license with (security_barrier) as select license_id,license_name,license_question_id from db.license;
+create view codelicense with (security_barrier) as select codelicense_id,codelicense_name,codelicense_question_id from db.codelicense;
 --
 --
 create function login(luuid uuid) returns boolean language plpgsql security definer set search_path=db,world,pg_temp as $$
@@ -161,6 +164,14 @@ create function change_account_image(image bytea) returns void language sql secu
   update account set account_image = image, account_change_id = default, account_change_at = default where account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
+create function change_account_license_id(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  update account set account_license_id = id where account_id=current_setting('custom.account_id',true)::integer;
+$$;
+--
+create function change_account_codelicense_id(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  update account set account_codelicense_id = id where account_id=current_setting('custom.account_id',true)::integer;
+$$;
+--
 create function change_resizer(perc integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('invalid percent') where perc<0 or perc>100;
   update login set login_resizer_percent = perc where login_uuid=current_setting('custom.uuid',true)::uuid;
@@ -201,10 +212,21 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
+create function new_question(cid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid community') where not exists (select 1 from community where community_id=cid);
+  select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id>2);
+  --
+  with r as (insert into room(community_id) values(cid) returning room_id)
+     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,question_license_id,question_codelicense_id)
+             select cid, current_setting('custom.account_id',true)::integer, typ, title, markdown, room_id, lic, codelic from r returning question_id)
+  select question_id from q;
+$$;
+--
 create function new_question(cid integer, typ db.question_type_enum, title text, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid community') where not exists (select 1 from community where community_id=cid);
-  select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id<>1);
+  select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id>2);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
      , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id)
@@ -229,10 +251,17 @@ create function change_question(id integer, title text, markdown text) returns v
   where question_id=id;
 $$;
 --
+create function new_answer(qid integer, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
+  select _error(429,'rate limit') where exists (select 1 from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id>2);
+  insert into answer(question_id,account_id,answer_markdown,answer_license_id,answer_codelicense_id) values(qid, current_setting('custom.account_id',true)::integer, markdown, lic, codelic) returning answer_id;
+$$;
+--
 create function new_answer(qid integer, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
-  select _error(429,'rate limit') where exists (select 1 from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id<>1);
+  select _error(429,'rate limit') where exists (select 1 from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id>2);
   insert into answer(question_id,account_id,answer_markdown) values(qid, current_setting('custom.account_id',true)::integer, markdown) returning answer_id;
 $$;
 --
