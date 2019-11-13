@@ -179,8 +179,7 @@ extract(cdb("select community_my_power
               if(scroll){
                 setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
               }else{
-                $('#chat').css('border-bottom','3px solid #<?=$colour_highlight?>');
-                $('#messages').scroll(_.debounce(function(){ $('#chat').css('border-bottom','1px solid darkgrey'); }));
+                $('#messages').css('border-bottom','3px solid #<?=$colour_highlight?>').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
               }
             });
             if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numnewchat+') '+title; }
@@ -554,29 +553,31 @@ extract(cdb("select community_my_power
       <?if($uuid) if(intval(ccdb("select account_id from login"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($canchat){?>
-      <div id="chattext-wrapper" style="position: relative; display: flex;">
-        <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
-        <button id="chatupload" class="button" style="position: absolute; right: 0.15em; top: 0; bottom: 0; font-size: 1.5em; color: #<?=$colour_dark?>;" title="embed image"><i class="fa fa-picture-o" style="display: block;"></i></button>
-        <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
-      </div>
-      <div id="replying" style="flex: 0 0 auto; width: 100%; padding: 0.1em 0.3em; border-bottom: 1px solid darkgrey; font-style: italic; font-size: smaller; display: none;" data-id="">
-        Replying to: 
-        <span></span>
-        <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>
-      </div>
-      <div id="preview" class="message" style="flex: 0 0 auto; width: 100%; border-bottom: 1px solid darkgrey; padding: 0.2em; display: none;">
-        <div class="markdown-wrapper">
-          <div class="markdown" data-markdown="">
+      <div id="canchat-wrapper" style="flex: 0 0 auto;">
+        <div id="preview" class="message" style="width: 100%; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2em; display: none;">
+          <div class="markdown-wrapper">
+            <div class="markdown" data-markdown="">
+            </div>
           </div>
+        </div>
+        <div id="replying" style="width: 100%; padding: 0.1em 0.3em; border-top: 1px solid #<?=$colour_dark?>; font-style: italic; font-size: smaller; display: none;" data-id="">
+          Replying to:
+          <span></span>
+          <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>
+        </div>
+        <div id="chattext-wrapper" style="position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>;">
+          <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
+          <button id="chatupload" class="button" style="position: absolute; right: 0.15em; top: 0; bottom: 0; font-size: 1.5em; color: #<?=$colour_dark?>;" title="embed image"><i class="fa fa-picture-o" style="display: block;"></i></button>
+          <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
         </div>
       </div>
     <?}?>
-    <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;<?=($canchat)?'border-bottom: 1px solid darkgrey;':''?>">
+    <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
       <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;"><div style="flex: 1 0 0.5em;"></div></div>
       <?if($uuid){?>
-        <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid darkgrey; padding: 0.1em; overflow-y: hidden;">
+        <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 0.1em; overflow-y: hidden;">
           <?foreach(db("select account_id,account_name,account_is_me from room_account_x natural join account where room_id=$1 order by room_account_x_latest_chat_at desc",$room) as $r){ extract($r);?>
-            <img title="<?=$account_name?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+            <img title="<?=($account_name)?$account_name:'Anonymous'?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
           <?}?>
         </div>
       <?}?>
