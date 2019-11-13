@@ -406,7 +406,7 @@ extract(cdb("select community_my_power
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em; scroll-behavior: smooth;">
       <?if($question){?>
-        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,license_name,license_href,codelicense_name,account_id,account_name,account_is_me
+        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,license_name,license_href,codelicense_name,account_id,account_name,account_is_me
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                             , question_type<>'question' question_is_votable
@@ -467,7 +467,12 @@ extract(cdb("select community_my_power
             </div>
           </div>
         </div>
-        <?if($uuid && ($question_is_blog==='f')){?><form method="GET" action="/answer"><input type="hidden" name="question" value="<?=$question?>"><input id="answer" type="submit" value="answer this question" style="margin: 2em auto; display: block;"></form><?}?>
+        <?if($uuid && ($question_is_blog==='f')){?>
+          <form method="GET" action="/answer">
+            <input type="hidden" name="question" value="<?=$question?>">
+            <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>" style="margin: 2em auto; display: block;">
+          </form>
+        <?}?>
         <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,license_name,codelicense_name,account_name,account_is_me
                            , extract('epoch' from current_timestamp-answer_at) answer_when
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
