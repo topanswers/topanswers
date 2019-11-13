@@ -22,6 +22,12 @@ if(isset($_GET['change'])) exit(ccdb("select json_build_object('change',chat_cha
 if(!isset($_GET['room'])) die('room not set');
 $room = $_GET['room'];
 ccdb("select count(*) from room where room_id=$1",$room)==='1' or die('invalid room');
+if(isset($_GET['activeusers'])){
+  foreach(db("select account_id,account_name,account_is_me from room_account_x natural join account where room_id=$1 order by room_account_x_latest_chat_at desc",$room) as $r){ extract($r);?>
+    <img title="<?=($account_name)?$account_name:'Anonymous'?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>"><?
+  }
+  exit;
+}
 if(isset($_GET['poll'])) exit(ccdb("select json_build_object('c',coalesce((select max(chat_id) from chat where room_id=$1),0)
                                                             ,'cc',coalesce((select max(chat_change_id) from chat where room_id=$1),0)
                                                             ,'n',coalesce((select max(chat_notification_at)::text from chat_notification natural join chat),'')

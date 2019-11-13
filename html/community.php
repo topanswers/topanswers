@@ -206,7 +206,14 @@ extract(cdb("select community_my_power
             if(!maxChatChangeID) $('#messages>.message').first().removeClass('merged');
             if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
             if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
-            <?if($uuid){?>setChatPollTimeout();<?}?>
+            <?if($uuid){?>
+              setChatPollTimeout();
+              $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
+                var savepings = $('.active-user.ping').map(function(){ return $(this).data('id'); }).get();
+                $('#active-users').html(r);
+                $.each(savepings,function(){ $('.active-user[data-id='+this+']').addClass('ping'); });
+              });
+            <?}?>
           }
         },'html').fail(setChatPollTimeout);
       }
@@ -580,11 +587,7 @@ extract(cdb("select community_my_power
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
       <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;"><div style="flex: 1 0 0.5em;"></div></div>
       <?if($uuid){?>
-        <div id="active-users" style="flex: 0 0 auto; display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 0.1em; overflow-y: hidden;">
-          <?foreach(db("select account_id,account_name,account_is_me from room_account_x natural join account where room_id=$1 order by room_account_x_latest_chat_at desc",$room) as $r){ extract($r);?>
-            <img title="<?=($account_name)?$account_name:'Anonymous'?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
-          <?}?>
-        </div>
+        <div id="active-users" style="flex: 0 0 calc(1.5rem + 5px); display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 1px; overflow-y: hidden;"></div>
       <?}?>
     </div>
     <div id="notification-wrapper">

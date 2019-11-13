@@ -328,14 +328,14 @@ create function vote_question(qid integer, votes integer) returns integer langua
      , q as (update question set question_votes = question_votes-question_vote_votes from d where question.question_id=qid)
      , a as (insert into account_community(account_id,community_id,account_community_votes)
              select account_id,community_id,-question_vote_votes from r
-             on conflict on constraint account_community_pkey do update set account_community_votes = excluded.account_community_votes)
+             on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes-excluded.account_community_votes)
   insert into question_vote_history(question_id,account_id,question_vote_history_at,question_vote_history_votes)
   select question_id,account_id,question_vote_at,question_vote_votes from d;
   --
   with i as (insert into question_vote(question_id,account_id,question_vote_votes) values(qid,current_setting('custom.account_id',true)::integer,votes) returning *)
      , c as (insert into account_community(account_id,community_id,account_community_votes)
              select account_id,community_id,question_vote_votes from (select question_id,community_id,q.account_id,question_vote_votes from i join question q using(question_id)) z
-             on conflict on constraint account_community_pkey do update set account_community_votes = excluded.account_community_votes)
+             on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes+excluded.account_community_votes)
   update question set question_votes = question_votes+question_vote_votes from i where question.question_id=qid returning question_votes;
 $$;
 --
@@ -352,7 +352,7 @@ create function vote_answer(aid integer, votes integer) returns integer language
      , q as (update answer set answer_votes = answer_votes-answer_vote_votes from d where answer.answer_id=aid)
      , a as (insert into account_community(account_id,community_id,account_community_votes)
              select account_id,community_id,-answer_vote_votes from r
-             on conflict on constraint account_community_pkey do update set account_community_votes = excluded.account_community_votes)
+             on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes-excluded.account_community_votes)
   insert into answer_vote_history(answer_id,account_id,answer_vote_history_at,answer_vote_history_votes)
   select answer_id,account_id,answer_vote_at,answer_vote_votes from d;
   --
@@ -360,7 +360,7 @@ create function vote_answer(aid integer, votes integer) returns integer language
      , c as (insert into account_community(account_id,community_id,account_community_votes)
              select account_id,community_id,answer_vote_votes
              from (select answer_id,community_id,a.account_id,answer_vote_votes from i join answer a using(answer_id) natural join (select question_id,community_id from question) q) z
-             on conflict on constraint account_community_pkey do update set account_community_votes = excluded.account_community_votes)
+             on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes+excluded.account_community_votes)
   update answer set answer_votes = answer_votes+answer_vote_votes from i where answer.answer_id=aid returning answer_votes;
 $$;
 --
