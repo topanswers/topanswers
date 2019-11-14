@@ -91,7 +91,8 @@ extract(cdb("select community_name community
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
     .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
     .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
-    .message .button:not(.marked) { visibility: hidden; }
+    .message .button.me { color: #<?=$colour_highlight?>; }
+    .message .button:not(.marked):not(.me) { visibility: hidden; }
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
@@ -202,8 +203,10 @@ extract(cdb("select community_name community
                                , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                                , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
                                , round(extract('epoch' from chat_at-(lag(chat_at) over (order by chat_at)))) chat_gap
-                               , chat_flag_at is not null is_flagged
-                               , chat_star_at is not null is_starred
+                               , chat_flag_at is not null i_flagged
+                               , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
+                               , chat_star_at is not null i_starred
+                               , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
                                , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
                                , chat_reply_id<(min(chat_id) over()) reply_is_different_segment
                           from chat c natural join account natural left join chat_flag natural left join chat_star
@@ -228,8 +231,8 @@ extract(cdb("select community_name community
             <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
           </div>
           <span class="buttons">
-            <button class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
-            <button class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+            <button class="button<?=($starred_by_other==='t')?' marked':''?> <?=($i_starred==='t')?'me unstar':'star'?>"><i class="fa fa-fw fa-star"></i><span><?=($chat_star_count>0)?$chat_star_count:''?></span></button>
+            <button class="button<?=($flagged_by_other==='t')?' marked':''?> <?=($i_flagged==='t')?'me unflag':'flag'?>"><i class="fa fa-fw fa-flag"></i><span><?=($chat_flag_count>0)?$chat_flag_count:''?></span></button>
           </span>
         </div>
       <?}?>

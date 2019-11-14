@@ -52,8 +52,10 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
                               , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                               , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
                               , round(extract('epoch' from chat_at-(lag(chat_at) over (order by chat_at)))) chat_gap
-                              , chat_flag_at is not null is_flagged
-                              , chat_star_at is not null is_starred
+                              , chat_flag_at is not null i_flagged
+                              , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
+                              , chat_star_at is not null i_starred
+                              , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
                               , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
                          from chat c natural join account natural left join chat_flag natural left join chat_star natural left join account_community
                          where room_id=$1 and chat_id>=$2".($uuid?"":" and chat_flag_count=0").") z ) z
@@ -74,8 +76,8 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
         <button class="button<?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star"></i><span><?=($chat_star_count>0)?$chat_star_count:''?></span></button>
         <button class="button<?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag"></i><span><?=($chat_flag_count>0)?$chat_flag_count:''?></span></button>
       <?}else{?>
-        <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><span><?=($chat_star_count>0)?$chat_star_count:''?></span></button>
-        <button class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag<?=($is_flagged==='t')?'':'-o'?>"></i><span><?=($chat_flag_count>0)?$chat_flag_count:''?></span></button>
+        <button class="button<?=($starred_by_other==='t')?' marked':''?> <?=($i_starred==='t')?'me unstar':'star'?>"><i class="fa fa-fw fa-star<?=($i_starred==='t')?'':'-o'?>"></i><span><?=($chat_star_count>0)?$chat_star_count:''?></span></button>
+        <button class="button<?=($flagged_by_other==='t')?' marked':''?> <?=($i_flagged==='t')?'me unflag':'flag'?>"><i class="fa fa-fw fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i><span><?=($chat_flag_count>0)?$chat_flag_count:''?></span></button>
       <?}?>
     </span>
   </div>

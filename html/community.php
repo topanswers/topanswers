@@ -118,12 +118,13 @@ extract(cdb("select community_my_power
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; }
-    .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1em; }
+    .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
     .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 20vh; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
     .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
     .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
-    .message .button:not(.marked) { visibility: hidden; }
+    .message .button.me { color: #<?=$colour_highlight?>; }
+    .message .button:not(.marked):not(.me) { visibility: hidden; }
     <?if($canchat){?>.message:not(.mine):hover .button { visibility: visible; }<?}else{?>.message .button { cursor: default; }<?}?>
     .message.merged { margin-top: -1px; }
     .message.merged .who,
@@ -231,10 +232,12 @@ extract(cdb("select community_my_power
       function actionChatChange(id){
         $.get('/chat?change&id='+id,function(r){
           var j = JSON.parse(r), t = $('#c'+id), s = t.find('.buttons>.button').first(), f = t.find('.buttons>.button').last();
-          s.toggleClass('star',!j.i_starred).children('i').toggleClass('fa-star-o',!j.i_starred);
-          s.toggleClass('unstar',j.i_starred).children('i').toggleClass('fa-star',j.i_starred);
-          f.toggleClass('flag',!j.i_flagged).children('i').toggleClass('fa-flag-o',!j.i_flagged);
-          f.toggleClass('unflag',j.i_flagged).children('i').toggleClass('fa-flag',j.i_flagged);
+          if(!t.hasClass('mine')){
+            s.toggleClass('star',!j.i_starred).children('i').toggleClass('fa-star-o',!j.i_starred);
+            s.toggleClass('me unstar',j.i_starred).children('i').toggleClass('fa-star',j.i_starred);
+            f.toggleClass('flag',!j.i_flagged).children('i').toggleClass('fa-flag-o',!j.i_flagged);
+            f.toggleClass('me unflag',j.i_flagged).children('i').toggleClass('fa-flag',j.i_flagged);
+          }
           s.toggleClass('marked',j.stars>0);
           f.toggleClass('marked',j.flags>0);
           s.children('span').text((j.stars)||'');
@@ -287,21 +290,37 @@ extract(cdb("select community_my_power
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message').data('id')).slideDown('fast').children('span').text($(this).closest('.message').data('name')); $('#chattext').focus(); });
-      $('#chat-wrapper').on('click','.flag', function(){
-        var t = $(this);
-        $.post('/chat',{ action: 'flag', id: t.closest('.message').data('id') }).done(function(r){ t.addClass('marked').children('i').toggleClass('fa-flag fa-flag-o').next().each(function(){ $(this).text(+$(this).text()+1);}); });
-      });
-      $('#chat-wrapper').on('click','.unflag', function(){
-        var t = $(this);
-        $.post('/chat',{ action: 'unflag', id: t.closest('.message').data('id') }).done(function(r){ t.children('i').toggleClass('fa-flag fa-flag-o').next().each(function(){ $(this).text(+$(this).text()-1);}); });
-      });
       $('#chat-wrapper').on('click','.star', function(){
         var t = $(this);
-        $.post('/chat',{ action: 'star', id: t.closest('.message').data('id') }).done(function(r){ t.addClass('marked').children('i').toggleClass('fa-star fa-star-o').next().each(function(){ $(this).text(+$(this).text()+1);}); });
+        t.css({'opacity':'0.3','pointer-events':'none'});
+        $.post('/chat',{ action: 'star', id: t.closest('.message').data('id') }).done(function(r){
+          t.css({'opacity':'1','pointer-events':'auto'});
+          t.removeClass('star').addClass('me unstar').children('i').toggleClass('fa-star fa-star-o').next().each(function(){ $(this).text(+$(this).text()+1); });
+        });
       });
       $('#chat-wrapper').on('click','.unstar', function(){
         var t = $(this);
-        $.post('/chat',{ action: 'unstar', id: t.closest('.message').data('id') }).done(function(r){ t.children('i').toggleClass('fa-star fa-star-o').next().each(function(){ $(this).text(+$(this).text()-1);}); });
+        t.css({'opacity':'0.3','pointer-events':'none'});
+        $.post('/chat',{ action: 'unstar', id: t.closest('.message').data('id') }).done(function(r){
+          t.css({'opacity':'1','pointer-events':'auto'});
+          t.removeClass('me unstar').addClass('star').children('i').toggleClass('fa-star fa-star-o').next().each(function(){ $(this).text(((+$(this).text()-1)===0)?'':(+$(this).text()-1)); });
+        });
+      });
+      $('#chat-wrapper').on('click','.flag', function(){
+        var t = $(this);
+        t.css({'opacity':'0.3','pointer-events':'none'});
+        $.post('/chat',{ action: 'flag', id: t.closest('.message').data('id') }).done(function(r){
+          t.css({'opacity':'1','pointer-events':'auto'});
+          t.removeClass('flag').addClass('me unflag').children('i').toggleClass('fa-flag fa-flag-o').next().each(function(){ $(this).text(+$(this).text()+1); });
+        });
+      });
+      $('#chat-wrapper').on('click','.unflag', function(){
+        var t = $(this);
+        t.css({'opacity':'0.3','pointer-events':'none'});
+        $.post('/chat',{ action: 'unflag', id: t.closest('.message').data('id') }).done(function(r){
+          t.css({'opacity':'1','pointer-events':'auto'});
+          t.removeClass('me unflag').addClass('flag').children('i').toggleClass('fa-flag fa-flag-o').next().each(function(){ $(this).text(((+$(this).text()-1)===0)?'':(+$(this).text()-1)); });
+        });
       });
       $('body').on('click','.identicon.pingable', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.dismiss', function(){
@@ -620,8 +639,10 @@ extract(cdb("select community_my_power
                              , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                              , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
                              , round(extract('epoch' from current_timestamp-chat_at)) chat_ago
-                             , chat_flag_at is not null is_flagged
-                             , chat_star_at is not null is_starred
+                              , chat_flag_at is not null i_flagged
+                              , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
+                              , chat_star_at is not null i_starred
+                              , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
                              , encode(community_mid_shade,'hex') chat_mid_shade
                              , encode(community_dark_shade,'hex') chat_dark_shade
                         from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
@@ -649,8 +670,8 @@ extract(cdb("select community_my_power
                 <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
               </div>
               <span class="buttons">
-                <button class="button <?=($is_starred==='t')?'unstar':'star'?><?=($chat_star_count>0)?' marked':''?>"><i class="fa fa-fw fa-star<?=($is_starred==='t')?'':'-o'?>"></i><?=($chat_star_count>0)?$chat_star_count:''?></button>
-                <button class="button <?=($is_flagged==='t')?'unflag':'flag'?><?=($chat_flag_count>0)?' marked':''?>"><i class="fa fa-fw fa-flag<?=($is_flagged==='t')?'':'-o'?>"></i><?=($chat_flag_count>0)?$chat_flag_count:''?></button>
+                <button class="button<?=($starred_by_other==='t')?' marked':''?> <?=($i_starred==='t')?'me unstar':'star'?>"><i class="fa fa-fw fa-star<?=($i_starred==='t')?'':'-o'?>"></i><span><?=($chat_star_count>0)?$chat_star_count:''?></span></button>
+                <button class="button<?=($flagged_by_other==='t')?' marked':''?> <?=($i_flagged==='t')?'me unflag':'flag'?>"><i class="fa fa-fw fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i><span><?=($chat_flag_count>0)?$chat_flag_count:''?></span></button>
               </span>
             </div>
           <?}?>
