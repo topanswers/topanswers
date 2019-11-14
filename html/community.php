@@ -97,7 +97,8 @@ extract(cdb("select community_my_power
     #qa .minibar .summary { min-width: 0; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; margin-left: 0.5rem; }
     #qa .minibar>:first-child { flex: 0 1 auto; margin-right: 1rem; text-overflow: ellipsis; }
     #qa .minibar>:last-child { flex: 0 0 auto; margin-left: 1rem; }
-    #qa .minibar .score { color: #<?=$colour_highlight?>; }
+    #qa .minibar .score { color: #<?=$colour_dark?>; }
+    #qa .minibar .score.me { color: #<?=$colour_highlight?>; }
     #qa .minibar>a:first-child { display: block; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.2rem; }
     #qa .question>a:first-child { display: block; padding: 0.6rem; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
@@ -551,7 +552,9 @@ extract(cdb("select community_my_power
               <div class="minibar">
                 <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n"));?>"></span></a>
                 <div>
-                  <?if($answer_votes){?><span class="score"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span><?}?>
+                  <?if($answer_votes){?>
+                    <span class="score<?=($answer_have_voted==='t')?' me':''?>"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='f')&&($answer_have_voted==='f')&&$answer_votes)?'-o':''?>"></i></span>
+                  <?}?>
                   <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
                   <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
                 </div>

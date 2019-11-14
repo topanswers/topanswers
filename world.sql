@@ -50,7 +50,7 @@ create view question_type_enums with (security_barrier) as select unnest(enum_ra
 --
 create view question with (security_barrier) as
 select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id
-     , question_votes>=community_my_power question_have_voted
+     , coalesce(question_votes>=community_my_power,false) question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
 from db.question natural join community natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) z;
@@ -59,7 +59,7 @@ create view question_history with (security_barrier) as select question_history_
 --
 create view answer with (security_barrier) as
 select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,license_id,codelicense_id
-     , answer_vote_votes>=community_my_power answer_have_voted
+     , coalesce(answer_vote_votes>=community_my_power,false) answer_have_voted
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
 from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
