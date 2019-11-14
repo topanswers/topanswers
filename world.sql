@@ -53,9 +53,15 @@ select question_id,community_id,account_id,question_type,question_at,question_ti
      , coalesce(question_votes>=community_my_power,false) question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
+     , question_at<>question_change_at question_has_history
 from db.question natural join community natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) z;
 --
-create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history natural join (select question_id from question) z;
+create view question_history with (security_barrier) as
+select question_id,question_history_at,question_history_markdown,question_history_title
+     , coalesce(lag(account_id) over(partition by question_id order by question_history_at),first_value(account_id) over(partition by question_id order by question_history_at desc)) account_id
+from (select question_id,account_id,question_history_at,question_history_markdown,question_history_title from db.question_history
+      union all
+      select question_id,account_id,question_change_at,question_markdown,question_title from db.question) z;
 --
 create view answer with (security_barrier) as
 select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,license_id,codelicense_id
@@ -233,23 +239,12 @@ create function new_question(cid integer, typ db.question_type_enum, title text,
   select question_id from q;
 $$;
 --
-create function new_question(cid integer, typ db.question_type_enum, title text, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid community') where not exists (select 1 from community where community_id=cid);
-  select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id>2);
-  --
-  with r as (insert into room(community_id) values(cid) returning room_id)
-     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id)
-             select cid, current_setting('custom.account_id',true)::integer, typ, title, markdown, room_id from r returning question_id)
-  select question_id from q;
-$$;
---
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('only author can edit blog post') where exists (select 1 from question where question_id=id and question_type='blog' and account_id<>current_setting('custom.account_id',true)::integer);
-  select _error(429,'rate limit') where exists (select 1
-                                            from question_history natural join (select question_id from question where account_id<>current_setting('custom.account_id',true)::integer) z
-                                            where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval);
+  select _error(429,'rate limit') where (select count(*)
+                                         from question_history natural join (select question_id from question where account_id<>current_setting('custom.account_id',true)::integer) z
+                                         where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval)>10;
   --
   insert into question_history(question_id,account_id,question_history_at,question_history_title,question_history_markdown)
   select question_id,current_setting('custom.account_id',true)::integer,question_change_at,question_title,question_markdown
@@ -268,18 +263,11 @@ create function new_answer(qid integer, markdown text, lic integer, codelic inte
   insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id) values(qid, current_setting('custom.account_id',true)::integer, markdown, lic, codelic) returning answer_id;
 $$;
 --
-create function new_answer(qid integer, markdown text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
-  select _error(429,'rate limit') where exists (select 1 from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id>2);
-  insert into answer(question_id,account_id,answer_markdown) values(qid, current_setting('custom.account_id',true)::integer, markdown) returning answer_id;
-$$;
---
 create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error(429,'rate limit') where exists (select 1
-                                            from answer_history natural join (select answer_id from answer where account_id<>current_setting('custom.account_id',true)::integer) z
-                                            where account_id=current_setting('custom.account_id',true)::integer and answer_history_at>current_timestamp-'1m'::interval);
+  select _error(429,'rate limit') where (select count(*)
+                                         from answer_history natural join (select answer_id from answer where account_id<>current_setting('custom.account_id',true)::integer) z
+                                         where account_id=current_setting('custom.account_id',true)::integer and answer_history_at>current_timestamp-'5m'::interval)>10;
   --
   insert into answer_history(answer_id,account_id,answer_history_at,answer_history_markdown) select answer_id,current_setting('custom.account_id',true)::integer,answer_change_at,answer_markdown from answer where answer_id=id;
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;

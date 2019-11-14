@@ -420,7 +420,7 @@ extract(cdb("select community_my_power
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em; scroll-behavior: smooth;">
       <?if($question){?>
-        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,license_name,license_href,codelicense_name,account_id,account_name,account_is_me
+        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id,account_name,account_is_me
                             , coalesce(account_community_votes,0) account_community_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
@@ -475,8 +475,11 @@ extract(cdb("select community_my_power
                 <?}?>
                 <span class="score">score: <?=$question_votes?></span>
               <?}?>
-              <span></span>
-              <?if($uuid && (($account_is_me==='t')||($question_is_blog==='f'))){?><a href="/question?id=<?=$question?>">edit</a><?}?>
+              <?if($uuid){?>
+                <span></span>
+                <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a href="/question?id=<?=$question?>">edit</a><?}?>
+                <?if($question_has_history==='t'){?><a href="/question-history?id=<?=$question?>">history</a><?}?>
+              <?}?>
             </div>
             <div>
             </div>
@@ -508,7 +511,7 @@ extract(cdb("select community_my_power
                 <?if($uuid){?>
                   <span></span>
                   <a href="/answer?id=<?=$answer_id?>">edit</a>
-                  <?if($answer_has_history==='t'){?><a href="/diff?id=<?=$answer_id?>">history</a><?}?>
+                  <?if($answer_has_history==='t'){?><a href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
                 <?}?>
               </div>
               <div>

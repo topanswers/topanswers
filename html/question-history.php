@@ -4,10 +4,10 @@ include 'nocache.php';
 $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id'];
-ccdb("select count(*) from answer where answer_id=$1",$id)==='1' || die('invalid answer id');
+ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from answer natural join (select question_id,community_id from question) q natural join community
-             where answer_id=$1",$id));
+             from question natural join (select question_id,community_id from question) q natural join community
+             where question_id=$1",$id));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
@@ -29,14 +29,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     tr { padding: 0.5rem; }
     tbody { border-bottom: 0.3rem solid #<?=$colour_dark?>; }
     td { padding: 0.5rem; }
-    td+td { width: 50%; }
-    td+td>div { background-color: white; border: 1px solid #<?=$colour_dark?>; }
+    td:not([rowspan]):not([colspan]) { width: 50%; vertical-align: top; }
+    .markdown, .diff, .title { border: 1px solid #<?=$colour_dark?>; padding: 0.5rem; border-radius: 4px; }
+    .markdown, .title { background-color: white; }
+    .diff { background-color: #<?=$colour_mid?>; }
 
     .who, .when { white-space: nowrap; }
     .when { font-size: smaller; }
-    .diff { padding: 0.5rem; border-radius: 4px; }
 
-    .markdown { padding: 0.5rem; border-radius: 4px; }
     .markdown > :first-child { margin-top: 0; }
     .markdown > :last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 2rem; }
@@ -87,41 +87,45 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
     });
   </script>
-  <title>History | <?=ucfirst($community)?> | TopAnswers</title>
+  <title>History | <?=ucfirst($community)?> | Topquestions</title>
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div style="margin: 0.5rem; margin-right: 0.1rem;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
+      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">Topquestions <?=ucfirst($community)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
   <table style="table-layout: fixed; border-collapse: collapse;">
-    <?foreach(db("select account_id,account_name,answer_history_markdown
-                       , to_char(answer_history_at,'YYYY-MM-DD HH24:MI:SS') answer_history_at
-                       , lag(answer_history_markdown) over (order by answer_history_at) prev_markdown
-                       , row_number() over (order by answer_history_at) rn
-                  from answer_history natural join account
-                  where answer_id=$1
-                  order by answer_history_at desc",$id) as $r){ extract($r);?>
+    <?foreach(db("select account_id,account_name,question_history_markdown,question_history_title
+                       , to_char(question_history_at,'YYYY-MM-DD HH24:MI:SS') question_history_at
+                       , lag(question_history_markdown) over (order by question_history_at) prev_markdown
+                       , lag(question_history_title) over (order by question_history_at) prev_title
+                       , row_number() over (order by question_history_at) rn
+                  from question_history natural join account
+                  where question_id=$1
+                  order by question_history_at desc",$id) as $r){ extract($r);?>
       <tbody>
         <tr>
-          <td>
+          <td rowspan="<?=($rn>1)?4:2?>">
             <div class="who"><?=htmlspecialchars($account_name)?></div>
-            <div class="when"><?=$answer_history_at?></div>
+            <div class="when"><?=$question_history_at?></div>
           </td>
-          <td><textarea><?=htmlspecialchars($answer_history_markdown)?></textarea></td>
+          <td colspan="2"><div class="title"><?=htmlspecialchars($question_history_title)?></div></td>
+        </tr>
+        <tr>
+          <td><textarea><?=htmlspecialchars($question_history_markdown)?></textarea></td>
           <td><div class="markdown"></div></td>
         </tr>
         <?if($rn>1){?>
-        <tr>
-          <td></td>
-          <td colspan="2">
-            <div class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($answer_history_markdown)?>"></div>
-          </td>
-        </tr>
+          <tr>
+            <td colspan="2"><div class="diff" data-from="<?=htmlspecialchars($prev_title)?>" data-to="<?=htmlspecialchars($question_history_title)?>"></div></td>
+          </tr>
+          <tr>
+            <td colspan="2"><div class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($question_history_markdown)?>"></div></td>
+          </tr>
         <?}?>
       </tbody>
     <?}?>
