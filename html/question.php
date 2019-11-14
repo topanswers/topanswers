@@ -88,6 +88,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <script src="/markdown-it-inject-linenumbers.js"></script>
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
+  <script src="/markdown-it-emoji.js"></script>
   <script src="/markdown-it-footnote.js"></script>
   <script src="/markdown-it-deflist.js"></script>
   <script src="/markdown-it-abbr.js"></script>
@@ -102,7 +103,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     hljs.initHighlightingOnLoad();
     $(function(){
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
-                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
+                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, extraKeys: { Home: "goLineLeft", End: "goLineRight" } });
       $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, 'margin-top': '4px', 'margin-left': '10px' }).attr('tabindex','-1');
       var map;

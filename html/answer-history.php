@@ -57,9 +57,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   <script src="/lodash.js"></script>
   <script src="/jquery.js"></script>
   <script src="/markdown-it.js"></script>
-  <script src="/markdown-it-inject-linenumbers.js"></script>
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
+  <script src="/markdown-it-emoji.js"></script>
   <script src="/markdown-it-footnote.js"></script>
   <script src="/markdown-it-deflist.js"></script>
   <script src="/markdown-it-abbr.js"></script>
@@ -73,7 +73,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     hljs.initHighlightingOnLoad();
     $(function(){
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
-                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
+                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr);
       var dmp = new diff_match_patch();
       $('textarea').each(function(){
         var m = $(this).closest('td').next().children(), cm = CodeMirror.fromTextArea($(this)[0],{ lineWrapping: true, readOnly: true });

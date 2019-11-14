@@ -105,13 +105,18 @@ extract(cdb("select community_name community
   <script src="/markdown-it.js"></script>
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
+  <script src="/markdown-it-emoji.js"></script>
+  <script src="/markdown-it-footnote.js"></script>
+  <script src="/markdown-it-deflist.js"></script>
+  <script src="/markdown-it-abbr.js"></script>
   <script src="/highlightjs/highlight.js"></script>
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
-      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
+      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
+                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr);
       function threadChat(){
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;

@@ -146,6 +146,10 @@ extract(cdb("select community_my_power
   <script src="/markdown-it.js"></script>
   <script src="/markdown-it-sup.js"></script>
   <script src="/markdown-it-sub.js"></script>
+  <script src="/markdown-it-emoji.js"></script>
+  <script src="/markdown-it-footnote.js"></script>
+  <script src="/markdown-it-deflist.js"></script>
+  <script src="/markdown-it-abbr.js"></script>
   <script src="/highlightjs/highlight.js"></script>
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
@@ -157,7 +161,8 @@ extract(cdb("select community_my_power
     hljs.initHighlightingOnLoad();
     moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
-      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }}).use(window.markdownitSup).use(window.markdownitSub);
+      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
+                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr);
       md.linkify.tlds('kiwi',true).tlds('xyz',true);
       var mdsummary = window.markdownit('zero').enable(['emphasis']);
       var title = document.title, latestChatId;
