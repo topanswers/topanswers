@@ -178,7 +178,7 @@ extract(cdb("select community_my_power
         $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message:last-child').data('id')===maxChat){
             var newchat = $(data).appendTo($('#messages')).css('opacity','0').find('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); }).end();
-            numNewChats += newchat.filter('.message').length;
+            if(maxChatChangeID) numNewChats += newchat.filter('.message').length;
             newchat.find('img').waitForImages(true).done(function(){
               newchat.css('opacity','1');
               if(scroll){
