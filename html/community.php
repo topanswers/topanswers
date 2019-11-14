@@ -66,7 +66,6 @@ extract(cdb("select community_my_power
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
     .bigspacer:not(:hover)>span:first-child { display: none; }
     .bigspacer:hover>span:last-child { display: none; }
-
     .tags { display: flex; margin-left: 0.25rem; margin-top: 1px; white-space: nowrap; overflow: hidden; }
     .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
@@ -76,6 +75,7 @@ extract(cdb("select community_my_power
     .newtag { position: relative; cursor: pointer; }
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
+
     .select2-dropdown { border: 1px solid #<?=$colour_dark?> !important; box-shadow: 0 0 0.2rem 0.3rem white; }
     .starrr { margin-left: 0.2rem; }
     .starrr a.fa-star { color: #<?=$colour_highlight?>; }
@@ -86,6 +86,7 @@ extract(cdb("select community_my_power
     #qa .bar+.bar { border-top: none; }
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
+    #qa .identicon, #active-users .identicon { height: 1.5rem; width: 1.5rem; margin: 1px; }
     #qa .markdown { padding: 0.6rem; }
     #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .minibar:last-child { border-bottom: none; }
@@ -110,14 +111,13 @@ extract(cdb("select community_my_power
     .markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
-    .active-user { height: 1.5rem; width: 1.5rem; margin: 1px; }
-    .active-user:not(.me):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
-    .active-user.ping { outline: 1px solid #<?=$colour_highlight?>; }
+    .identicon.pingable:hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
+    .identicon.ping { outline: 1px solid #<?=$colour_highlight?>; }
     #chattext-wrapper:not(:hover) button { display: none; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; }
-    .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
+    .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1em; }
     .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 20vh; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
     .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
@@ -212,9 +212,9 @@ extract(cdb("select community_my_power
             <?if($uuid){?>
               setChatPollTimeout();
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
-                var savepings = $('.active-user.ping').map(function(){ return $(this).data('id'); }).get();
+                var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
                 $('#active-users').html(r);
-                $.each(savepings,function(){ $('.active-user[data-id='+this+']').addClass('ping'); });
+                $.each(savepings,function(){ $('#active-users .identicon[data-id='+this+']').addClass('ping'); });
               });
             <?}?>
           }
@@ -301,7 +301,7 @@ extract(cdb("select community_my_power
         var t = $(this);
         $.post('/chat',{ action: 'unstar', id: t.closest('.message').data('id') }).done(function(r){ t.children('i').toggleClass('fa-star fa-star-o').next().each(function(){ $(this).text(+$(this).text()-1);}); });
       });
-      $('body').on('click','.active-user:not(.me)', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
+      $('body').on('click','.identicon.pingable', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
       $('#chat-wrapper').on('click','.dismiss', function(){
         $.post('/chat', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
@@ -432,7 +432,7 @@ extract(cdb("select community_my_power
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Reputation: <?=$account_community_votes?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+              <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
               <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
               <span>
                 <a href="<?=$license_href?>"><?=$license_name?></a>
@@ -516,7 +516,7 @@ extract(cdb("select community_my_power
                   <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
                 </span>
                 <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-                <img title="Reputation: <?=$account_community_votes?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+                <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
               </div>
             </div>
           </div>
@@ -533,7 +533,7 @@ extract(cdb("select community_my_power
             <a href="/<?=$community?>?q=<?=$question_id?>"><?=$question_type.$question_title?></a>
             <div class="bar">
               <div>
-                <img title="Reputation: <?=$account_community_votes?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+                <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
                 <span><span class="when" data-seconds="<?=$question_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
               </div>
               <div class="tags">
@@ -553,7 +553,7 @@ extract(cdb("select community_my_power
                 <div>
                   <?if($answer_votes){?><span class="score"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span><?}?>
                   <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-                  <img title="Reputation: <?=$account_community_votes?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+                  <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
                 </div>
               </div>
             <?}?>
@@ -579,13 +579,13 @@ extract(cdb("select community_my_power
     </header>
     <?if($canchat){?>
       <div id="canchat-wrapper" style="flex: 0 0 auto;">
-        <div id="preview" class="message" style="width: 100%; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2em; display: none;">
+        <div id="preview" class="message" style="width: 100%; background-color: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2em; display: none;">
           <div class="markdown-wrapper">
             <div class="markdown" data-markdown="">
             </div>
           </div>
         </div>
-        <div id="replying" style="width: 100%; padding: 0.1em 0.3em; border-top: 1px solid #<?=$colour_dark?>; font-style: italic; font-size: smaller; display: none;" data-id="">
+        <div id="replying" style="width: 100%; background-color: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.1em 0.3em; display: none; font-style: italic; font-size: smaller;" data-id="">
           Replying to:
           <span></span>
           <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>
