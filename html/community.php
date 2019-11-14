@@ -480,7 +480,7 @@ extract(cdb("select community_my_power
             <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>" style="margin: 2em auto; display: block;">
           </form>
         <?}?>
-        <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,license_name,codelicense_name,account_name,account_is_me
+        <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me
                            , extract('epoch' from current_timestamp-answer_at) answer_when
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                       from answer natural join account natural join license natural join codelicense
@@ -496,8 +496,11 @@ extract(cdb("select community_my_power
                   <span></span>
                 <?}?>
                 <span class="score">score: <?=$answer_votes?></span>
-                <span></span>
-                <a href="/answer?id=<?=$answer_id?>">edit</a>
+                <?if($uuid){?>
+                  <span></span>
+                  <a href="/answer?id=<?=$answer_id?>">edit</a>
+                  <?if($answer_has_history==='t'){?><a href="/diff?id=<?=$answer_id?>">history</a><?}?>
+                <?}?>
               </div>
               <div>
                 <span>

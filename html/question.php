@@ -73,7 +73,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     #markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
     #markdown table { border-collapse: collapse; table-layout: fixed; }
     #markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    #markdown td, .markdown th { white-space: nowrap; border: 1px solid black; padding: 0.2em; }
+    #markdown td, #markdown th { white-space: nowrap; border: 1px solid black; padding: 0.2em; }
     #markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
     #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
