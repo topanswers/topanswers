@@ -159,7 +159,7 @@ extract(cdb("select community_my_power
       var mdsummary = window.markdownit('zero').enable(['emphasis']);
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
-      var chatTimer, maxChatChangeID = 0, maxNotificationID = '<?=ccdb("select max(chat_notification_at) from chat_notification")?>';
+      var chatTimer, maxChatChangeID = 0, maxNotificationID = '<?=ccdb("select max(chat_notification_at) from chat_notification")?>', numNewChats = 0;
 
       function setChatPollTimeout(){
         var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
@@ -177,7 +177,8 @@ extract(cdb("select community_my_power
         if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
         $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message:last-child').data('id')===maxChat){
-            var newchat = $(data).appendTo($('#messages')).css('opacity','0').find('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); }).end(), numnewchat = newchat.filter('.message').length;
+            var newchat = $(data).appendTo($('#messages')).css('opacity','0').find('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); }).end();
+            numNewChats += newchat.filter('.message').length;
             newchat.find('img').waitForImages(true).done(function(){
               newchat.css('opacity','1');
               if(scroll){
@@ -186,7 +187,7 @@ extract(cdb("select community_my_power
                 $('#messages').css('border-bottom','3px solid #<?=$colour_highlight?>').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
               }
             });
-            if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numnewchat+') '+title; }
+            if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
             $('.message').each(function(){
               var id = $(this).data('id'), rid = id;
               function foo(b){
@@ -350,7 +351,7 @@ extract(cdb("select community_my_power
           }
         }
       });
-      document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
+      document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
       const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
       $('#chatuploadfile').change(function() {
