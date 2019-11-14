@@ -205,7 +205,7 @@ extract(cdb("select community_my_power
               }
               foo.call(this);
             });
-            newchat.filter('.message').find('.markdown img').each(function(i){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="c'+i+'"></a>'); } });
+            newchat.filter('.message').find('.markdown img').each(function(){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); } });
             newchat.filter('.message').find('.markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
             newchat.filter('.bigspacer').each(function(){
               $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'LT', lastDay: '[Yesterday] LT', lastWeek: '[Last] dddd LT', sameElse: 'LLLL' })).end()
@@ -402,7 +402,7 @@ extract(cdb("select community_my_power
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
-      $('#qa .markdown img').each(function(i){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="qa'+i+'"></a>'); } });
+      $('#qa .markdown img').each(function(i){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.markdown').parent('div').attr('id')+'"></a>'); } });
       <?if($uuid){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
           var t = $(this), v = t.data('votes');
