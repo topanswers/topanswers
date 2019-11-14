@@ -22,6 +22,7 @@ where community_name<>'private' or account_is_dev;
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
 create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id,account_change_at, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
 create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid,account_is_dev,account_license_id,account_codelicense_id from db.account where account_id=current_setting('custom.account_id',true)::integer;
+create view account_community with (security_barrier) as select account_id,community_id,account_community_votes from db.account_community;
 --
 create view room with (security_barrier) as
 select community_id,room_id,room_name

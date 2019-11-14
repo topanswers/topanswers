@@ -420,18 +420,19 @@ extract(cdb("select community_my_power
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em; scroll-behavior: smooth;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,license_name,license_href,codelicense_name,account_id,account_name,account_is_me
+                            , coalesce(account_community_votes,0) account_community_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                             , question_type<>'question' question_is_votable
                             , question_type='blog' question_is_blog
                             , extract('epoch' from current_timestamp-question_at) question_when
-                       from question natural join account natural join license natural join codelicense
+                       from question natural join account natural join license natural join codelicense natural left join account_community
                        where question_id=$1",$question));?>
         <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+              <img title="Reputation: <?=$account_community_votes?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
               <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
               <span>
                 <a href="<?=$license_href?>"><?=$license_name?></a>
@@ -487,9 +488,10 @@ extract(cdb("select community_my_power
           </form>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me
+                           , coalesce(account_community_votes,0) account_community_votes
                            , extract('epoch' from current_timestamp-answer_at) answer_when
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
-                      from answer natural join account natural join license natural join codelicense
+                      from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join account_community
                       where question_id=$1
                       order by answer_votes desc, answer_votes desc, answer_id desc",$question) as $r){ extract($r);?>
           <div id="a<?=$answer_id?>" class="answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
@@ -514,23 +516,24 @@ extract(cdb("select community_my_power
                   <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
                 </span>
                 <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-                <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+                <img title="Reputation: <?=$account_community_votes?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
               </div>
             </div>
           </div>
         <?}?>
       <?}else{?>
         <?foreach(db("select question_id,question_at,question_title,account_id,account_name,account_is_me
+                           , coalesce(account_community_votes,0) account_community_votes
                            , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                            , extract('epoch' from current_timestamp-question_at) question_when
-                      from question natural join account natural join community
+                      from question natural join account natural join community natural left join account_community
                       where community_name=$1
                       order by question_at desc limit 50",$community) as $r){ extract($r);?>
           <div class="question"<?=$question_type?(' style="background-color: #'.$colour_light.'60;"'):''?>>
             <a href="/<?=$community?>?q=<?=$question_id?>"><?=$question_type.$question_title?></a>
             <div class="bar">
               <div>
-                <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+                <img title="Reputation: <?=$account_community_votes?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
                 <span><span class="when" data-seconds="<?=$question_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
               </div>
               <div class="tags">
@@ -540,8 +543,9 @@ extract(cdb("select community_my_power
               </div>
             </div>
             <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,account_name,account_is_me
+                               , coalesce(account_community_votes,0) account_community_votes
                                , extract('epoch' from current_timestamp-answer_at) answer_when
-                          from answer natural join account
+                          from answer natural join account natural join (select question_id,community_id from question) q natural left join account_community
                           where question_id=$1
                           order by answer_votes desc, answer_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
               <div class="minibar">
@@ -549,7 +553,7 @@ extract(cdb("select community_my_power
                 <div>
                   <?if($answer_votes){?><span class="score"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='t')||($answer_have_voted==='t'))?'':'-o'?>"></i></span><?}?>
                   <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-                  <img class="active-user<?=($account_is_me==='t')?' me':''?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+                  <img title="Reputation: <?=$account_community_votes?>" class="active-user<?=($account_is_me==='t')?' me':''?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
                 </div>
               </div>
             <?}?>
