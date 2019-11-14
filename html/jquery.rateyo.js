@@ -1,1 +1,0 @@
-jquery.rateyo.min.js

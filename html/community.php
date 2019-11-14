@@ -47,7 +47,7 @@ extract(cdb("select community_my_power
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/select2.css">
-  <link rel="stylesheet" href="/jquery.rateyo.css">
+  <link rel="stylesheet" href="/starrr.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
@@ -77,6 +77,9 @@ extract(cdb("select community_my_power
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
     .select2-dropdown { border: 1px solid #<?=$colour_dark?> !important; box-shadow: 0 0 0.2rem 0.3rem white; }
+    .starrr { margin-left: 0.2rem; }
+    .starrr a.fa-star { color: #<?=$colour_highlight?>; }
+    .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
 
     #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .bar:last-child { border-bottom: none; border-radius: 0 0 0.2rem 0.2rem; }
@@ -145,7 +148,7 @@ extract(cdb("select community_my_power
   <script src="/resizer.js"></script>
   <script src="/favico.js"></script>
   <script src="/select2.js"></script>
-  <script src="/jquery.rateyo.js"></script>
+  <script src="/starrr.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     moment.locale(window.navigator.userLanguage || window.navigator.language);
@@ -372,19 +375,22 @@ extract(cdb("select community_my_power
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
       <?if($uuid){?>
-        $('#question .stars, #qa .answer .stars').each(function(){
+        $('#question .starrr, #qa .answer .starrr').each(function(){
           var t = $(this), v = t.data('votes');
-          t.rateYo({ starWidth: '1.3rem', fullStar: true, numStars: <?=$community_my_power?>, maxValue: <?=$community_my_power?>, rating: v, normalFill: '#<?=$colour_dark?>', ratedFill: '#<?=$colour_highlight?>' })
-           .rateYo('option','onSet',function(){
-            var n = t.rateYo('rating');
-            if(n!==v){
-              t.css('opacity',0.3).rateYo('option','readOnly',true);
-              $.post('/'+t.data('type'),{ action: 'vote', id: t.data('id'), votes: n }).done(function(r){
-                t.css('opacity',1).rateYo('option','readOnly',false).siblings('.score').html('<span>score: '+r+'</span>');
-                v = n;
-              }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); t.css('opacity',1).rateYo('option','readOnly',false).rateYo('option','rating',v); });
+          t.starrr({
+            rating: v,
+            max: <?=$community_my_power?>,
+            change: function(e,n){
+              n = n||0;
+              if(n!==v){
+                t.css({'opacity':'0.3','pointer-events':'none'});
+                $.post('/'+t.data('type'),{ action: 'vote', id: t.data('id'), votes: n }).done(function(r){
+                  t.css({'opacity':'1','pointer-events':'auto'}).siblings('.score').html('<span>score: '+r+'</span>');
+                  v = n;
+                }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); });
+              }
             }
-          }).removeAttr('style');
+          });
         });
       <?}?>
       $('#qa .summary span[data-markdown]').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
@@ -461,7 +467,7 @@ extract(cdb("select community_my_power
             <div>
               <?if($question_is_votable==='t'){?>
                 <?if($account_is_me==='f'){?>
-                  <div class="stars" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>"></div>
+                  <div class="starrr" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>"></div>
                 <?}else{?>
                   <span></span>
                 <?}?>
@@ -491,7 +497,7 @@ extract(cdb("select community_my_power
             <div class="bar">
               <div>
                 <?if($account_is_me==='f'){?>
-                  <div class="stars" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>"></div>
+                  <div class="starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>"></div>
                 <?}else{?>
                   <span></span>
                 <?}?>
