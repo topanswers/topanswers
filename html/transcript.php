@@ -73,6 +73,8 @@ extract(cdb("select community_name community
     .button { background: none; border: none; padding: 0; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
+    a[data-lightbox] img { cursor: zoom-in; }
+
     .markdown { overflow: auto; padding-right: 2px; }
     .markdown>:first-child { margin-top: 1px; }
     .markdown>:last-child { margin-bottom: 1px; }
@@ -124,7 +126,7 @@ extract(cdb("select community_name community
       $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       threadChat();
-      $('.message .markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
+      $('.message .markdown img').each(function(i){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); } });
       $('.message .markdown a').attr('rel','nofollow').attr('target','_blank');
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
       setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);

@@ -77,6 +77,7 @@ extract(cdb("select community_my_power
     .newtag:hover .tag { opacity: 1; }
 
     .select2-dropdown { border: 1px solid #<?=$colour_dark?> !important; box-shadow: 0 0 0.2rem 0.3rem white; }
+    a[data-lightbox] img { cursor: zoom-in; }
     .starrr { margin-left: 0.2rem; }
     .starrr a.fa-star { color: #<?=$colour_highlight?>; }
     .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
@@ -88,6 +89,7 @@ extract(cdb("select community_my_power
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .identicon, #active-users .identicon { height: 1.5rem; width: 1.5rem; margin: 1px; }
     #qa .markdown { padding: 0.6rem; }
+    #qa .markdown img { max-height: 15em; }
     #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .minibar:last-child { border-bottom: none; }
     #qa .minibar+.minibar { border-top: none; }
@@ -198,7 +200,7 @@ extract(cdb("select community_my_power
               }
               foo.call(this);
             });
-            newchat.filter('.message').find('.markdown img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+i+'"></a>'); });
+            newchat.filter('.message').find('.markdown img').each(function(i){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="c'+i+'"></a>'); } });
             newchat.filter('.message').find('.markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
             newchat.filter('.bigspacer').each(function(){
               $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'LT', lastDay: '[Yesterday] LT', lastWeek: '[Last] dddd LT', sameElse: 'LLLL' })).end()
@@ -395,6 +397,7 @@ extract(cdb("select community_my_power
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#qa .markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
+      $('#qa .markdown img').each(function(i){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="qa'+i+'"></a>'); } });
       <?if($uuid){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
           var t = $(this), v = t.data('votes');
