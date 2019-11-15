@@ -35,6 +35,7 @@ extract(cdb("select community_id,community_my_power
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
   <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
@@ -132,6 +133,14 @@ extract(cdb("select community_id,community_my_power
     #notifications .message .who { top: 0.3rem; }
     #notifications .message+.message { margin-top: 0.2em; }
     #chatupload:active i { color: #<?=$colour_mid?>; }
+
+    .pane { display: flex; }
+    @media (max-width: 576px){
+      .hidepane { display: none; }
+      textarea,select { font-size: 16px; }
+      #chattext-wrapper:not(:hover) button { display: unset; }
+      header { flex-direction: unset; white-space: unset; }
+    }
   </style>
   <script src="/lodash.js"></script>
   <script src="/jquery.js"></script>
@@ -383,7 +392,7 @@ extract(cdb("select community_id,community_my_power
       });
       $('#replying>button').click(function(){ $('#replying').attr('data-id','').slideUp('fast'); });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
-      $('#community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
+      $('.community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#tags').select2({ placeholder: "select a tag" });
       function tagdrop(){ $('#tags').select2('open'); };
       $('#tags').on('select2:close', function (e) { setTimeout(function(){ $('.newtag').one('click',tagdrop); },200); });
@@ -478,15 +487,16 @@ extract(cdb("select community_id,community_my_power
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex;">
-  <main style="display: flex; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
+  <main class="pane hidepane" style="flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
     <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
       <div style="margin: 0.5em; margin-right: 0.1em;">
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
-        <select id="community">
+        <select class="community">
           <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
             <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
           <?}?>
         </select>
+        <input class="panecontrol" type="button" value="chat" onclick="$('.pane').toggleClass('hidepane');">
       </div>
       <div style="display: flex; height: 100%; align-items: center;">
         <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"> or <input id="link" type="button" value="link" style="margin: 0.5em;"><?}?>
@@ -604,9 +614,14 @@ extract(cdb("select community_id,community_my_power
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; display: flex; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
+  <div id="chat-wrapper" class="pane" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
       <?if(!$question){?>
+        <select class="community">
+          <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
+            <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
+          <?}?>
+        </select>
         <select id="room">
           <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name
                         from room natural join community
@@ -617,6 +632,7 @@ extract(cdb("select community_id,community_my_power
         </select>
       <?}?>
       <a href="/transcript?room=<?=$room?>" style="color: #<?=$colour_mid?>;">transcript</a>
+      <input class="panecontrol" type="button" value="questions" onclick="$('.pane').toggleClass('hidepane');">
       <?if($uuid) if(intval(ccdb("select account_id from login"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($canchat){?>
