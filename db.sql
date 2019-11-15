@@ -19,13 +19,13 @@ create table room(
 );
 
 create table license(
-  license_id integer generated always as identity unique primary key
+  license_id integer generated always as identity primary key
 , license_name text unique not null
 , license_href text
 );
 
 create table codelicense(
-  codelicense_id integer generated always as identity unique primary key
+  codelicense_id integer generated always as identity primary key
 , codelicense_name text unique not null
 );
 
@@ -40,6 +40,7 @@ create table account(
 , account_is_dev boolean default false not null
 , account_license_id integer references license default 4 not null
 , account_codelicense_id integer references codelicense default 1 not null
+, account_notification_id integer generated always as identity unique
 );
 create unique index account_rate_limit_ind on account(account_create_at);
 
@@ -71,7 +72,7 @@ create table pin(
 );
 
 create table chat(
-  chat_id bigint generated always as identity unique primary key
+  chat_id bigint generated always as identity primary key
 , community_id integer not null references community
 , room_id integer not null references room
 , account_id integer not null references account
@@ -110,7 +111,7 @@ create index chat_notification_latest_ind on chat_notification(account_id,chat_n
 
 /*
 create table chat_history(
-  chat_history_id bigint generated always as identity unique primary key
+  chat_history_id bigint generated always as identity primary key
 , chat_id bigint not null references chat
 , account_id integer not null references account
 , chat_history_at timestamptz not null
@@ -172,7 +173,7 @@ create table chat_hour(
 create type question_type_enum as enum ('question','meta','blog');
 
 create table question(
-  question_id integer generated always as identity unique primary key
+  question_id integer generated always as identity primary key
 , community_id integer not null references community
 , account_id integer not null references account
 , question_type question_type_enum not null default 'question'
@@ -184,14 +185,14 @@ create table question(
 , question_votes integer default 0 not null
 , license_id integer references license not null
 , codelicense_id integer references codelicense not null
-, question_poll_id bigint generated always as identity unique not null
+, question_poll_id bigint generated always as identity unique
 , unique (community_id,question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
 
 create table question_history(
-  question_history_id bigint generated always as identity unique primary key
+  question_history_id bigint generated always as identity primary key
 , question_id integer not null references question
 , account_id integer not null references account
 , question_history_at timestamptz not null
@@ -201,7 +202,7 @@ create table question_history(
 create unique index question_history_rate_limit_ind on question_history(account_id,question_history_at);
 
 create table answer(
-  answer_id integer generated always as identity unique primary key
+  answer_id integer generated always as identity primary key
 , question_id integer not null references question
 , account_id integer not null references account
 , answer_at timestamptz not null default current_timestamp
@@ -214,7 +215,7 @@ create table answer(
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 
 create table answer_history(
-  answer_history_id bigint generated always as identity unique primary key
+  answer_history_id bigint generated always as identity primary key
 , answer_id integer not null references answer
 , account_id integer not null references account
 , answer_history_at timestamptz not null

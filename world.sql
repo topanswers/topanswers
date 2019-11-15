@@ -21,7 +21,10 @@ where community_name<>'private' or account_is_dev;
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
 create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id,account_change_at, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
-create view my_account with (security_barrier) as select account_id,account_name,account_image,account_uuid,account_is_dev,account_license_id,account_codelicense_id from db.account where account_id=current_setting('custom.account_id',true)::integer;
+--
+create view my_account with (security_barrier) as
+select account_id,account_name,account_image,account_uuid,account_is_dev,account_license_id,account_codelicense_id,account_notification_id from db.account where account_id=current_setting('custom.account_id',true)::integer;
+--
 create view account_community with (security_barrier) as select account_id,community_id,account_community_votes from db.account_community;
 --
 create view room with (security_barrier) as
@@ -115,7 +118,8 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
   select _error('access denied') where not exists(select 1 from world.room where room_id=roomid and room_can_chat);
   select _error(413,'message too long') where length(msg)>5000;
   --
-  delete from chat_notification where chat_id=replyid and account_id=current_setting('custom.account_id',true)::integer;
+  with d as (delete from chat_notification where chat_id=replyid and account_id=current_setting('custom.account_id',true)::integer returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
   --
   insert into chat_year(room_id,chat_year,chat_year_count)
   select roomid,extract('year' from current_timestamp),1 from room where room_id=roomid on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
@@ -138,11 +142,13 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
   with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
              select community_id,roomid,current_setting('custom.account_id',true)::integer,msg,replyid from room where room_id=roomid returning community_id,room_id,chat_id)
      , n as (insert into chat_notification(chat_id,account_id)
-             select chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid))
+             select chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid)
+             returning *)
+     , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
      , p as (insert into chat_notification(chat_id,account_id)
              select chat_id,account_id
              from i cross join (select account_id from world.account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and not account_is_me) z)
-     , a as (insert into room_account_x(room_id,account_id)
+     , r as (insert into room_account_x(room_id,account_id)
              select roomid,current_setting('custom.account_id',true)::integer
              from room
              where room_id=roomid
@@ -151,7 +157,8 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
 $$;
 --
 create function dismiss_notification(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  delete from chat_notification where chat_id=id and account_id=current_setting('custom.account_id',true)::integer;
+  with d as (delete from chat_notification where chat_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$

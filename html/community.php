@@ -160,7 +160,7 @@ extract(cdb("select community_id,community_my_power
       var mdsummary = window.markdownit('zero').enable(['emphasis']);
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
-      var chatTimer, maxChatChangeID = 0, maxNotificationID = '<?=ccdb("select max(chat_notification_at) from chat_notification")?>', numNewChats = 0;
+      var chatTimer, maxChatChangeID = 0, maxNotificationID = 0, numNewChats = 0;
       var maxQuestionPollID = 0;
 
       function setChatPollTimeout(){
