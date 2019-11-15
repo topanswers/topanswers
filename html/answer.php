@@ -134,7 +134,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       $('#question .markdown table').wrap('<div class="tablewrapper" tabindex="-1">');
     });
   </script>
-  <title>Answer | <?=ucfirst($community)?> | TopAnswers</title>
+  <title><?=$id?'Edit Answer':'Answer Question'?> | <?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
@@ -172,8 +172,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1.5 50em; max-width: 20vw; overflow: hidden;">
         <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow: hidden;">
-          <div style="flex: 0 0 auto; padding: 1rem; font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; border-bottom: 1px solid #<?=$colour_dark?>;"><?=htmlspecialchars($question_title)?></div>
-          <div class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>" style="flex: 1 0 auto; overflow-y: auto; padding: 1em;"></div>
+          <div style="flex: 0 0 auto; padding: 0.6rem; font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; border-bottom: 1px solid #<?=$colour_dark?>;"><?=htmlspecialchars($question_title)?></div>
+          <div class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>" style="flex: 1 0 auto; overflow-y: auto; padding: 0.6em;"></div>
         </div>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
@@ -181,7 +181,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$id?htmlspecialchars($answer_markdown):''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white; padding: 1em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
+      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
     </main>
   </form>
 </body>   

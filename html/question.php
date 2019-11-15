@@ -142,7 +142,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       render();
     });
   </script>
-  <title>Ask | <?=ucfirst($community)?> | TopAnswers</title>
+  <title><?=$id?'Edit':'Ask'?> Question | <?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
@@ -186,7 +186,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
           <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
         </div>
         <div style="flex: 0 0 2vmin;"></div>
-        <div id="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 1rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
+        <div id="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
       </div>
     </main>
   </form>
