@@ -466,6 +466,7 @@ extract(cdb("select community_id,community_my_power
               }
             }
           });
+          t.find('a').removeAttr('href');
         });
       <?}?>
       $('#qa .summary span[data-markdown]').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
