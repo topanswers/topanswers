@@ -2,7 +2,11 @@
 include 'db.php';
 include 'nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
-if($uuid) ccdb("select login($1)",$uuid);
+$dev = false;
+if($uuid){
+  ccdb("select login($1)",$uuid);
+  $dev = (ccdb("select account_is_dev from my_account")==='t');
+}
 if($_SERVER['REQUEST_METHOD']==='POST'){
   isset($_POST['action']) or die('posts must have an "action" parameter');
   switch($_POST['action']) {
@@ -10,18 +14,6 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
     default: fail(400,'unrecognized action');
   }
-}
-if(isset($_GET['flagchatid'])){
-  exit(ccdb("select set_chat_flag($1)",$_GET['flagchatid']));
-}
-if(isset($_GET['unflagchatid'])){
-  exit(ccdb("select remove_chat_flag($1)",$_GET['unflagchatid']));
-}
-if(isset($_GET['starchatid'])){
-  exit(ccdb("select set_chat_star($1)",$_GET['starchatid']));
-}
-if(isset($_GET['unstarchatid'])){
-  exit(ccdb("select remove_chat_star($1)",$_GET['unstarchatid']));
 }
 if(isset($_GET['resizer'])){
   db("select change_resizer($1)",$_GET['resizer']);
@@ -35,7 +27,7 @@ if($question) ccdb("select count(*) from question where question_id=$1",$questio
 $room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
 $canchat = false;
 if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
-extract(cdb("select community_my_power
+extract(cdb("select community_id,community_my_power
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
              where community_name=$1",$community));
@@ -59,6 +51,7 @@ extract(cdb("select community_my_power
     [data-rz-handle] { flex: 0 0 2px; background-color: black; }
     [data-rz-handle] div { width: 2px; background-color: black; }
 
+    <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .question { margin-bottom: 2rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>; }
     .answer { margin-bottom: 2em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>; }
@@ -168,17 +161,38 @@ extract(cdb("select community_my_power
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxNotificationID = '<?=ccdb("select max(chat_notification_at) from chat_notification")?>', numNewChats = 0;
+      var maxQuestionPollID = 0;
 
       function setChatPollTimeout(){
         var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
-        if(chatLastChange<8) chatPollInterval = 1000;
-        else if(chatLastChange<18) chatPollInterval = 3000;
-        else if(chatLastChange<30) chatPollInterval = 5000;
-        else if(chatLastChange<300) chatPollInterval = 10000;
+        if(chatLastChange<15) chatPollInterval = 1000;
+        else if(chatLastChange<30) chatPollInterval = 3000;
+        else if(chatLastChange<120) chatPollInterval = 5000;
+        else if(chatLastChange<600) chatPollInterval = 10000;
         else if(chatLastChange<3600) chatPollInterval = 30000;
         else chatPollInterval = 60000;
+        <?if($dev){?>console.log('set poll interval to '+chatPollInterval);<?}?>
         clearTimeout(chatTimer);
         chatTimer = setTimeout(checkChat,chatPollInterval);
+      }
+      function renderQuestion(){
+        $(this).find('.summary span').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
+        $(this).find('.when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
+      }
+      function updateQuestions(scroll){
+        var maxQuestion = $('#qa>:first-child').data('id');
+        if($('#qa').scrollTop()<100) scroll = true;
+        $.get('/questions?community=<?=$community?>'+(($('#questions').children().length===0)?'':'&id='+maxQuestion),function(data) {
+          if($('#qa>:first-child').data('id')===maxQuestion){
+            var newquestions = $(data).filter('.question').prependTo($('#qa')).css('opacity','1');
+            if(maxChatChangeID) numNewChats += newquestions.length;
+            if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
+            newquestions.each(renderQuestion);
+            if(!maxQuestionPollID) newquestions.each(function(){ if($(this).data('poll-id')>maxQuestionPollID) maxQuestionPollID = $(this).data('poll-id'); });
+            if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
+          }
+          <?if($uuid){?>setChatPollTimeout();<?}?>
+        },'html').fail(setChatPollTimeout);
       }
       function updateChat(scroll){
         var maxChat = $('#messages>.message:last-child').data('id');
@@ -220,7 +234,6 @@ extract(cdb("select community_my_power
             if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
             if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
             <?if($uuid){?>
-              setChatPollTimeout();
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
                 $('#active-users').html(r);
@@ -228,11 +241,18 @@ extract(cdb("select community_my_power
               });
             <?}?>
           }
+          <?if($uuid){?>setChatPollTimeout();<?}?>
         },'html').fail(setChatPollTimeout);
       }
       function updateChatChangeIDs(){
-        $.get('/chat?changes&id='+maxChatChangeID,function(r){
+        $.get('/chat?changes&room='+<?=$room?>+'&fromid='+maxChatChangeID,function(r){
           _(JSON.parse(r)).forEach(function(e){ $('#c'+e[0]).each(function(){ if(e[1]>$(this).data('change-id')) $(this).addClass('changed'); }); });
+          setChatPollTimeout();
+        }).fail(setChatPollTimeout);
+      }
+      function updateQuestionPollIDs(){
+        $.get('/questions?changes&community=<?=$community?>&fromid='+maxQuestionPollID,function(r){
+          _(JSON.parse(r)).forEach(function(e){ $('#q'+e[0]).each(function(){ if(e[1]>$(this).data('poll-id')) $(this).addClass('changed'); }); });
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
@@ -253,6 +273,14 @@ extract(cdb("select community_my_power
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
+      function actionQuestionChange(id){
+        $('#q'+id).css('opacity',0.5);
+        $.get('/questions?one&community=<?=$community?>&id='+id,function(r){
+          $('#q'+id).replaceWith(r);
+          $('#q'+id).each(renderQuestion);
+          setChatPollTimeout();
+        }).fail(setChatPollTimeout);
+      }
       function updateNotifications(){
         $.get(window.location.href,function(r){
           var scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
@@ -263,18 +291,36 @@ extract(cdb("select community_my_power
         }).fail(setChatPollTimeout);
       }
       function checkChat(){
-        $.get('/chat?room=<?=$room?>&poll').done(function(r){
+        $.get('/poll?room=<?=$room?>').done(function(r){
           var j = JSON.parse(r);
           if(j.c>+$('#messages>.message:last-child').data('id')){
+            <?if($dev){?>console.log('updating chat');<?}?>
             updateChat();
           }else if(j.n>maxNotificationID){
+            <?if($dev){?>console.log('updating notifications');<?}?>
             updateNotifications();
             maxNotificationID = j.n;
+          <?if(!$question){?>
+            }else if(j.q>$('#qa>:first-child').data('id')){
+              <?if($dev){?>console.log('updating questions');<?}?>
+              updateQuestions();
+          <?}?>
           }else if(j.cc>maxChatChangeID){
+            <?if($dev){?>console.log('updating chat change flag statuses');<?}?>
             updateChatChangeIDs();
             maxChatChangeID = j.cc
           }else if($('.message.changed').length){
+            <?if($dev){?>console.log('updating chat '+$('.message.changed').last().data('id'));<?}?>
             actionChatChange($('.message.changed').last().data('id'));
+          <?if(!$question){?>
+            }else if(j.qc>maxQuestionPollID){
+              <?if($dev){?>console.log('updating guestion change flag statuses');<?}?>
+              updateQuestionPollIDs();
+              maxQuestionPollID = j.qc
+            }else if($('.question.changed').length){
+              <?if($dev){?>console.log('updating question '+$('.question.changed').first().data('id'));<?}?>
+              actionQuestionChange($('.question.changed').first().data('id'));
+          <?}?>
           }else{
             setChatPollTimeout();
           }
@@ -424,6 +470,7 @@ extract(cdb("select community_my_power
       <?}?>
       $('#qa .summary span[data-markdown]').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
       updateChat(true);
+      <?if(!$question){?>updateQuestions(true);<?}?>
       setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
     });
   </script>
@@ -551,46 +598,6 @@ extract(cdb("select community_my_power
                 <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
               </div>
             </div>
-          </div>
-        <?}?>
-      <?}else{?>
-        <?foreach(db("select question_id,question_at,question_title,account_id,account_name,account_is_me
-                           , coalesce(account_community_votes,0) account_community_votes
-                           , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
-                           , extract('epoch' from current_timestamp-question_at) question_when
-                      from question natural join account natural join community natural left join account_community
-                      where community_name=$1
-                      order by question_at desc limit 50",$community) as $r){ extract($r);?>
-          <div class="question"<?=$question_type?(' style="background-color: #'.$colour_light.'60;"'):''?>>
-            <a href="/<?=$community?>?q=<?=$question_id?>"><?=$question_type.$question_title?></a>
-            <div class="bar">
-              <div>
-                <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
-                <span><span class="when" data-seconds="<?=$question_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-              </div>
-              <div class="tags">
-                <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question_id) as $r){ extract($r);?>
-                  <span class="tag" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
-                <?}?>
-              </div>
-            </div>
-            <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,account_name,account_is_me
-                               , coalesce(account_community_votes,0) account_community_votes
-                               , extract('epoch' from current_timestamp-answer_at) answer_when
-                          from answer natural join account natural join (select question_id,community_id from question) q natural left join account_community
-                          where question_id=$1
-                          order by answer_votes desc, answer_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
-              <div class="minibar">
-                <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n"));?>"></span></a>
-                <div>
-                  <?if($answer_votes){?>
-                    <span class="score<?=($answer_have_voted==='t')?' me':''?>"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='f')&&($answer_have_voted==='f')&&$answer_votes)?'-o':''?>"></i></span>
-                  <?}?>
-                  <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-                  <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
-                </div>
-              </div>
-            <?}?>
           </div>
         <?}?>
       <?}?>

@@ -15,7 +15,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     default: fail(400,'unrecognized action');
   }
 }
-if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]') from chat where chat_change_id>$1",$_GET['id']));
+if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]') from chat where room_id=$1 and chat_change_id>$2",$_GET['room'],$_GET['fromid']));
 if(isset($_GET['change'])) exit(ccdb("select json_build_object('change',chat_change_id,'flags',chat_flag_count,'i_flagged',chat_flag_at is not null,'stars',chat_star_count,'i_starred',chat_star_at is not null,'msg',chat_markdown)
                                       from chat natural left join chat_flag natural left join chat_star
                                       where chat_id=$1",$_GET['id']));
@@ -32,16 +32,11 @@ if(isset($_GET['activeusers'])){
   }
   exit;
 }
-if(isset($_GET['poll'])) exit(ccdb("select json_build_object('c',coalesce((select max(chat_id) from chat where room_id=$1),0)
-                                                            ,'cc',coalesce((select max(chat_change_id) from chat where room_id=$1),0)
-                                                            ,'n',coalesce((select max(chat_notification_at)::text from chat_notification natural join chat),'')
-                                  )",$room));
 extract(cdb("select community_name community
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from room natural join community
              where room_id=$1",$room));
 $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id from chat where room_id=$1 order by chat_id desc limit 100) z",$room);
-#$id = 1296;
 ?>
 <?foreach(db("select *
               from(select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
