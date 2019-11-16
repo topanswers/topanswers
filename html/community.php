@@ -194,8 +194,8 @@ extract(cdb("select community_id,community_my_power
         $.get('/questions?community=<?=$community?>'+(($('#questions').children().length===0)?'':'&id='+maxQuestion),function(data) {
           if($('#qa>:first-child').data('id')===maxQuestion){
             var newquestions = $(data).filter('.question').prependTo($('#qa')).css('opacity','1');
-            if(maxChatChangeID) numNewChats += newquestions.length;
-            if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
+            if(maxQuestionPollID) numNewChats += newquestions.length;
+            if(maxQuestionPollID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
             newquestions.each(renderQuestion);
             if(!maxQuestionPollID) newquestions.each(function(){ if($(this).data('poll-id')>maxQuestionPollID) maxQuestionPollID = $(this).data('poll-id'); });
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
@@ -295,7 +295,8 @@ extract(cdb("select community_id,community_my_power
           var scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
           $('#notification-wrapper').replaceWith($('<div />').append(r).find('#notification-wrapper'));
           $('#notification-wrapper .markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
-          if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+          if(scroll){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); }
+          if(scroll) setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
