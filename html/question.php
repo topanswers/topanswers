@@ -33,7 +33,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 if($id) {
   ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
   $community = ccdb("select community_name from question natural join community where question_id=$1",$id);
-  extract(cdb("select question_type,question_title,question_markdown from question where question_id=$1",$id));
+  extract(cdb("select question_type,question_title,question_markdown
+                    , license_name||(case when codelicense_id<>1 then ' + '||codelicense_name else '' end) license
+               from question natural join license natural join codelicense
+               where question_id=$1",$id));
 }else{
   if(!isset($_GET['community'])) die('Community not set');
   $community = $_GET['community'];
@@ -161,7 +164,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
           <?}?>
         </select>
       <?}?>
-      <input id="submit" type="submit" form="form" value="<?=$id?('update '.$question_type.(($question_type==='meta')?' question':(($question_type==='blog')?' post':''))):'submit'?>" style="margin: 0.5rem;">
+      <input id="submit" type="submit" form="form" value="<?=$id?('update '.$question_type.(($question_type==='meta')?' question':(($question_type==='blog')?' post':''))).' under '.$license:'submit'?>" style="margin: 0.5rem;">
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>

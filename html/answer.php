@@ -30,7 +30,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 }
 if($id) {
   ccdb("select count(*) from answer where answer_id=$1",$id)==='1' || die('invalid answer id');
-  extract(cdb("select community_name community, question_id question, question_title, question_markdown, answer_markdown from answer natural join (select question_id,community_id,question_title,question_markdown from question) z natural join community where answer_id=$1",$id));
+  extract(cdb("select community_name community, question_id question, question_title, question_markdown, answer_markdown
+                    , license_name||(case when codelicense_id<>1 then ' + '||codelicense_name else '' end) license
+               from answer natural join (select question_id,community_id,question_title,question_markdown from question natural join license natural join codelicense) z natural join community natural join license natural join codelicense
+               where answer_id=$1",$id));
 }else{
   if(!isset($_GET['question'])) die('question not set');
   $question = $_GET['question'];
@@ -143,18 +146,18 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <?if(!$id){?>
-        <select id="license">
+        <select name="license" form="form">
           <?foreach(db("select license_id,license_name from license") as $r){ extract($r);?>
             <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
           <?}?>
         </select>
-        <select id="codelicense">
+        <select name="codelicense" form="form">
           <?foreach(db("select codelicense_id,codelicense_name from codelicense") as $r){ extract($r);?>
             <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
           <?}?>
         </select>
       <?}?>
-      <input id="submit" type="submit" form="form" value="<?=$id?'update answer':'post answer'?>" style="margin: 0.5rem;">
+      <input id="submit" type="submit" form="form" value="<?=$id?'update answer under '.$license:'post answer'?>" style="margin: 0.5rem;">
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
@@ -166,8 +169,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <input type="hidden" name="action" value="new">
       <input type="hidden" name="community" value="<?=$community?>">
       <input type="hidden" name="question" value="<?=$question?>">
-      <input type="hidden" name="license" value="<?=$account_license_id?>">
-      <input type="hidden" name="codelicense" value="<?=$account_codelicense_id?>">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1.5 50em; max-width: 20vw; overflow: hidden;">
