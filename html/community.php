@@ -357,7 +357,11 @@ extract(cdb("select community_id,community_my_power
       $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax('/uuid',{ type: "POST", data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
-      $('#chat-wrapper').on('click','.reply', function(){ $('#replying').attr('data-id',$(this).closest('.message').data('id')).slideDown('fast').children('span').text($(this).closest('.message').data('name')); $('#chattext').focus(); });
+      $('#chat-wrapper').on('click','.reply', function(){
+        $('#replying').attr('data-id',$(this).closest('.message').data('id')).data('update')();
+        $('#chattext').focus();
+        setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
+      });
       $('#chat-wrapper').on('click','.star', function(){
         var t = $(this);
         t.css({'opacity':'0.3','pointer-events':'none'});
@@ -390,13 +394,24 @@ extract(cdb("select community_id,community_my_power
           t.removeClass('me unflag').addClass('flag').children('i').toggleClass('fa-flag fa-flag-o').next().each(function(){ $(this).text(((+$(this).text()-1)===0)?'':(+$(this).text()-1)); });
         });
       });
-      $('body').on('click','.identicon.pingable', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); });
+      $('body').on('click','.identicon.pingable', function(){ if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); } $(this).toggleClass('ping'); $('#chattext').focus(); $('#replying').data('update')() });
       $('#chat-wrapper').on('click','.dismiss', function(){
         $.post('/chat', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
-      $('#replying>button').click(function(){ $('#replying').attr('data-id','').slideUp('fast'); });
+      $('#replying').data('update',function(){
+        var state = $('#replying').attr('data-id') || $('.ping').length, strings = [];
+        if($('#replying').attr('data-id')) strings.push('Replying to: '+$('#c'+$('#replying').attr('data-id')).data('name'));
+        if($('.ping').length) strings.push('Pinging: '+$('.ping').map(function(){ return $(this).data('fullname'); }).get().join(', '));
+        $('#replying').children('span').text(strings.join(', '));
+        if(state && $('#replying').is(":hidden")) $('#replying').slideDown('fast');
+        if(!state && $('#replying').is(":visible")) $('#replying').slideUp('fast');
+      });
+      $('#replying>button').click(function(){
+        $('.ping').removeClass('ping');
+        $('#replying').attr('data-id','').data('update')();
+      });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
       $('.community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#tags').select2({ placeholder: "select a tag" });
@@ -525,7 +540,7 @@ extract(cdb("select community_id,community_my_power
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+              <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>">
               <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
               <span>
                 <a href="<?=$license_href?>"><?=$license_name?></a>
@@ -649,15 +664,14 @@ extract(cdb("select community_id,community_my_power
             </div>
           </div>
         </div>
-        <div id="replying" style="width: 100%; background-color: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.1em 0.3em; display: none; font-style: italic; font-size: smaller;" data-id="">
-          Replying to:
-          <span></span>
-          <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>
-        </div>
         <div id="chattext-wrapper" style="position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>;">
           <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
           <button id="chatupload" class="button" style="position: absolute; right: 0.15em; top: 0; bottom: 0; font-size: 1.5em; color: #<?=$colour_dark?>;" title="embed image"><i class="fa fa-picture-o" style="display: block;"></i></button>
           <textarea id="chattext" style="flex: 0 0 auto; width: 100%; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
+        </div>
+        <div id="replying" style="width: 100%; background-color: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.1em 0.3em; display: none; font-style: italic; font-size: smaller;" data-id="">
+          <span></span>
+          <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>
         </div>
       </div>
     <?}?>
