@@ -135,8 +135,10 @@ extract(cdb("select community_id,community_my_power
     #chatupload:active i { color: #<?=$colour_mid?>; }
 
     .pane { display: flex; }
+    .panecontrol { display: none; }
     @media (max-width: 576px){
       .hidepane { display: none; }
+      .panecontrol { display: unset; }
       textarea,select,input { font-size: 16px; }
       #chattext-wrapper:not(:hover) button { display: unset; }
       header { flex-direction: unset; white-space: unset; }
