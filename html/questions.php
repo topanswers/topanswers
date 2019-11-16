@@ -10,17 +10,17 @@ extract(cdb("select community_id
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
              where community_name=$1",$community));
-if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_id)),'[]') from question where community_id=$1 and question_poll_id>$2",$community_id,$_GET['fromid']));
-$id = $_GET['id']??ccdb("select greatest(min(question_id)-1,0) from (select question_id from question where community_id=$1 order by question_id desc limit 50) z",$community_id);
+if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where community_id=$1 and question_poll_minor_id>$2",$community_id,$_GET['fromid']));
+$id = $_GET['id']??ccdb("select greatest(min(question_id)-1,0) from (select question_id from question where community_id=$1 order by question_poll_major_id desc limit 50) z",$community_id);
 ?>
-<?foreach(db("select question_id,question_at,question_title,question_poll_id,account_id,account_name,account_is_me
+<?foreach(db("select question_id,question_at,question_title,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
                    , coalesce(account_community_votes,0) account_community_votes
                    , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                    , extract('epoch' from current_timestamp-question_at) question_when
               from question natural join account natural join community natural left join account_community
-              where community_id=$1 and question_id".(isset($_GET['one'])?'=':'>')."$2
-              order by question_at desc limit 50",$community_id,$id) as $r){ extract($r);?>
-  <div id="q<?=$question_id?>" class="question" data-id="<?=$question_id?>" data-poll-id="<?=$question_poll_id?>"<?=$question_type?(' style="background-color: #'.$colour_light.'60;"'):''?>>
+              where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id>')."$2
+              order by question_poll_major_id desc limit 50",$community_id,$id) as $r){ extract($r);?>
+  <div id="q<?=$question_id?>" class="question" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>"<?=$question_type?(' style="background-color: #'.$colour_light.'60;"'):''?>>
     <a href="/<?=$community?>?q=<?=$question_id?>"><?=$question_type.$question_title?></a>
     <div class="bar">
       <div>

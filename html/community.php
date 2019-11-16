@@ -169,8 +169,8 @@ extract(cdb("select community_id,community_my_power
       var mdsummary = window.markdownit('zero').enable(['emphasis']);
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
-      var chatTimer, maxChatChangeID = 0, maxNotificationID = 0, numNewChats = 0;
-      var maxQuestionPollID = 0;
+      var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=ccdb("select account_notification_id from my_account")?>+0, numNewChats = 0;
+      var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0;
 
       function setChatPollTimeout(){
         var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
@@ -189,15 +189,20 @@ extract(cdb("select community_id,community_my_power
         $(this).find('.when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       }
       function updateQuestions(scroll){
-        var maxQuestion = $('#qa>:first-child').data('id');
+        var maxQuestion = $('#qa>:first-child').data('poll-major-id');
         if($('#qa').scrollTop()<100) scroll = true;
-        $.get('/questions?community=<?=$community?>'+(($('#questions').children().length===0)?'':'&id='+maxQuestion),function(data) {
-          if($('#qa>:first-child').data('id')===maxQuestion){
-            var newquestions = $(data).filter('.question').prependTo($('#qa')).css('opacity','1');
-            if(maxQuestionPollID) numNewChats += newquestions.length;
-            if(maxQuestionPollID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
+        $.get('/questions?community=<?=$community?>'+(($('#qa').children().length===0)?'':'&id='+maxQuestion),function(data) {
+          if($('#qa>:first-child').data('poll-major-id')===maxQuestion){
+            var newquestions;
+            $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
+            newquestions = $(data).filter('.question').prependTo($('#qa')).hide().slideDown();
+            if(maxQuestionPollMajorID) numNewChats += newquestions.length;
+            if(maxQuestionPollMajorID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
             newquestions.each(renderQuestion);
-            if(!maxQuestionPollID) newquestions.each(function(){ if($(this).data('poll-id')>maxQuestionPollID) maxQuestionPollID = $(this).data('poll-id'); });
+            newquestions.each(function(){
+              if($(this).data('poll-major-id')>maxQuestionPollMajorID) maxQuestionPollMajorID = $(this).data('poll-major-id');
+              if($(this).data('poll-minor-id')>maxQuestionPollMinorID) maxQuestionPollMinorID = $(this).data('poll-minor-id');
+            });
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
           <?if($uuid){?>setChatPollTimeout();<?}?>
@@ -260,8 +265,8 @@ extract(cdb("select community_id,community_my_power
         }).fail(setChatPollTimeout);
       }
       function updateQuestionPollIDs(){
-        $.get('/questions?changes&community=<?=$community?>&fromid='+maxQuestionPollID,function(r){
-          _(JSON.parse(r)).forEach(function(e){ $('#q'+e[0]).each(function(){ if(e[1]>$(this).data('poll-id')) $(this).addClass('changed'); }); });
+        $.get('/questions?changes&community=<?=$community?>&fromid='+maxQuestionPollMajorID,function(r){
+          _(JSON.parse(r)).forEach(function(e){ $('#q'+e[0]).each(function(){ if(e[1]>$(this).data('poll-minor-id')) $(this).addClass('changed'); }); });
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
@@ -311,7 +316,7 @@ extract(cdb("select community_id,community_my_power
             updateNotifications();
             maxNotificationID = j.n;
           <?if(!$question){?>
-            }else if(j.q>$('#qa>:first-child').data('id')){
+            }else if(j.Q>maxQuestionPollMajorID){
               <?if($dev){?>console.log('updating questions');<?}?>
               updateQuestions();
           <?}?>
@@ -323,10 +328,10 @@ extract(cdb("select community_id,community_my_power
             <?if($dev){?>console.log('updating chat '+$('.message.changed').last().data('id'));<?}?>
             actionChatChange($('.message.changed').last().data('id'));
           <?if(!$question){?>
-            }else if(j.qc>maxQuestionPollID){
+            }else if(j.q>maxQuestionPollMinorID){
               <?if($dev){?>console.log('updating guestion change flag statuses');<?}?>
               updateQuestionPollIDs();
-              maxQuestionPollID = j.qc
+              maxQuestionPollMinorID = j.q
             }else if($('.question.changed').length){
               <?if($dev){?>console.log('updating question '+$('.question.changed').first().data('id'));<?}?>
               actionQuestionChange($('.question.changed').first().data('id'));

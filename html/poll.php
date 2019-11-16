@@ -9,6 +9,6 @@ $community_id = ccdb("select community_id from room natural join community where
 exit(ccdb("select json_build_object('c',coalesce((select max(chat_id) from chat where room_id=$1),0)
                                    ,'cc',coalesce((select max(chat_change_id) from chat where room_id=$1),0)
                                    ,'n',coalesce((select account_notification_id from my_account),0)
-                                   ,'q',coalesce((select max(question_id) from question where community_id=$2),0)
-                                   ,'qc',coalesce((select max(question_poll_id) from question where community_id=$2),0)
+                                   ,'Q',coalesce((select max(question_poll_major_id) from question where community_id=$2),0)
+                                   ,'q',coalesce((select max(question_poll_minor_id) from question where community_id=$2),0)
                                    )",$_GET['room'],$community_id));

@@ -52,7 +52,7 @@ create view chat_hour with (security_barrier) as select room_id,chat_year,chat_m
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
 --
 create view question with (security_barrier) as
-select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id,question_poll_id
+select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id,question_poll_id,question_poll_major_id,question_poll_minor_id
      , coalesce(question_votes>=community_my_power,false) question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
@@ -258,7 +258,7 @@ create function change_question(id integer, title text, markdown text) returns v
   from question
   where question_id=id;
   --
-  update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_id = default where question_id=id;
+  update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=id;
 $$;
 --
 create function new_answer(qid integer, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
@@ -266,7 +266,7 @@ create function new_answer(qid integer, markdown text, lic integer, codelic inte
   select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
   select _error(429,'rate limit') where exists (select 1 from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id>2);
   --
-  update question set question_poll_id = default where question_id=qid;
+  update question set question_poll_major_id = default where question_id=qid;
   insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id) values(qid, current_setting('custom.account_id',true)::integer, markdown, lic, codelic) returning answer_id;
 $$;
 --
@@ -276,7 +276,7 @@ create function change_answer(id integer, markdown text) returns void language s
                                          from answer_history natural join (select answer_id from answer where account_id<>current_setting('custom.account_id',true)::integer) z
                                          where account_id=current_setting('custom.account_id',true)::integer and answer_history_at>current_timestamp-'5m'::interval)>10;
   --
-  update question set question_poll_id = default where question_id=(select question_id from answer where answer_id=id);
+  update question set question_poll_major_id = default where question_id=(select question_id from answer where answer_id=id);
   --
   insert into answer_history(answer_id,account_id,answer_history_at,answer_history_markdown) select answer_id,current_setting('custom.account_id',true)::integer,answer_change_at,answer_markdown from answer where answer_id=id;
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
@@ -290,7 +290,7 @@ create function new_question_tag(qid integer, tid integer) returns void language
                                             from question_tag_x_history
                                             where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
   --
-  update question set question_poll_id = default where question_id=qid;
+  update question set question_poll_major_id = default where question_id=qid;
   --
   with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
                                                   union all
@@ -311,7 +311,7 @@ create function remove_question_tag(qid integer, tid integer) returns void langu
                                             from question_tag_x_history
                                             where question_tag_x_history_removed_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_removed_at>current_timestamp-'1s'::interval);
   --
-  update question set question_poll_id = default where question_id=qid;
+  update question set question_poll_major_id = default where question_id=qid;
   --
   select remove_question_tag(qid,tag_implies_id)
   from question_tag_x natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
@@ -333,7 +333,7 @@ create function vote_question(qid integer, votes integer) returns integer langua
   select _error(429,'rate limit') where (select 1 from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'1m'::interval)>4;
   select _error(429,'rate limit') where (select 1 from question_vote_history where account_id=current_setting('custom.account_id',true)::integer and question_vote_history_at>current_timestamp-'1m'::interval)>10;
   --
-  update question set question_poll_id = default where question_id=qid;
+  update question set question_poll_minor_id = default where question_id=qid;
   --
   with d as (delete from question_vote where question_id=qid and account_id=current_setting('custom.account_id',true)::integer returning *)
      , r as (select question_id,community_id,q.account_id,question_vote_votes from d join question q using(question_id))
@@ -359,7 +359,7 @@ create function vote_answer(aid integer, votes integer) returns integer language
   select _error(429,'rate limit') where (select count(*) from answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_at>current_timestamp-'1m'::interval)>4;
   select _error(429,'rate limit') where (select count(*) from answer_vote_history where account_id=current_setting('custom.account_id',true)::integer and answer_vote_history_at>current_timestamp-'1m'::interval)>10;
   --
-  update question set question_poll_id = default where question_id=(select question_id from answer where answer_id=aid);
+  update question set question_poll_minor_id = default where question_id=(select question_id from answer where answer_id=aid);
   --
   with d as (delete from answer_vote where answer_id=aid and account_id=current_setting('custom.account_id',true)::integer returning *)
      , r as (select answer_id,community_id,a.account_id,answer_vote_votes from d join answer a using(answer_id) natural join (select question_id,community_id from question) q )

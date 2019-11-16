@@ -187,6 +187,8 @@ create table question(
 , license_id integer references license not null
 , codelicense_id integer references codelicense not null
 , question_poll_id bigint generated always as identity unique
+, question_poll_major_id bigint generated always as identity unique
+, question_poll_minor_id bigint generated always as identity unique
 , unique (community_id,question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
 );
