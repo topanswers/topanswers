@@ -588,6 +588,7 @@ extract(cdb("select community_id,community_my_power
                 <span></span>
                 <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a href="/question?id=<?=$question?>">edit</a><?}?>
                 <?if($question_has_history==='t'){?><a href="/question-history?id=<?=$question?>">history</a><?}?>
+                <?if($account_is_me==='f'){?><a href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
             <div>
@@ -621,6 +622,7 @@ extract(cdb("select community_id,community_my_power
                   <span></span>
                   <a href="/answer?id=<?=$answer_id?>">edit</a>
                   <?if($answer_has_history==='t'){?><a href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
+                  <?if($account_is_me==='f'){?><a href='.' onclick="$(this).closest('.answer').find('.identicon').click(); return false;">comment</a><?}?>
                 <?}?>
               </div>
               <div>
@@ -678,7 +680,13 @@ extract(cdb("select community_id,community_my_power
       </div>
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
-      <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;"><div style="flex: 1 0 0.5em;"></div></div>
+      <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
+        <div style="flex: 1 0 0.5em;">
+          <?if($question&&$uuid&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
+            <div style="padding: 40% 20%;"><p>This is a dedicated room for discussion about this question.</p><p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p></div>
+          <?}?>
+        </div>
+      </div>
       <?if($uuid){?>
         <div id="active-users" style="flex: 0 0 calc(1.5rem + 5px); display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 1px; overflow-y: hidden;"></div>
       <?}?>
