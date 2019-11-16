@@ -195,7 +195,7 @@ extract(cdb("select community_id,community_my_power
           if($('#qa>:first-child').data('poll-major-id')===maxQuestion){
             var newquestions;
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
-            newquestions = $(data).filter('.question').prependTo($('#qa')).hide().slideDown();
+            newquestions = $(data).filter('.question').prependTo($('#qa')).hide().slideDown(maxQuestionPollMajorID?400:0);
             if(maxQuestionPollMajorID) numNewChats += newquestions.length;
             if(maxQuestionPollMajorID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
             newquestions.each(renderQuestion);
@@ -265,7 +265,7 @@ extract(cdb("select community_id,community_my_power
         }).fail(setChatPollTimeout);
       }
       function updateQuestionPollIDs(){
-        $.get('/questions?changes&community=<?=$community?>&fromid='+maxQuestionPollMajorID,function(r){
+        $.get('/questions?changes&community=<?=$community?>&fromid='+maxQuestionPollMinorID,function(r){
           _(JSON.parse(r)).forEach(function(e){ $('#q'+e[0]).each(function(){ if(e[1]>$(this).data('poll-minor-id')) $(this).addClass('changed'); }); });
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
