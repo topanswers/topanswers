@@ -137,8 +137,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         $('input[name="type"').val($(this).children(":selected").text());
         <?if(!$id){?> localStorage.setItem('<?=$community?>.ask.type',$(this).val());<?}?>
       }).trigger('change');
-      $('#license').change(function(){ $('input[name="license"').val($(this).val()); });
-      $('#codelicense').change(function(){ $('input[name="codelicense"').val($(this).val()); });
       render();
     });
   </script>
@@ -151,14 +149,14 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <?if(!$id){?>
-        <select id="type"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select>
-        <select id="license">
-          <?foreach(db("select license_id,license_name from license") as $r){ extract($r);?>
+        <select name="type" form="form"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select>
+        <select name="license" form="form">
+          <?foreach(db("select license_id,license_name from license order by license_name") as $r){ extract($r);?>
             <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
           <?}?>
         </select>
-        <select id="codelicense">
-          <?foreach(db("select codelicense_id,codelicense_name from codelicense") as $r){ extract($r);?>
+        <select name="codelicense" form="form">
+          <?foreach(db("select codelicense_id,codelicense_name from codelicense order by codelicense_id<>1, codelicense_name") as $r){ extract($r);?>
             <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
           <?}?>
         </select>
@@ -174,9 +172,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     <?}else{?>
       <input type="hidden" name="action" value="new">
       <input type="hidden" name="community" value="<?=$community?>">
-      <input type="hidden" name="type" value="question">
-      <input type="hidden" name="license" value="<?=$account_license_id?>">
-      <input type="hidden" name="codelicense" value="<?=$account_codelicense_id?>">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column;">
       <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 0.2rem;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
