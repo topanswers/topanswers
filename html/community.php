@@ -137,7 +137,7 @@ extract(cdb("select community_id,community_my_power
     .pane { display: flex; }
     @media (max-width: 576px){
       .hidepane { display: none; }
-      textarea,select { font-size: 16px; }
+      textarea,select,input { font-size: 16px; }
       #chattext-wrapper:not(:hover) button { display: unset; }
       header { flex-direction: unset; white-space: unset; }
     }
