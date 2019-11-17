@@ -156,6 +156,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <script src="/markdown-it-footnote.js"></script>
   <script src="/markdown-it-deflist.js"></script>
   <script src="/markdown-it-abbr.js"></script>
+  <script src="/markdown-it-for-inline.js"></script>
   <script src="/highlightjs/highlight.js"></script>
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
@@ -168,7 +169,11 @@ extract(cdb("select community_id,community_my_power,sesite_url
     moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
-                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr);
+                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr)
+                     .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx){
+        if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
+        if(tokens[idx].attrGet('href')==='http://dba.se') tokens[idx].attrSet('href','https://dba.stackexchange.com');
+      });
       md.linkify.tlds('kiwi',true).tlds('xyz',true);
       var mdsummary = window.markdownit('zero').enable(['emphasis','link','strikethrough','backticks']).use(window.markdownitSup).use(window.markdownitSub);
       var title = document.title, latestChatId;
@@ -178,7 +183,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
 
       function setChatPollTimeout(){
         var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
-        if(chatLastChange<15) chatPollInterval = 1000;
+        if(chatLastChange<10) chatPollInterval = 1000;
         else if(chatLastChange<30) chatPollInterval = 3000;
         else if(chatLastChange<120) chatPollInterval = 5000;
         else if(chatLastChange<600) chatPollInterval = 10000;
