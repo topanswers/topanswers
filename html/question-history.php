@@ -6,6 +6,7 @@ ccdb("select login($1)",$uuid);
 $id = $_GET['id'];
 ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
+                  , community_name community
              from question natural join (select question_id,community_id from question) q natural join community
              where question_id=$1",$id));
 ?>
@@ -87,12 +88,12 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
     });
   </script>
-  <title>History | <?=ucfirst($community)?> | Topquestions</title>
+  <title>History | <?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div style="margin: 0.5rem; margin-right: 0.1rem;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">Topquestions <?=ucfirst($community)?></a>
+      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
