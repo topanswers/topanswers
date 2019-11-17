@@ -511,14 +511,8 @@ extract(cdb("select community_id,community_my_power,sesite_url
         var t = $(this), f = t.closest('form'), id = prompt('Enter question id from <?=$sesite_url?>');
         if(id!==null) {
           t.hide().after('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-          $.get('/se?community=<?=$community?>&id='+id).done(function(r){
-            var page = $($.parseHTML(r));
-            f.find('[name=seqid]').attr('value',id);
-            f.find('[name=title]').attr('value',page.find('#question-header a.question-hyperlink').text());
-            f.find('[name=seaid]').attr('value',page.find('#question .owner .user-details a').attr('href').split('/')[2]);
-            f.find('[name=seuser]').attr('value',page.find('#question .owner .user-details a').text());
-            f.submit();
-          });
+          f.find('[name=seqid]').attr('value',id);
+          f.submit();
         }
         return false;
       });

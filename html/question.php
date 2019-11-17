@@ -23,8 +23,37 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         </html><?}
       exit;
     case 'new-se':
-      $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5)",$_POST['community'],$_POST['title'],$_POST['seqid'],$_POST['seaid'],$_POST['seuser']);
-      header('Location: /question?id='.$id);
+      extract(cdb("select sesite_url from community join sesite on community_sesite_id=sesite_id where community_name=$1",$_POST['community']));
+      $doc = new DOMDocument();
+      $doc->loadHTML(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
+      $xpath = new DOMXpath($doc);
+      $elements = $xpath->query("//div[@id='question-header']/h1/a");
+      $title = $elements[0]->childNodes[0]->nodeValue;
+      $elements = $xpath->query("//div[@id='question']//div[contains(concat(' ', @class, ' '), ' owner ')]//div[contains(concat(' ', @class, ' '), ' user-details ')]/a");
+      $seaid = explode('/',$elements[0]->getAttribute('href'))[2];
+      $seuser = explode('/',$elements[0]->getAttribute('href'))[3];
+      $doc = new DOMDocument();
+      $doc->loadHTML(file_get_contents($sesite_url.'/posts/'.$_POST['seqid'].'/edit'));
+      $xpath = new DOMXpath($doc);
+      $elements = $xpath->query("//textarea[@id='wmd-input-".$_POST['seqid']."']");
+      $markdown = $elements[0]->textContent;
+      $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6)",$_POST['community'],$title,$markdown,$_POST['seqid'],$seaid,$seuser);
+      header('Location: /'.$_POST['community'].'?q='.$id);
+      $doc = new DOMDocument();
+      $doc->loadHTML(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
+      $xpath = new DOMXpath($doc);
+      $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
+                               ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
+                               ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/"."1396"."/')])]");
+      foreach($elements as $element){
+        $aid = explode('-',$element->getAttribute('id'))[1];
+        $doc = new DOMDocument();
+        $doc->loadHTML(file_get_contents($sesite_url.'/posts/'.$aid.'/edit'));
+        $xpath = new DOMXpath($doc);
+        $elements = $xpath->query("//textarea[@id='wmd-input-".$aid."']");
+        $markdown = preg_replace('/<!-- -->/','',$elements[0]->textContent);
+        db("select new_answer($1,$2,account_license_id,account_codelicense_id) from my_account",$id,$markdown);
+      }
       exit;
     case 'change':
       db("select change_question($1,$2,$3)",$id,$_POST['title'],$_POST['markdown']);

@@ -258,6 +258,10 @@ create function new_sequestion(cid integer, title text, seqid integer, seaid int
   select _new_question(cid,account_id,'question',title,'copy markdown from SE question here',4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid);
 $$;
 --
+create function new_sequestion(cid integer, title text, markdown text, seqid integer, seaid integer, seuser text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _new_question(cid,account_id,'question',title,markdown,4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid);
+$$;
+--
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('only author can edit blog post') where exists (select 1 from question where question_id=id and question_type='blog' and account_id<>current_setting('custom.account_id',true)::integer);
