@@ -58,6 +58,7 @@ create table account_community(
 , community_id integer references community
 , account_community_votes integer default 0 not null
 , account_community_can_import boolean default false not null
+, account_community_se_user_id integer
 , primary key (account_id,community_id)
 );
 
