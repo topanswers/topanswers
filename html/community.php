@@ -169,7 +169,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr);
       md.linkify.tlds('kiwi',true).tlds('xyz',true);
-      var mdsummary = window.markdownit('zero').enable(['emphasis','link','strikethrough','backticks']);
+      var mdsummary = window.markdownit('zero').enable(['emphasis','link','strikethrough','backticks']).use(window.markdownitSup).use(window.markdownitSub);
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=ccdb("select account_notification_id from my_account")?>+0, numNewChats = 0;
