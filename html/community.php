@@ -27,9 +27,10 @@ if($question) ccdb("select count(*) from question where question_id=$1",$questio
 $room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
 $canchat = false;
 if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
-extract(cdb("select community_id,community_my_power
+extract(cdb("select community_id,community_my_power,sesite_url
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community
+                  , coalesce(account_community_can_import,false) account_community_can_import
+             from community natural left join my_account_community left join sesite on sesite_id=community_sesite_id
              where community_name=$1",$community));
 ?>
 <!doctype html>
@@ -98,15 +99,15 @@ extract(cdb("select community_id,community_my_power
     #qa .minibar>a:first-child { display: block; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.2rem; }
     #qa .question>a:first-child { display: block; padding: 0.6rem; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
-    .markdown { overflow: auto; padding-right: 2px; }
-    .markdown>:first-child { margin-top: 1px; }
-    .markdown>:last-child { margin-bottom: 1px; }
+    .markdown :first-child { margin-top: 0; }
+    .markdown :last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 2em; }
     .markdown img { max-width: 100%; max-height: 7em; }
-    .markdown table { border-collapse: collapse; }
+    .markdown table { border-collapse: collapse; table-layout: fixed; }
+    .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
     .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; }
-    .markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
-    .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
+    .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
+    .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
     .identicon.pingable:hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
     .identicon.ping { outline: 1px solid #<?=$colour_highlight?>; }
@@ -168,7 +169,7 @@ extract(cdb("select community_id,community_my_power
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr);
       md.linkify.tlds('kiwi',true).tlds('xyz',true);
-      var mdsummary = window.markdownit('zero').enable(['emphasis']);
+      var mdsummary = window.markdownit('zero').enable(['emphasis','link','strikethrough','backticks']);
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=ccdb("select account_notification_id from my_account")?>+0, numNewChats = 0;
@@ -188,6 +189,7 @@ extract(cdb("select community_id,community_my_power
       }
       function renderQuestion(){
         $(this).find('.summary span').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
+        $(this).find('.summary a').attr({ 'rel':'nofollow', 'target':'_blank' });
         $(this).find('.when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       }
       function updateQuestions(scroll){
@@ -351,7 +353,7 @@ extract(cdb("select community_id,community_my_power
       }
 
       $('#join').click(function(){
-        if(confirm('This will set a cookie to identify your account')) { $.ajax({ type: "POST", url: '/uuid', async: false }).fail(function(r){
+        if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')) { $.ajax({ type: "POST", url: '/uuid', async: false }).fail(function(r){
           alert((r.status)===429?'Rate limit hit, please try again later':responseText);
         }) };
         location.reload(true);
@@ -414,7 +416,7 @@ extract(cdb("select community_id,community_my_power
         $('.ping').removeClass('ping');
         $('#replying').attr('data-id','').data('update')();
       });
-      $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
+      $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))).find('table').wrap('<div class="tablewrapper">'); });
       $('.community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#tags').select2({ placeholder: "select a tag" });
       function tagdrop(){ $('#tags').select2('open'); };
@@ -504,6 +506,21 @@ extract(cdb("select community_id,community_my_power
       $('#qa .summary span[data-markdown]').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
       updateChat(true);
       <?if(!$question){?>updateQuestions(true);<?}?>
+      $('#se').click(function(){
+        var t = $(this), f = t.closest('form'), id = prompt('Enter question id from <?=$sesite_url?>');
+        if(id!==null) {
+          t.hide().after('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+          $.get('/se?community=<?=$community?>&id='+id).done(function(r){
+            var page = $($.parseHTML(r));
+            f.find('[name=seqid]').attr('value',id);
+            f.find('[name=title]').attr('value',page.find('#question-header a.question-hyperlink').text());
+            f.find('[name=seaid]').attr('value',page.find('#question .owner .user-details a').attr('href').split('/')[2]);
+            f.find('[name=seuser]').attr('value',page.find('#question .owner .user-details a').text());
+            f.submit();
+          });
+        }
+        return false;
+      });
       setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
     });
   </script>
@@ -523,13 +540,25 @@ extract(cdb("select community_id,community_my_power
       </div>
       <div style="display: flex; height: 100%; align-items: center;">
         <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"> or <input id="link" type="button" value="link" style="margin: 0.5em;"><?}?>
-        <?if($uuid){?><form method="GET" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question" style="margin: 0.5em;"></form><?}?>
+        <?if($account_community_can_import&&$sesite_url&&!$question){?>
+          <form method="post" action="/question">
+            <input type="hidden" name="action" value="new-se">
+            <input type="hidden" name="community" value="<?=$community?>">
+            <input type="hidden" name="title" value="">
+            <input type="hidden" name="seqid" value="">
+            <input type="hidden" name="seaid" value="">
+            <input type="hidden" name="seuser" value="">
+            <input id="se" type="submit" value="import question from SE" style="margin: 0.5em;">
+          </form>
+        <?}?>
+        <?if($uuid){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question" style="margin: 0.5em;"></form><?}?>
         <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em; scroll-behavior: smooth;">
       <?if($question){?>
-        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id,account_name,account_is_me
+        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
+                             ,account_name,account_is_me,question_se_question_id,question_se_user_id,question_se_username
                             , coalesce(account_community_votes,0) account_community_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
@@ -543,7 +572,14 @@ extract(cdb("select community_id,community_my_power
           <div class="bar">
             <div>
               <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>">
-              <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
+              <span>
+                <span class="when" data-seconds="<?=$question_when?>"></span>,
+                <?if($question_se_question_id){?>
+                  <span>by <a href="<?=$sesite_url.'/usres/'.$question_se_user_id?>"><?=$question_se_username?></a> from <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>"><?=$account_name?></a></span>
+                <?}else{?>
+                  <span>by <?=htmlspecialchars($account_name)?></span>
+                <?}?>
+              </span>
               <span>
                 <a href="<?=$license_href?>"><?=$license_name?></a>
                 <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>

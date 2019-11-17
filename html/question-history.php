@@ -37,8 +37,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .who, .when { white-space: nowrap; }
     .when { font-size: smaller; }
 
-    .markdown > :first-child { margin-top: 0; }
-    .markdown > :last-child { margin-bottom: 0; }
+    .markdown :first-child { margin-top: 0; }
+    .markdown :last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 2rem; }
     .markdown li { margin: 0.5rem 0; }
     .markdown img { max-height: 20rem; max-width: 100%; }
@@ -46,8 +46,8 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown table { border-collapse: collapse; table-layout: fixed; }
     .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
     .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; padding: 0.2rem; }
-    .markdown blockquote {  padding-left: 0.7rem;  margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; }
-    .markdown code { padding: 0 0.2rem; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1rem; }
+    .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
+    .markdown code { padding: 0 0.2rem; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1rem; overflow-wrap: break-word; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4rem; }
 
     .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 4px; }

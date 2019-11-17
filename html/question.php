@@ -22,6 +22,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         </head>
         </html><?}
       exit;
+    case 'new-se':
+      $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5)",$_POST['community'],$_POST['title'],$_POST['seqid'],$_POST['seaid'],$_POST['seuser']);
+      header('Location: /question?id='.$id);
+      exit;
     case 'change':
       db("select change_question($1,$2,$3)",$id,$_POST['title'],$_POST['markdown']);
       header('Location: /'.ccdb("select community_name from question natural join community where question_id=$1",$id).'?q='.$id);
@@ -68,8 +72,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .question { margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid darkgrey; }
     .spacer { flex: 0 0 auto; min-height: 1rem; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
-    #markdown > :first-child { margin-top: 0; }
-    #markdown > :last-child { margin-bottom: 0; }
+    #markdown :first-child { margin-top: 0; }
+    #markdown :last-child { margin-bottom: 0; }
     #markdown ul { padding-left: 2em; }
     #markdown li { margin: 0.5em 0; }
     #markdown img { max-height: 20em; max-width: 100%; }
@@ -77,8 +81,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     #markdown table { border-collapse: collapse; table-layout: fixed; }
     #markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
     #markdown td, #markdown th { white-space: nowrap; border: 1px solid black; padding: 0.2em; }
-    #markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
-    #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
+    #markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
+    #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
     #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
 
     .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }

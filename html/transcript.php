@@ -76,14 +76,14 @@ extract(cdb("select community_name community
     a[data-lightbox] img { cursor: zoom-in; }
 
     .markdown { overflow: auto; padding-right: 2px; }
-    .markdown>:first-child { margin-top: 1px; }
-    .markdown>:last-child { margin-bottom: 1px; }
+    .markdown :first-child { margin-top: 1px; }
+    .markdown :last-child { margin-bottom: 1px; }
     .markdown ul { padding-left: 2em; }
     .markdown img { max-height: 7em; }
     .markdown table { border-collapse: collapse; }
     .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; }
-    .markdown blockquote {  padding-left: 0.7em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; }
-    .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
+    .markdown blockquote { padding: 0.5em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
+    .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }

@@ -13,8 +13,9 @@ set local schema 'world';
 create function _error(integer,text) returns void language plpgsql as $$begin raise exception '%', $2 using errcode='H0'||$1; end;$$;
 create function _error(text) returns void language sql as $$select _error(403,$1);$$;
 --
+create view sesite with (security_barrier) as select sesite_id,sesite_url from db.sesite;
 create view community with (security_barrier) as
-select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
+select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_sesite_id
      , (current_setting('custom.account_id',true)::integer<100)::integer+trunc(log(greatest(account_community_votes,0)+1)) community_my_power
 from db.community natural left join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_votes from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
 where account_is_dev or not community_is_dev;
@@ -26,6 +27,7 @@ create view my_account with (security_barrier) as
 select account_id,account_name,account_image,account_uuid,account_is_dev,account_license_id,account_codelicense_id,account_notification_id from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view account_community with (security_barrier) as select account_id,community_id,account_community_votes from db.account_community;
+create view my_account_community with (security_barrier) as select account_id,community_id,account_community_can_import from db.account_community where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
 select community_id,room_id,room_name
@@ -52,7 +54,8 @@ create view chat_hour with (security_barrier) as select room_id,chat_year,chat_m
 create view question_type_enums with (security_barrier) as select unnest(enum_range(null::db.question_type_enum)) question_type;
 --
 create view question with (security_barrier) as
-select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id,question_poll_id,question_poll_major_id,question_poll_minor_id
+select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id,question_poll_id,question_poll_major_id
+      ,question_poll_minor_id,question_se_question_id,question_se_user_id,question_se_username
      , coalesce(question_votes>=community_my_power,false) question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
@@ -235,15 +238,24 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
-create function new_question(cid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer, seaid integer, seuser text)
+                returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid community') where not exists (select 1 from community where community_id=cid);
   select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id>2);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
-     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id)
-             select cid, current_setting('custom.account_id',true)::integer, typ, title, markdown, room_id, lic, codelic from r returning question_id)
+     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id,question_se_user_id,question_se_username)
+             select cid,aid,typ,title,markdown,room_id,lic,codelic,seqid,seaid,seuser from r returning question_id)
   select question_id from q;
+$$;
+--
+create function new_question(cid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _new_question(cid,current_setting('custom.account_id',true)::integer,typ,title,markdown,lic,codelic,null,null,null);
+$$;
+--
+create function new_sequestion(cid integer, title text, seqid integer, seaid integer, seuser text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _new_question(cid,account_id,'question',title,'copy markdown from SE question here',4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid);
 $$;
 --
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$

@@ -1,3 +1,8 @@
+create table sesite(
+  sesite_id integer generated always as identity primary key
+, sesite_url text not null unique
+);
+
 create table community(
   community_id integer generated always as identity primary key
 , community_name text not null
@@ -7,6 +12,7 @@ create table community(
 , community_light_shade bytea not null default decode('e7edf4','hex') check(length(community_light_shade)=3)
 , community_highlight_color bytea not null default decode('f79804','hex') check(length(community_highlight_color)=3)
 , community_is_dev boolean default false not null
+, community_sesite_id integer references sesite
 );
 
 create type room_type_enum as enum ('public','gallery','private');
@@ -32,7 +38,7 @@ create table codelicense(
 
 create table account(
   account_id integer generated always as identity primary key
-, account_name text check (account_name~'^[A-Za-zÀ-ÖØ-öø-ÿ][ 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
+, account_name text check (account_name~'^[A-Za-zÀ-ÖØ-öø-ÿ][ .0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea check(length(account_image)>0)
@@ -42,13 +48,16 @@ create table account(
 , account_license_id integer references license default 4 not null
 , account_codelicense_id integer references codelicense default 1 not null
 , account_notification_id integer generated always as identity unique
+, account_sesite_id integer references sesite
 );
 create unique index account_rate_limit_ind on account(account_create_at);
+create unique index account_sesite_ind on account(account_sesite_id);
 
 create table account_community(
   account_id integer references account
 , community_id integer references community
 , account_community_votes integer default 0 not null
+, account_community_can_import boolean default false not null
 , primary key (account_id,community_id)
 );
 
@@ -189,8 +198,12 @@ create table question(
 , question_poll_id bigint generated always as identity unique
 , question_poll_major_id bigint generated always as identity unique
 , question_poll_minor_id bigint generated always as identity unique
+, question_se_question_id integer
+, question_se_user_id integer
+, question_se_username text check(length(question_se_username)<200)
 , unique (community_id,question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
+, check ((question_se_question_id is null and question_se_user_id is null and question_se_username is null) or(question_se_question_id is not null and question_se_user_id is not null and question_se_username is not null))
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
 
