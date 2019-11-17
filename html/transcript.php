@@ -75,7 +75,7 @@ extract(cdb("select community_name community
 
     a[data-lightbox] img { cursor: zoom-in; }
 
-    .markdown { overflow: auto; padding-right: 2px; }
+    .markdown { overflow: auto; padding-right: 1px; }
     .markdown :first-child { margin-top: 1px; }
     .markdown :last-child { margin-bottom: 1px; }
     .markdown ul { padding-left: 2em; }
