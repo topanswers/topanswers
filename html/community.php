@@ -540,7 +540,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
       </div>
       <div style="display: flex; height: 100%; align-items: center;">
         <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"> or <input id="link" type="button" value="link" style="margin: 0.5em;"><?}?>
-        <?if($account_community_can_import&&$sesite_url&&!$question){?>
+        <?if(($account_community_can_import==='t')&&$sesite_url&&!$question){?>
           <form method="post" action="/question">
             <input type="hidden" name="action" value="new-se">
             <input type="hidden" name="community" value="<?=$community?>">
