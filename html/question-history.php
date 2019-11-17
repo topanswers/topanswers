@@ -27,13 +27,14 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     header select { margin-right: 0.5rem; }
 
-    tr { padding: 0.5rem; }
-    tbody { border-bottom: 0.3rem solid #<?=$colour_dark?>; }
-    td { padding: 0.5rem; }
-    td:not([rowspan]):not([colspan]) { width: 50%; vertical-align: top; }
+    body>table>tbody { border-bottom: 0.3rem solid #<?=$colour_dark?>; }
+    body>table>tbody>tr { padding: 0.5rem; }
+    body>table>tbody>tr>td { padding: 0.5rem; }
+    body>table>tbody>tr>td[rowspan] { width: 15rem; overflow: hidden; }
+    body>table>tbody>tr>td:not([rowspan]):not([colspan]) { width: 50%; vertical-align: top; }
     .markdown, .diff, .title { border: 1px solid #<?=$colour_dark?>; padding: 0.5rem; border-radius: 4px; }
     .markdown, .title { background-color: white; }
-    .diff { background-color: #<?=$colour_mid?>; }
+    .diff { background-color: #<?=$colour_mid?>; overflow-wrap: break-word; }
 
     .who, .when { white-space: nowrap; }
     .when { font-size: smaller; }
@@ -99,7 +100,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
-  <table style="table-layout: fixed; border-collapse: collapse;">
+  <table style="table-layout: fixed; border-collapse: collapse; width: 100%;">
     <?foreach(db("select account_id,account_name,question_history_markdown,question_history_title
                        , to_char(question_history_at,'YYYY-MM-DD HH24:MI:SS') question_history_at
                        , lag(question_history_markdown) over (order by question_history_at) prev_markdown
