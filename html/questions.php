@@ -11,7 +11,7 @@ extract(cdb("select community_id
              from community
              where community_name=$1",$community));
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where community_id=$1 and question_poll_minor_id>$2",$community_id,$_GET['fromid']));
-$id = $_GET['id']??ccdb("select greatest(min(question_id)-1,0) from (select question_id from question where community_id=$1 order by question_poll_major_id desc limit 50) z",$community_id);
+$id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (select question_poll_major_id from question where community_id=$1 order by question_poll_major_id desc limit 50) z",$community_id);
 ?>
 <?foreach(db("select question_id,question_at,question_title,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
                    , coalesce(account_community_votes,0) account_community_votes

@@ -571,7 +571,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>">
+              <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=(($account_is_me==='f')&&!$question_se_username)?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>">
               <span>
                 <span class="when" data-seconds="<?=$question_when?>"></span>,
                 <?if($question_se_question_id){?>
@@ -624,7 +624,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
                 <span></span>
                 <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a href="/question?id=<?=$question?>">edit</a><?}?>
                 <?if($question_has_history==='t'){?><a href="/question-history?id=<?=$question?>">history</a><?}?>
-                <?if($account_is_me==='f'){?><a href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
+                <?if(($account_is_me==='f')&&!$question_se_username){?><a href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
             <div>
@@ -667,7 +667,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
                   <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
                 </span>
                 <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-                <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
+                <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>">
               </div>
             </div>
           </div>
@@ -719,7 +719,15 @@ extract(cdb("select community_id,community_my_power,sesite_url
       <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
         <div style="flex: 1 0 0.5em;">
           <?if($question&&$uuid&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
-            <div style="padding: 40% 20%;"><p>This is a dedicated room for discussion about this question.</p><p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p></div>
+            <div style="padding: 40% 20%;">
+              <?if(ccdb("select question_se_username is null from question where question_id=$1",$question)==='t'){?>
+                <p>This is a dedicated room for discussion about this question.</p>
+                <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
+              <?}else{?>
+                <p>This is a dedicated room for discussion about this imported question.</p>
+                <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+              <?}?>
+            </div>
           <?}?>
         </div>
       </div>
