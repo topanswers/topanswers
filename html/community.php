@@ -99,7 +99,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     #qa .minibar>a:first-child { display: block; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.2rem; }
     #qa .question>a:first-child { display: block; padding: 0.6rem; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
-    .markdown { overflow: auto; padding-right: 1px; }
+    .markdown { overflow: auto; padding-right: 1px; overflow-wrap: break-word; }
     .markdown :first-child { margin-top: 0; }
     .markdown :last-child { margin-bottom: 0; }
     .markdown ul { padding-left: 2em; }
