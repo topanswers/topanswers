@@ -58,7 +58,7 @@ create view question_type_enums with (security_barrier) as select unnest(enum_ra
 create view question with (security_barrier) as
 select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id,question_poll_id,question_poll_major_id
       ,question_poll_minor_id,question_se_question_id,question_se_user_id,question_se_username
-     , coalesce(question_votes>=community_my_power,false) question_have_voted
+     , coalesce(question_vote_votes>=community_my_power,false) question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
      , question_at<>question_change_at question_has_history

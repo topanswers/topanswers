@@ -13,7 +13,7 @@ extract(cdb("select community_id
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where community_id=$1 and question_poll_minor_id>$2",$community_id,$_GET['fromid']));
 $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (select question_poll_major_id from question where community_id=$1 order by question_poll_major_id desc limit 50) z",$community_id);
 ?>
-<?foreach(db("select question_id,question_at,question_title,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
+<?foreach(db("select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
                    , coalesce(account_community_votes,0) account_community_votes
                    , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                    , extract('epoch' from current_timestamp-question_at) question_when
@@ -26,6 +26,11 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
       <div>
         <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
         <span><span class="when" data-seconds="<?=$question_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
+        <?if($question_votes){?>
+          <span class="score<?=($question_have_voted==='t')?' me':''?>"><?=($question_votes>1)?$question_votes:''?>
+            <i class="fa fa-fw fa-star<?=(($account_is_me==='f')&&($question_have_voted==='f')&&$question_votes)?'-o':''?>"></i>
+          </span>
+        <?}?>
       </div>
       <div class="tags">
         <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question_id) as $r){ extract($r);?>

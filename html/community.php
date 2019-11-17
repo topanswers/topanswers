@@ -89,13 +89,13 @@ extract(cdb("select community_id,community_my_power,sesite_url
     #qa .minibar:last-child { border-bottom: none; }
     #qa .minibar+.minibar { border-top: none; }
     #qa .bar+.minibar { border-top: none; }
+    #qa .score { color: #<?=$colour_dark?>; }
+    #qa .score.me { color: #<?=$colour_highlight?>; }
     #qa .minibar>* { display: flex; align-items: center; min-width: 0; }
     #qa .minibar>*>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .minibar .summary { min-width: 0; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; margin-left: 0.5rem; }
     #qa .minibar>:first-child { flex: 0 1 auto; margin-right: 1rem; text-overflow: ellipsis; }
     #qa .minibar>:last-child { flex: 0 0 auto; margin-left: 1rem; }
-    #qa .minibar .score { color: #<?=$colour_dark?>; }
-    #qa .minibar .score.me { color: #<?=$colour_highlight?>; }
     #qa .minibar>a:first-child { display: block; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.2rem; }
     #qa .question>a:first-child { display: block; padding: 0.6rem; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
