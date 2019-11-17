@@ -84,7 +84,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .identicon, #active-users .identicon { height: 1.5rem; width: 1.5rem; margin: 1px; }
     #qa .markdown { padding: 0.6rem; }
-    #qa .markdown img { max-height: 15em; }
+    #qa .markdown img { max-height: 30rem; }
     #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .minibar:last-child { border-bottom: none; }
     #qa .minibar+.minibar { border-top: none; }
