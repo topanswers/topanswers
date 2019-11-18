@@ -26,12 +26,9 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     header select { margin-right: 0.5rem; }
 
-    body>table>tbody { border-bottom: 0.3rem solid #<?=$colour_dark?>; }
-    body>table>tbody>tr { padding: 0.5rem; }
-    body>table>tbody>tr>td { padding: 0.5rem; }
-    body>table>tbody>tr>td[rowspan] { width: 15rem; overflow: hidden; }
-    body>table>tbody>tr>td:not([rowspan]):not([colspan]) { width: 50%; vertical-align: top; }
     .markdown, .diff { border: 1px solid #<?=$colour_dark?>; padding: 0.5rem; border-radius: 4px; }
+    .separator { border-bottom: 0.3rem solid #<?=$colour_dark?>; margin: 1rem -1rem; }
+    .separator:last-child { display: none; }
     .diff { background-color: #<?=$colour_mid?>; overflow-wrap: break-word; }
 
     .who, .when { white-space: nowrap; }
@@ -78,9 +75,10 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr);
       var dmp = new diff_match_patch();
       $('textarea').each(function(){
-        var m = $(this).closest('td').next().children(), cm = CodeMirror.fromTextArea($(this)[0],{ lineWrapping: true, readOnly: true });
+        var m = $(this).next(), cm = CodeMirror.fromTextArea($(this)[0],{ lineWrapping: true, readOnly: true });
         m.html(md.render(cm.getValue()));
         m.find('table').wrap('<div class="tablewrapper">');
+        $(cm.getWrapperElement()).css('grid-area',$(this).data('grid-area'));
       });
       $('.diff').each(function(){
         var d = dmp.diff_main($(this).data('from'),$(this).data('to'));
@@ -91,7 +89,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
   </script>
   <title>History | <?=ucfirst($community)?> | TopAnswers</title>
 </head>
-<body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>;">
+<body style="font-size: larger; background-color: #<?=$colour_light?>;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div style="margin: 0.5rem; margin-right: 0.1rem;">
       <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
@@ -100,32 +98,27 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
-  <table style="table-layout: fixed; border-collapse: collapse; width: 100%;">
+  <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
     <?foreach(db("select account_id,account_name,answer_history_markdown
                        , to_char(answer_history_at,'YYYY-MM-DD HH24:MI:SS') answer_history_at
                        , lag(answer_history_markdown) over (order by answer_history_at) prev_markdown
                        , row_number() over (order by answer_history_at) rn
                   from answer_history natural join account
                   where answer_id=$1
-                  order by answer_history_at desc",$id) as $r){ extract($r);?>
-      <tbody>
-        <tr>
-          <td rowspan="<?=($rn>1)?2:1?>">
-            <div class="who"><?=htmlspecialchars($account_name)?></div>
-            <div class="when"><?=$answer_history_at?></div>
-          </td>
-          <td><textarea><?=htmlspecialchars($answer_history_markdown)?></textarea></td>
-          <td><div class="markdown"></div></td>
-        </tr>
-        <?if($rn>1){?>
-        <tr>
-          <td colspan="2">
-            <div class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($answer_history_markdown)?>"></div>
-          </td>
-        </tr>
-        <?}?>
-      </tbody>
+                  order by answer_history_at desc",$id) as $i=>$r){ extract($r);?>
+      <?$rowspan = ($rn>1)?2:1;?>
+      <?$rowoffset = 3*$i;?>
+      <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
+        <div class="who"><?=htmlspecialchars($account_name)?></div>
+        <div class="when"><?=$answer_history_at?></div>
+      </div>
+      <textarea data-grid-area="<?=(1+$rowoffset)?> / 2 / span 1 / 3"><?=htmlspecialchars($answer_history_markdown)?></textarea>
+      <div style="grid-area: <?=(1+$rowoffset)?> / 3 / span 1 / 4; overflow: hidden;" class="markdown"></div>
+      <?if($rn>1){?>
+        <div style="grid-area: <?=(2+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($answer_history_markdown)?>"></div>
+      <?}?>
+      <div style="grid-area: <?=(1+$rowspan+$rowoffset)?> / 1 / span 1 / 4;" class="separator"></div>
     <?}?>
-  </table>
+  </div>
 </body>   
 </html>   
