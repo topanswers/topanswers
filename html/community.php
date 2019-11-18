@@ -157,6 +157,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <script src="/markdown-it-deflist.js"></script>
   <script src="/markdown-it-abbr.js"></script>
   <script src="/markdown-it-for-inline.js"></script>
+  <script src="/markdown-it-dbfiddle.js"></script>
   <script src="/highlightjs/highlight.js"></script>
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
@@ -169,6 +170,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
+                     //.use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitDbfiddle)
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr)
                      .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx){
         if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;

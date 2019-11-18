@@ -188,7 +188,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <?if(!$id){?>
-        <select name="type" form="form"><option selected value="question">question</option><option value="meta question">meta</option><option value="blog post">blog</option></select>
+        <select name="type" form="form"><option selected value="question">question</option><option value="meta">meta question</option><option value="blog">blog post</option></select>
         <select name="license" form="form">
           <?foreach(db("select license_id,license_name from license order by license_name") as $r){ extract($r);?>
             <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
