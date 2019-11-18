@@ -17,6 +17,9 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
                    , coalesce(account_community_votes,0) account_community_votes
                    , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
                    , extract('epoch' from current_timestamp-question_at) question_when
+                   , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
+                   , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
+                          else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
               from question natural join account natural join community natural left join account_community
               where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id>')."$2
               order by question_poll_major_id desc limit 50",$community_id,$id) as $r){ extract($r);?>
@@ -25,7 +28,8 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
     <div class="bar">
       <div>
         <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
-        <span><span class="when" data-seconds="<?=$question_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
+        <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
+        <?if($question_bump_reason){?><span>(<?=$question_bump_reason?>, <span class="when" data-seconds="<?=$bump_when?>"></span>)</span><?}?>
         <?if($question_votes){?>
           <span class="score<?=($question_have_voted==='t')?' me':''?>"><?=($question_votes>1)?$question_votes:''?>
             <i class="fa fa-fw fa-star<?=(($account_is_me==='f')&&($question_have_voted==='f')&&$question_votes)?'-o':''?>"></i>

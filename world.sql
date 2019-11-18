@@ -57,12 +57,17 @@ create view question_type_enums with (security_barrier) as select unnest(enum_ra
 --
 create view question with (security_barrier) as
 select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id,question_poll_id,question_poll_major_id
-      ,question_poll_minor_id,question_se_question_id,question_se_user_id,question_se_username
+      ,question_poll_minor_id,question_se_question_id,question_se_user_id,question_se_username,question_answer_at,question_answer_change_at
      , coalesce(question_vote_votes>=community_my_power,false) question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
      , question_at<>question_change_at question_has_history
-from db.question natural join community natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) z;
+     , greatest(tag_at,tag_history_at) question_retag_at
+from db.question natural join community
+     natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) v
+     natural left join (select question_id, max(answer_at) question_answer_at, max(answer_change_at) question_answer_change_at from db.answer group by question_id) a
+     natural left join (select question_id, max(question_tag_x_at) tag_at from db.question_tag_x group by question_id) t
+     natural left join (select question_id, max(greatest(question_tag_x_added_at,question_tag_x_removed_at)) tag_history_at from db.question_tag_x_history group by question_id) h;
 --
 create view question_history with (security_barrier) as
 select question_id,question_history_at,question_history_markdown,question_history_title
