@@ -167,7 +167,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <script src="/starrr.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
-    moment.locale(window.navigator.userLanguage || window.navigator.language);
+    //moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      //.use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitDbfiddle)
@@ -248,7 +248,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
             newchat.filter('.message').find('.markdown img').each(function(){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); } });
             newchat.filter('.message').find('.markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
             newchat.filter('.bigspacer').each(function(){
-              $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'LT', lastDay: '[Yesterday] LT', lastWeek: '[Last] dddd LT', sameElse: 'LLLL' })).end()
+              $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })).end()
                      .children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
             newchat.filter('.message').find('.when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
             newchat.filter('.message').find('.who a').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
