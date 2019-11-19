@@ -42,6 +42,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/select2.css">
   <link rel="stylesheet" href="/starrr.css">
+  <link rel="stylesheet" href="codemirror/codemirror.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
@@ -136,6 +137,12 @@ extract(cdb("select community_id,community_my_power,sesite_url
     #notifications .message+.message { margin-top: 0.2em; }
     #chatupload:active i { color: #<?=$colour_mid?>; }
 
+    .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
+    .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
+    .dbfiddle .tablewrapper { margin-top: 0.5rem; }
+    .dbfiddle>div { margin-top: 0.5rem; }
+    .dbfiddle fieldset { overflow: hidden; min-width: 0; }
+
     .pane { display: flex; }
     .panecontrol { display: none; }
     @media (max-width: 576px){
@@ -157,7 +164,6 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <script src="/markdown-it-deflist.js"></script>
   <script src="/markdown-it-abbr.js"></script>
   <script src="/markdown-it-for-inline.js"></script>
-  <script src="/markdown-it-dbfiddle.js"></script>
   <script src="/highlightjs/highlight.js"></script>
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
@@ -165,12 +171,13 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <script src="/favico.js"></script>
   <script src="/select2.js"></script>
   <script src="/starrr.js"></script>
+  <script src="codemirror/codemirror.js"></script>
+  <script src="codemirror/sql.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     //moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
-                     //.use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitDbfiddle)
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr)
                      .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx){
         if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
@@ -247,6 +254,29 @@ extract(cdb("select community_id,community_my_power,sesite_url
             });
             newchat.filter('.message').find('.markdown img').each(function(){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); } });
             newchat.filter('.message').find('.markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
+            function addfiddle(o,r){
+              var f = $(r).replaceAll(o);
+              f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity }); });
+              f.find('input').click(function(){
+                f.css('opacity',0.5);
+                $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+                $.post('https://test.dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('fieldset>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
+                    .done(function(r){
+                  $.get('/dbfiddle?rdbms='+f.data('rdbms')+'&fiddle='+r).done(function(r){
+                    addfiddle(f,r);
+                  });
+                });
+              });
+            }
+            newchat.filter('.message').find('.markdown a[href*="//dbfiddle.uk/?"]')
+                   .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href')+'<>')); })
+                   .last()
+                   .each(function(){
+              var t = $(this);
+              $.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){
+                addfiddle(t.parent(),r);
+              });
+            });
             newchat.filter('.bigspacer').each(function(){
               $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })).end()
                      .children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
