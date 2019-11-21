@@ -116,7 +116,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     #markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
     #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
-    #markdown-editor-buttons i { padding: 0.2em; margin-bottom: 0.3em; text-align: center; }
+    #markdown-editor-buttons i { padding: 0.2em; text-align: center; }
     #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 0.2rem; }
     #markdown-editor-buttons i:last-child { margin-bottom: 0; }
 
@@ -155,9 +155,11 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, extraKeys: {
         Home: "goLineLeft",
         End: "goLineRight",
-        'Ctrl-B': function(cm){ $('.button.fa-bold').click(); },
-        'Ctrl-I': function(cm){ $('.button.fa-italic').click(); },
-        'Ctrl-G': function(cm){ $('.button.fa-picture-o').click(); }
+        'Ctrl-B': function(){ $('.button.fa-bold').click(); },
+        'Ctrl-I': function(){ $('.button.fa-italic').click(); },
+        'Ctrl-Q': function(){ $('.button.fa-quote-left').click(); },
+        'Ctrl-K': function(){ $('.button.fa-code').click(); },
+        'Ctrl-G': function(){ $('.button.fa-picture-o').click(); }
       } });
       var map;
 
@@ -234,15 +236,31 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       });
       $('.button.fa-bold').click(function(){
         var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
-        if(cm.somethingSelected()){ cm.replaceSelection('**'+cm.getSelection()+'**'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+2), line: selectionStart.line },{ ch: (selectionEnd.ch+2), line: selectionEnd.line });
-        }else{ cm.replaceSelection('**bold**'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+2), line: selectionStart.line },{ ch: (selectionStart.ch+6), line: selectionStart.line }); }
+        if(cm.somethingSelected()){ cm.replaceSelection('**'+cm.getSelection()+'**'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+2),line:selectionStart.line},{ch:(selectionEnd.ch+2),line:selectionEnd.line});
+        }else{ cm.replaceSelection('**bold**'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+2),line:selectionStart.line},{ch:(selectionStart.ch+6),line:selectionStart.line}); }
       });
       $('.button.fa-italic').click(function(){
         var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
-        if(cm.somethingSelected()){ cm.replaceSelection('*'+cm.getSelection()+'*'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+1), line: selectionStart.line },{ ch: (selectionEnd.ch+1), line: selectionEnd.line });
-        }else{ cm.replaceSelection('*italic*'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+1), line: selectionStart.line },{ ch: (selectionStart.ch+7), line: selectionStart.line }); }
+        if(cm.somethingSelected()){ cm.replaceSelection('*'+cm.getSelection()+'*'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionEnd.ch+1),line:selectionEnd.line});
+        }else{ cm.replaceSelection('*italic*'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionStart.ch+7),line:selectionStart.line}); }
+      });
+      $('.button.fa-quote-left').click(function(){
+        var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
+        if(cm.somethingSelected()){ cm.replaceSelection('\n> '+cm.getSelection().replace(/\n(?!$)/g,'  \n> ')+'\n'+(((cm.getSelection().length)>=cm.getLine(selectionStart.line).length)?'':'\n')); cm.focus(); cm.setSelection({ch:2,line:(selectionStart.line+1)},{ch:(selectionEnd.ch+2),line:(selectionEnd.line+1)});
+        }else{ cm.setSelection({ch: 0,line:selectionStart.line},{line:selectionStart.line}); cm.replaceSelection('> '+cm.getSelection()+'\n'); cm.focus(); cm.setSelection({ch:2,line:selectionStart.line},{line:selectionStart.line}); }
+      });
+      $('.button.fa-code').click(function(){
+        var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
+        if(cm.somethingSelected()){
+          if(cm.getSelection().search(/\n(?=$)/g)!==-1||(cm.getCursor().ch!==0&&cm.getSelection().indexOf('\n')!==-1)){ cm.replaceSelection(((cm.getCursor().ch!==0)?'\n':'')+'```\n'+cm.getSelection().replace(/\n(?=$)/g,'')+'\n```\n'); cm.focus(); cm.setSelection({ch:3,line:(selectionStart.line+1)},{ch:(selectionEnd.ch+3),line:(selectionStart.line+1) });
+          }else if(cm.getSelection().length===cm.getLine(selectionStart.line).length){ cm.replaceSelection('```\n'+cm.getSelection()+'\n```'); cm.focus(); cm.setSelection({ch:3,line:selectionStart.line},{ch:(selectionEnd.ch+3),line:selectionStart.line});
+          }else{ cm.replaceSelection('`'+cm.getSelection()+'`'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionEnd.ch+1),line:selectionEnd.line}); }
+        }else if(cm.getCursor().ch===0&&cm.getLine(selectionStart.line).length===0){ cm.replaceSelection('```\ncode\n```'); cm.focus(); cm.setSelection({ch:0,line:(selectionStart.line+1)},{ch:4,line:(selectionStart.line+1)}); 
+        }else{ cm.replaceSelection('`code`'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionStart.ch+5),line:selectionStart.line}); }
       });
       $('.button.fa-picture-o').click(function(){ $('#uploadfile').click(); cm.focus(); });
+      $('.button.fa-list-ol').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
+      $('.button.fa-list-ul').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
       render();
     });
   </script>
@@ -287,7 +305,13 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
           <div id="markdown-editor-buttons" style="display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem 0 0 0.2rem; border-right: none; padding: 0.3em;">
             <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
             <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
+            <br style="margin-bottom: 1em;">
+            <i title="Blockquote (Ctrl + Q)" class="button fa fw fa-quote-left"></i>
+            <i title="Code (Ctrl + K)" class="button fa fw fa-code"></i>
             <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
+        <!--<br style="margin-bottom: 1em;">
+            <i title="Ordered List (Ctrl + O)" class="button fa fw fa-list-ol"></i>
+            <i title="Unordered List (Ctrl + U)" class="button fa fw fa-list-ul"></i>-->
           </div>
         </div>
         <div style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin);">
