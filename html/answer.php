@@ -142,8 +142,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <?if(!$id){?>
         if(localStorage.getItem('<?=$community?>.answer.<?=$question?>')) cm.setValue(localStorage.getItem('<?=$community?>.answer.<?=$question?>'));
       <?}?>
-      $('#uploadfile').change(function() { if(this.files[0].size > 2097152){ alert("File is too big — maximum 2MB"); $(this).val(''); }else{ $(this).closest('form').submit(); }; });
-      $('#uploadfile').closest('form').submit(function(){
+      $('#uploadfile').change(function() { if(this.files[0].size > 2097152){ alert("File is too big — maximum 2MB"); $(this).val(''); }else{ $('#imageupload').submit(); }; });
+      $('#imageupload').submit(function(){
         var d = new FormData($(this)[0]);
         $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){
           var selectionStart = cm.getCursor(), selectionEnd = cm.getCursor();
@@ -216,7 +216,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <div style="flex: 0 0 2vmin;"></div>
       <div style="flex: 0 0 1.6em;">
         <div id="markdown-editor-buttons" style="display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem 0 0 0.2rem; border-right: none; padding: 0.3em;">
-          <form action="/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
           <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
           <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
           <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
@@ -229,5 +228,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
     </main>
   </form>
+  <form id="imageupload" action="/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
 </body>   
 </html>   
