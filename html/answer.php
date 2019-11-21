@@ -86,6 +86,12 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0 0.2rem 0.2rem 0.2rem; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
+
+    .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
+    .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
+    .dbfiddle .tablewrapper { margin-top: 0.5rem; }
+    .dbfiddle>div { margin-top: 0.5rem; }
+    .dbfiddle fieldset { overflow: hidden; min-width: 0; }
   </style>
   <script src="/lodash.js"></script>
   <script src="/jquery.js"></script>
@@ -107,7 +113,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
-      var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
+      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, extraKeys: {
         Home: "goLineLeft",
@@ -118,12 +124,38 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       } });
       var map;
 
+      function fiddleMarkdown(){
+        function addfiddle(o,r){
+          var f = $(r).replaceAll(o);
+          f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity }); });
+          f.find('input').click(function(){
+            f.css('opacity',0.5);
+            $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+            $.post('https://test.dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('fieldset>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
+                .done(function(r){
+              $.get('/dbfiddle?rdbms='+f.data('rdbms')+'&fiddle='+r).done(function(r){
+                addfiddle(f,r);
+              });
+            });
+          });
+        }
+        $(this).find('a[href*="//dbfiddle.uk/?"]')
+               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
+               .each(function(){
+          var t = $(this);
+          $.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){
+            addfiddle(t.parent(),r);
+          });
+        });
+      }
+
       function render(){
         $('#answer').html(md.render(cm.getValue()));
         $('#answer table').wrap('<div class="tablewrapper" tabindex="-1">');
         map = [];
         $('#answer [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$id){?>localStorage.setItem('<?=$community?>.answer.<?=$question?>',cm.getValue());<?}?>
+        $('#answer').each(fiddleMarkdown);
       }
 
       $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');

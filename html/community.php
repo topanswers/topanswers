@@ -230,7 +230,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
           <?if($uuid){?>setChatPollTimeout();<?}?>
         },'html').fail(setChatPollTimeout);
       }
-      function fiddleChat(t){
+      function fiddleMarkdown(){
         function addfiddle(o,r){
           var f = $(r).replaceAll(o);
           f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity }); });
@@ -245,8 +245,8 @@ extract(cdb("select community_id,community_my_power,sesite_url
             });
           });
         }
-        $(this).find('.markdown a[href*="//dbfiddle.uk/?"]')
-               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href')+'<>')); })
+        $(this).find('a[href*="//dbfiddle.uk/?"]')
+               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
                .each(function(){
           var t = $(this);
           $.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){
@@ -258,7 +258,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         $(this).find('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
         $(this).find('.markdown img').each(function(){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); } });
         $(this).find('.markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
-        if($(this).hasClass('fiddled')) fiddleChat(t);
+        if($(this).hasClass('fiddled')) $(this).find('.markdown').each(fiddleMarkdown);
       }
       function updateChat(scroll){
         var maxChat = $('#messages>.message:last-child').data('id');
@@ -287,15 +287,15 @@ extract(cdb("select community_id,community_my_power,sesite_url
               foo.call(this);
             });
             newchat.filter('.message').find('.markdown a[href*="//dbfiddle.uk/?"]')
-                   .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href')+'<>')); })
+                   .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
                    .closest('.message')
                    .last()
                    .addClass('fiddled')
-                   .each(fiddleChat);
+                   .find('.markdown')
+                   .each(fiddleMarkdown);
             newchat.filter('.bigspacer').each(function(){
               $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })).end()
                      .children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-            //newchat.filter('.message').find('.when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
             newchat.filter('.message').find('.who a').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
               var id = $(this).attr('href').substring(2);
               $(this).attr('href','/transcript?room=<?=$room?>&id='+id+'#c'+id);
@@ -479,6 +479,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         $('#replying').attr('data-id','').data('update')();
       });
       $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))).find('table').wrap('<div class="tablewrapper">'); });
+      $('.markdown').each(fiddleMarkdown);
       $('.community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#tags').select2({ placeholder: "select a tag" });
       function tagdrop(){ $('#tags').select2('open'); };
