@@ -98,6 +98,13 @@ create table chat(
 );
 create index chat_latest_ind on chat(room_id,chat_at);
 
+create table chat_history(
+  chat_history_id bigint generated always as identity primary key
+, chat_id bigint not null references chat
+, chat_history_at timestamptz not null
+, chat_history_markdown text not null
+);
+
 create table account_room_x(
   account_id integer references account
 , room_id integer references room
@@ -119,16 +126,6 @@ create table chat_notification(
 , primary key (chat_id,account_id)
 );
 create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at);
-
-/*
-create table chat_history(
-  chat_history_id bigint generated always as identity primary key
-, chat_id bigint not null references chat
-, account_id integer not null references account
-, chat_history_at timestamptz not null
-, chat_history_markdown text not null
-);
-*/
 
 create table chat_flag(
   chat_id bigint references chat

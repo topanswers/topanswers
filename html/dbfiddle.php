@@ -13,7 +13,6 @@ $json = json_decode(file_get_contents('https://dbfiddle.uk/json?rdbms='.$_GET['r
 <div class="dbfiddle" data-rdbms="<?=$_GET['rdbms']?>">
   <?foreach($json as $i=>$batchplusoutput){?>
     <fieldset>
-      <legend>batch <?=$i+1?></legend>
       <textarea rows="1"><?=$batchplusoutput['batch']?></textarea>
       <?foreach($batchplusoutput['output']['result'] as $result){?>
         <div class="tablewrapper">
@@ -36,10 +35,10 @@ $json = json_decode(file_get_contents('https://dbfiddle.uk/json?rdbms='.$_GET['r
         </div>
       <?}?>
     </fieldset>
-    <div>
-      <input type="button" value="run">
-      <span>or</span>
-      <a href="https://dbfiddle.uk?rdbms=<?=$_GET['rdbms']?>&fiddle=<?=$_GET['fiddle']?>" target="_blank">fiddle</a>
-    </div>
   <?}?>
+  <div>
+    <input type="button" value="run">
+    <span>or</span>
+    <a href="https://dbfiddle.uk?rdbms=<?=$_GET['rdbms']?>&fiddle=<?=$_GET['fiddle']?>" target="_blank">fiddle</a>
+  </div>
 </div>

@@ -44,7 +44,14 @@ create view chat with (security_barrier) as
 select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change_id,chat_change_at,chat_markdown
      , (select count(*) from db.chat_flag where chat_id=chat.chat_id) chat_flag_count
      , (select count(*) from db.chat_star where chat_id=chat.chat_id) chat_star_count
+     , exists(select 1 from db.chat_history where chat_id=chat.chat_id) chat_has_history
 from db.chat natural join room;
+--
+create view chat_history with (security_barrier) as
+select chat_id,chat_history_at,chat_history_markdown
+from (select chat_id,chat_history_at,chat_history_markdown from db.chat_history
+      union all
+      select chat_id,chat_change_at,chat_markdown from db.chat) z;
 --
 create view chat_notification with (security_barrier) as select chat_id,chat_notification_at from db.chat_notification where account_id=current_setting('custom.account_id',true)::integer;
 create view chat_flag with (security_barrier) as select chat_id,chat_flag_at from db.chat_flag where account_id=current_setting('custom.account_id',true)::integer;
@@ -164,6 +171,19 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
              where room_id=roomid
              on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default)
   select chat_id from i;
+$$;
+--
+create function change_chat(id integer, msg text) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
+  select _error('message not mine') from chat where chat_id=id and account_id<>current_setting('custom.account_id',true)::integer;
+  select _error('too late') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>300;
+  select _error(413,'message too long') where length(msg)>5000;
+  insert into chat_history(chat_id,chat_history_at,chat_history_markdown) select id,chat_change_at,chat_markdown from chat where chat_id=id;
+  --
+  with w as (select chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
+  update account set account_notification_id = default where account_id in(select account_id from w);
+  --
+  update chat set chat_markdown = msg, chat_change_id = default, chat_change_at = default where chat_id=id;
 $$;
 --
 create function dismiss_notification(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$

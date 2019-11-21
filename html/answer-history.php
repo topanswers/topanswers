@@ -81,7 +81,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
         $(cm.getWrapperElement()).css('grid-area',$(this).data('grid-area'));
       });
       $('.diff').each(function(){
-        var d = dmp.diff_main($(this).data('from'),$(this).data('to'));
+        var d = dmp.diff_main($(this).attr('data-from'),$(this).attr('data-to'));
         dmp.diff_cleanupSemantic(d);
         $(this).html(dmp.diff_prettyHtml(d));
       });
