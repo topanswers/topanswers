@@ -628,11 +628,11 @@ extract(cdb("select community_id,community_my_power,sesite_url
                              ,account_name,account_is_me,question_se_question_id,question_se_user_id,question_se_username
                             , coalesce(account_community_votes,0) account_community_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
-                            , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
+                            , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
                             , question_type<>'question' question_is_votable
                             , question_type='blog' question_is_blog
                             , extract('epoch' from current_timestamp-question_at) question_when
-                       from question natural join account natural join license natural join codelicense natural left join account_community
+                       from question natural join account natural join community natural join license natural join codelicense natural left join account_community
                        where question_id=$1",$question));?>
         <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
