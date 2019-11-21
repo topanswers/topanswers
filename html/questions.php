@@ -15,7 +15,7 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
 ?>
 <?foreach(db("select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
                    , coalesce(account_community_votes,0) account_community_votes
-                   , case question_type when 'question' then '' when 'meta' then 'Meta Question: ' when 'blog' then 'Blog Post: ' end question_type
+                   , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta ' end)||'Question: ' when 'blog' then 'Blog Post: ' end question_type
                    , extract('epoch' from current_timestamp-question_at) question_when
                    , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
                    , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
