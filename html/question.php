@@ -112,7 +112,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     #markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
     #markdown table { border-collapse: collapse; table-layout: fixed; }
     #markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    #markdown td, #markdown th { white-space: nowrap; border: 1px solid black; padding: 0.2em; }
+    #markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; padding: 0.2em; }
     #markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
     #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
@@ -146,13 +146,14 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <script src="/favico.js"></script>
   <script src="codemirror/codemirror.js"></script>
   <script src="codemirror/markdown.js"></script>
+  <script src="codemirror/sql.js"></script>
   <script src="codemirror/placeholder.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
-      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, extraKeys: {
+      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', extraKeys: {
         Home: "goLineLeft",
         End: "goLineRight",
         'Ctrl-B': function(){ $('.button.fa-bold').click(); },
@@ -166,7 +167,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       function fiddleMarkdown(){
         function addfiddle(o,r){
           var f = $(r).replaceAll(o);
-          f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity }); });
+          f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity, mode: 'sql' }); });
           f.find('input').click(function(){
             f.css('opacity',0.5);
             $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');

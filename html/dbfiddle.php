@@ -9,6 +9,8 @@ function transpose($arr) {
   return $out;
 }
 $json = json_decode(file_get_contents('https://dbfiddle.uk/json?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']),true);
+header('X-Powered-By: ');
+header('Cache-Control: max-age=60');
 ?>
 <div class="dbfiddle" data-rdbms="<?=$_GET['rdbms']?>">
   <?foreach($json as $i=>$batchplusoutput){?>

@@ -75,7 +75,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
     .markdown table { border-collapse: collapse; table-layout: fixed; }
     .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; padding: 0.2em; }
+    .markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; padding: 0.2em; }
     .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
@@ -109,13 +109,14 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <script src="/favico.js"></script>
   <script src="codemirror/codemirror.js"></script>
   <script src="codemirror/markdown.js"></script>
+  <script src="codemirror/sql.js"></script>
   <script src="codemirror/placeholder.js"></script>
   <script>
     hljs.initHighlightingOnLoad();
     $(function(){
       var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
-      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, extraKeys: {
+      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', extraKeys: {
         Home: "goLineLeft",
         End: "goLineRight",
         'Ctrl-B': function(){ $('.button.fa-bold').click(); },
@@ -129,7 +130,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       function fiddleMarkdown(){
         function addfiddle(o,r){
           var f = $(r).replaceAll(o);
-          f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity }); });
+          f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity, mode: 'sql' }); });
           f.find('input').click(function(){
             f.css('opacity',0.5);
             $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
@@ -158,6 +159,14 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         $('#answer [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$id){?>localStorage.setItem('<?=$community?>.answer.<?=$question?>',cm.getValue());<?}?>
         $('#answer').each(fiddleMarkdown);
+      }
+
+      function renderQuestion(){
+        var m = $('#question .markdown');
+        m.html(md.render(m.attr('data-markdown')));
+        m.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
+        map = [];
+        m.each(fiddleMarkdown);
       }
 
       $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');
@@ -217,8 +226,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       render();
       $('#license').change(function(){ $('input[name="license"').val($(this).val()); });
       $('#codelicense').change(function(){ $('input[name="codelicense"').val($(this).val()); });
-      $('#question .markdown').html(md.render($('#question .markdown').data('markdown')));
-      $('#question .markdown table').wrap('<div class="tablewrapper" tabindex="-1">');
+      renderQuestion();
     });
   </script>
   <title><?=$id?'Edit Answer':'Answer Question'?> | <?=ucfirst($community)?> | TopAnswers</title>
@@ -255,7 +263,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <input type="hidden" name="question" value="<?=$question?>">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
-      <div style="flex: 0 1.5 50em; max-width: 20vw; overflow: hidden;">
+      <div style="flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden;">
         <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow: hidden;">
           <div style="flex: 0 0 auto; padding: 0.6rem; font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; border-bottom: 1px solid #<?=$colour_dark?>;"><?=htmlspecialchars($question_title)?></div>
           <div class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>" style="flex: 1 0 auto; overflow-y: auto; padding: 0.6em;"></div>
