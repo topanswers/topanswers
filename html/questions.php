@@ -31,8 +31,9 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
         <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
         <?if($question_bump_reason){?><span>(<?=$question_bump_reason?>, <span class="when" data-seconds="<?=$bump_when?>"></span>)</span><?}?>
         <?if($question_votes){?>
-          <span class="score<?=($question_have_voted==='t')?' me':''?>"><?=($question_votes>1)?$question_votes:''?>
-            <i class="fa fa-fw fa-star<?=(($account_is_me==='f')&&($question_have_voted==='f')&&$question_votes)?'-o':''?>"></i>
+          <span class="score<?=($question_have_voted==='t')?' me':''?>">
+            <i class="fa fa-star<?=(($account_is_me==='f')&&($question_have_voted==='f')&&$question_votes)?'-o':''?>"></i>
+            <?=($question_votes>1)?$question_votes:''?>
           </span>
         <?}?>
       </div>
@@ -52,7 +53,10 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
         <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n"));?>"></span></a>
         <div>
           <?if($answer_votes){?>
-            <span class="score<?=($answer_have_voted==='t')?' me':''?>"><?=($answer_votes>1)?$answer_votes:''?><i class="fa fa-fw fa-star<?=(($account_is_me==='f')&&($answer_have_voted==='f')&&$answer_votes)?'-o':''?>"></i></span>
+            <span class="score<?=($answer_have_voted==='t')?' me':''?>">
+              <?=($answer_votes>1)?$answer_votes:''?>
+              <i class="fa fa-star<?=(($account_is_me==='f')&&($answer_have_voted==='f')&&$answer_votes)?'-o':''?>"></i>
+            </span>
           <?}?>
           <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
           <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon.php?id=<?=$account_id?>">
