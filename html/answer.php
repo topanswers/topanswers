@@ -79,8 +79,11 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
+    #markdown-editor-buttons i { padding: 0.2em; margin-bottom: 0.3em; text-align: center; }
+    #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 0.2rem; }
+    #markdown-editor-buttons i:last-child { margin-bottom: 0; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; font-size: 1.1rem; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0 0.2rem 0.2rem 0.2rem; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -106,9 +109,15 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     $(function(){
       var md = window.markdownit({ highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
                      .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
-      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, extraKeys: { Home: "goLineLeft", End: "goLineRight" } });
-      $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');
+      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, extraKeys: {
+        Home: "goLineLeft",
+        End: "goLineRight",
+        'Ctrl-B': function(cm){ $('.button.fa-bold').click(); },
+        'Ctrl-I': function(cm){ $('.button.fa-italic').click(); },
+        'Ctrl-G': function(cm){ $('.button.fa-picture-o').click(); }
+      } });
       var map;
+
       function render(){
         $('#answer').html(md.render(cm.getValue()));
         $('#answer table').wrap('<div class="tablewrapper" tabindex="-1">');
@@ -116,6 +125,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         $('#answer [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$id){?>localStorage.setItem('<?=$community?>.answer.<?=$question?>',cm.getValue());<?}?>
       }
+
+      $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');
       $('#community').change(function(){ window.location = '?community='+$(this).val().toLowerCase(); });
       cm.on('change',function(){
         render();
@@ -131,9 +142,33 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <?if(!$id){?>
         if(localStorage.getItem('<?=$community?>.answer.<?=$question?>')) cm.setValue(localStorage.getItem('<?=$community?>.answer.<?=$question?>'));
       <?}?>
+      $('#uploadfile').change(function() { if(this.files[0].size > 2097152){ alert("File is too big — maximum 2MB"); $(this).val(''); }else{ $(this).closest('form').submit(); }; });
+      $('#uploadfile').closest('form').submit(function(){
+        var d = new FormData($(this)[0]);
+        $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){
+          var selectionStart = cm.getCursor(), selectionEnd = cm.getCursor();
+          cm.replaceSelection('!['+d.get('image').name+'](/image?hash='+r+')');
+          cm.focus();
+          cm.setSelection({ ch: selectionStart.ch, line: selectionStart.line },{ ch: selectionEnd.ch, line: selectionEnd.line });
+        }).fail(function(r){
+          alert(r.status+' '+r.statusText+'\n'+r.responseText);
+        });
+        return false;
+      });
+      $('.button.fa-bold').click(function(){
+        var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
+        if(cm.somethingSelected()){ cm.replaceSelection('**'+cm.getSelection()+'**'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+2), line: selectionStart.line },{ ch: (selectionEnd.ch+2), line: selectionEnd.line });
+        }else{ cm.replaceSelection('**bold**'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+2), line: selectionStart.line },{ ch: (selectionStart.ch+6), line: selectionStart.line }); }
+      });
+      $('.button.fa-italic').click(function(){
+        var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
+        if(cm.somethingSelected()){ cm.replaceSelection('*'+cm.getSelection()+'*'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+1), line: selectionStart.line },{ ch: (selectionEnd.ch+1), line: selectionEnd.line });
+        }else{ cm.replaceSelection('*italic*'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+1), line: selectionStart.line },{ ch: (selectionStart.ch+7), line: selectionStart.line }); }
+      });
+      $('.button.fa-picture-o').click(function(){ $('#uploadfile').click(); cm.focus(); });
+      render();
       $('#license').change(function(){ $('input[name="license"').val($(this).val()); });
       $('#codelicense').change(function(){ $('input[name="codelicense"').val($(this).val()); });
-      render();
       $('#question .markdown').html(md.render($('#question .markdown').data('markdown')));
       $('#question .markdown table').wrap('<div class="tablewrapper" tabindex="-1">');
     });
@@ -179,6 +214,14 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         </div>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
+      <div style="flex: 0 0 1.6em;">
+        <div id="markdown-editor-buttons" style="display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem 0 0 0.2rem; border-right: none; padding: 0.3em;">
+          <form action="/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
+          <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
+          <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
+          <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
+        </div>
+      </div>
       <div style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); position: relative;">
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$id?htmlspecialchars($answer_markdown):''?></textarea>
       </div>
