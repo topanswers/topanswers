@@ -373,8 +373,8 @@ create function vote_question(qid integer, votes integer) returns integer langua
   select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
   select _error('cant vote on own question') where exists (select 1 from world.question where question_id=qid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('cant vote on this question type') where exists (select 1 from world.question where question_id=qid and question_type='question');
-  select _error(429,'rate limit') where (select 1 from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'1m'::interval)>4;
-  select _error(429,'rate limit') where (select 1 from question_vote_history where account_id=current_setting('custom.account_id',true)::integer and question_vote_history_at>current_timestamp-'1m'::interval)>10;
+  select _error(429,'rate limit') where (select count(1) from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'1m'::interval)>4;
+  select _error(429,'rate limit') where (select count(1) from question_vote_history where account_id=current_setting('custom.account_id',true)::integer and question_vote_history_at>current_timestamp-'1m'::interval)>10;
   --
   update question set question_poll_minor_id = default where question_id=qid;
   --
