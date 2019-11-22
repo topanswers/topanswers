@@ -230,6 +230,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
           cm.replaceSelection('!['+d.get('image').name+'](/image?hash='+r+')');
           cm.focus();
           cm.setSelection({ ch: selectionStart.ch, line: selectionStart.line },{ ch: selectionEnd.ch, line: selectionEnd.line });
+          $('#imageupload').trigger('reset');
         }).fail(function(r){
           alert(r.status+' '+r.statusText+'\n'+r.responseText);
         });

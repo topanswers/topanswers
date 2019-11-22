@@ -561,6 +561,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){
           $('#chattext').prop('disabled',false).focus();
           textareaInsertTextAtCursor($('#chattext'),'!['+d.get('image').name+'](/image?hash='+r+')');
+          $('#chatuploadfile').closest('form').trigger('reset');
         }).fail(function(r){
           alert(r.status+' '+r.statusText+'\n'+r.responseText);
           $('#chattext').prop('disabled',false).focus();
