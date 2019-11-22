@@ -107,7 +107,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     .markdown img { max-width: 100%; max-height: 7em; }
     .markdown table { border-collapse: collapse; table-layout: fixed; }
     .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    .markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; }
+    .markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: pre; border: 1px solid black; }
     .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
@@ -806,7 +806,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
           <div style="flex: 1 0 0.5em;">
             <?if($question&&$uuid&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
-              <div style="padding: 40% 20%;">
+              <div style="padding: 10vh 20%;">
                 <?if(ccdb("select question_se_username is null from question where question_id=$1",$question)==='t'){?>
                   <p>This is a dedicated room for discussion about this question.</p>
                   <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
