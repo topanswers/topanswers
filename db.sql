@@ -22,6 +22,7 @@ create table room(
 , community_id integer not null references community deferrable initially deferred
 , room_type room_type_enum not null default 'public'
 , room_name text
+, room_image bytea check(length(room_image)>0)
 , unique (community_id,room_id)
 );
 

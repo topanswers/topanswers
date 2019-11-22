@@ -32,10 +32,15 @@ create view my_account_community with (security_barrier) as
 select account_id,community_id,account_community_can_import,account_community_se_user_id from db.account_community where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view room with (security_barrier) as
-select community_id,room_id,room_name
+select community_id,room_id,room_image
+     , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
      , current_setting('custom.account_id',true)::integer is not null and (room_type='public' or account_id is not null) room_can_chat
-     , exists(select 1 from db.question where question_room_id=room_id) room_is_for_question
-from db.room natural join world.community natural left outer join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) z
+     , question_title is not null room_is_for_question
+     , question_id room_question_id
+     , (select max(chat_at) from db.chat where room_id=room.room_id and account_id=current_setting('custom.account_id',true)::integer) room_my_last_chat
+from db.room natural join world.community natural
+     left join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) a
+     natural left join (select question_room_id room_id, question_id, question_title from db.question) q
 where room_type<>'private' or account_id is not null;
 --
 create view room_account_x with (security_barrier) as select room_id,account_id,room_account_x_latest_chat_at from db.room_account_x natural join world.room where room_account_x_latest_chat_at>(current_timestamp-'7d'::interval);

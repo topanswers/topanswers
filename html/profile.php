@@ -55,7 +55,7 @@ if(isset($_GET['pin'])){
 if(isset($_GET['uuid'])){
   exit(ccdb("select account_uuid from my_account"));
 }
-extract(cdb("select account_name,account_license_id,account_codelicense_id, account_image is null account_has_image from my_account"));
+extract(cdb("select account_name,account_license_id,account_codelicense_id, account_image is not null account_has_image from my_account"));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">

@@ -83,7 +83,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     #qa .bar+.bar { border-top: none; }
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
-    #qa .identicon, #active-users .identicon { height: 1.5rem; width: 1.5rem; margin: 1px; }
+    #qa .identicon, #active-users .identicon, #active-rooms .roomicon { height: 1.5rem; width: 1.5rem; margin: 1px; }
     #qa .markdown { padding: 0.6rem; }
     #qa .markdown img { max-height: 30rem; }
     #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
@@ -309,6 +309,9 @@ extract(cdb("select community_id,community_my_power,sesite_url
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
                 $('#active-users').html(r);
                 $.each(savepings,function(){ $('#active-users .identicon[data-id='+this+']').addClass('ping'); });
+              });
+              $.get('/chat?activerooms').done(function(r){
+                $('#active-rooms').html(r);
               });
             <?}?>
           }
@@ -609,6 +612,12 @@ extract(cdb("select community_id,community_my_power,sesite_url
         return false;
       });
       setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
+      $('#active-spacer').click(function(){
+        var t = $(this);
+        if((t.prev().css('flex-shrink')==='1')&&(t.next().css('flex-shrink')==='1')) t.next().css('flex-shrink','100');
+        else if(t.next().css('flex-shrink')==='100') t.next().css('flex-shrink','1').end().prev().css('flex-shrink','100');
+        else t.prev().css('flex-shrink','1');
+      });
     });
   </script>
   <title><?=ucfirst($community)?> | TopAnswers</title>
@@ -820,7 +829,13 @@ extract(cdb("select community_id,community_my_power,sesite_url
         <?}?>
       </div>
       <?if($uuid){?>
-        <div id="active-users" style="flex: 0 0 calc(1.5rem + 5px); display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 1px; overflow-y: hidden;"></div>
+        <div id="active" style="flex: 0 0 calc(1.5rem + 5px); display: flex; flex-direction: column; justify-content: space-between; background-color: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 1px; overflow-y: hidden;">
+          <div id="active-rooms" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden;"></div>
+          <div id="active-spacer" style="flex: 0 0 auto; padding: 1rem 0; cursor: pointer;">
+            <div style="background-color: #<?=$colour_dark?>; height: 1px;"></div>
+          </div>
+          <div id="active-users" style="flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden;"></div>
+        </div>
       <?}?>
     </div>
     <div id="notification-wrapper">
