@@ -493,9 +493,10 @@ extract(cdb("select community_id,community_my_power,sesite_url
       $('.tag i').click(function(){ $.post(window.location.href, { questionid: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
       $('#chattext').on('input', function(){
+        var m = $('#chattext').val() || '&nbsp;';
         if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
         if(this.scrollHeight>$(this).outerHeight()) $(this).css('min-height',this.scrollHeight);
-        $('#preview .markdown').html(md.render($('#chattext').val()+'&nbsp;'));
+        $('#preview .markdown').html(md.render(m));
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){
