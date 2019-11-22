@@ -1,4 +1,4 @@
-<?
+ <?
 include 'db.php';
 include 'nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
@@ -420,7 +420,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         var m = $(this).closest('.message');
         $('.ping').removeClass('ping');
         $('#replying').attr('data-id',m.data('id')).data('update')();
-        $('#chattext').val(m.find('.markdown').data('markdown')).focus();
+        $('#chattext').val(m.find('.markdown').data('markdown')).focus().trigger('input');
       });
       $('#chat-wrapper').on('click','.fa-star-o', function(){
         var t = $(this);
@@ -470,11 +470,15 @@ extract(cdb("select community_id,community_my_power,sesite_url
         var state = $('#replying').attr('data-id') || $('.ping').length, strings = [];
         if($('#replying').attr('data-id')) strings.push(($('#c'+$('#replying').attr('data-id'))).hasClass('mine')?'Editing':('Replying to: '+$('#c'+$('#replying').attr('data-id')).data('name')));
         if($('.ping').length) strings.push('Pinging: '+$('.ping').map(function(){ return $(this).data('fullname'); }).get().join(', '));
-        $('#replying').children('span').text(strings.join(', '));
-        if(state && $('#replying').is(":hidden")) $('#replying').slideDown('fast');
-        if(!state && $('#replying').is(":visible")) $('#replying').slideUp('fast');
+        if(strings.length){
+          $('#replying').children('span').text(strings.join(', '));
+          $('#cancelreply').show();
+        }else{
+          $('#replying').children('span').text('Preview:');
+          $('#cancelreply').hide();
+        }
       });
-      $('#replying>button').click(function(){
+      $('#cancelreply').click(function(){
         $('.ping').removeClass('ping');
         $('#replying').attr('data-id','').data('update')();
       });
@@ -489,13 +493,14 @@ extract(cdb("select community_id,community_my_power,sesite_url
       $('.tag i').click(function(){ $.post(window.location.href, { questionid: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
       $('#chattext').on('input', function(){
-        if(this.scrollHeight>$(this).outerHeight()) $(this).css("min-height",this.scrollHeight);
-        if($(this).val().trim()){ $('#preview .markdown').html(md.render($('#chattext').val())); $('#preview:hidden').slideDown('fast'); } else { $('#preview:visible').slideUp('fast'); }
+        if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
+        if(this.scrollHeight>$(this).outerHeight()) $(this).css('min-height',this.scrollHeight);
+        $('#preview .markdown').html(md.render($('#chattext').val()+'&nbsp;'));
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){
         var t = $(this), msg = t.val(),  replyid = $('#replying').attr('data-id'), c = $('#c'+replyid), edit = c.hasClass('mine'), post;
-        if((e.keyCode || e.which) == 13) {
+        if(e.which===13) {
           if(!e.shiftKey) {
             if(msg.trim()){
               clearTimeout(chatTimer);
@@ -508,7 +513,8 @@ extract(cdb("select community_id,community_my_power,sesite_url
                 post = { room: <?=$room?>, msg: msg, replyid: replyid, pings: arr, action: 'new' };
               }
               $.post('/chat',post).done(function(){
-                t.val('').prop('disabled',false).focus().css('height',0).css('min-height',0).trigger('input');
+                t.val('').prop('disabled',false).css('height',$(this).data('initialheight')).css('min-height',0).focus().trigger('input');
+                $('#cancelreply').click();
                 if(edit){
                   c.css('opacity',1).find('.markdown').attr('data-markdown',msg).end().each(renderChat);
                   checkChat();
@@ -521,7 +527,6 @@ extract(cdb("select community_id,community_my_power,sesite_url
                 alert(r.status+' '+r.statusText+'\n'+r.responseText);
                 t.prop('disabled',false).focus();
               });
-              $('#replying').attr('data-id','').slideUp('fast');
               $('.ping').removeClass('ping');
               $(this).prop('disabled',true);
             }
@@ -529,6 +534,14 @@ extract(cdb("select community_id,community_my_power,sesite_url
           }else{
             textareaInsertTextAtCursor($(this),'  ');
           }
+        }else if(e.which===38){
+          if(msg===''){
+            $('#messages .message.mine').last().find('.fa-edit').click()
+            return false;
+          }
+        }else if(e.which===27){
+          $('#cancelreply').click();
+          return false;
         }
       });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
@@ -766,38 +779,39 @@ extract(cdb("select community_id,community_my_power,sesite_url
     </header>
     <?if($canchat){?>
       <div id="canchat-wrapper" style="flex: 0 0 auto;">
-        <div id="preview" class="message" style="width: 100%; background-color: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2em; display: none;">
-          <div class="markdown-wrapper">
-            <div class="markdown" data-markdown="">
-            </div>
-          </div>
-        </div>
         <div id="chattext-wrapper" style="position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>;">
           <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
           <button id="chatupload" class="button" style="position: absolute; right: 0.15em; top: 0; bottom: 0; font-size: 1.5em; color: #<?=$colour_dark?>;" title="embed image"><i class="fa fa-picture-o" style="display: block;"></i></button>
           <textarea id="chattext" style="flex: 0 0 auto; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
         </div>
-        <div id="replying" style="width: 100%; background-color: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.1em 0.3em; display: none; font-style: italic; font-size: smaller;" data-id="">
-          <span></span>
-          <button id="cancelreply" class="button" style="float: right;">&#x2573;</button>
-        </div>
       </div>
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
-      <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
-        <div style="flex: 1 0 0.5em;">
-          <?if($question&&$uuid&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
-            <div style="padding: 40% 20%;">
-              <?if(ccdb("select question_se_username is null from question where question_id=$1",$question)==='t'){?>
-                <p>This is a dedicated room for discussion about this question.</p>
-                <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
-              <?}else{?>
-                <p>This is a dedicated room for discussion about this imported question.</p>
-                <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
-              <?}?>
-            </div>
-          <?}?>
+      <div id="messages-wrapper" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden;">
+        <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
+          <div style="flex: 1 0 0.5em;">
+            <?if($question&&$uuid&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
+              <div style="padding: 40% 20%;">
+                <?if(ccdb("select question_se_username is null from question where question_id=$1",$question)==='t'){?>
+                  <p>This is a dedicated room for discussion about this question.</p>
+                  <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
+                <?}else{?>
+                  <p>This is a dedicated room for discussion about this imported question.</p>
+                  <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+                <?}?>
+              </div>
+            <?}?>
+          </div>
         </div>
+        <?if($canchat){?>
+          <div id="preview" class="message" style="display: block; width: 100%; background-color: #<?=$colour_light?>; margin-top: 0.1rem; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
+            <div id="replying" style="width: 100%; font-style: italic; font-size: 0.6rem;" data-id="">
+              <span>Preview:</span>
+              <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
+            </div>
+            <div class="markdown" data-markdown="" style="display: inline-block;"></div>
+          </div>
+        <?}?>
       </div>
       <?if($uuid){?>
         <div id="active-users" style="flex: 0 0 calc(1.5rem + 5px); display: flex; flex-direction: column-reverse; align-items: flex-start; background-color: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 1px; overflow-y: hidden;"></div>
