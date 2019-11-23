@@ -72,34 +72,36 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
     <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
     <img title="Reputation: <?=$account_community_votes?>" class="identicon" src="/identicon.php?id=<?=$account_id?>">
     <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
-    <span class="buttons">
-      <span class="button-group show">
-        <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star<?=(($account_is_me==='t')||($i_starred==='t'))?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
-        <i></i>
-        <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag<?=(($account_is_me==='t')||($i_flagged==='t'))?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
-        <i></i>
+    <?if($uuid){?>
+      <span class="buttons">
+        <span class="button-group show">
+          <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star<?=(($account_is_me==='t')||($i_starred==='t'))?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+          <i></i>
+          <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag<?=(($account_is_me==='t')||($i_flagged==='t'))?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
+          <i></i>
+        </span>
+        <?if($account_is_me==='t'){?>
+          <span class="button-group show">
+            <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
+            <i></i>
+            <?if($chat_editable_age==='t'){?><i class="fa fa-edit"></i><?}else if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
+            <i></i>
+          </span>
+        <?}else{?>
+          <span class="button-group show">
+            <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>"></i>
+            <i class="fa fa-ellipsis-h"></i>
+            <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i>
+            <i class="fa fa-reply fa-rotate-180" title="reply"></i>
+          </span>
+          <span class="button-group">
+            <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
+            <i class="fa fa-ellipsis-h"></i>
+            <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
+            <i></i>
+          </span>
+        <?}?>
       </span>
-      <?if($account_is_me==='t'){?>
-        <span class="button-group show">
-          <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
-          <i></i>
-          <?if($chat_editable_age==='t'){?><i class="fa fa-edit"></i><?}else if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
-          <i></i>
-        </span>
-      <?}else{?>
-        <span class="button-group show">
-          <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>"></i>
-          <i class="fa fa-ellipsis-h"></i>
-          <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i>
-          <i class="fa fa-reply fa-rotate-180" title="reply"></i>
-        </span>
-        <span class="button-group">
-          <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
-          <i class="fa fa-ellipsis-h"></i>
-          <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
-          <i></i>
-        </span>
-      <?}?>
-    </span>
+    <?}?>
   </div>
 <?}?>

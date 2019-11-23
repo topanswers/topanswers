@@ -50,9 +50,13 @@ extract(cdb("select community_id,community_my_power,sesite_url
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
+    header select, header input, header a:not(.icon) { margin: 3px; }
+    header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }
+    header .icon>img { background-color: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
     [data-rz-handle] { flex: 0 0 2px; background-color: black; }
     [data-rz-handle] div { width: 2px; background-color: black; }
+
 
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
@@ -78,7 +82,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     .starrr a.fa-star { color: #<?=$colour_highlight?>; }
     .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
 
-    #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
+    #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); overflow: hidden; }
     #qa .bar:last-child { border-bottom: none; border-radius: 0 0 0.2rem 0.2rem; }
     #qa .bar+.bar { border-top: none; }
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
@@ -625,8 +629,8 @@ extract(cdb("select community_id,community_my_power,sesite_url
 </head>
 <body style="display: flex;">
   <main class="pane<?=$question?'':' hidepane'?>" style="flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
-    <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
-      <div style="margin: 0.5em; margin-right: 0.1em;">
+    <header style="border-bottom: 2px solid black;">
+      <div>
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
         <select class="community">
           <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
@@ -635,8 +639,8 @@ extract(cdb("select community_id,community_my_power,sesite_url
         </select>
         <input class="panecontrol" type="button" value="chat" onclick="$('.pane').toggleClass('hidepane');">
       </div>
-      <div style="display: flex; height: 100%; align-items: center;">
-        <?if(!$uuid){?><input id="join" type="button" value="join" style="margin: 0.5em;"> or <input id="link" type="button" value="link" style="margin: 0.5em;"><?}?>
+      <div style="display: flex; align-items: center;">
+        <?if(!$uuid){?><input id="join" type="button" value="join"> or <input id="link" type="button" value="link"><?}?>
         <?if(($account_community_can_import==='t')&&$sesite_url&&!$question){?>
           <form method="post" action="/question">
             <input type="hidden" name="action" value="new-se">
@@ -645,11 +649,11 @@ extract(cdb("select community_id,community_my_power,sesite_url
             <input type="hidden" name="seqid" value="">
             <input type="hidden" name="seaid" value="">
             <input type="hidden" name="seuser" value="">
-            <input id="se" type="submit" value="import question from SE" style="margin: 0.5em;">
+            <input id="se" type="submit" value="import question from SE">
           </form>
         <?}?>
-        <?if($uuid){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question" style="margin: 0.5em;"></form><?}?>
-        <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2em; display: block; height: 2.4em;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
+        <?if($uuid){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question"></form><?}?>
+        <?if($uuid){?><a href="/profile" class="icon"><img src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
     <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em; scroll-behavior: smooth;">
@@ -773,23 +777,26 @@ extract(cdb("select community_id,community_my_power,sesite_url
     </div>
   </main>
   <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
-    <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
-      <?if(!$question){?>
-        <select class="community">
-          <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
-            <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
-          <?}?>
-        </select>
-        <select id="room">
-          <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name
-                        from room natural join community
-                        where community_name=$1 and (not room_is_for_question or room_id=$2)
-                        order by room_name desc",$community,$room) as $r){ extract($r);?>
-            <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
-          <?}?>
-        </select>
-      <?}?>
-      <a href="/transcript?room=<?=$room?>" style="color: #<?=$colour_mid?>;">transcript</a>
+    <header style="border-top: 2px solid black;">
+      <div style="display: flex; align-items: center;">
+        <a <?=$dev?'href="/room='.$room.'" ':''?>class="icon"><img src="/roomicon.php?id=<?=$room?>"></a>
+        <?if(!$question){?>
+          <select class="community">
+            <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
+              <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
+            <?}?>
+          </select>
+          <select id="room">
+            <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name
+                          from room natural join community
+                          where community_name=$1 and (not room_is_for_question or room_id=$2)
+                          order by room_name desc",$community,$room) as $r){ extract($r);?>
+              <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
+            <?}?>
+          </select>
+        <?}?>
+        <a href="/transcript?room=<?=$room?>" style="color: #<?=$colour_mid?>;">transcript</a>
+      </div>
       <input class="panecontrol" type="button" value="questions" onclick="$('.pane').toggleClass('hidepane');">
       <?if($uuid) if(intval(ccdb("select account_id from login"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
