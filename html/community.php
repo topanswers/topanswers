@@ -549,6 +549,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
           }
         }else if(e.which===27){
           $('#cancelreply').click();
+          t.val('').css('height',$(this).data('initialheight')).css('min-height',0).focus().trigger('input');
           return false;
         }
       });
