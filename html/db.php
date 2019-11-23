@@ -27,5 +27,5 @@ function db($query,...$params) {
   ($rows = pg_fetch_all($res)) || ($rows = []);
   return $rows;
 }
-function cdb($query,...$params){ return current(db($query,...$params)); }
-function ccdb($query,...$params){ return current(cdb($query,...$params)); }
+function cdb($query,...$params){ $c = db($query,...$params); if(!$c) error_log($query); return current($c); }
+function ccdb($query,...$params){ $c = cdb($query,...$params); if(!$c) error_log($query); return current($c); }

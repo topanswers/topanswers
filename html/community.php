@@ -794,6 +794,69 @@ extract(cdb("select community_id,community_my_power,sesite_url
     <?}?>
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
       <div id="messages-wrapper" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden;">
+        <div id="notification-wrapper">
+          <?if($uuid&&(ccdb("select count(*)>0 from chat_notification")==='t')){?>
+            <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.3em; overflow-x: hidden; overflow-y: auto;">
+              <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,community_name,question_id,chat_has_history
+                                 , question_id is not null is_question_room
+                                 , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) room_name
+                                 , coalesce(nullif(account_name,''),'Anonymous') account_name
+                                 , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+                                 , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
+                                 , round(extract('epoch' from current_timestamp-chat_at)) chat_ago
+                                 , chat_flag_at is not null i_flagged
+                                 , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
+                                 , chat_star_at is not null i_starred
+                                 , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
+                                 , encode(community_mid_shade,'hex') chat_mid_shade
+                                 , encode(community_dark_shade,'hex') chat_dark_shade
+                            from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
+                                 natural left join (select question_room_id room_id, question_id, question_title from question) q
+                            order by chat_at limit 100") as $r){ extract($r);?>
+                <div id="n<?=$chat_id?>" class="message" style="background-color: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+                  <small class="who">
+                    <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
+                    <?if($room_id!==$room){?>
+                      <?=$chat_reply_id?' replying to</span> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
+                    <?}else{?>
+                      <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$chat_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
+                    <?}?>
+                    <?if($room_id!==$room){?>
+                      <span style="color: #<?=$chat_dark_shade?>;">in&nbsp;</span>
+                      <a href="/<?=$community_name?>?<?=($is_question_room==='t')?'q='.$question_id:'room='.$room_id?>" style="color: #<?=$chat_dark_shade?>;"><?=$room_name?></a>
+                    <?}?>
+                    —
+                    <span class="when" data-seconds="<?=$chat_ago?>"></span>
+                    <span style="color: #<?=$chat_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$chat_dark_shade?>;">dismiss</a>)</span>
+                  </small>
+                  <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
+                  <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+                  <span class="buttons">
+                    <span class="button-group show">
+                      <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star<?=(($account_is_me==='t')||($i_starred==='t'))?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+                      <i></i>
+                      <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag<?=(($account_is_me==='t')||($i_flagged==='t'))?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
+                      <i></i>
+                    </span>
+                    <span class="button-group show">
+                      <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>"></i>
+                      <i class="fa fa-ellipsis-h"></i>
+                      <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i>
+                      <?if($canchat&&($room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
+                    </span>
+                    <span class="button-group">
+                      <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
+                      <i class="fa fa-ellipsis-h"></i>
+                      <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
+                      <i></i>
+                    </span>
+                  </span>
+                </div>
+              <?}?>
+            </div>
+            <div style="position: relative;"><div style="position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(darkgrey,#<?=$colour_mid?>00);"></div></div>
+          <?}?>
+        </div>
         <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
           <div style="flex: 1 0 0.5em;">
             <?if($question&&$uuid&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
@@ -827,69 +890,6 @@ extract(cdb("select community_id,community_my_power,sesite_url
           </div>
           <div id="active-users" style="flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden;"></div>
         </div>
-      <?}?>
-    </div>
-    <div id="notification-wrapper">
-      <?if($uuid&&(ccdb("select count(*)>0 from chat_notification")==='t')){?>
-        <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.3em; overflow-x: hidden; overflow-y: scroll;">
-          <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,community_name,question_id,chat_has_history
-                             , question_id is not null is_question_room
-                             , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) room_name
-                             , coalesce(nullif(account_name,''),'Anonymous') account_name
-                             , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
-                             , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                             , round(extract('epoch' from current_timestamp-chat_at)) chat_ago
-                              , chat_flag_at is not null i_flagged
-                              , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
-                              , chat_star_at is not null i_starred
-                              , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
-                             , encode(community_mid_shade,'hex') chat_mid_shade
-                             , encode(community_dark_shade,'hex') chat_dark_shade
-                        from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
-                             natural left join (select question_room_id room_id, question_id, question_title from question) q
-                        order by chat_at limit 100") as $r){ extract($r);?>
-            <div id="n<?=$chat_id?>" class="message" style="background-color: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
-              <small class="who">
-                <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
-                <?if($room_id!==$room){?>
-                  <?=$chat_reply_id?' replying to</span> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
-                <?}else{?>
-                  <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$chat_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
-                <?}?>
-                <?if($room_id!==$room){?>
-                  <span style="color: #<?=$chat_dark_shade?>;">in&nbsp;</span>
-                  <a href="/<?=$community_name?>?<?=($is_question_room==='t')?'q='.$question_id:'room='.$room_id?>" style="color: #<?=$chat_dark_shade?>;"><?=$room_name?></a>
-                <?}?>
-                —
-                <span class="when" data-seconds="<?=$chat_ago?>"></span>
-                <span style="color: #<?=$chat_dark_shade?>;">(view <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" style="color: #<?=$chat_dark_shade?>;">transcript</a> or <a href='.' class="dismiss" style="color: #<?=$chat_dark_shade?>;">dismiss</a>)</span>
-              </small>
-              <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
-              <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
-              <span class="buttons">
-                <span class="button-group show">
-                  <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star<?=(($account_is_me==='t')||($i_starred==='t'))?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
-                  <i></i>
-                  <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag<?=(($account_is_me==='t')||($i_flagged==='t'))?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
-                  <i></i>
-                </span>
-                <span class="button-group show">
-                  <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>"></i>
-                  <i class="fa fa-ellipsis-h"></i>
-                  <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i>
-                  <i class="fa fa-reply fa-rotate-180" title="reply"></i>
-                </span>
-                <span class="button-group">
-                  <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
-                  <i class="fa fa-ellipsis-h"></i>
-                  <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
-                  <i></i>
-                </span>
-              </span>
-            </div>
-          <?}?>
-        </div>
-        <div style="position: relative;"><div style="position: absolute; height: 2em; width: 100%; background: linear-gradient(darkgrey,#<?=$colour_mid?>00);"></div></div>
       <?}?>
     </div>
   </div>

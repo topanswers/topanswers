@@ -1,6 +1,9 @@
 <?php
 include 'db.php';
 
+$uuid = $_COOKIE['uuid'] ?? false;
+if($uuid) ccdb("select login($1)",$uuid);
+
 isset($_GET['id']) or die('id not set');
 $id = intval($_GET['id']);
 $id>0 or die('id not positive integer');
