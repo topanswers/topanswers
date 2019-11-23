@@ -16,25 +16,29 @@ header('Cache-Control: max-age=60');
   <?foreach($json as $i=>$batchplusoutput){?>
     <fieldset>
       <textarea rows="1"><?=$batchplusoutput['batch']?></textarea>
-      <?foreach($batchplusoutput['output']['result'] as $result){?>
-        <div class="tablewrapper">
-          <table>
-            <tbody>
-              <tr>
-                <?foreach($result['head'] as $head){?>
-                  <th><?=$head?></th>
-                <?}?>
-              </tr>
-              <?foreach(transpose($result['data']) as $row){?>
+      <?if($batchplusoutput['output']['error']){?>
+        <p class="error"><?=$batchplusoutput['output']['error']?></p>
+      <?}else{?>
+        <?foreach($batchplusoutput['output']['result'] as $result){?>
+          <div class="tablewrapper">
+            <table>
+              <tbody>
                 <tr>
-                  <?foreach($row as $data){?>
-                    <td><?=$data?></td>
+                  <?foreach($result['head'] as $head){?>
+                    <th><?=$head?></th>
                   <?}?>
-                <tr>
-              <?}?>
-            </tbody>
-          </table>
-        </div>
+                </tr>
+                <?foreach(transpose($result['data']) as $row){?>
+                  <tr>
+                    <?foreach($row as $data){?>
+                      <td><?=$data?></td>
+                    <?}?>
+                  <tr>
+                <?}?>
+              </tbody>
+            </table>
+          </div>
+        <?}?>
       <?}?>
     </fieldset>
   <?}?>

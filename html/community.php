@@ -149,6 +149,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     .dbfiddle .tablewrapper { margin-top: 0.5rem; }
     .dbfiddle>div { margin-top: 0.5rem; }
     .dbfiddle fieldset { overflow: hidden; min-width: 0; }
+    .dbfiddle .error { background-color: #<?=$colour_highlight?>40; }
 
     .pane { display: flex; }
     .panecontrol { display: none; }
@@ -429,38 +430,18 @@ extract(cdb("select community_id,community_my_power,sesite_url
         $('#replying').attr('data-id',m.data('id')).data('update')();
         $('#chattext').val(m.find('.markdown').data('markdown')).focus().trigger('input');
       });
-      $('#chat-wrapper').on('click','.fa-star-o', function(){
-        var t = $(this);
-        t.css({'opacity':'0.3','pointer-events':'none'});
-        $.post('/chat',{ action: 'star', id: t.closest('.message').data('id') }).done(function(r){
-          function inc(){ $(this).attr('data-count',(+$(this).attr('data-count'))+1);}
-          t.css({'opacity':'1','pointer-events':'auto'}).toggleClass('me fa-star fa-star-o').closest('.buttons').find('.button-group:first-child .stars[data-count]').toggleClass('me fa-star fa-star-o').each(inc);
+      function starflag(t,action,direction){
+        var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
+        m.css({'opacity':'0.3','pointer-events':'none'});
+        $.post('/chat',{ action: ((direction===-1)?'un':'')+action, id: id }).done(function(r){
+          m.css({ 'opacity':'1','pointer-events':'auto' }).toggleClass('me fa-'+action+' fa-'+action+'-o').closest('.buttons').find('.button-group:first-child .'+action+'s[data-count]').toggleClass('me fa-'+action+' fa-'+action+'-o')
+           .each(function changecount(){ $(this).attr('data-count',(+$(this).attr('data-count'))+direction); });
         });
-      });
-      $('#chat-wrapper').on('click','.fa-star', function(){
-        var t = $(this);
-        t.css({'opacity':'0.3','pointer-events':'none'});
-        $.post('/chat',{ action: 'unstar', id: t.closest('.message').data('id') }).done(function(r){
-          function dec(){ $(this).attr('data-count',(+$(this).attr('data-count'))-1);}
-          t.css({'opacity':'1','pointer-events':'auto'}).toggleClass('me fa-star fa-star-o').closest('.buttons').find('.button-group:first-child .stars[data-count]').toggleClass('me fa-star fa-star-o').each(dec);
-        });
-      });
-      $('#chat-wrapper').on('click','.fa-flag-o', function(){
-        var t = $(this);
-        t.css({'opacity':'0.3','pointer-events':'none'});
-        $.post('/chat',{ action: 'flag', id: t.closest('.message').data('id') }).done(function(r){
-          function inc(){ $(this).attr('data-count',(+$(this).attr('data-count'))+1);}
-          t.css({'opacity':'1','pointer-events':'auto'}).toggleClass('me fa-flag fa-flag-o').closest('.buttons').find('.button-group:first-child .flags[data-count]').toggleClass('me fa-flag fa-flag-o').each(inc);
-        });
-      });
-      $('#chat-wrapper').on('click','.fa-flag', function(){
-        var t = $(this);
-        t.css({'opacity':'0.3','pointer-events':'none'});
-        $.post('/chat',{ action: 'unflag', id: t.closest('.message').data('id') }).done(function(r){
-          function dec(){ $(this).attr('data-count',(+$(this).attr('data-count'))-1);}
-          t.css({'opacity':'1','pointer-events':'auto'}).toggleClass('me fa-flag fa-flag-o').closest('.buttons').find('.button-group:first-child .flags[data-count]').toggleClass('me fa-flag fa-flag-o').each(dec);
-        });
-      });
+      };
+      $('#chat-wrapper').on('click','.fa-star-o', function(){ starflag($(this),'star',1); });
+      $('#chat-wrapper').on('click','.fa-star', function(){ starflag($(this),'star',-1); });
+      $('#chat-wrapper').on('click','.fa-flag-o', function(){ starflag($(this),'flag',1); });
+      $('#chat-wrapper').on('click','.fa-flag', function(){ starflag($(this),'flag',-1); });
       $('body').on('click','.identicon.pingable', function(){
         if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); }
         $(this).toggleClass('ping');
@@ -849,7 +830,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     <div id="notification-wrapper">
       <?if($uuid&&(ccdb("select count(*)>0 from chat_notification")==='t')){?>
         <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.3em; overflow-x: hidden; overflow-y: scroll;">
-          <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,community_name,question_id
+          <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,community_name,question_id,chat_has_history
                              , question_id is not null is_question_room
                              , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) room_name
                              , coalesce(nullif(account_name,''),'Anonymous') account_name
@@ -865,7 +846,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
                         from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
                              natural left join (select question_room_id room_id, question_id, question_title from question) q
                         order by chat_at limit 100") as $r){ extract($r);?>
-            <div class="message" style="background-color: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+            <div id="n<?=$chat_id?>" class="message" style="background-color: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
               <small class="who">
                 <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
                 <?if($room_id!==$room){?>
@@ -884,19 +865,23 @@ extract(cdb("select community_id,community_my_power,sesite_url
               <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
               <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
               <span class="buttons">
-                <span class="button-group" data-count="<?=$chat_star_count+$chat_flag_count?>">
-                  <span class="<?=($i_starred==='t')?'me':'notme'?>">
-                    <i class="empty fa fa-star-o" data-count="<?=$chat_star_count?>"></i>
-                    <i class="gold fa fa-star" data-count="<?=$chat_star_count?>"></i>
-                  </span>
-                  <span class="<?=($i_flagged==='t')?'me':'notme'?>">
-                    <i class="empty fa fa-flag-o" data-count="<?=$chat_flag_count?>"></i>
-                    <i class="gold fa fa-flag" data-count="<?=$chat_flag_count?>"></i>
-                  </span>
+                <span class="button-group show">
+                  <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star<?=(($account_is_me==='t')||($i_starred==='t'))?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+                  <i></i>
+                  <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag<?=(($account_is_me==='t')||($i_flagged==='t'))?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
+                  <i></i>
+                </span>
+                <span class="button-group show">
+                  <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>"></i>
+                  <i class="fa fa-ellipsis-h"></i>
+                  <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i>
+                  <i class="fa fa-reply fa-rotate-180" title="reply"></i>
                 </span>
                 <span class="button-group">
-                  <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-fw fa-link"></a>
-                  <?if($canchat&&($room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}?>
+                  <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
+                  <i class="fa fa-ellipsis-h"></i>
+                  <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
+                  <i></i>
                 </span>
               </span>
             </div>

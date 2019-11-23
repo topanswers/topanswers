@@ -92,6 +92,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .dbfiddle .tablewrapper { margin-top: 0.5rem; }
     .dbfiddle>div { margin-top: 0.5rem; }
     .dbfiddle fieldset { overflow: hidden; min-width: 0; }
+    .dbfiddle .error { background-color: #<?=$colour_highlight?>40; }
   </style>
   <script src="/lodash.js"></script>
   <script src="/jquery.js"></script>
