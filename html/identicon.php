@@ -17,15 +17,15 @@ if(ccdb("select account_image is null from account where account_id=$1",$id)==='
 // Settings
 define('MARGIN_X', 0);        // Margin on the left and right edge in px
 define('MARGIN_Y', 0);        // Margin on the upper and lower edge in px
-define('BOX_SIZE_W', 4);      // Width of the individual "pixels" in px
-define('BOX_SIZE_H', 4);      // Height of the individual "pixels" in px
+define('BOX_SIZE_W', 10);      // Width of the individual "pixels" in px
+define('BOX_SIZE_H', 10);      // Height of the individual "pixels" in px
 define('GRID_COUNT_W', 7);     // Horizontal "pixel"-count
 define('GRID_COUNT_H', 7);     // Vertical "pixel"-count
 define('BG_COLOR', '#FFFFFF'); // Background color as 6-digit hexadecimal rgb code
 
 // calculate image dimensions based on settings
-$sizeX = 2*MARGIN_X + GRID_COUNT_W*BOX_SIZE_W;
-$sizeY = 2*MARGIN_Y + GRID_COUNT_H*BOX_SIZE_H;
+$sizeX = 2*MARGIN_X + GRID_COUNT_W*BOX_SIZE_W + 1;
+$sizeY = 2*MARGIN_Y + GRID_COUNT_H*BOX_SIZE_H + 1;
 
 // calculate significant pixel count and the highest presentable number
 $pixelCount = GRID_COUNT_H * ceil(GRID_COUNT_W/2);
