@@ -338,7 +338,7 @@ create function new_question_tag(qid integer, tid integer) returns void language
                                             from question_tag_x_history
                                             where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
   --
-  update question set question_poll_major_id = default where question_id=qid;
+  update question set question_poll_minor_id = default where question_id=qid;
   --
   with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
                                                   union all
@@ -359,7 +359,7 @@ create function remove_question_tag(qid integer, tid integer) returns void langu
                                             from question_tag_x_history
                                             where question_tag_x_history_removed_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_removed_at>current_timestamp-'1s'::interval);
   --
-  update question set question_poll_major_id = default where question_id=qid;
+  update question set question_poll_minor_id = default where question_id=qid;
   --
   select remove_question_tag(qid,tag_implies_id)
   from question_tag_x natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
