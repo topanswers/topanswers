@@ -624,7 +624,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex;">
-  <main class="pane hidepane" style="flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
+  <main class="pane<?=$question?'':' hidepane'?>" style="flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
     <header style="border-bottom: 2px solid black; display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto;">
       <div style="margin: 0.5em; margin-right: 0.1em;">
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
@@ -772,7 +772,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" class="pane" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
+  <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
     <header style="flex: 0 0 auto; border-top: 2px solid black; padding: 0.5em;">
       <?if(!$question){?>
         <select class="community">
