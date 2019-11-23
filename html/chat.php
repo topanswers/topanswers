@@ -17,6 +17,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   }
 }
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]') from chat where room_id=$1 and chat_change_id>$2",$_GET['room'],$_GET['fromid']));
+if(!isset($_GET['room'])) die('room not set');
+$room = $_GET['room'];
 if(isset($_GET['activerooms'])){
   foreach(db("select room_id,room_name,room_is_for_question,community_name,room_question_id
                    , encode(community_light_shade,'hex') community_colour
@@ -24,13 +26,11 @@ if(isset($_GET['activerooms'])){
               where room_my_last_chat>(current_timestamp-'7d'::interval)
               order by room_my_last_chat desc") as $r){ extract($r);?>
     <a href="/<?=$community_name?>?<?=($room_is_for_question==='t')?'q='.$room_question_id:'room='.$room_id?>">
-      <img title="<?=($room_name)?$room_name:''?>" class="roomicon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon.php?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
+      <img title="<?=($room_name)?$room_name:''?>" class="roomicon<?=($room_id===$room)?' current':''?>" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon.php?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
     </a><?
   }
   exit;
 }
-if(!isset($_GET['room'])) die('room not set');
-$room = $_GET['room'];
 ccdb("select count(*) from room where room_id=$1",$room)==='1' or die('invalid room');
 if(isset($_GET['activeusers'])){
   foreach(db("select account_id,account_name,account_is_me

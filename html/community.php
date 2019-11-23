@@ -88,6 +88,8 @@ extract(cdb("select community_id,community_my_power,sesite_url
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .identicon, #active-users .identicon, #active-rooms .roomicon { height: 1.5rem; width: 1.5rem; margin: 1px; }
+    #active-rooms .roomicon.current { outline: 1px solid #<?=$colour_highlight?>; }
+    #active-rooms .roomicon:not(.current):hover { outline: 1px solid #<?=$colour_dark?>; }
     #qa .markdown { padding: 0.6rem; }
     #qa .markdown img { max-height: 30rem; }
     #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
@@ -115,7 +117,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
     .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
-    .identicon.pingable:hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
+    .identicon.pingable:not(.ping):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
     .identicon.ping { outline: 1px solid #<?=$colour_highlight?>; }
     #chattext-wrapper:not(:hover) button { display: none; }
 
@@ -315,7 +317,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
                 $('#active-users').html(r);
                 $.each(savepings,function(){ $('#active-users .identicon[data-id='+this+']').addClass('ping'); });
               });
-              $.get('/chat?activerooms').done(function(r){
+              $.get('/chat?activerooms&room=<?=$room?>').done(function(r){
                 $('#active-rooms').html(r);
               });
             <?}?>
@@ -600,9 +602,9 @@ extract(cdb("select community_id,community_my_power,sesite_url
       setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
       $('#active-spacer').click(function(){
         var t = $(this);
-        if((t.prev().css('flex-shrink')==='1')&&(t.next().css('flex-shrink')==='1')) t.next().css('flex-shrink','100');
-        else if(t.next().css('flex-shrink')==='100') t.next().css('flex-shrink','1').end().prev().css('flex-shrink','100');
-        else t.prev().css('flex-shrink','1');
+        if((t.prev().css('flex-shrink')==='1')&&(t.next().css('flex-shrink')==='1')) t.next().animate({ 'flex-shrink': 100 });
+        else if(t.next().css('flex-shrink')==='100') t.next().animate({ 'flex-shrink': 1 }).end().prev().animate({ 'flex-shrink': 100 });
+        else t.prev().animate({ 'flex-shrink': 1 });
       });
     });
   </script>
