@@ -779,7 +779,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
     <header style="border-top: 2px solid black;">
       <div style="display: flex; align-items: center;">
-        <a <?=$dev?'href="/room='.$room.'" ':''?>class="icon"><img src="/roomicon.php?id=<?=$room?>"></a>
+        <a <?=$dev?'href="/room?id='.$room.'" ':''?>class="icon"><img src="/roomicon.php?id=<?=$room?>"></a>
         <?if(!$question){?>
           <select class="community">
             <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
