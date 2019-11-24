@@ -75,7 +75,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
     .markdown table { border-collapse: collapse; table-layout: fixed; }
     .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    .markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; padding: 0.2em; }
+    .markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; padding: 0.2em; text-align: left; }
     .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
     .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
@@ -143,8 +143,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
             });
           });
         }
-        $(this).find('a[href*="//dbfiddle.uk/?"]')
-               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
+        $(this).find('a[href*="//dbfiddle.uk"]')
+               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/?\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
                .each(function(){
           var t = $(this);
           $.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){

@@ -2,7 +2,7 @@
 include 'db.php';
 include 'nocache.php';
 $uuid = $_COOKIE['uuid']??'';
-ccdb("select login($1)",$uuid);
+if($uuid) ccdb("select login($1)",$uuid);
 $id = $_GET['id']??$_POST['id']??'0';
 if($_SERVER['REQUEST_METHOD']==='POST'){
   isset($_POST['action']) or die('posts must have an "action" parameter');
@@ -76,6 +76,7 @@ if($id) {
   if(!isset($_GET['community'])) die('Community not set');
   $community = $_GET['community'];
   ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
+  if(!$uuid&&(($community!=='databases')||!isset($_GET['rdbms'])||!isset($_GET['fiddle']))) fail(403,'need to be logged in to visit this page unless from a fiddle');
 }
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
@@ -112,7 +113,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     #markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
     #markdown table { border-collapse: collapse; table-layout: fixed; }
     #markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    #markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; padding: 0.2em; }
+    #markdown td, #markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; padding: 0.2em; text-align: left; }
     #markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
     #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
     #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
@@ -180,8 +181,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
             });
           });
         }
-        $(this).find('a[href*="//dbfiddle.uk/?"]')
-               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
+        $(this).find('a[href*="//dbfiddle.uk"]')
+               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/?\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
                .each(function(){
           var t = $(this);
           $.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){
@@ -265,6 +266,17 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       $('.button.fa-list-ol').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
       $('.button.fa-list-ul').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
       render();
+      <?if(!$uuid){?>
+        $('#submit').click(function(){
+          if(!$('#form')[0].checkValidity()) return true;
+          if(confirm('This will set a cookie to identify your account, and will post your question under a CC BY-SA license.\nYou must be 16 or over to participate at TopAnswers.')) {
+            $.ajax({ type: "POST", url: '/uuid', async: false }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':responseText); });
+            return true;
+          }else{
+            return false;
+          }
+        });
+      <?}?>
     });
   </script>
   <title><?=$id?'Edit':'Ask'?> Question | <?=ucfirst($community)?> | TopAnswers</title>
@@ -276,20 +288,30 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <?if(!$id){?>
-        <select name="type" form="form"><?if($community!=='meta'){?><option selected value="question">question</option><?}?><option value="meta"><?=(($community==='meta')?'':'meta ')?>question</option><option value="blog">blog post</option></select>
-        <select name="license" form="form">
-          <?foreach(db("select license_id,license_name from license order by license_name") as $r){ extract($r);?>
-            <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
-          <?}?>
-        </select>
-        <select name="codelicense" form="form">
-          <?foreach(db("select codelicense_id,codelicense_name from codelicense order by codelicense_id<>1, codelicense_name") as $r){ extract($r);?>
-            <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
-          <?}?>
-        </select>
+        <?if($uuid){?>
+          <select name="type" form="form">
+            <?if($community!=='meta'){?><option selected value="question">question</option><?}?>
+            <option value="meta"><?=(($community==='meta')?'':'meta ')?>question</option>
+            <option value="blog">blog post</option>
+          </select>
+          <select name="license" form="form">
+            <?foreach(db("select license_id,license_name from license order by license_name") as $r){ extract($r);?>
+              <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
+            <?}?>
+          </select>
+          <select name="codelicense" form="form">
+            <?foreach(db("select codelicense_id,codelicense_name from codelicense order by codelicense_id<>1, codelicense_name") as $r){ extract($r);?>
+              <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
+            <?}?>
+          </select>
+        <?}else{?>
+          <input type="hidden" form="form" name="type" value="question">
+          <input type="hidden" form="form" name="license" value="6">
+          <input type="hidden" form="form" name="codelicense" value="1">
+        <?}?>
       <?}?>
       <input id="submit" type="submit" form="form" value="<?=$id?('update '.$question_type.(($question_type==='meta')?' question':(($question_type==='blog')?' post':''))).' under '.$license:'submit'?>" style="margin: 0.5rem;">
-      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
+      <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
     </div>
   </header>
   <form id="form" method="POST" action="/question" style="display: flex; justify-content: center; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
@@ -318,7 +340,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
           </div>
         </div>
         <div style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin);">
-          <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):''?></textarea>
+          <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):($uuid?'':('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']))?></textarea>
         </div>
         <div style="flex: 0 0 2vmin;"></div>
         <div id="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
