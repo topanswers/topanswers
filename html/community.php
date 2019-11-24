@@ -845,7 +845,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
                       <?if($canchat&&($room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
                     </span>
                     <span class="button-group">
-                      <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
+                      <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
                       <i class="fa fa-ellipsis-h"></i>
                       <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
                       <i></i>
