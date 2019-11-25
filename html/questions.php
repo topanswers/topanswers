@@ -23,7 +23,7 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
               from question natural join account natural join community natural left join account_community
               where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id>')."$2
               order by question_poll_major_id desc limit 50",$community_id,$id) as $r){ extract($r);?>
-  <div id="q<?=$question_id?>" class="question" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>"<?=$question_type?(' style="background-color: #'.$colour_light.'60;"'):''?>>
+  <div id="q<?=$question_id?>" class="question" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
     <a href="/<?=$community?>?q=<?=$question_id?>"><?=$question_type.$question_title?></a>
     <div class="bar">
       <div>

@@ -49,23 +49,24 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; white-space: nowrap; }
     header select, header input, header a:not(.icon) { margin: 3px; }
     header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }
-    header .icon>img { background-color: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
-    [data-rz-handle] { flex: 0 0 2px; background-color: black; }
-    [data-rz-handle] div { width: 2px; background-color: black; }
+    header .icon>img { background: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
+    [data-rz-handle] { flex: 0 0 2px; background: black; }
+    [data-rz-handle] div { width: 2px; background: black; }
 
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { margin-bottom: 2rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>; }
-    .answer { margin-bottom: 2em; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>; }
+    .question { background: white; margin-bottom: 1.2rem; border-radius: 5px; font-size: larger; }
+    .answer { background: white; margin: 0 1.2rem 3rem 1.2rem; border-radius: 5px; font-size: larger; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
-    .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
+    .answer:last-child { margin-bottom: 1.8rem; }
+    .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background: #<?=$colour_mid?>; }
     .bigspacer:not(:hover)>span:first-child { display: none; }
     .bigspacer:hover>span:last-child { display: none; }
     .tags { display: flex; margin-left: 0.25rem; margin-top: 1px; white-space: nowrap; overflow: hidden; }
-    .tag { padding: 0.1em 0.2em 0.1em 0.4em; background-color: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
+    .tag { padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
     .tag i::before { border-radius: 50%; }
@@ -81,7 +82,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
 
     #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); overflow: hidden; }
-    #qa .bar:last-child { border-bottom: none; border-radius: 0 0 0.2rem 0.2rem; }
+    #qa .bar:last-child { border-bottom: none; border-radius: 0 0 5px 5px; }
     #qa .bar+.bar { border-top: none; }
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
@@ -110,7 +111,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; }
     .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
-    .message .markdown { flex: 0 1 auto; max-height: 20vh; padding: 0.25rem; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: auto; }
+    .message .markdown { flex: 0 1 auto; max-height: 20vh; padding: 0.25rem; border: 1px solid darkgrey; border-radius: 0.3em; background: white; overflow: auto; }
 
     .message .button-group { display: grid; grid-template: 0.8rem 0.8rem / 0.9rem 0.9rem; align-items: center; justify-items: start; font-size: 0.8rem; margin-left: 1px; }
     .message .button-group:first-child { grid-template: 0.8rem 0.8rem / 1.7rem 0.1rem; }
@@ -535,7 +536,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
   <title><?=ucfirst($community)?> | TopAnswers</title>
 </head>
 <body style="display: flex;">
-  <main class="pane<?=$question?'':' hidepane'?>" style="flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
+  <main class="pane<?=$question?'':' hidepane'?>" style="background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
     <header style="border-bottom: 2px solid black;">
       <div>
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
@@ -563,7 +564,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <?if($uuid){?><a href="/profile" class="icon"><img src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
-    <div id="qa" style="background-color: white; overflow: auto; padding: 0.5em; scroll-behavior: smooth;">
+    <div id="qa" style="overflow: auto; padding: 0.6rem; scroll-behavior: smooth;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
                              ,account_name,account_is_me,question_se_question_id,question_se_user_id,question_se_username
@@ -575,7 +576,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account natural join community natural join license natural join codelicense natural left join account_community
                        where question_id=$1",$question));?>
-        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border: 1px solid #<?=$colour_dark?>; border-radius: 0.2em; font-size: larger; box-shadow: 0.1em 0.1em 0.1em #<?=$colour_dark?>;">
+        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border-radius: 5px; font-size: larger; background: white;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
@@ -639,10 +640,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             </div>
           </div>
         </div>
-        <?if($uuid && ($question_is_blog==='f')){?>
+        <?if($question_is_blog==='f'){?>
           <form method="GET" action="/answer">
             <input type="hidden" name="question" value="<?=$question?>">
-            <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>" style="margin: 2em auto; display: block;">
+            <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>" style="margin: 2em auto; display: block;"<?=$uuid?'':' disabled'?>>
           </form>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me
@@ -683,7 +684,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background-color: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
+  <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
     <header style="border-top: 2px solid black;">
       <div style="display: flex; align-items: center;">
         <a <?=$dev?'href="/room?id='.$room.'" ':''?>class="icon"><img src="/roomicon.php?id=<?=$room?>"></a>
@@ -720,7 +721,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <div id="messages-wrapper" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden;">
         <div id="notification-wrapper">
           <?if($uuid&&(ccdb("select count(*)>0 from chat_notification")==='t')){?>
-            <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border-bottom: 1px solid darkgrey; background-color: #<?=$colour_light?>; padding: 0.3em; overflow-x: hidden; overflow-y: auto;">
+            <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border-bottom: 1px solid darkgrey; background: #<?=$colour_light?>; padding: 0.3em; overflow-x: hidden; overflow-y: auto;">
               <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,community_name,question_id,chat_has_history
                                  , question_id is not null is_question_room
                                  , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) room_name
@@ -737,7 +738,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                             from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
                                  natural left join (select question_room_id room_id, question_id, question_title from question) q
                             order by chat_at limit 100") as $r){ extract($r);?>
-                <div id="n<?=$chat_id?>" class="message" style="background-color: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+                <div id="n<?=$chat_id?>" class="message" style="background: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
                   <small class="who">
                     <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
                     <?if($room_id!==$room){?>
@@ -802,7 +803,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           </div>
         </div>
         <?if($canchat){?>
-          <div id="preview" class="message" style="display: block; width: 100%; background-color: #<?=$colour_light?>; margin-top: 0.1rem; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
+          <div id="preview" class="message" style="display: block; width: 100%; background: #<?=$colour_light?>; margin-top: 0.1rem; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
             <div id="replying" style="width: 100%; font-style: italic; font-size: 0.6rem;" data-id="">
               <span>Preview:</span>
               <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
@@ -812,10 +813,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <?}?>
       </div>
       <?if($uuid){?>
-        <div id="active" style="flex: 0 0 calc(1.5rem + 5px); display: flex; flex-direction: column; justify-content: space-between; background-color: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 1px; overflow-y: hidden;">
+        <div id="active" style="flex: 0 0 calc(1.5rem + 5px); display: flex; flex-direction: column; justify-content: space-between; background: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 1px; overflow-y: hidden;">
           <div id="active-rooms" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden;"></div>
           <div id="active-spacer" style="flex: 0 0 auto; padding: 1rem 0; cursor: pointer;">
-            <div style="background-color: #<?=$colour_dark?>; height: 1px;"></div>
+            <div style="background: #<?=$colour_dark?>; height: 1px;"></div>
           </div>
           <div id="active-users" style="flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden;"></div>
         </div>
