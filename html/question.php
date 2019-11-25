@@ -157,7 +157,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
       },200));
       <?if(!$id){?>$('input[name="title"]').on('input',function(){ localStorage.setItem('<?=$community?>.ask.title',$(this).val()); });<?}?>
-      <?if(!$id){?>
+      <?if(!$id&&!isset($_GET['fiddle'])){?>
         if(localStorage.getItem('<?=$community?>.ask')) cm.setValue(localStorage.getItem('<?=$community?>.ask'));
         if(localStorage.getItem('<?=$community?>.ask.title')) $('input[name="title"]').val(localStorage.getItem('<?=$community?>.ask.title'));
         if(localStorage.getItem('<?=$community?>.ask.type')) $('#type').val(localStorage.getItem('<?=$community?>.ask.type'));
@@ -283,7 +283,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
           </div>
         </div>
         <div style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin);">
-          <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):($uuid?'':('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']))?></textarea>
+          <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):(isset($_GET['fiddle'])?('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
         </div>
         <div style="flex: 0 0 2vmin;"></div>
         <div id="markdown" class="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>

@@ -14,7 +14,7 @@ header('Cache-Control: max-age=60');
 ?>
 <div class="dbfiddle" data-rdbms="<?=$_GET['rdbms']?>">
   <?foreach($json as $i=>$batchplusoutput){?>
-    <fieldset>
+    <div class="batch">
       <textarea rows="1"><?=$batchplusoutput['batch']?></textarea>
       <?if($batchplusoutput['output']['error']){?>
         <p class="error"><?=$batchplusoutput['output']['error']?></p>
@@ -40,11 +40,10 @@ header('Cache-Control: max-age=60');
           </div>
         <?}?>
       <?}?>
-    </fieldset>
+    </div>
   <?}?>
   <div>
     <input type="button" value="run">
-    <span>or</span>
     <a href="https://dbfiddle.uk?rdbms=<?=$_GET['rdbms']?>&fiddle=<?=$_GET['fiddle']?>" target="_blank">fiddle</a>
   </div>
 </div>

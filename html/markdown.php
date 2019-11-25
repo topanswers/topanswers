@@ -9,19 +9,22 @@
   .markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
   .markdown table { border-collapse: collapse; table-layout: fixed; }
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
+  .markdown th { background-color: #<?=$colour_mid?>; }
+  .markdown td { background-color: white; }
   .markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
   .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
   .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
   .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
-  .dbfiddle { margin: 0.5rem; }
+  .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 4px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 0.5rem; }
   .dbfiddle>div { margin-top: 0.5rem; }
-  .dbfiddle fieldset { overflow: hidden; min-width: 0; }
+  .dbfiddle .batch { overflow: hidden; min-width: 0; }
   .dbfiddle .error { overflow: auto; white-space: pre; font-family: monospace; background-color: #<?=$colour_highlight?>40; }
+  .dbfiddle a { font-size: smaller; }
 </style>
 <script src="/markdown-it.js"></script>
 <script src="/markdown-it-inject-linenumbers.js"></script>
@@ -45,7 +48,7 @@
         f.find('input').click(function(){
           f.css('opacity',0.5);
           $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-          $.post('https://test.dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('fieldset>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
+          $.post('https://test.dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('.batch>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
               .done(function(r){
             $.get('/dbfiddle?rdbms='+f.data('rdbms')+'&fiddle='+r).done(function(r){
               addfiddle(f,r);
