@@ -67,16 +67,17 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 }
 if($id) {
   ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
-  $community = ccdb("select community_name from question natural join community where question_id=$1",$id);
-  extract(cdb("select question_type,question_title,question_markdown
+  extract(cdb("select question_type,question_title,question_markdown,community_code_language
+                    , community_name community
                     , license_name||(case when codelicense_id<>1 then ' + '||codelicense_name else '' end) license
-               from question natural join license natural join codelicense
+               from question natural join community natural join license natural join codelicense
                where question_id=$1",$id));
 }else{
   if(!isset($_GET['community'])) die('Community not set');
   $community = $_GET['community'];
   ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
   if(!$uuid&&(($community!=='databases')||!isset($_GET['rdbms'])||!isset($_GET['fiddle']))) fail(403,'need to be logged in to visit this page unless from a fiddle');
+  extract(cdb("select community_code_language from community where community_name=$1",$community));
 }
 extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community
@@ -86,7 +87,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
-  <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="codemirror/codemirror.css">
@@ -104,19 +104,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .question { margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid darkgrey; }
     .spacer { flex: 0 0 auto; min-height: 1rem; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
-    #markdown { overflow-wrap: break-word; }
-    #markdown :first-child { margin-top: 0; }
-    #markdown :last-child { margin-bottom: 0; }
-    #markdown ul { padding-left: 2em; }
-    #markdown li { margin: 0.5em 0; }
-    #markdown img { max-height: 20em; max-width: 100%; }
-    #markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
-    #markdown table { border-collapse: collapse; table-layout: fixed; }
-    #markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    #markdown td, #markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; padding: 0.2em; text-align: left; }
-    #markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
-    #markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; }
-    #markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
     #markdown-editor-buttons i { padding: 0.2em; text-align: center; }
     #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 0.2rem; }
     #markdown-editor-buttons i:last-child { margin-bottom: 0; }
@@ -124,37 +111,20 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0 0.2rem 0.2rem 0.2rem; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
-
-    .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
-    .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
-    .dbfiddle .tablewrapper { margin-top: 0.5rem; }
-    .dbfiddle>div { margin-top: 0.5rem; }
-    .dbfiddle fieldset { overflow: hidden; min-width: 0; }
-    .dbfiddle .error { background-color: #<?=$colour_highlight?>40; }
   </style>
   <script src="/lodash.js"></script>
   <script src="/jquery.js"></script>
-  <script src="/markdown-it.js"></script>
-  <script src="/markdown-it-inject-linenumbers.js"></script>
-  <script src="/markdown-it-sup.js"></script>
-  <script src="/markdown-it-sub.js"></script>
-  <script src="/markdown-it-emoji.js"></script>
-  <script src="/markdown-it-footnote.js"></script>
-  <script src="/markdown-it-deflist.js"></script>
-  <script src="/markdown-it-abbr.js"></script>
-  <script src="/highlightjs/highlight.js"></script>
-  <script src="/lightbox2/js/lightbox.min.js"></script>
-  <script src="/moment.js"></script>
-  <script src="/favico.js"></script>
   <script src="codemirror/codemirror.js"></script>
   <script src="codemirror/markdown.js"></script>
   <script src="codemirror/sql.js"></script>
   <script src="codemirror/placeholder.js"></script>
+  <?require './markdown.php';?>
+  <script src="/markdown-it.js"></script>
+  <script src="/lightbox2/js/lightbox.min.js"></script>
+  <script src="/moment.js"></script>
+  <script src="/favico.js"></script>
   <script>
-    hljs.initHighlightingOnLoad();
     $(function(){
-      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
-                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr).use(window.markdownitInjectLinenumbers);
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', extraKeys: {
         Home: "goLineLeft",
         End: "goLineRight",
@@ -166,46 +136,19 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       } });
       var map;
 
-      function fiddleMarkdown(){
-        function addfiddle(o,r){
-          var f = $(r).replaceAll(o);
-          f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity, mode: 'sql' }); });
-          f.find('input').click(function(){
-            f.css('opacity',0.5);
-            $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-            $.post('https://test.dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('fieldset>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
-                .done(function(r){
-              $.get('/dbfiddle?rdbms='+f.data('rdbms')+'&fiddle='+r).done(function(r){
-                addfiddle(f,r);
-              });
-            });
-          });
-        }
-        $(this).find('a[href*="//dbfiddle.uk"]')
-               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/?\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
-               .each(function(){
-          var t = $(this);
-          $.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){
-            addfiddle(t.parent(),r);
-          });
-        });
-      }
-
       function render(){
-        $('#markdown').html(md.render(cm.getValue()));
-        $('#markdown table').wrap('<div class="tablewrapper">');
+        $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown();
         map = [];
         $('#markdown [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$id){?>localStorage.setItem('<?=$community?>.ask',cm.getValue());<?}?>
-        $('#markdown').each(fiddleMarkdown);
       }
 
       $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, 'margin-top': '4px', 'margin-left': '10px' }).attr('tabindex','-1');
       $('#community').change(function(){ window.location = '?community='+$(this).val().toLowerCase(); });
-      cm.on('change',function(){
+      cm.on('change',_.debounce(function(){
         render();
         $('textarea[name="markdown"]').val(cm.getValue()).show();
-      });
+      },500));
       cm.on('scroll', _.throttle(function(){
         var rect = cm.getWrapperElement().getBoundingClientRect();
         var m = Math.round(cm.lineAtHeight(rect.top,"window")+cm.lineAtHeight(rect.bottom,"window"))/2;
@@ -343,7 +286,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
           <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$id?htmlspecialchars($question_markdown):($uuid?'':('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']))?></textarea>
         </div>
         <div style="flex: 0 0 2vmin;"></div>
-        <div id="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
+        <div id="markdown" class="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
       </div>
     </main>
   </form>

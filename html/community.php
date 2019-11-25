@@ -1,4 +1,4 @@
- <?
+<?
 include 'db.php';
 include 'nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
@@ -27,7 +27,7 @@ if($question) ccdb("select count(*) from question where question_id=$1",$questio
 $room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
 $canchat = false;
 if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
-extract(cdb("select community_id,community_my_power,sesite_url
+extract(cdb("select community_id,community_my_power,sesite_url,community_code_language
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
                   , coalesce(account_community_can_import,false) account_community_can_import
              from community natural left join my_account_community left join sesite on sesite_id=community_sesite_id
@@ -37,7 +37,6 @@ extract(cdb("select community_id,community_my_power,sesite_url
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
-  <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/select2.css">
@@ -56,7 +55,6 @@ extract(cdb("select community_id,community_my_power,sesite_url
     header .icon>img { background-color: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
     [data-rz-handle] { flex: 0 0 2px; background-color: black; }
     [data-rz-handle] div { width: 2px; background-color: black; }
-
 
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
@@ -87,11 +85,10 @@ extract(cdb("select community_id,community_my_power,sesite_url
     #qa .bar+.bar { border-top: none; }
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
-    #qa .identicon, #active-users .identicon, #active-rooms .roomicon { height: 1.5rem; width: 1.5rem; margin: 1px; }
+    #qa .identicon, #active-users .identicon, #active-rooms .roomicon { height: 1.5rem; width: 1.5rem; margin: 1px; display: block; }
     #active-rooms .roomicon.current { outline: 1px solid #<?=$colour_highlight?>; }
     #active-rooms .roomicon:not(.current):hover { outline: 1px solid #<?=$colour_dark?>; }
     #qa .markdown { padding: 0.6rem; }
-    #qa .markdown img { max-height: 30rem; }
     #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .minibar:last-child { border-bottom: none; }
     #qa .minibar+.minibar { border-top: none; }
@@ -106,17 +103,6 @@ extract(cdb("select community_id,community_my_power,sesite_url
     #qa .minibar>a:first-child { display: block; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.2rem; }
     #qa .question>a:first-child { display: block; padding: 0.6rem; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 
-    .markdown { overflow: auto; padding-right: 1px; overflow-wrap: break-word; }
-    .markdown :first-child { margin-top: 0; }
-    .markdown :last-child { margin-bottom: 0; }
-    .markdown ul { padding-left: 2em; }
-    .markdown img { max-width: 100%; max-height: 7em; }
-    .markdown table { border-collapse: collapse; table-layout: fixed; }
-    .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-    .markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: nowrap; border: 1px solid black; padding: 0.2em; text-align: left; }
-    .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
-    .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
-    .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
     .identicon.pingable:not(.ping):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
     .identicon.ping { outline: 1px solid #<?=$colour_highlight?>; }
     #chattext-wrapper:not(:hover) button { display: none; }
@@ -140,18 +126,12 @@ extract(cdb("select community_id,community_my_power,sesite_url
     .message.merged .who, .message.merged .identicon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
     #chat .message .who { top: -1.2em; }
+    #chat .markdown img { max-height: 7rem; }
     #chat .message.thread .markdown { background: #<?=$colour_highlight?>40; }
     #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
     #notifications .message .who { top: 0.3rem; }
     #notifications .message+.message { margin-top: 0.2em; }
     #chatupload:active i { color: #<?=$colour_mid?>; }
-
-    .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
-    .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
-    .dbfiddle .tablewrapper { margin-top: 0.5rem; }
-    .dbfiddle>div { margin-top: 0.5rem; }
-    .dbfiddle fieldset { overflow: hidden; min-width: 0; }
-    .dbfiddle .error { background-color: #<?=$colour_highlight?>40; }
 
     .pane { display: flex; }
     .panecontrol { display: none; }
@@ -166,35 +146,18 @@ extract(cdb("select community_id,community_my_power,sesite_url
   <script src="/lodash.js"></script>
   <script src="/jquery.js"></script>
   <script src="/jquery.waitforimages.js"></script>
-  <script src="/markdown-it.js"></script>
-  <script src="/markdown-it-sup.js"></script>
-  <script src="/markdown-it-sub.js"></script>
-  <script src="/markdown-it-emoji.js"></script>
-  <script src="/markdown-it-footnote.js"></script>
-  <script src="/markdown-it-deflist.js"></script>
-  <script src="/markdown-it-abbr.js"></script>
-  <script src="/markdown-it-for-inline.js"></script>
-  <script src="/highlightjs/highlight.js"></script>
+  <script src="codemirror/codemirror.js"></script>
+  <script src="codemirror/sql.js"></script>
+  <?require './markdown.php';?>
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
   <script src="/resizer.js"></script>
   <script src="/favico.js"></script>
   <script src="/select2.js"></script>
   <script src="/starrr.js"></script>
-  <script src="codemirror/codemirror.js"></script>
-  <script src="codemirror/sql.js"></script>
   <script>
-    hljs.initHighlightingOnLoad();
     //moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
-      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
-                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr)
-                     .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx){
-        if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
-        if(tokens[idx].attrGet('href')==='http://dba.se') tokens[idx].attrSet('href','https://dba.stackexchange.com');
-      });
-      md.linkify.tlds('kiwi',true).tlds('xyz',true);
-      var mdsummary = window.markdownit('zero').enable(['emphasis','link','strikethrough','backticks']).use(window.markdownitSup).use(window.markdownitSub);
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=ccdb("select account_notification_id from my_account")?>+0, numNewChats = 0;
@@ -213,8 +176,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         chatTimer = setTimeout(checkChat,chatPollInterval);
       }
       function renderQuestion(){
-        $(this).find('.summary span').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
-        $(this).find('.summary a').attr({ 'rel':'nofollow', 'target':'_blank' });
+        $(this).find('.summary span[data-markdown]').renderMarkdownSummary();
         $(this).find('.when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       }
       function updateQuestions(scroll){
@@ -237,35 +199,8 @@ extract(cdb("select community_id,community_my_power,sesite_url
           <?if($uuid){?>setChatPollTimeout();<?}?>
         },'html').fail(setChatPollTimeout);
       }
-      function fiddleMarkdown(){
-        function addfiddle(o,r){
-          var f = $(r).replaceAll(o);
-          f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity }); });
-          f.find('input').click(function(){
-            f.css('opacity',0.5);
-            $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-            $.post('https://test.dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('fieldset>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
-                .done(function(r){
-              $.get('/dbfiddle?rdbms='+f.data('rdbms')+'&fiddle='+r).done(function(r){
-                addfiddle(f,r);
-              });
-            });
-          });
-        }
-        $(this).find('a[href*="//dbfiddle.uk"]')
-               .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/?\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
-               .each(function(){
-          var t = $(this);
-          $.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){
-            addfiddle(t.parent(),r);
-          });
-        });
-      }
       function renderChat(){
-        $(this).find('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
-        $(this).find('.markdown img').each(function(){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); } });
-        $(this).find('.markdown a').attr({ 'rel':'nofollow', 'target':'_blank' });
-        if($(this).hasClass('fiddled')) $(this).find('.markdown').each(fiddleMarkdown);
+        $(this).find('.markdown').renderMarkdown();
       }
       function updateChat(scroll){
         var maxChat = $('#messages>.message:last-child').data('id');
@@ -293,13 +228,6 @@ extract(cdb("select community_id,community_my_power,sesite_url
               }
               foo.call(this);
             });
-            newchat.filter('.message').find('.markdown a[href*="//dbfiddle.uk/?"]')
-                   .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
-                   .closest('.message')
-                   .last()
-                   .addClass('fiddled')
-                   .find('.markdown')
-                   .each(fiddleMarkdown);
             newchat.filter('.bigspacer').each(function(){
               $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })).end()
                      .children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
@@ -359,7 +287,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         $.get(window.location.href,function(r){
           var scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
           $('#notification-wrapper').replaceWith($('<div />').append(r).find('#notification-wrapper'));
-          $('#notification-wrapper .markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
+          $('#notification-wrapper .markdown').renderMarkdown();
           if(scroll){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); }
           if(scroll) setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
           setChatPollTimeout();
@@ -472,8 +400,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         $('.ping').removeClass('ping');
         $('#replying').attr('data-id','').data('update')();
       });
-      $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))).find('table').wrap('<div class="tablewrapper">'); });
-      $('.markdown').each(fiddleMarkdown);
+      $('.markdown').renderMarkdown();
       $('.community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
       $('#tags').select2({ placeholder: "select a tag" });
       function tagdrop(){ $('#tags').select2('open'); };
@@ -486,11 +413,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
         var m = $('#chattext').val();
         if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
         if(this.scrollHeight>$(this).outerHeight()) $(this).css('min-height',this.scrollHeight);
-        if(m.length){
-          $('#preview .markdown').css('visibility','visible').html(md.render(m));
-        }else{
-          $('#preview .markdown').css('visibility','hidden').html(md.render('&nbsp;'));
-        }
+        $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',m||'&nbsp;').renderMarkdown();
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){
@@ -587,7 +510,8 @@ extract(cdb("select community_id,community_my_power,sesite_url
           t.find('a').removeAttr('href');
         });
       <?}?>
-      $('#qa .summary span[data-markdown]').each(function(){ $(this).html(mdsummary.renderInline($(this).attr('data-markdown'))); });
+      $('#qa .summary span[data-markdown]').renderMarkdownSummary();
+      $('#qa .summary span[data-markdown]').each(function(){ alert('called'); });
       updateChat(true);
       <?if(!$question){?>updateQuestions(true);<?}?>
       $('#se').click(function(){
@@ -878,7 +802,7 @@ extract(cdb("select community_id,community_my_power,sesite_url
               <span>Preview:</span>
               <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
             </div>
-            <div class="markdown" data-markdown="" style="display: inline-block;"></div>
+            <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
           </div>
         <?}?>
       </div>

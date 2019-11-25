@@ -53,9 +53,9 @@ extract(cdb("select community_name community
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
-  <link rel="stylesheet" href="/highlightjs/default.css">
   <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
+  <link rel="stylesheet" href="codemirror/codemirror.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
@@ -75,21 +75,10 @@ extract(cdb("select community_name community
 
     a[data-lightbox] img { cursor: zoom-in; }
 
-    .markdown { overflow: auto; padding-right: 1px; overflow-wrap: break-word; }
-    .markdown :first-child { margin-top: 1px; }
-    .markdown :last-child { margin-bottom: 1px; }
-    .markdown ul { padding-left: 2em; }
-    .markdown img { max-height: 7em; }
-    .markdown table { border-collapse: collapse; }
-    .markdown td, .markdown th { white-space: nowrap; border: 1px solid black; }
-    .markdown blockquote { padding: 0.5em;  margin-left: 0.7em; margin-right: 0; border-left: 0.3em solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
-    .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
-    .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
-
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; top: -1.2em; }
     .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
-    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
+    .xmessage .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
     .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
     .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
@@ -100,28 +89,20 @@ extract(cdb("select community_name community
     .message.merged .identicon { visibility: hidden; }
     .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
     .message:target .markdown-wrapper { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
+
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 4px; }
+    .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
+    .CodeMirror-wrap pre { word-break: break-word; }
   </style>
+  <script src="/lodash.js"></script>
   <script src="/jquery.js"></script>
-  <script src="/markdown-it.js"></script>
-  <script src="/markdown-it-sup.js"></script>
-  <script src="/markdown-it-sub.js"></script>
-  <script src="/markdown-it-emoji.js"></script>
-  <script src="/markdown-it-footnote.js"></script>
-  <script src="/markdown-it-deflist.js"></script>
-  <script src="/markdown-it-abbr.js"></script>
-  <script src="/markdown-it-for-inline.js"></script>
-  <script src="/highlightjs/highlight.js"></script>
+  <script src="codemirror/codemirror.js"></script>
+  <script src="codemirror/sql.js"></script>
+  <?require './markdown.php';?>
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
   <script>
-    hljs.initHighlightingOnLoad();
     $(function(){
-      var md = window.markdownit({ linkify: true, highlight: function (str, lang) { if (lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; }})
-                     .use(window.markdownitSup).use(window.markdownitSub).use(window.markdownitEmoji).use(window.markdownitDeflist).use(window.markdownitFootnote).use(window.markdownitAbbr)
-                     .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx){
-        if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
-        if(tokens[idx].attrGet('href')==='http://dba.se') tokens[idx].attrSet('href','https://dba.stackexchange.com');
-      });
       function threadChat(){
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
@@ -134,10 +115,9 @@ extract(cdb("select community_name community
         });
       }
       $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
-      $('.markdown').each(function(){ $(this).html(md.render($(this).attr('data-markdown'))); });
+      $('.markdown').renderMarkdown();
       threadChat();
-      $('.message .markdown img').each(function(i){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); } });
-      $('.message .markdown a').attr('rel','nofollow').attr('target','_blank');
+      $('.message .markdown :not(a)>img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
       setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
     });

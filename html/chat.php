@@ -48,7 +48,7 @@ extract(cdb("select community_name community
              where room_id=$1",$room));
 $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id from chat where room_id=$1 order by chat_id desc limit 100) z",$room);
 ?>
-<?foreach(db("select *
+<?foreach(db("select *, row_number() over(order by chat_at desc) rn
               from(select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
                    from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at,chat_change_id,chat_has_history
                               , coalesce(account_community_votes,0) account_community_votes
@@ -71,7 +71,7 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
   <div id="c<?=$chat_id?>" class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>" data-change-id="<?=$chat_change_id?>" data-at="<?=$chat_at_iso?>">
     <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
     <img title="Reputation: <?=$account_community_votes?>" class="identicon" src="/identicon.php?id=<?=$account_id?>">
-    <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+    <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
     <?if($uuid){?>
       <span class="buttons">
         <span class="button-group show">

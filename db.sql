@@ -13,6 +13,7 @@ create table community(
 , community_highlight_color bytea not null default decode('f79804','hex') check(length(community_highlight_color)=3)
 , community_is_dev boolean default false not null
 , community_sesite_id integer references sesite
+, community_code_language text 
 );
 
 create type room_type_enum as enum ('public','gallery','private');
