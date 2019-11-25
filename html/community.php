@@ -582,7 +582,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=(($account_is_me==='f')&&!$question_se_username)?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>">
               <span>
                 <span class="when" data-seconds="<?=$question_when?>"></span>,
-                <?if($question_se_question_id){?>
+                <?if($question_se_user_id){?>
                   <span>by <a href="<?=$sesite_url.'/usres/'.$question_se_user_id?>"><?=$question_se_username?></a> from <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>"><?=$account_name?></a></span>
                 <?}else{?>
                   <span>by <?=htmlspecialchars($account_name)?></span>

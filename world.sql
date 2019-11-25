@@ -286,12 +286,12 @@ create function new_question(cid integer, typ db.question_type_enum, title text,
   select _new_question(cid,current_setting('custom.account_id',true)::integer,typ,title,markdown,lic,codelic,null,null,null);
 $$;
 --
-create function new_sequestion(cid integer, title text, seqid integer, seaid integer, seuser text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
-  select _new_question(cid,account_id,'question',title,'copy markdown from SE question here',4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid);
-$$;
---
-create function new_sequestion(cid integer, title text, markdown text, seqid integer, seaid integer, seuser text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
-  select _new_question(cid,account_id,'question',title,markdown,4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid);
+create function new_sequestion(cid integer, title text, markdown text, seqid integer, seaid integer, seuser text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
+begin
+  return (select _new_question(cid,account_id,'question',title,markdown,4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid));
+exception
+  when unique_violation then perform _error(400,'already imported');
+end;
 $$;
 --
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
