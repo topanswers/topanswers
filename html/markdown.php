@@ -37,7 +37,18 @@
 <script src="/markdown-it-for-inline.js"></script>
 <script src="/highlightjs/highlight.js"></script>
 <script>
-  hljs.initHighlightingOnLoad();
+
+  // we have no idea why this works but without it cs highlighting doesn't happen
+  (function(){
+    var script = document.createElement( 'script' );
+    script.type = 'text/javascript';
+    script.src = "/highlightjs/highlight.js";
+    script.addEventListener("load", () => { console.log("laoded"); hljs.initHighlighting(); })
+    script.addEventListener("error", () => { console.log("error"); hljs.initHighlighting(); })
+    document.querySelector("head").appendChild(script);
+  })();
+  //hljs.initHighlightingOnLoad();
+
   (function($){
     var md, mdsummary;
     function fiddleMarkdown(){
