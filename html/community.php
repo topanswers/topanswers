@@ -783,14 +783,19 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         </div>
         <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
           <div style="flex: 1 0 0.5em;">
-            <?if($question&&$uuid&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
+            <?if($question&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
               <div style="padding: 10vh 20%;">
-                <?if(ccdb("select question_se_username is null from question where question_id=$1",$question)==='t'){?>
-                  <p>This is a dedicated room for discussion about this question.</p>
-                  <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
+                <?if($uuid){?>
+                  <?if(ccdb("select question_se_username is null from question where question_id=$1",$question)==='t'){?>
+                    <p>This is a dedicated room for discussion about this question.</p>
+                    <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
+                  <?}else{?>
+                    <p>This is a dedicated room for discussion about this imported question.</p>
+                    <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+                  <?}?>
                 <?}else{?>
-                  <p>This is a dedicated room for discussion about this imported question.</p>
-                  <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+                  <p>This is a dedicated room for discussion about this question.</p>
+                  <p>Once logged in you can direct comments to the question poster (or any answer poster) here.</p>
                 <?}?>
               </div>
             <?}?>
