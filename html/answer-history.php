@@ -28,7 +28,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
     .markdown, .diff { border: 1px solid #<?=$colour_dark?>; padding: 0.5rem; border-radius: 4px; }
     .separator { border-bottom: 0.3rem solid #<?=$colour_dark?>; margin: 1rem -1rem; }
     .separator:last-child { display: none; }
-    .diff { background-color: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre; font-family: monospace; }
+    .diff { background-color: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; }
 
     .who, .when { white-space: nowrap; }
     .when { font-size: smaller; }
