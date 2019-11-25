@@ -81,6 +81,20 @@
       if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
       if(tokens[idx].attrGet('href')==='http://dba.se') tokens[idx].attrSet('href','https://dba.stackexchange.com');
     });
+
+    md.renderer.rules.code_block = function(tokens, idx, options, env, slf){
+      var token = tokens[idx], langName = '<?=$community_code_language?>', highlighted, i, tmpAttrs, tmpToken;
+
+      if (options.highlight) {
+        highlighted = options.highlight(token.content, langName) || md.utils.escapeHtml(token.content);
+      } else {
+        highlighted = md.utils.escapeHtml(token.content);
+      }
+
+      if (highlighted.indexOf('<pre') === 0) return highlighted + '\n';
+      return '<pre><code' + slf.renderAttrs(token) + '>' + highlighted + '</code></pre>\n';
+    };
+
     md.linkify.tlds('kiwi',true).tlds('xyz',true);
     mdsummary = window.markdownit('zero').enable(['emphasis','link','strikethrough','backticks']).use(window.markdownitSup).use(window.markdownitSub);
  
