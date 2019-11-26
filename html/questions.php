@@ -50,7 +50,7 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
                   where question_id=$1
                   order by answer_votes desc, answer_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
       <div class="minibar">
-        <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n"));?>"></span></a>
+        <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars($answer_markdown);?>"></span></a>
         <div>
           <?if($answer_votes){?>
             <span class="score<?=($answer_have_voted==='t')?' me':''?>">
