@@ -35,9 +35,12 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       $doc = new DOMDocument();
       $doc->loadHTML(file_get_contents($sesite_url.'/posts/'.$_POST['seqid'].'/edit'));
       $xpath = new DOMXpath($doc);
+      $elements = $xpath->query("//input[@id='tagnames']/@value");
+      $tags = $elements[0]->textContent;
+      $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//textarea[@id='wmd-input-".$_POST['seqid']."']");
-      $markdown = $elements[0]->textContent;
-      $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6)",$_POST['community'],$title,$markdown,$_POST['seqid'],$seaid,$seuser);
+      $markdown = preg_replace('/<!-- -->/','',$elements[0]->textContent);
+      $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6,$7)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid'],$seaid,$seuser);
       if($account_community_se_user_id){
         $doc = new DOMDocument();
         $doc->loadHTML(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));

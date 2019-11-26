@@ -298,6 +298,18 @@ exception
 end;
 $$;
 --
+create function new_sequestion(cid integer, title text, markdown text, tags text, seqid integer, seaid integer, seuser text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
+declare
+  id integer;
+begin
+  select _new_question(cid,account_id,'question',title,markdown,4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid) into id;
+  perform new_sequestion_tag(id,tag_id) from tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=3;
+  return id;
+exception
+  when unique_violation then perform _error(400,'already imported');
+end;
+$$;
+--
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('only author can edit blog post') where exists (select 1 from question where question_id=id and question_type='blog' and account_id<>current_setting('custom.account_id',true)::integer);
@@ -334,13 +346,10 @@ create function change_answer(id integer, markdown text) returns void language s
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
 $$;
 --
-create function new_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+create function _new_question_tag(aid integer, qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
   select _error('invalid tag') where not exists (select 1 from world.tag where tag_id=tid);
-  select _error(429,'rate limit') where exists (select 1
-                                            from question_tag_x_history
-                                            where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
   --
   update question set question_poll_minor_id = default where question_id=qid;
   --
@@ -348,11 +357,22 @@ create function new_question_tag(qid integer, tid integer) returns void language
                                                   union all
                                                   select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
      , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id)
-             select qid,tag_id,community_id,current_setting('custom.account_id',true)::integer
+             select qid,tag_id,community_id,aid
              from w natural join tag
              where tag_id not in (select tag_id from question_tag_x where question_id=qid)
              returning tag_id)
   update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
+$$;
+--
+create function new_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error(429,'rate limit') where exists (select 1
+                                                from question_tag_x_history
+                                                where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
+  select _new_question_tag(current_setting('custom.account_id',true)::integer,qid,tid);
+$$;
+--
+create function new_sequestion_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _new_question_tag(account_id,qid,tid) from account where account_sesite_id=(select community_sesite_id from question natural join community where question_id=qid);
 $$;
 --
 create function remove_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
