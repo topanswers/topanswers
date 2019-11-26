@@ -561,7 +561,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           </form>
         <?}?>
         <?if($uuid){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question"></form><?}?>
-        <?if($uuid){?><a href="/profile" class="icon"><img src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
+        <?if($uuid){?><a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
     <div id="qa" style="overflow: auto; padding: 0.6rem; scroll-behavior: smooth;">
@@ -580,7 +580,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=(($account_is_me==='f')&&!$question_se_username)?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>">
+              <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=(($account_is_me==='f')&&!$question_se_username)?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               <span>
                 <span class="when" data-seconds="<?=$question_when?>"></span>,
                 <?if($question_se_user_id){?>
@@ -676,7 +676,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                   <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
                 </span>
                 <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-                <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>">
+                <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               </div>
             </div>
           </div>
@@ -687,7 +687,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
   <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
     <header style="border-top: 2px solid black;">
       <div style="display: flex; align-items: center;">
-        <a <?=$dev?'href="/room?id='.$room.'" ':''?>class="icon"><img src="/roomicon.php?id=<?=$room?>"></a>
+        <a <?=$dev?'href="/room?id='.$room.'" ':''?>class="icon"><img src="/roomicon?id=<?=$room?>"></a>
         <?if(!$question){?>
           <select class="community">
             <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
@@ -754,7 +754,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                     <span class="when" data-seconds="<?=$chat_ago?>"></span>
                     <span style="color: #<?=$chat_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$chat_dark_shade?>;">dismiss</a>)</span>
                   </small>
-                  <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
+                  <img class="identicon" src="/identicon?id=<?=$account_id?>">
                   <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
                   <span class="buttons">
                     <span class="button-group show">

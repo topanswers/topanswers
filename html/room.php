@@ -71,7 +71,7 @@ extract(cdb("select room_name, room_image is not null room_has_image from room w
   </fieldset>
   <fieldset>
     <legend>picture</legend>
-    <img src="/roomicon.php?id=<?=$id?>">
+    <img src="/roomicon?id=<?=$id?>">
     <?if($room_has_image==='t'){?>
       <form action="/room" method="post">
         <input type="hidden" name="id" value="<?=$id?>">

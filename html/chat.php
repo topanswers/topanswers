@@ -26,7 +26,7 @@ if(isset($_GET['activerooms'])){
               where room_my_last_chat>(current_timestamp-'7d'::interval)
               order by room_my_last_chat desc") as $r){ extract($r);?>
     <a href="/<?=$community_name?>?<?=($room_is_for_question==='t')?'q='.$room_question_id:'room='.$room_id?>">
-      <img title="<?=($room_name)?$room_name:''?>" class="roomicon<?=($room_id===$room)?' current':''?>" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon.php?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
+      <img title="<?=($room_name)?$room_name:''?>" class="roomicon<?=($room_id===$room)?' current':''?>" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
     </a><?
   }
   exit;
@@ -38,7 +38,7 @@ if(isset($_GET['activeusers'])){
               from room_account_x natural join account natural left join (select * from account_community natural join room where room_id=$1) z
               where room_id=$1
               order by room_account_x_latest_chat_at desc",$room) as $r){ extract($r);?>
-    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Reputation: <?=$account_community_votes?>)" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon.php?id=<?=$account_id?>"><?
+    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Reputation: <?=$account_community_votes?>)" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>"><?
   }
   exit;
 }
@@ -70,7 +70,7 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
   <?}?>
   <div id="c<?=$chat_id?>" class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>" data-change-id="<?=$chat_change_id?>" data-at="<?=$chat_at_iso?>">
     <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
-    <img title="Reputation: <?=$account_community_votes?>" class="identicon" src="/identicon.php?id=<?=$account_id?>">
+    <img title="Reputation: <?=$account_community_votes?>" class="identicon" src="/identicon?id=<?=$account_id?>">
     <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
     <?if($uuid){?>
       <span class="buttons">

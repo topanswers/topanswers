@@ -186,7 +186,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         </select>
       <?}?>
       <input id="submit" type="submit" form="form" value="<?=$id?'update answer under '.$license:'post answer'?>" style="margin: 0.5rem;">
-      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
+      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
   <form id="form" method="POST" action="/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">

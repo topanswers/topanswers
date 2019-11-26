@@ -87,7 +87,7 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
   </fieldset>
   <fieldset>
     <legend>picture</legend>
-    <img src="/identicon.php?id=<?=ccdb("select account_id from my_account")?>">
+    <img src="/identicon?id=<?=ccdb("select account_id from my_account")?>">
     <?if($account_has_image==='t'){?>
       <form action="/profile" method="post">
         <input type="hidden" name="image">

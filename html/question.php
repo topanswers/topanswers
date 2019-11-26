@@ -119,7 +119,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <script src="codemirror/sql.js"></script>
   <script src="codemirror/placeholder.js"></script>
   <?require './markdown.php';?>
-  <script src="/markdown-it.js"></script>
   <script src="/lightbox2/js/lightbox.min.js"></script>
   <script src="/moment.js"></script>
   <script src="/favico.js"></script>
@@ -254,7 +253,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         <?}?>
       <?}?>
       <input id="submit" type="submit" form="form" value="<?=$id?('update '.$question_type.(($question_type==='meta')?' question':(($question_type==='blog')?' post':''))).' under '.$license:'submit'?>" style="margin: 0.5rem;">
-      <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a><?}?>
+      <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a><?}?>
     </div>
   </header>
   <form id="form" method="POST" action="/question" style="display: flex; justify-content: center; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">

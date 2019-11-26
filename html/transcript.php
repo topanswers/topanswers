@@ -131,7 +131,7 @@ extract(cdb("select community_name community
       <span style="color: #<?=$colour_mid?>;">transcript for "<?=$room_name?>"</span>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
-      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon.php?id=<?=ccdb("select account_id from login")?>"></a>
+      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
   <main style="display: flex; margin: 2px; background-color: #<?=$colour_light?>; overflow: hidden;">
@@ -218,7 +218,7 @@ extract(cdb("select community_name community
               <?=($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name?>
             <?}?>
           </small>
-          <img class="identicon" src="/identicon.php?id=<?=$account_id?>">
+          <img class="identicon" src="/identicon?id=<?=$account_id?>">
           <div class="markdown-wrapper">
             <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
           </div>
