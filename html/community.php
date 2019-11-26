@@ -433,8 +433,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 post = { room: <?=$room?>, msg: msg, replyid: replyid, pings: arr, action: 'new' };
               }
               $.post('/chat',post).done(function(){
-                t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
-                $('#cancelreply').click();
                 if(edit){
                   c.css('opacity',1).find('.markdown').attr('data-markdown',msg).end().each(renderChat);
                   checkChat();
@@ -443,6 +441,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                   if($('#notifications .message').children().length===0) $('#notification-wrapper').children().remove();
                   updateChat();
                 }
+                $('#cancelreply').click();
+                t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
               }).fail(function(r){
                 alert(r.status+' '+r.statusText+'\n'+r.responseText);
                 t.prop('disabled',false).focus();
