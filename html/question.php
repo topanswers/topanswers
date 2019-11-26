@@ -33,17 +33,17 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       $seaid = explode('/',$elements[0]->getAttribute('href'))[2];
       $seuser = explode('/',$elements[0]->getAttribute('href'))[3];
       $doc = new DOMDocument();
-      $doc->loadHTML(file_get_contents($sesite_url.'/posts/'.$_POST['seqid'].'/edit'));
+      $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/posts/'.$_POST['seqid'].'/edit'),'HTML-ENTITIES','UTF-8'));
       $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//input[@id='tagnames']/@value");
       $tags = $elements[0]->textContent;
       $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//textarea[@id='wmd-input-".$_POST['seqid']."']");
-      $markdown = preg_replace('/<!-- -->/','',$elements[0]->textContent);
+      $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',preg_replace('/<!--[^\n]*-->/m','',$elements[0]->textContent)));
       $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6,$7)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid'],$seaid,$seuser);
       if($account_community_se_user_id){
         $doc = new DOMDocument();
-        $doc->loadHTML(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
+        $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']),'HTML-ENTITIES','UTF-8'));
         $xpath = new DOMXpath($doc);
         $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
                                  ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
@@ -51,10 +51,10 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         foreach($elements as $element){
           $aid = explode('-',$element->getAttribute('id'))[1];
           $doc = new DOMDocument();
-          $doc->loadHTML(file_get_contents($sesite_url.'/posts/'.$aid.'/edit'));
+          $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/posts/'.$aid.'/edit'),'HTML-ENTITIES','UTF-8'));
           $xpath = new DOMXpath($doc);
           $elements = $xpath->query("//textarea[@id='wmd-input-".$aid."']");
-          $markdown = preg_replace('/<!-- -->/','',$elements[0]->textContent);
+          $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',preg_replace('/<!--[^\n]*-->/m','',$elements[0]->textContent)));
           db("select new_answer($1,$2,account_license_id,account_codelicense_id) from my_account",$id,$markdown);
         }
       }
