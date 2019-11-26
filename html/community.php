@@ -360,7 +360,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         var m = $(this).closest('.message');
         $('.ping').removeClass('ping');
         $('#replying').attr('data-id',m.data('id')).data('update')();
-        $('#chattext').val(m.find('.markdown').data('markdown')).focus().trigger('input');
+        $('#chattext').val(m.find('.markdown').attr('data-markdown')).focus().trigger('input');
       });
       function starflag(t,action,direction){
         var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
@@ -414,7 +414,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('#chattext').on('input', function(){
         var m = $('#chattext').val();
         if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
-        if(this.scrollHeight>$(this).outerHeight()) $(this).css('min-height',this.scrollHeight);
+        if(this.scrollHeight>$(this).outerHeight()) $(this).css('height',this.scrollHeight);
         $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',m||'&nbsp;').renderMarkdown();
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
@@ -433,7 +433,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 post = { room: <?=$room?>, msg: msg, replyid: replyid, pings: arr, action: 'new' };
               }
               $.post('/chat',post).done(function(){
-                t.val('').prop('disabled',false).css('height',$(this).data('initialheight')).css('min-height',0).focus().trigger('input');
+                t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
                 $('#cancelreply').click();
                 if(edit){
                   c.css('opacity',1).find('.markdown').attr('data-markdown',msg).end().each(renderChat);
