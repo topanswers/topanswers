@@ -1,4 +1,5 @@
 <?
+header("Content-Type: text/plain");
 if($_SERVER['SERVER_NAME']==='topanswers.xyz'){?>
 User-Agent: *
 Disallow: /poll?
