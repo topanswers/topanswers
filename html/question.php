@@ -151,9 +151,12 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         End: "goLineRight",
         'Ctrl-B': function(){ $('.button.fa-bold').click(); },
         'Ctrl-I': function(){ $('.button.fa-italic').click(); },
+        'Ctrl-L': function(){ $('.button.fa-link').click(); },
         'Ctrl-Q': function(){ $('.button.fa-quote-left').click(); },
         'Ctrl-K': function(){ $('.button.fa-code').click(); },
-        'Ctrl-G': function(){ $('.button.fa-picture-o').click(); }
+        'Ctrl-G': function(){ $('.button.fa-picture-o').click(); },
+        'Ctrl-Z': function(){ $('.button.fa-undo').click(); },
+        'Ctrl-Y': function(){ $('.button.fa-repeat').click(); }
       } });
       var map;
 
@@ -212,6 +215,13 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         if(cm.somethingSelected()){ cm.replaceSelection('*'+cm.getSelection()+'*'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionEnd.ch+1),line:selectionEnd.line});
         }else{ cm.replaceSelection('*italic*'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionStart.ch+7),line:selectionStart.line}); }
       });
+      $('.button.fa-link').click(function(){
+        var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false), selectionLength = cm.getSelection().length;
+        if(cm.somethingSelected()){
+          if(cm.getSelection().indexOf('.')===-1){ cm.replaceSelection('['+cm.getSelection()+'](https://topanswers.xyz)'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+3+selectionLength),line:selectionStart.line},{ch:(selectionStart.ch+25+selectionLength),line:selectionStart.line});
+          }else{ cm.replaceSelection('[enter link description here]('+cm.getSelection()+')'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionStart.ch+28),line:selectionStart.line}); }
+        }else{ cm.replaceSelection('[enter link description here](https://topanswers.xyz)'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionStart.ch+28),line:selectionStart.line}); }
+      });
       $('.button.fa-quote-left').click(function(){
         var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
         if(cm.somethingSelected()){ cm.replaceSelection('\n> '+cm.getSelection().replace(/\n(?!$)/g,'  \n> ')+'\n'+(((cm.getSelection().length)>=cm.getLine(selectionStart.line).length)?'':'\n')); cm.focus(); cm.setSelection({ch:2,line:(selectionStart.line+1)},{ch:(selectionEnd.ch+2),line:(selectionEnd.line+1)});
@@ -229,6 +239,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       $('.button.fa-picture-o').click(function(){ $('#uploadfile').click(); cm.focus(); });
       $('.button.fa-list-ol').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
       $('.button.fa-list-ul').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
+      $('.button.fa-undo').click(function(){ cm.undo(); cm.focus(); });
+      $('.button.fa-repeat').click(function(){ cm.redo(); cm.focus(); });
       render();
       <?if(!$uuid){?>
         $('#submit').click(function(){
@@ -295,12 +307,16 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
             <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
             <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
             <br style="margin-bottom: 1em;">
+            <i title="Hyperlink (Ctrl + L)" class="button fa fw fa-link"></i>
             <i title="Blockquote (Ctrl + Q)" class="button fa fw fa-quote-left"></i>
             <i title="Code (Ctrl + K)" class="button fa fw fa-code"></i>
             <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
         <!--<br style="margin-bottom: 1em;">
             <i title="Ordered List (Ctrl + O)" class="button fa fw fa-list-ol"></i>
             <i title="Unordered List (Ctrl + U)" class="button fa fw fa-list-ul"></i>-->
+            <br style="margin-bottom: 1em;">
+            <i title="Undo (Ctrl + Z)" class="button fa fw fa-undo"></i>
+            <i title="Redo (Ctrl + Y)" class="button fa fw fa-repeat"></i>
           </div>
         </div>
         <div style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin);">
