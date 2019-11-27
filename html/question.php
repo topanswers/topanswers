@@ -243,7 +243,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <?}?>
     });
   </script>
-  <title><?=$id?'Edit':'Ask'?> Question | <?=ucfirst($community)?> | TopAnswers</title>
+  <title><?=$id?'Edit':'Ask'?> Question - TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">

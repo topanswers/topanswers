@@ -122,7 +122,7 @@ extract(cdb("select community_name community
       setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
     });
   </script>
-  <title><?=$room_name?> Transcript | TopAnswers</title>
+  <title><?=$room_name?> Transcript - TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">

@@ -63,7 +63,7 @@ extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(commu
       });
     });
   </script>
-  <title>History | <?=ucfirst($community)?> | TopAnswers</title>
+  <title>Chat Message History - TopAnswers</title>
 </head>
 <body style="font-size: larger; background-color: #<?=$colour_light?>;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">

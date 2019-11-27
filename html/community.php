@@ -538,7 +538,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       });
     });
   </script>
-  <title><?=ucfirst($community)?> | TopAnswers</title>
+  <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
 </head>
 <body style="display: flex;">
   <main class="pane<?=$question?'':' hidepane'?>" style="background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
