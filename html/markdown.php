@@ -17,6 +17,9 @@
   .markdown blockquote>:last-child { margin-bottom: 0; }
   .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; font-size: 1.1em; overflow-wrap: break-word; }
   .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
+  .markdown nav ol { counter-reset: list-item; }
+  .markdown nav li { display: block; counter-increment: list-item; }
+  .markdown nav li:before { content: counters(list-item,'.') ' '; }
   .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 4px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
