@@ -35,6 +35,8 @@
 <script src="/markdown-it-deflist.js"></script>
 <script src="/markdown-it-abbr.js"></script>
 <script src="/markdown-it-for-inline.js"></script>
+<script src="/markdownItAnchor.js"></script>
+<script src="/markdownItTocDoneRight.js"></script>
 <script src="/highlightjs/highlight.js"></script>
 <script>
   // we have no idea why this works but without it cs highlighting doesn't happen
@@ -78,7 +80,7 @@
       });
     }
 
-    md = window.markdownit({ linkify: true
+    md = window.markdownIt({ linkify: true
                            , highlight: function(str,lang){ lang = lang||'<?=$community_code_language?>'; if(lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; } })
                .use(window.markdownitSup)
                .use(window.markdownitSub)
@@ -87,6 +89,8 @@
                .use(window.markdownitFootnote)
                .use(window.markdownitAbbr)
                .use(window.markdownitInjectLinenumbers)
+               .use(window.markdownItAnchor, { permalink: true, permalinkBefore: true, permalinkSymbol: '' })
+               .use(window.markdownItTocDoneRight,{ level: [1,2,3] })
                .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx)
     {
       if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
@@ -107,7 +111,7 @@
     };
 
     md.linkify.tlds('kiwi',true).tlds('xyz',true);
-    mdsummary = window.markdownit('zero').enable(['replacements','smartquotes','autolink','backticks','entity','escape','linkify','reference','emphasis','link','strikethrough','backticks']).use(window.markdownitSup).use(window.markdownitSub);
+    mdsummary = window.markdownIt('zero').enable(['replacements','smartquotes','autolink','backticks','entity','escape','linkify','reference','emphasis','link','strikethrough','backticks']).use(window.markdownitSup).use(window.markdownitSub);
     mdsummary.options.linkify =true;
     mdsummary.linkify.tlds('kiwi',true).tlds('xyz',true);
  
@@ -116,7 +120,7 @@
         $(this).html(md.render($(this).attr('data-markdown')));
         $(this).find('table').wrap('<div class="tablewrapper" tabindex="-1">');
         $(this).find(':not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
-        $(this).find(':not(sup.footnote-ref)>a:not(.footnote-backref)').attr({ 'rel':'nofollow', 'target':'_blank' });
+        $(this).find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^=#])').attr({ 'rel':'nofollow', 'target':'_blank' });
         if(!$(this).hasClass('nofiddle')) fiddleMarkdown.call(this);
       });
       return this;
