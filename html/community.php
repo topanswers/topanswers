@@ -517,10 +517,14 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       updateChat(true);
       <?if(!$question){?>updateQuestions(true);<?}?>
       $('#se').click(function(){
-        var t = $(this), f = t.closest('form'), id = prompt('Enter question id from <?=$sesite_url?>');
-        if(id!==null) {
+        var t = $(this), f = t.closest('form')
+          , ids = prompt('Enter question id (and optionally answer ids) from <?=$sesite_url?>.\nSeperate each id with a space. No need to list your own answers; they will be imported automatically.');
+        if(ids!==null) {
+          qid = ids.split(' ')[0];
+          aids = ids.split(' ').slice(1).join(' ');
           t.hide().after('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-          f.find('[name=seqid]').attr('value',id);
+          f.find('[name=seqid]').attr('value',qid);
+          f.find('[name=seaids]').attr('value',aids);
           f.submit();
         }
         return false;
@@ -554,10 +558,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           <form method="post" action="/question">
             <input type="hidden" name="action" value="new-se">
             <input type="hidden" name="community" value="<?=$community?>">
-            <input type="hidden" name="title" value="">
             <input type="hidden" name="seqid" value="">
-            <input type="hidden" name="seaid" value="">
-            <input type="hidden" name="seuser" value="">
+            <input type="hidden" name="seaids" value="">
             <input id="se" type="submit" value="import question from SE">
           </form>
         <?}?>
@@ -568,7 +570,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <div id="qa" style="overflow: auto; padding: 0.6rem; scroll-behavior: smooth;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
-                             ,account_name,account_is_me,question_se_question_id,question_se_user_id,question_se_username
+                             ,account_name,account_is_me,question_se_question_id,question_se_user_id,question_se_username,account_is_imported,account_community_se_user_id
                             , coalesce(account_community_votes,0) account_community_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
@@ -584,8 +586,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=(($account_is_me==='f')&&!$question_se_username)?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               <span>
                 <span class="when" data-seconds="<?=$question_when?>"></span>,
-                <?if($question_se_user_id){?>
-                  <span>by <a href="<?=$sesite_url.'/usres/'.$question_se_user_id?>"><?=$question_se_username?></a> from <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>"><?=$account_name?></a></span>
+                <?if($account_is_imported==='t'){?>
+                  <span>by <a href="<?=$sesite_url.'/users/'.$account_community_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
                 <?}else{?>
                   <span>by <?=htmlspecialchars($account_name)?></span>
                 <?}?>
@@ -647,7 +649,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>" style="margin: 2em auto; display: block;"<?=$uuid?'':' disabled'?>>
           </form>
         <?}?>
-        <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me
+        <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me,account_is_imported
+                            ,account_community_se_user_id,answer_se_answer_id
                            , coalesce(account_community_votes,0) account_community_votes
                            , extract('epoch' from current_timestamp-answer_at) answer_when
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
@@ -676,7 +679,14 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                   <a href="<?=$license_href?>"><?=$license_name?></a>
                   <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
                 </span>
-                <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
+                <span>
+                  <span class="when" data-seconds="<?=$answer_when?>"></span>
+                  <?if($account_is_imported==='t'){?>
+                    <span>by <a href="<?=$sesite_url.'/users/'.$account_community_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                  <?}else{?>
+                    <span>by <?=htmlspecialchars($account_name)?></span>
+                  <?}?>
+                </span>
                 <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               </div>
             </div>

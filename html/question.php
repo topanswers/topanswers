@@ -24,14 +24,25 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       exit;
     case 'new-se':
       extract(cdb("select sesite_url,account_id,account_community_se_user_id from community join sesite on community_sesite_id=sesite_id natural join my_account_community where community_name=$1",$_POST['community']));
+      // get the SE user-id and user-name for the question asker
       $doc = new DOMDocument();
       $doc->loadHTML(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
       $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//div[@id='question-header']/h1/a");
       $title = $elements[0]->childNodes[0]->nodeValue;
       $elements = $xpath->query("//div[@id='question']//div[contains(concat(' ', @class, ' '), ' owner ')]//div[contains(concat(' ', @class, ' '), ' user-details ')]/a");
-      $seaid = explode('/',$elements[0]->getAttribute('href'))[2];
-      $seuser = explode('/',$elements[0]->getAttribute('href'))[3];
+      $seuid = explode('/',$elements[0]->getAttribute('href'))[2];
+      $seuname = explode('/',$elements[0]->getAttribute('href'))[3];
+      // get every answer id with matching SE user-id and user-name
+      $answers = [];
+      $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ')]/@id");
+      foreach($elements as $element){
+        $a = $xpath->query("//div[@id='".$element->textContent."']"
+                          ."//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
+                          ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a");
+        $answers[explode('-',$element->textContent)[1]] = ["uid"=>explode('/',$a[0]->getAttribute('href'))[2],"uname"=>explode('/',$a[0]->getAttribute('href'))[3]];
+      }
+      // get the markdown and tags for the question
       $doc = new DOMDocument();
       $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/posts/'.$_POST['seqid'].'/edit'),'HTML-ENTITIES','UTF-8'));
       $xpath = new DOMXpath($doc);
@@ -40,7 +51,11 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//textarea[@id='wmd-input-".$_POST['seqid']."']");
       $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',preg_replace('/<!--[^\n]*-->/m','',$elements[0]->textContent)));
-      $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6,$7)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid'],$seaid,$seuser);
+      // add the question
+      $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6,$7)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid'],$seuid,$seuname);
+      // generate an array of answers to import
+      $aids = [];
+      if($_POST['seaids']) $aids = explode(' ',$_POST['seaids']);
       if($account_community_se_user_id){
         $doc = new DOMDocument();
         $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']),'HTML-ENTITIES','UTF-8'));
@@ -50,13 +65,17 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
                                  ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$account_community_se_user_id."/')])]");
         foreach($elements as $element){
           $aid = explode('-',$element->getAttribute('id'))[1];
-          $doc = new DOMDocument();
-          $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/posts/'.$aid.'/edit'),'HTML-ENTITIES','UTF-8'));
-          $xpath = new DOMXpath($doc);
-          $elements = $xpath->query("//textarea[@id='wmd-input-".$aid."']");
-          $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',preg_replace('/<!--[^\n]*-->/m','',$elements[0]->textContent)));
-          db("select new_answer($1,$2,account_license_id,account_codelicense_id) from my_account",$id,$markdown);
+          if(!in_array($aid,$aids,true)) array_push($aids,$aid);
         }
+      }
+      // import each selected answer
+      foreach($aids as $aid){
+        $doc = new DOMDocument();
+        $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/posts/'.$aid.'/edit'),'HTML-ENTITIES','UTF-8'));
+        $xpath = new DOMXpath($doc);
+        $elements = $xpath->query("//textarea[@id='wmd-input-".$aid."']");
+        $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',preg_replace('/<!--[^\n]*-->/m','',$elements[0]->textContent)));
+        db("select new_seanswer($1,$2,$3,$4,$5) from my_account",$id,$markdown,$aid,$answers[$aid]['uid'],$answers[$aid]['uname']);
       }
       header('Location: /'.$_POST['community'].'?q='.$id);
       exit;

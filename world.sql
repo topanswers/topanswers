@@ -25,12 +25,14 @@ from db.community natural left join (select account_is_dev from db.account where
 where account_is_dev or not community_is_dev;
 --
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
-create view account with (security_barrier) as select account_id,account_name,account_image,account_change_id,account_change_at, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
+--
+create view account with (security_barrier) as
+select account_id,account_name,account_image,account_change_id,account_change_at,account_is_imported, account_id=current_setting('custom.account_id',true)::integer account_is_me from db.account;
 --
 create view my_account with (security_barrier) as
 select account_id,account_name,account_image,account_uuid,account_is_dev,account_license_id,account_codelicense_id,account_notification_id from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
-create view account_community with (security_barrier) as select account_id,community_id,account_community_votes from db.account_community;
+create view account_community with (security_barrier) as select account_id,community_id,account_community_votes,account_community_se_user_id from db.account_community;
 --
 create view my_account_community with (security_barrier) as
 select account_id,community_id,account_community_can_import,account_community_se_user_id from db.account_community where account_id=current_setting('custom.account_id',true)::integer;
@@ -93,7 +95,7 @@ from (select question_id,account_id,question_history_at,question_history_markdow
       select question_id,account_id,question_change_at,question_markdown,question_title from db.question) z;
 --
 create view answer with (security_barrier) as
-select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,license_id,codelicense_id
+select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,license_id,codelicense_id,answer_se_answer_id
      , coalesce(answer_vote_votes>=community_my_power,false) answer_have_voted
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
@@ -274,37 +276,37 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
-create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer, seaid integer, seuser text)
+create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer, seuid integer, seuname text)
                 returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid community') where not exists (select 1 from community where community_id=cid);
-  select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id>2);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
      , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id,question_se_user_id,question_se_username)
-             select cid,aid,typ,title,markdown,room_id,lic,codelic,seqid,seaid,seuser from r returning question_id)
+             select cid,aid,typ,title,markdown,room_id,lic,codelic,seqid,seuid,seuname from r returning question_id)
   select question_id from q;
 $$;
 --
 create function new_question(cid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id>2);
   select _new_question(cid,current_setting('custom.account_id',true)::integer,typ,title,markdown,lic,codelic,null,null,null);
 $$;
 --
-create function new_sequestion(cid integer, title text, markdown text, seqid integer, seaid integer, seuser text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
-begin
-  return (select _new_question(cid,account_id,'question',title,markdown,4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid));
-exception
-  when unique_violation then perform _error(400,'already imported');
-end;
-$$;
---
-create function new_sequestion(cid integer, title text, markdown text, tags text, seqid integer, seaid integer, seuser text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
+create function new_sequestion(cid integer, title text, markdown text, tags text, seqid integer, seuid integer, seuname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
 declare
-  id integer;
+  qid integer;
+  uid integer;
 begin
-  select _new_question(cid,account_id,'question',title,markdown,4,1,seqid,seaid,seuser) from account where account_sesite_id=(select community_sesite_id from community where community_id=cid) into id;
-  perform new_sequestion_tag(id,tag_id) from tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=3;
-  return id;
+  if exists(select 1 from account_community where community_id=cid and account_community_se_user_id=seuid) then
+    select account_id from account_community where community_id=cid and account_community_se_user_id=seuid into uid;
+  else
+    insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(replace(seuname,'-',' '),4,1,true) returning account_id into uid;
+    insert into account_community(account_id,community_id,account_community_se_user_id) values(uid,cid,seuid);
+  end if;
+  --
+  select _new_question(cid,uid,'question',title,markdown,4,1,seqid,null,null) into qid;
+  perform new_sequestion_tag(qid,tag_id) from tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=cid;
+  return qid;
 exception
   when unique_violation then perform _error(400,'already imported');
 end;
@@ -325,13 +327,34 @@ create function change_question(id integer, title text, markdown text) returns v
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=id;
 $$;
 --
-create function new_answer(qid integer, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+create function _new_answer(qid integer, aid integer, markdown text, lic integer, codelic integer, seaid integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
+  insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_se_answer_id) values(qid,aid,markdown,lic,codelic,seaid) returning answer_id;
+$$;
+--
+create function new_answer(qid integer, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error(429,'rate limit') where exists (select 1 from answer where account_id=current_setting('custom.account_id',true)::integer and answer_at>current_timestamp-'1m'::interval and account_id>2);
   --
   update question set question_poll_major_id = default where question_id=qid;
-  insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id) values(qid, current_setting('custom.account_id',true)::integer, markdown, lic, codelic) returning answer_id;
+  select _new_answer(qid,current_setting('custom.account_id',true)::integer,markdown,lic,codelic,null);
+$$;
+--
+create function new_seanswer(qid integer, markdown text, seaid integer, seuid integer, seuname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
+declare
+  cid integer;
+  uid integer;
+begin
+  select community_id from question where question_id=qid into cid;
+  if exists(select 1 from account_community where community_id=cid and account_community_se_user_id=seuid) then
+    select account_id from account_community where community_id=cid and account_community_se_user_id=seuid into uid;
+  else
+    insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(replace(seuname,'-',' '),4,1,true) returning account_id into uid;
+    insert into account_community(account_id,community_id,account_community_se_user_id) values(uid,cid,seuid);
+  end if;
+  --
+  return (select _new_answer(qid,uid,markdown,4,1,seaid));
+end;
 $$;
 --
 create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$

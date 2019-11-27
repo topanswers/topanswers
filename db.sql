@@ -51,6 +51,7 @@ create table account(
 , account_codelicense_id integer references codelicense default 1 not null
 , account_notification_id integer generated always as identity unique
 , account_sesite_id integer references sesite
+, account_is_imported boolean default false not null
 );
 create unique index account_rate_limit_ind on account(account_create_at);
 create unique index account_sesite_ind on account(account_sesite_id);
@@ -226,6 +227,7 @@ create table answer(
 , answer_markdown text not null check (length(answer_markdown) between 1 and 50000)
 , answer_change_at timestamptz not null default current_timestamp
 , answer_votes integer default 0 not null
+, answer_se_answer_id integer
 , license_id integer references license not null
 , codelicense_id integer references codelicense not null
 );
