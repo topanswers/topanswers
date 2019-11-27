@@ -491,8 +491,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         return false;
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
-      $('#qa .markdown :not(sup.footnote-ref)>a:not(.footnote-backref)').attr({ 'rel':'nofollow', 'target':'_blank' });
-      $('#qa .markdown img').each(function(i){ if(!$(this).parent().is('a')){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.markdown').parent('div').attr('id')+'"></a>'); } });
       <?if($uuid){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
           var t = $(this), v = t.data('votes');

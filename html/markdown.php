@@ -120,7 +120,7 @@
         $(this).html(md.render($(this).attr('data-markdown')));
         $(this).find('table').wrap('<div class="tablewrapper" tabindex="-1">');
         $(this).find(':not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
-        $(this).find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^=#])').attr({ 'rel':'nofollow', 'target':'_blank' });
+        $(this).find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         if(!$(this).hasClass('nofiddle')) fiddleMarkdown.call(this);
       });
       return this;
