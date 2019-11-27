@@ -340,8 +340,8 @@ create function new_sequestion(cid integer, title text, markdown text, tags text
   --
   with u as (select _create_seuser(cid,seuid,seuname) uid)
      , q as (select uid, _new_question(cid,uid,'question',title,markdown,4,1,seqid) qid from u)
-     , t as (select qid, new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=cid)
-  select qid from t;
+     , t as (select new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=cid)
+  select qid from q cross join (select count(1) cn from t) z;
 $$;
 --
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$

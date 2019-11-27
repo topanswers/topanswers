@@ -517,7 +517,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <?if(!$question){?>updateQuestions(true);<?}?>
       $('#se').click(function(){
         var t = $(this), f = t.closest('form')
-          , ids = prompt('Enter question id (and optionally answer ids) from <?=$sesite_url?>.\nSeperate each id with a space. No need to list your own answers; they will be imported automatically.');
+          , ids = prompt('Enter question id (and optionally answer ids) from <?=$sesite_url?>.\nSeparate each id with a space. No need to list your own answers; they will be imported automatically.');
         if(ids!==null) {
           qid = ids.split(' ')[0];
           aids = ids.split(' ').slice(1).join(' ');
