@@ -58,10 +58,9 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { background: white; margin-bottom: 1.2rem; border-radius: 5px; font-size: larger; }
-    .answer { background: white; margin: 0 1.2rem 3rem 1.2rem; border-radius: 5px; font-size: larger; }
+    .question { background: white; margin: 0.6rem 0.6rem 1.2rem 0.6rem; border-radius: 5px; font-size: larger; }
+    .answer { background: white; margin: 0 1.2rem 2.4rem 1.2rem; border-radius: 5px; font-size: larger; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
-    .answer:last-child { margin-bottom: 1.8rem; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background: #<?=$colour_mid?>; }
     .bigspacer:not(:hover)>span:first-child { display: none; }
     .bigspacer:hover>span:last-child { display: none; }
@@ -83,6 +82,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
     #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); overflow: hidden; }
     #qa .bar:last-child { border-bottom: none; border-radius: 0 0 5px 5px; }
+    #qa .bar:first-child { border-top: none; border-radius: 5px 0 0 0; }
+    #qa .bar .title { margin-left: 0.4rem; }
     #qa .bar+.bar { border-top: none; }
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
@@ -567,7 +568,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <?if($uuid){?><a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
-    <div id="qa" style="overflow: auto; padding: 0.6rem; scroll-behavior: smooth;">
+    <div id="qa" style="overflow: auto; scroll-behavior: smooth;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
                              ,account_name,account_is_me,question_se_question_id,account_is_imported,account_community_se_user_id
@@ -579,7 +580,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account natural join community natural join license natural join codelicense natural left join account_community
                        where question_id=$1",$question));?>
-        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border-radius: 5px; font-size: larger; background: white;">
+        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border-radius: 0 0 5px 5px; font-size: larger; background: white;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
@@ -656,8 +657,26 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                       from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join account_community
                       where question_id=$1
-                      order by answer_votes desc, answer_votes desc, answer_id desc",$question) as $r){ extract($r);?>
+                      order by answer_votes desc, answer_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
           <div id="a<?=$answer_id?>" class="answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
+            <div class="bar">
+              <div><span class="title"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
+              <div>
+                <span>
+                  <a href="<?=$license_href?>"><?=$license_name?></a>
+                  <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
+                </span>
+                <span>
+                  <span class="when" data-seconds="<?=$answer_when?>"></span>
+                  <?if($account_is_imported==='t'){?>
+                    <span>by <a href="<?=$sesite_url.'/users/'.$account_community_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                  <?}else{?>
+                    <span>by <?=htmlspecialchars($account_name)?></span>
+                  <?}?>
+                </span>
+                <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+              </div>
+            </div>
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
             <div class="bar">
               <div>
@@ -673,21 +692,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                   <?if($answer_has_history==='t'){?><a href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
                   <?if($account_is_me==='f'){?><a href='.' onclick="$(this).closest('.answer').find('.identicon').click(); return false;">comment</a><?}?>
                 <?}?>
-              </div>
-              <div>
-                <span>
-                  <a href="<?=$license_href?>"><?=$license_name?></a>
-                  <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
-                </span>
-                <span>
-                  <span class="when" data-seconds="<?=$answer_when?>"></span>
-                  <?if($account_is_imported==='t'){?>
-                    <span>by <a href="<?=$sesite_url.'/users/'.$account_community_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
-                  <?}else{?>
-                    <span>by <?=htmlspecialchars($account_name)?></span>
-                  <?}?>
-                </span>
-                <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               </div>
             </div>
           </div>
