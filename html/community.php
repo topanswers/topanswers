@@ -570,7 +570,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <div id="qa" style="overflow: auto; padding: 0.6rem; scroll-behavior: smooth;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
-                             ,account_name,account_is_me,question_se_question_id,question_se_user_id,question_se_username,account_is_imported,account_community_se_user_id
+                             ,account_name,account_is_me,question_se_question_id,account_is_imported,account_community_se_user_id
                             , coalesce(account_community_votes,0) account_community_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type

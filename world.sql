@@ -75,7 +75,7 @@ create view question_type_enums with (security_barrier) as select unnest(enum_ra
 --
 create view question with (security_barrier) as
 select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id,question_poll_id,question_poll_major_id
-      ,question_poll_minor_id,question_se_question_id,question_se_user_id,question_se_username,question_answer_at,question_answer_change_at
+      ,question_poll_minor_id,question_se_question_id,question_answer_at,question_answer_change_at
      , coalesce(question_vote_votes>=community_my_power,false) question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
@@ -319,27 +319,27 @@ create function new_sequestion_tag(qid integer, tid integer, uid integer) return
   select _new_question_tag(uid,qid,tid);
 $$;
 --
-create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer, seuid integer, seuname text)
+create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer)
                 returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid community') where not exists (select 1 from community where community_id=cid);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
-     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id,question_se_user_id,question_se_username)
-             select cid,aid,typ,title,markdown,room_id,lic,codelic,seqid,seuid,seuname from r returning question_id)
+     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id)
+             select cid,aid,typ,title,markdown,room_id,lic,codelic,seqid from r returning question_id)
   select question_id from q;
 $$;
 --
 create function new_question(cid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error(429,'rate limit') where exists (select 1 from question where account_id=current_setting('custom.account_id',true)::integer and question_at>current_timestamp-'5m'::interval and account_id>2);
-  select _new_question(cid,current_setting('custom.account_id',true)::integer,typ,title,markdown,lic,codelic,null,null,null);
+  select _new_question(cid,current_setting('custom.account_id',true)::integer,typ,title,markdown,lic,codelic,null);
 $$;
 --
 create function new_sequestion(cid integer, title text, markdown text, tags text, seqid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error(400,'already imported') where exists (select 1 from question where community_id=cid and question_se_question_id=seqid);
   --
   with u as (select _create_seuser(cid,seuid,seuname) uid)
-     , q as (select uid, _new_question(cid,uid,'question',title,markdown,4,1,seqid,null,null) qid from u)
+     , q as (select uid, _new_question(cid,uid,'question',title,markdown,4,1,seqid) qid from u)
      , t as (select qid, new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=cid)
   select qid from t;
 $$;

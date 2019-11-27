@@ -201,12 +201,9 @@ create table question(
 , question_poll_major_id bigint generated always as identity unique
 , question_poll_minor_id bigint generated always as identity unique
 , question_se_question_id integer
-, question_se_user_id integer
-, question_se_username text check(length(question_se_username)<200)
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
-, check ((question_se_user_id is null and question_se_username is null) or (question_se_question_id is not null and question_se_user_id is not null and question_se_username is not null))
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
 create unique index question_se_question_id_ind on question(community_id,question_se_question_id);
