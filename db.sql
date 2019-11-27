@@ -40,7 +40,7 @@ create table codelicense(
 
 create table account(
   account_id integer generated always as identity primary key
-, account_name text check (account_name~'^[A-Za-zÀ-ÖØ-öø-ÿ][ ''.0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
+, account_name text check (account_name~'^[0-9A-Za-zÀ-ÖØ-öø-ÿ][ ''.0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea check(length(account_image)>0)
@@ -64,6 +64,7 @@ create table account_community(
 , account_community_se_user_id integer
 , primary key (account_id,community_id)
 );
+create unique index account_se_user_ind on account_community(community_id,account_community_se_user_id);
 
 create table account_history(
   account_history_id integer generated always as identity primary key
@@ -75,7 +76,7 @@ create table account_history(
 create table login(
   login_uuid uuid primary key
 , account_id integer not null references account
-, login_resizer_percent integer default 50 not null check (login_resizer_percent between 0 and 100)
+, login_resizer_percent integer default 65 not null check (login_resizer_percent between 0 and 100)
 );
 
 create table pin(
@@ -208,6 +209,7 @@ create table question(
 , check ((question_se_user_id is null and question_se_username is null) or (question_se_question_id is not null and question_se_user_id is not null and question_se_username is not null))
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
+create unique index question_se_question_id_ind on question(community_id,question_se_question_id);
 
 create table question_history(
   question_history_id bigint generated always as identity primary key

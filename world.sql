@@ -119,17 +119,6 @@ create view license with (security_barrier) as select license_id,license_name,li
 create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
 --
 --
-create function login(luuid uuid) returns boolean language plpgsql security definer set search_path=db,world,pg_temp as $$
-declare e boolean = exists(select 1 from login where login_uuid=luuid);
-begin
-  if e then
-    perform set_config('custom.uuid',luuid::text,false);
-    perform set_config('custom.account_id',account_id::text,false) from login where login_uuid=luuid;
-  end if;
-  return e;
-end;
-$$;
---
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
 declare
   rid integer;
@@ -140,6 +129,31 @@ begin
   update room set community_id=cid where room_id=rid;
   return cid;
 end$$;
+--
+create function _create_seuser(cid integer, seuid integer, seuname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
+declare
+  id integer;
+begin
+  if exists(select 1 from account_community where community_id=cid and account_community_se_user_id=seuid) then
+    select account_id from account_community where community_id=cid and account_community_se_user_id=seuid into id;
+  else
+    insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(replace(seuname,'-',' '),4,1,true) returning account_id into id;
+    insert into account_community(account_id,community_id,account_community_se_user_id) values(id,cid,seuid);
+  end if;
+  return id;
+end;
+$$;
+--
+create function login(luuid uuid) returns boolean language plpgsql security definer set search_path=db,world,pg_temp as $$
+declare e boolean = exists(select 1 from login where login_uuid=luuid);
+begin
+  if e then
+    perform set_config('custom.uuid',luuid::text,false);
+    perform set_config('custom.account_id',account_id::text,false) from login where login_uuid=luuid;
+  end if;
+  return e;
+end;
+$$;
 --
 create function new_chat(roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,world,pg_temp as $$
   select _error('room does not exist') where not exists(select 1 from room where room_id=roomid);
@@ -276,6 +290,35 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
+create function _new_question_tag(aid integer, qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
+  select _error('invalid tag') where not exists (select 1 from world.tag where tag_id=tid);
+  --
+  update question set question_poll_minor_id = default where question_id=qid;
+  --
+  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
+                                                  union all
+                                                  select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
+     , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id)
+             select qid,tag_id,community_id,aid
+             from w natural join tag
+             where tag_id not in (select tag_id from question_tag_x where question_id=qid)
+             returning tag_id)
+  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
+$$;
+--
+create function new_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error(429,'rate limit') where exists (select 1
+                                                from question_tag_x_history
+                                                where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
+  select _new_question_tag(current_setting('custom.account_id',true)::integer,qid,tid);
+$$;
+--
+create function new_sequestion_tag(qid integer, tid integer, uid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _new_question_tag(uid,qid,tid);
+$$;
+--
 create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer, seuid integer, seuname text)
                 returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
@@ -292,24 +335,13 @@ create function new_question(cid integer, typ db.question_type_enum, title text,
   select _new_question(cid,current_setting('custom.account_id',true)::integer,typ,title,markdown,lic,codelic,null,null,null);
 $$;
 --
-create function new_sequestion(cid integer, title text, markdown text, tags text, seqid integer, seuid integer, seuname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
-declare
-  qid integer;
-  uid integer;
-begin
-  if exists(select 1 from account_community where community_id=cid and account_community_se_user_id=seuid) then
-    select account_id from account_community where community_id=cid and account_community_se_user_id=seuid into uid;
-  else
-    insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(replace(seuname,'-',' '),4,1,true) returning account_id into uid;
-    insert into account_community(account_id,community_id,account_community_se_user_id) values(uid,cid,seuid);
-  end if;
+create function new_sequestion(cid integer, title text, markdown text, tags text, seqid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error(400,'already imported') where exists (select 1 from question where community_id=cid and question_se_question_id=seqid);
   --
-  select _new_question(cid,uid,'question',title,markdown,4,1,seqid,null,null) into qid;
-  perform new_sequestion_tag(qid,tag_id) from tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=cid;
-  return qid;
-exception
-  when unique_violation then perform _error(400,'already imported');
-end;
+  with u as (select _create_seuser(cid,seuid,seuname) uid)
+     , q as (select uid, _new_question(cid,uid,'question',title,markdown,4,1,seqid,null,null) qid from u)
+     , t as (select qid, new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=cid)
+  select qid from t;
 $$;
 --
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -340,21 +372,9 @@ create function new_answer(qid integer, markdown text, lic integer, codelic inte
   select _new_answer(qid,current_setting('custom.account_id',true)::integer,markdown,lic,codelic,null);
 $$;
 --
-create function new_seanswer(qid integer, markdown text, seaid integer, seuid integer, seuname text) returns integer language plpgsql security definer set search_path=db,world,pg_temp as $$
-declare
-  cid integer;
-  uid integer;
-begin
-  select community_id from question where question_id=qid into cid;
-  if exists(select 1 from account_community where community_id=cid and account_community_se_user_id=seuid) then
-    select account_id from account_community where community_id=cid and account_community_se_user_id=seuid into uid;
-  else
-    insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(replace(seuname,'-',' '),4,1,true) returning account_id into uid;
-    insert into account_community(account_id,community_id,account_community_se_user_id) values(uid,cid,seuid);
-  end if;
-  --
-  return (select _new_answer(qid,uid,markdown,4,1,seaid));
-end;
+create function new_seanswer(qid integer, markdown text, seaid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
+  select _new_answer(qid,_create_seuser(community_id,seuid,seuname),markdown,4,1,seaid) from question where question_id=qid;
 $$;
 --
 create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
@@ -367,35 +387,6 @@ create function change_answer(id integer, markdown text) returns void language s
   --
   insert into answer_history(answer_id,account_id,answer_history_at,answer_history_markdown) select answer_id,current_setting('custom.account_id',true)::integer,answer_change_at,answer_markdown from answer where answer_id=id;
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
-$$;
---
-create function _new_question_tag(aid integer, qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
-  select _error('invalid tag') where not exists (select 1 from world.tag where tag_id=tid);
-  --
-  update question set question_poll_minor_id = default where question_id=qid;
-  --
-  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
-                                                  union all
-                                                  select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
-     , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id)
-             select qid,tag_id,community_id,aid
-             from w natural join tag
-             where tag_id not in (select tag_id from question_tag_x where question_id=qid)
-             returning tag_id)
-  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
-$$;
---
-create function new_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error(429,'rate limit') where exists (select 1
-                                                from question_tag_x_history
-                                                where question_tag_x_history_added_by_account_id=current_setting('custom.account_id',true)::integer and question_tag_x_added_at>current_timestamp-'1s'::interval);
-  select _new_question_tag(current_setting('custom.account_id',true)::integer,qid,tid);
-$$;
---
-create function new_sequestion_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _new_question_tag(account_id,qid,tid) from account where account_sesite_id=(select community_sesite_id from question natural join community where question_id=qid);
 $$;
 --
 create function remove_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
