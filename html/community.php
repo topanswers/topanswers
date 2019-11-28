@@ -416,7 +416,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         var m = $('#chattext').val();
         if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
         if(this.scrollHeight>$(this).outerHeight()) $(this).css('height',this.scrollHeight);
-        $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',m||'&nbsp;').renderMarkdown();
+        $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){
