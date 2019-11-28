@@ -20,6 +20,7 @@
   .markdown nav ol { counter-reset: list-item; }
   .markdown nav li { display: block; counter-increment: list-item; }
   .markdown nav li:before { content: counters(list-item,'.') ' '; }
+  .markdown .header-anchor { text-decoration: none; }
   .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 4px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
@@ -92,7 +93,7 @@
                .use(window.markdownitFootnote)
                .use(window.markdownitAbbr)
                .use(window.markdownitInjectLinenumbers)
-               .use(window.markdownItAnchor, { permalink: true, permalinkBefore: true, permalinkSymbol: '' })
+               .use(window.markdownItAnchor, { permalink: true, permalinkBefore: true, permalinkSymbol: '§' })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3] })
                .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx)
     {
