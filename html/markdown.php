@@ -56,7 +56,7 @@
   //hljs.initHighlightingOnLoad();
 
   (function($){
-    var md, mdsummary;
+    var md, mdsummary, prefix;
     function fiddleMarkdown(){
       function addfiddle(o,r){
         var l = o.attr('data-source-line'), f = $(r).replaceAll(o);
@@ -84,6 +84,10 @@
       });
     }
 
+    function myslugify(s){
+      return 'heading-'+(prefix?prefix+'-':'')+s;
+    }
+
     md = window.markdownIt({ linkify: true
                            , highlight: function(str,lang){ lang = lang||'<?=$community_code_language?>'; if(lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; } })
                .use(window.markdownitSup)
@@ -93,8 +97,8 @@
                .use(window.markdownitFootnote)
                .use(window.markdownitAbbr)
                .use(window.markdownitInjectLinenumbers)
-               .use(window.markdownItAnchor, { permalink: true, permalinkBefore: true, permalinkSymbol: '' })
-               .use(window.markdownItTocDoneRight,{ level: [1,2,3] })
+               .use(window.markdownItAnchor, { slugify: myslugify })
+               .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
                .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx)
     {
       if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
@@ -123,6 +127,7 @@
     $.fn.renderMarkdown = function(){
       this.filter('[data-markdown]').each(function(){
         var t = $(this), m = t.attr('data-markdown');
+        prefix = t.closest('[data-id]').attr('id')||'';
         //if(m.length>10000) md.enable('anchor'); else md.disable('anchor');
         t.html(md.render(m));
         t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
