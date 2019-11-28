@@ -6,6 +6,12 @@ $uuid = $_COOKIE['uuid'];
 $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
 if($uuid) ccdb("select login($1)",$uuid);
 if($_SERVER['REQUEST_METHOD']==='POST'){
+  if(isset($_POST['action'])){
+    switch($_POST['action']) {
+      case 'regen': db("select regenerate_account_uuid()"); header('Location: /profile'); exit;
+      default: fail(400,'unrecognized action');
+    }
+  }
   if(isset($_POST['name'])){
     db("select change_account_name(nullif($1,''))",$_POST['name']);
     header("Location: /profile");
@@ -135,6 +141,8 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
       <li>Your account recovery token should be kept confidential like a password</li>
       <li>It can be used in the same way as a PIN, but does not expire</li>
       <li><input id="uuid" type="button" value="show token"></li>
+      <li>If you suspect your token has been discovered, you should regenerate it</li>
+      <li><form action="/profile" method="POST"><input type="hidden" name="action" value="regen"><input type="submit" value="generate new token"></form></li>
     </ul>
   </fieldset>
 </body>   

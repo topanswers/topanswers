@@ -3,6 +3,7 @@
 */
 begin;
 --
+revoke usage on schema x_pg_trgm from world;
 drop schema if exists world cascade;
 drop role if exists world;
 create user world;
@@ -232,6 +233,11 @@ $$;
 create function recover_account(luuid uuid, auuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('invalid recovery key') where not exists (select 1 from account where account_uuid=auuid);
   insert into login(account_id,login_uuid) select account_id,luuid from account where account_uuid=auuid returning account_id;
+$$;
+--
+create function regenerate_account_uuid() returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('not logged in') where current_setting('custom.account_id',true)::integer is null;
+  update account set account_uuid = default where account_id = current_setting('custom.account_id',true)::integer;
 $$;
 --
 create function change_account_name(nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
