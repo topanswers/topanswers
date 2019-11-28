@@ -58,7 +58,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { background: white; margin: 0.6rem 0.6rem 1.2rem 0.6rem; border-radius: 5px; font-size: larger; }
+    .question { background: white; margin: 0.6rem 0.6rem 1.2rem 0.6rem; border-radius: 5px 5px 0 5px; font-size: larger; }
     .answer { background: white; margin: 0 1.2rem 2.4rem 1.2rem; border-radius: 5px; font-size: larger; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background: #<?=$colour_mid?>; }
@@ -656,7 +656,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                       from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join account_community
                       where question_id=$1
-                      order by answer_votes desc, answer_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
+                      order by answer_votes desc, account_community_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
           <div id="a<?=$answer_id?>" class="answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
             <div class="bar">
               <div><span class="title"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
