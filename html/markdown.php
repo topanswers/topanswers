@@ -93,7 +93,7 @@
                .use(window.markdownitFootnote)
                .use(window.markdownitAbbr)
                .use(window.markdownitInjectLinenumbers)
-               .use(window.markdownItAnchor, { permalink: true, permalinkBefore: true, permalinkSymbol: '§' })
+               .use(window.markdownItAnchor, { permalink: true, permalinkBefore: true, permalinkSymbol: '' })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3] })
                .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx)
     {
@@ -122,11 +122,13 @@
  
     $.fn.renderMarkdown = function(){
       this.filter('[data-markdown]').each(function(){
-        $(this).html(md.render($(this).attr('data-markdown')));
-        $(this).find('table').wrap('<div class="tablewrapper" tabindex="-1">');
-        $(this).find(':not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
-        $(this).find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
-        if(!$(this).hasClass('nofiddle')) fiddleMarkdown.call(this);
+        var t = $(this), m = t.attr('data-markdown');
+        //if(m.length>10000) md.enable('anchor'); else md.disable('anchor');
+        t.html(md.render(m));
+        t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
+        t.find(':not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
+        t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
+        if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
       });
       return this;
     };

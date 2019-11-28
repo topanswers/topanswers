@@ -535,6 +535,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         else if(t.next().css('flex-shrink')==='100') t.next().animate({ 'flex-shrink': 1 }).end().prev().animate({ 'flex-shrink': 100 });
         else t.prev().animate({ 'flex-shrink': 1 });
       });
+      $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
     });
   </script>
   <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
