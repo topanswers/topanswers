@@ -66,10 +66,14 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
               where chat_id".(isset($_GET['one'])?'=':'>')."$2
               order by chat_at",$room,$id) as $r){ extract($r);?>
   <?if(($chat_account_is_repeat==='f')&&!isset($_GET['one'])){?>
-    <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>" data-at="<?=$chat_at_iso?>"><span></span><span></span></div>
+    <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div>
   <?}?>
   <div id="c<?=$chat_id?>" class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>" data-change-id="<?=$chat_change_id?>" data-at="<?=$chat_at_iso?>">
-    <small class="who"><?=($account_is_me==='t')?'<em>Me</em>':$account_name?><?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>:</small>
+    <small class="who">
+      <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
+      <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">&nbsp;replying to&nbsp;</a>'.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
+      <span class="when" data-at="<?=$chat_at_iso?>"></span>
+    </small>
     <img title="Reputation: <?=$account_community_votes?>" class="identicon" src="/identicon?id=<?=$account_id?>">
     <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
     <?if($uuid){?>
@@ -105,3 +109,4 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
     <?}?>
   </div>
 <?}?>
+<?if(!isset($_GET['one'])){?><div class="spacer" style="line-height: 0; min-height: 0;"></div><?}?>

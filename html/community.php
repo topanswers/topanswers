@@ -62,8 +62,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .answer { background: white; margin: 0 1.2rem 2.4rem 1.2rem; border-radius: 5px; font-size: larger; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background: #<?=$colour_mid?>; }
-    .bigspacer:not(:hover)>span:first-child { display: none; }
-    .bigspacer:hover>span:last-child { display: none; }
     .tags { display: flex; margin-left: 0.25rem; margin-top: 1px; white-space: nowrap; overflow: hidden; }
     .tag { padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
@@ -112,6 +110,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em; position: absolute; }
+    .message:not(:hover) .when { display: none; }
     .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
     .message .markdown { flex: 0 1 auto; max-height: 20vh; padding: 0.25rem; border: 1px solid darkgrey; border-radius: 0.3em; background: white; overflow: auto; }
 
@@ -166,6 +165,12 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=ccdb("select account_notification_id from my_account")?>+0, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0;
 
+      function setFinalSpacer(){
+        var scroll, last = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:last-child');
+        if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
+        if(last>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log10(1+last)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(last,'seconds').humanize()+' later');
+        if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+      }
       function setChatPollTimeout(){
         var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
         if(chatLastChange<10) chatPollInterval = 1000;
@@ -176,6 +181,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         else chatPollInterval = 60000;
         <?if($dev){?>console.log('set poll interval to '+chatPollInterval);<?}?>
         clearTimeout(chatTimer);
+        setFinalSpacer();
         chatTimer = setTimeout(checkChat,chatPollInterval);
       }
       function renderQuestion(){
@@ -206,12 +212,14 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         $(this).find('.markdown').renderMarkdown();
       }
       function updateChat(scroll){
-        var maxChat = $('#messages>.message:last-child').data('id');
+        var maxChat = $('#messages>.message').last().data('id');
         if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
         $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
-          if($('#messages>.message:last-child').data('id')===maxChat){
-            var newchat = $(data).appendTo($('#messages')).css('opacity','0');
-            newchat.filter('.message').each(renderChat);
+          if($('#messages>.message').last().data('id')===maxChat){
+            var newchat;
+            $('#messages>.spacer:last-child').remove();
+            newchat = $(data).appendTo($('#messages')).css('opacity','0');
+            newchat.filter('.message').each(renderChat).find('.when').each(function(){ $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
             if(maxChatChangeID) numNewChats += newchat.filter('.message').length;
             if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
             newchat.find('img').waitForImages(true).done(function(){
@@ -231,9 +239,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               }
               foo.call(this);
             });
-            newchat.filter('.bigspacer').each(function(){
-              $(this).children(':first-child').text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })).end()
-                     .children(':last-child').text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+            newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+            setFinalSpacer();
             newchat.filter('.message').find('.who a').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
               var id = $(this).attr('href').substring(2);
               $(this).attr('href','/transcript?room=<?=$room?>&id='+id+'#c'+id);
@@ -299,7 +306,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       function checkChat(){
         $.get('/poll?room=<?=$room?>').done(function(r){
           var j = JSON.parse(r);
-          if(j.c>+$('#messages>.message:last-child').data('id')){
+          if(j.c>+$('#messages>.message').last().data('id')){
             <?if($dev){?>console.log('updating chat');<?}?>
             updateChat();
           }else if(j.n>maxNotificationID){
