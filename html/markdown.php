@@ -114,7 +114,8 @@
     };
 
     md.linkify.tlds('kiwi',true).tlds('xyz',true);
-    mdsummary = window.markdownIt('zero').enable(['replacements','smartquotes','autolink','backticks','entity','escape','linkify','reference','emphasis','link','strikethrough','backticks']).use(window.markdownitSup).use(window.markdownitSub);
+    mdsummary = window.markdownIt('zero').enable(['replacements','smartquotes','autolink','backticks','entity','escape','linkify','reference','emphasis','link','strikethrough','backticks'])
+                      .use(window.markdownitSup).use(window.markdownitSub);
     mdsummary.options.linkify =true;
     mdsummary.linkify.tlds('kiwi',true).tlds('xyz',true);
  
@@ -131,7 +132,7 @@
 
     $.fn.renderMarkdownSummary = function(){
       this.filter('[data-markdown]').each(function(){
-        $(this).html(mdsummary.render($(this).attr('data-markdown')).split('\n')[0]);
+        $(this).html(mdsummary.renderInline($(this).attr('data-markdown')).split('\n')[0]);
       });
       return this;
     };

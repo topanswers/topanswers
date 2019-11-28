@@ -101,6 +101,7 @@ create table chat(
 , foreign key (room_id,chat_reply_id) references chat(room_id,chat_id)
 );
 create index chat_latest_ind on chat(room_id,chat_at);
+create index chat_search_ind on chat using gin (room_id, chat_markdown gin_trgm_ops);
 
 create table chat_history(
   chat_history_id bigint generated always as identity primary key
@@ -245,7 +246,7 @@ create table tag(
   tag_id integer generated always as identity primary key
 , community_id integer not null references community
 , tag_at timestamptz not null default current_timestamp
-, tag_name text not null check (tag_name~'^[a-z][-0-9a-z]{1,18}[0-9a-z]$')
+, tag_name text not null check (tag_name~'^[a-z][-.0-9a-z]{1,18}[0-9a-z]$')
 , tag_description text default '' not null check (length(tag_description)<101)
 , tag_implies_id integer
 , tag_question_count integer default 0 not null

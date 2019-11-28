@@ -8,6 +8,7 @@ drop role if exists world;
 create user world;
 create schema world;
 grant usage on schema world to world;
+grant usage on schema x_pg_trgm to world;
 set local schema 'world';
 --
 create function _error(integer,text) returns void language plpgsql as $$begin raise exception '%', $2 using errcode='H0'||$1; end;$$;
