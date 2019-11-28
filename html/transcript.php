@@ -144,7 +144,7 @@ extract(cdb("select community_name community
     <main style="background-color: #<?=$colour_light?>; overflow: hidden;">
       <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
         <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.3',false)");?>
-        <?foreach(db("with c as (select chat.*, strict_word_similarity($2,chat_markdown) similarity from chat where room_id=$1 and $2<<%chat_markdown)
+        <?foreach(db("with c as (select chat.*, strict_word_similarity($2,chat_markdown) word_similarity, similarity($2,chat_markdown) similarity from chat where room_id=$1 and $2<<%chat_markdown)
                       select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
                            , coalesce(nullif(account_name,''),'Anonymous') account_name
@@ -156,7 +156,7 @@ extract(cdb("select community_name community
                            , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
                       from c natural join account natural left join chat_flag natural left join chat_star
                       where room_id=$1".($uuid?"":" and chat_flag_count=0")."
-                      order by similarity desc, chat_at desc",$room,$search) as $r){ extract($r);?>
+                      order by word_similarity+similarity desc, chat_at desc limit 100",$room,$search) as $r){ extract($r);?>
           <small class="who">
             <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
             <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
