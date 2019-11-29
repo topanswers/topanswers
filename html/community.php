@@ -548,7 +548,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
   <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
 </head>
 <body style="display: flex;">
-  <main class="pane<?=$question?'':' hidepane'?>" style="background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'50'?>%; overflow: hidden;">
+  <main class="pane<?=$question?'':' hidepane'?>" style="background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'70'?>%; overflow: hidden;">
     <header style="border-bottom: 2px solid black;">
       <div>
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
@@ -705,7 +705,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'50'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
+  <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
     <header style="border-top: 2px solid black;">
       <div style="display: flex; align-items: center;">
         <a <?=$dev?'href="/room?id='.$room.'" ':''?>class="icon"><img src="/roomicon?id=<?=$room?>"></a>
