@@ -58,7 +58,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { background: white; margin: 0.6rem 0.6rem 1.2rem 0.6rem; border-radius: 5px 5px 0 5px; font-size: larger; }
+    .question { background: white; margin: 1.6rem 1.6rem 2.2rem 1.6em; border-radius: 5px 5px 0 5px; font-size: larger; }
     .answer { background: white; margin: 0 1.2rem 2.4rem 1.2rem; border-radius: 5px; font-size: larger; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
