@@ -48,7 +48,7 @@
     var script = document.createElement( 'script' );
     script.type = 'text/javascript';
     script.async = false;
-    script.src = "/highlightjs/highlight.js";
+    script.src = "/lib/highlightjs/highlight.js";
     script.addEventListener("load", () => { console.log("laoded"); hljs.initHighlighting(); })
     script.addEventListener("error", () => { console.log("error"); hljs.initHighlighting(); })
     document.querySelector("head").appendChild(script);
