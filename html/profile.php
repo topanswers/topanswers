@@ -74,7 +74,7 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
     @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     fieldset { margin-bottom: 1rem; }
   </style>
-  <script src="/jquery.js"></script>
+  <script src="/lib/jquery.js"></script>
   <script>
     $(function(){
       $('#pin').click(function(){ $(this).prop('disabled',true); $.get('/profile?pin=<?=$pin?>').done(function(){ $('#pin').replaceWith('<code><?=$pin?></code>'); }); });

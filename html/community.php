@@ -37,17 +37,17 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
-  <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
-  <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
-  <link rel="stylesheet" href="/select2.css">
-  <link rel="stylesheet" href="/starrr.css">
-  <link rel="stylesheet" href="codemirror/codemirror.css">
+  <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
+  <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
+  <link rel="stylesheet" href="/lib/select2.css">
+  <link rel="stylesheet" href="/lib/starrr.css">
+  <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; white-space: nowrap; }
     header select, header input, header a:not(.icon) { margin: 3px; }
@@ -145,18 +145,18 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       header { flex-direction: unset; white-space: unset; }
     }
   </style>
-  <script src="/lodash.js"></script>
-  <script src="/jquery.js"></script>
-  <script src="/jquery.waitforimages.js"></script>
-  <script src="codemirror/codemirror.js"></script>
-  <script src="codemirror/sql.js"></script>
+  <script src="/lib/lodash.js"></script>
+  <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery.waitforimages.js"></script>
+  <script src="/lib/codemirror/codemirror.js"></script>
+  <script src="/lib/codemirror/sql.js"></script>
   <?require './markdown.php';?>
-  <script src="/lightbox2/js/lightbox.min.js"></script>
-  <script src="/moment.js"></script>
-  <script src="/resizer.js"></script>
-  <script src="/favico.js"></script>
-  <script src="/select2.js"></script>
-  <script src="/starrr.js"></script>
+  <script src="/lib/lightbox2/js/lightbox.min.js"></script>
+  <script src="/lib/moment.js"></script>
+  <script src="/lib/resizer.js"></script>
+  <script src="/lib/favico.js"></script>
+  <script src="/lib/select2.js"></script>
+  <script src="/lib/starrr.js"></script>
   <script>
     //moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){

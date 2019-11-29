@@ -109,15 +109,15 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
 <!doctype html>
 <html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
 <head>
-  <link rel="stylesheet" href="/fork-awesome/css/fork-awesome.min.css">
-  <link rel="stylesheet" href="/lightbox2/css/lightbox.min.css">
-  <link rel="stylesheet" href="codemirror/codemirror.css">
+  <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
+  <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
+  <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     header select { margin-right: 0.5rem; }
@@ -134,15 +134,15 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
-  <script src="/lodash.js"></script>
-  <script src="/jquery.js"></script>
-  <script src="codemirror/codemirror.js"></script>
-  <script src="codemirror/markdown.js"></script>
-  <script src="codemirror/sql.js"></script>
-  <script src="codemirror/placeholder.js"></script>
+  <script src="/lib/lodash.js"></script>
+  <script src="/lib/jquery.js"></script>
+  <script src="/lib/codemirror/codemirror.js"></script>
+  <script src="/lib/codemirror/markdown.js"></script>
+  <script src="/lib/codemirror/sql.js"></script>
+  <script src="/lib/codemirror/placeholder.js"></script>
   <?require './markdown.php';?>
-  <script src="/lightbox2/js/lightbox.min.js"></script>
-  <script src="/moment.js"></script>
+  <script src="/lib/lightbox2/js/lightbox.min.js"></script>
+  <script src="/lib/moment.js"></script>
   <script src="/favico.js"></script>
   <script>
     $(function(){

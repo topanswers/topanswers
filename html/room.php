@@ -49,11 +49,11 @@ extract(cdb("select room_name, room_image is not null room_has_image from room w
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
+    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
+    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     fieldset { margin-bottom: 1rem; }
   </style>
-  <script src="/jquery.js"></script>
+  <script src="/lib/jquery.js"></script>
   <script>
     $(function(){
     });

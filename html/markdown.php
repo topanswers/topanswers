@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/highlightjs/default.css">
+<link rel="stylesheet" href="/lib/highlightjs/default.css">
 <style>
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>:first-child { margin-top: 0; }
@@ -30,18 +30,18 @@
   .dbfiddle .error { overflow: auto; white-space: pre; font-family: monospace; background-color: #<?=$colour_highlight?>40; }
   .dbfiddle a { font-size: smaller; }
 </style>
-<script src="/markdown-it.js"></script>
-<script src="/markdown-it-inject-linenumbers.js"></script>
-<script src="/markdown-it-sup.js"></script>
-<script src="/markdown-it-sub.js"></script>
-<script src="/markdown-it-emoji.js"></script>
-<script src="/markdown-it-footnote.js"></script>
-<script src="/markdown-it-deflist.js"></script>
-<script src="/markdown-it-abbr.js"></script>
-<script src="/markdown-it-for-inline.js"></script>
-<script src="/markdownItAnchor.js"></script>
-<script src="/markdownItTocDoneRight.js"></script>
-<script src="/highlightjs/highlight.js"></script>
+<script src="/lib/markdown-it.js"></script>
+<script src="/lib/markdown-it-inject-linenumbers.js"></script>
+<script src="/lib/markdown-it-sup.js"></script>
+<script src="/lib/markdown-it-sub.js"></script>
+<script src="/lib/markdown-it-emoji.js"></script>
+<script src="/lib/markdown-it-footnote.js"></script>
+<script src="/lib/markdown-it-deflist.js"></script>
+<script src="/lib/markdown-it-abbr.js"></script>
+<script src="/lib/markdown-it-for-inline.js"></script>
+<script src="/lib/markdownItAnchor.js"></script>
+<script src="/lib/markdownItTocDoneRight.js"></script>
+<script src="/lib/highlightjs/highlight.js"></script>
 <script>
   // we have no idea why this works but without it cs highlighting doesn't happen
   (function(){
