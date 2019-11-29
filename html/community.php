@@ -628,7 +628,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               </div>
             </div>
           </div>
-          <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"></div>
+          <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"><?=htmlspecialchars($question_markdown)?></div>
           <div class="bar">
             <div>
               <?if($question_is_votable==='t'){?>
@@ -683,7 +683,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               </div>
             </div>
-            <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"></div>
+            <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
             <div class="bar">
               <div>
                 <?if($account_is_me==='f'){?>
