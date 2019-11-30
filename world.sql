@@ -151,7 +151,9 @@ begin
     select account_id from account_community where community_id=cid and account_community_se_user_id=seuid into id;
   else
     insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(replace(seuname,'-',' '),4,1,true) returning account_id into id;
-    insert into account_community(account_id,community_id,account_community_se_user_id) values(id,cid,seuid);
+    --
+    insert into account_community(account_id,community_id,account_community_se_user_id,account_community_regular_font_id,account_community_monospace_font_id)
+    select id,cid,seuid,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
   end if;
   return id;
 end;
@@ -442,15 +444,16 @@ create function vote_question(qid integer, votes integer) returns integer langua
   with d as (delete from question_vote where question_id=qid and account_id=current_setting('custom.account_id',true)::integer returning *)
      , r as (select question_id,community_id,q.account_id,question_vote_votes from d join question q using(question_id))
      , q as (update question set question_votes = question_votes-question_vote_votes from d where question.question_id=qid)
-     , a as (insert into account_community(account_id,community_id,account_community_votes)
-             select account_id,community_id,-question_vote_votes from r
+     , a as (insert into account_community(account_id,community_id,account_community_votes,account_community_regular_font_id,account_community_monospace_font_id)
+             select account_id,community_id,-question_vote_votes,community_regular_font_id,community_monospace_font_id from r natural join community
              on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes+excluded.account_community_votes)
   insert into question_vote_history(question_id,account_id,question_vote_history_at,question_vote_history_votes)
   select question_id,account_id,question_vote_at,question_vote_votes from d;
   --
   with i as (insert into question_vote(question_id,account_id,question_vote_votes) values(qid,current_setting('custom.account_id',true)::integer,votes) returning *)
-     , c as (insert into account_community(account_id,community_id,account_community_votes)
-             select account_id,community_id,question_vote_votes from (select question_id,community_id,q.account_id,question_vote_votes from i join question q using(question_id)) z
+     , c as (insert into account_community(account_id,community_id,account_community_votes,account_community_regular_font_id,account_community_monospace_font_id)
+             select account_id,community_id,question_vote_votes,community_regular_font_id,community_monospace_font_id
+             from (select question_id,community_id,q.account_id,question_vote_votes from i join question q using(question_id)) z natural join community
              on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes+excluded.account_community_votes)
   update question set question_votes = question_votes+question_vote_votes from i where question.question_id=qid returning question_votes;
 $$;
@@ -468,16 +471,17 @@ create function vote_answer(aid integer, votes integer) returns integer language
   with d as (delete from answer_vote where answer_id=aid and account_id=current_setting('custom.account_id',true)::integer returning *)
      , r as (select answer_id,community_id,a.account_id,answer_vote_votes from d join answer a using(answer_id) natural join (select question_id,community_id from question) q )
      , q as (update answer set answer_votes = answer_votes-answer_vote_votes from d where answer.answer_id=aid)
-     , a as (insert into account_community(account_id,community_id,account_community_votes)
-             select account_id,community_id,-answer_vote_votes from r
+     , a as (insert into account_community(account_id,community_id,account_community_votes,account_community_regular_font_id,account_community_monospace_font_id)
+             select account_id,community_id,-answer_vote_votes,community_regular_font_id,community_monospace_font_id from r natural join community
              on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes+excluded.account_community_votes)
   insert into answer_vote_history(answer_id,account_id,answer_vote_history_at,answer_vote_history_votes)
   select answer_id,account_id,answer_vote_at,answer_vote_votes from d;
   --
   with i as (insert into answer_vote(answer_id,account_id,answer_vote_votes) values(aid,current_setting('custom.account_id',true)::integer,votes) returning *)
-     , c as (insert into account_community(account_id,community_id,account_community_votes)
-             select account_id,community_id,answer_vote_votes
+     , c as (insert into account_community(account_id,community_id,account_community_votes,account_community_regular_font_id,account_community_monospace_font_id)
+             select account_id,community_id,answer_vote_votes,community_regular_font_id,community_monospace_font_id
              from (select answer_id,community_id,a.account_id,answer_vote_votes from i join answer a using(answer_id) natural join (select question_id,community_id from question) q) z
+                  natural join community
              on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes+excluded.account_community_votes)
   update answer set answer_votes = answer_votes+answer_vote_votes from i where answer.answer_id=aid returning answer_votes;
 $$;

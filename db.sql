@@ -68,8 +68,8 @@ create table account_community(
 , account_community_votes integer default 0 not null
 , account_community_can_import boolean default false not null
 , account_community_se_user_id integer
-, account_community_regular_font_id integer default 3 not null references font
-, account_community_monospace_font_id integer default 2 not null references font
+, account_community_regular_font_id integer not null references font
+, account_community_monospace_font_id integer not null references font
 , primary key (account_id,community_id)
 );
 create unique index account_se_user_ind on account_community(community_id,account_community_se_user_id);
