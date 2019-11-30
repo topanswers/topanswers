@@ -45,8 +45,7 @@ from (select community_id,account_community_se_user_id
            , coalesce(account_community_regular_font_id,community_regular_font_id) account_community_regular_font_id
            , coalesce(account_community_monospace_font_id,community_monospace_font_id) account_community_monospace_font_id
       from db.community
-           natural left join db.account_community
-      where account_id=current_setting('custom.account_id',true)::integer) z
+           natural left join (select * from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z ) z
      natural join (select font_id account_community_regular_font_id, font_name regular_font_name from font) r
      natural join (select font_id account_community_monospace_font_id, font_name monospace_font_name from font) m;
 --
