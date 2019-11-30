@@ -83,7 +83,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <?require './markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
-  <script src="/favico.js"></script>
+  <script src="/lib/favico.js"></script>
   <script>
     $(function(){
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', extraKeys: {
