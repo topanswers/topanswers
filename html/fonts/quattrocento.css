@@ -1,0 +1,15 @@
+@font-face{
+    font-family: 'quattrocento';
+    font-weight: 400;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/quattrocento/Quattrocento-Regular.ttf') format('truetype');
+}
+
+@font-face{
+    font-family: 'quattrocento';
+    font-weight: 700;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/quattrocento/Quattrocento-Bold.ttf') format('truetype');
+}

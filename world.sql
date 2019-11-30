@@ -20,6 +20,8 @@ select community_name, question_id, greatest(question_change_at,change_at) chang
 from (select question_id, max(answer_change_at) change_at, sum(answer_votes) votes from db.answer group by question_id) z natural join db.question natural join db.community;
 --
 create view sesite with (security_barrier) as select sesite_id,sesite_url from db.sesite;
+create view font with (security_barrier) as select font_id,font_name,font_is_monospace from db.font;
+--
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_sesite_id,community_code_language
      , (current_setting('custom.account_id',true)::integer<100)::integer+trunc(log(greatest(account_community_votes,0)+1)) community_my_power
@@ -37,7 +39,16 @@ select account_id,account_name,account_image,account_uuid,account_is_dev,account
 create view account_community with (security_barrier) as select account_id,community_id,account_community_votes,account_community_se_user_id from db.account_community;
 --
 create view my_account_community with (security_barrier) as
-select account_id,community_id,account_community_can_import,account_community_se_user_id from db.account_community where account_id=current_setting('custom.account_id',true)::integer;
+select z.*, regular_font_name,monospace_font_name
+from (select community_id,account_community_se_user_id
+           , coalesce(account_community_can_import,false) account_community_can_import
+           , coalesce(account_community_regular_font_id,community_regular_font_id) account_community_regular_font_id
+           , coalesce(account_community_monospace_font_id,community_monospace_font_id) account_community_monospace_font_id
+      from db.community
+           natural left join db.account_community
+      where account_id=current_setting('custom.account_id',true)::integer) z
+     natural join (select font_id account_community_regular_font_id, font_name regular_font_name from font) r
+     natural join (select font_id account_community_monospace_font_id, font_name monospace_font_name from font) m;
 --
 create view room with (security_barrier) as
 select community_id,room_id,room_image
@@ -46,8 +57,8 @@ select community_id,room_id,room_image
      , question_title is not null room_is_for_question
      , question_id room_question_id
      , (select max(chat_at) from db.chat where room_id=room.room_id and account_id=current_setting('custom.account_id',true)::integer) room_my_last_chat
-from db.room natural join world.community natural
-     left join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) a
+from db.room natural join world.community
+     natural left join (select * from db.account_room_x where account_id=current_setting('custom.account_id',true)::integer) a
      natural left join (select question_room_id room_id, question_id, question_title from db.question) q
 where room_type<>'private' or account_id is not null;
 --

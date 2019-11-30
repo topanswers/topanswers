@@ -1,0 +1,23 @@
+@font-face{
+    font-family: 'source-code-pro';
+    font-weight: 400;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/source-code-pro/SourceCodePro-Regular.eot') format('embedded-opentype'),
+         url('/fonts/source-code-pro/SourceCodePro-Regular.ttf.woff2') format('woff2'),
+         url('/fonts/source-code-pro/SourceCodePro-Regular.otf.woff') format('woff'),
+         url('/fonts/source-code-pro/SourceCodePro-Regular.otf') format('opentype'),
+         url('/fonts/source-code-pro/SourceCodePro-Regular.ttf') format('truetype');
+}
+
+@font-face{
+    font-family: 'source-code-pro';
+    font-weight: 700;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/source-code-pro/SourceCodePro-Bold.eot') format('embedded-opentype'),
+         url('/fonts/source-code-pro/SourceCodePro-Bold.ttf.woff2') format('woff2'),
+         url('/fonts/source-code-pro/SourceCodePro-Bold.otf.woff') format('woff'),
+         url('/fonts/source-code-pro/SourceCodePro-Bold.otf') format('opentype'),
+         url('/fonts/source-code-pro/SourceCodePro-Bold.ttf') format('truetype');
+}

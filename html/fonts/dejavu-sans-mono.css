@@ -1,0 +1,15 @@
+@font-face{
+    font-family: 'dejavu-sans-mono';
+    font-weight: 400;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/dejavu-sans-mono/DejaVuSansMono.ttf') format('truetype');
+}
+
+@font-face{
+    font-family: 'dejavu-sans-mono';
+    font-weight: 700;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/dejavu-sans-mono/DejaVuSansMono-Bold.ttf') format('truetype');
+}

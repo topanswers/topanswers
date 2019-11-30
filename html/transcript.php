@@ -48,14 +48,17 @@ $maxday = 31;
 if(isset($_GET['month'])){
   $maxday = ccdb("select extract('day' from make_timestamp($1,$2,1,0,0,0)+'1mon - 1d'::interval)",$_GET['year'],$_GET['month']);
 }
-extract(cdb("select community_name community
+extract(cdb("select regular_font_name,monospace_font_name
+                  , community_name community
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community natural join room
+             from community natural join room natural join my_account_community
              where room_id=$1",$room));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
+<html style="box-sizing: border-box; font-family: '<?=$regular_font_name?>', serif; font-size: smaller;">
 <head>
+  <link rel="stylesheet" href="/fonts/<?=$regular_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
@@ -63,9 +66,8 @@ extract(cdb("select community_name community
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+    textarea, pre, code { font-family: '<?=$monospace_font_name?>', monospace; }
     header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; white-space: nowrap; }
     header select, header input, header a:not(.icon) { margin: 3px; }
     header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }

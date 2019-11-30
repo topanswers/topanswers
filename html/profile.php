@@ -64,14 +64,13 @@ if(isset($_GET['uuid'])){
 extract(cdb("select account_name,account_license_id,account_codelicense_id, account_image is not null account_has_image from my_account"));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
+<html style="box-sizing: border-box; font-family: 'quattrocento', serif; font-size: smaller;">
 <head>
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/fonts/quattrocento.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-    @font-face { font-family: 'Quattrocento'; src: url('/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     fieldset { margin-bottom: 1rem; }
   </style>
   <script src="/lib/jquery.js"></script>

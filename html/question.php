@@ -101,14 +101,17 @@ if($id) {
   if(!$uuid&&(($community!=='databases')||!isset($_GET['rdbms'])||!isset($_GET['fiddle']))) fail(403,'need to be logged in to visit this page unless from a fiddle');
   extract(cdb("select community_code_language from community where community_name=$1",$community));
 }
-extract(cdb("select encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community
+extract(cdb("select regular_font_name,monospace_font_name
+                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
+             from community natural join my_account_community
              where community_name=$1",$community));
 extract(cdb("select account_license_id,account_codelicense_id from my_account"));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
+<html style="box-sizing: border-box; font-family: '<?=$regular_font_name?>', serif; font-size: smaller;">
 <head>
+  <link rel="stylesheet" href="/fonts/<?=$regular_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
@@ -116,9 +119,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+    textarea, pre, code, .CodeMirror { font-family: '<?=$monospace_font_name?>', monospace; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     header select { margin-right: 0.5rem; }
 

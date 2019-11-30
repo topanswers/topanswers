@@ -27,16 +27,19 @@ if($question) ccdb("select count(*) from question where question_id=$1",$questio
 $room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
 $canchat = false;
 if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
-extract(cdb("select community_id,community_my_power,sesite_url,community_code_language
+extract(cdb("select community_id,community_my_power,sesite_url,community_code_language,regular_font_name,monospace_font_name
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
                   , coalesce(account_community_can_import,false) account_community_can_import
-             from community natural left join my_account_community left join sesite on sesite_id=community_sesite_id
+             from community natural join my_account_community
+                  left join sesite on sesite_id=community_sesite_id
              where community_name=$1",$community));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: 'Quattrocento', sans-serif; font-size: smaller;">
+<html style="box-sizing: border-box; font-family: '<?=$regular_font_name?>', serif; font-size: smaller;">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
+  <link rel="stylesheet" href="/fonts/<?=$regular_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/select2.css">
@@ -46,9 +49,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; }
-    @font-face { font-family: 'Quattrocento'; src: url('/fonts/Quattrocento-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+    textarea, pre, code { font-family: '<?=$monospace_font_name?>', monospace; }
     header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; white-space: nowrap; }
     header select, header input, header a:not(.icon) { margin: 3px; }
     header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }

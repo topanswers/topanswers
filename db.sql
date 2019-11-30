@@ -3,6 +3,12 @@ create table sesite(
 , sesite_url text not null unique
 );
 
+create table font(
+  font_id integer generated always as identity primary key
+, font_name text not null
+, font_is_monospace boolean not null
+);
+
 create table community(
   community_id integer generated always as identity primary key
 , community_name text not null
@@ -14,6 +20,8 @@ create table community(
 , community_is_dev boolean default false not null
 , community_sesite_id integer references sesite
 , community_code_language text 
+, community_regular_font_id integer default 3 not null references font
+, community_monospace_font_id integer default 2 not null references font
 );
 
 create type room_type_enum as enum ('public','gallery','private');
@@ -50,11 +58,9 @@ create table account(
 , account_license_id integer references license default 4 not null
 , account_codelicense_id integer references codelicense default 1 not null
 , account_notification_id integer generated always as identity unique
-, account_sesite_id integer references sesite
 , account_is_imported boolean default false not null
 );
 create unique index account_rate_limit_ind on account(account_create_at);
-create unique index account_sesite_ind on account(account_sesite_id);
 
 create table account_community(
   account_id integer references account
@@ -62,6 +68,8 @@ create table account_community(
 , account_community_votes integer default 0 not null
 , account_community_can_import boolean default false not null
 , account_community_se_user_id integer
+, account_community_regular_font_id integer default 3 not null references font
+, account_community_monospace_font_id integer default 2 not null references font
 , primary key (account_id,community_id)
 );
 create unique index account_se_user_ind on account_community(community_id,account_community_se_user_id);
