@@ -23,7 +23,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         </html><?}
       exit;
     case 'new-se':
-      extract(cdb("select sesite_url,account_id,account_community_se_user_id from community join sesite on community_sesite_id=sesite_id natural join my_account_community where community_name=$1",$_POST['community']));
+      extract(cdb("select sesite_url,account_community_se_user_id from community join sesite on community_sesite_id=sesite_id natural join my_account_community where community_name=$1",$_POST['community']));
       // get the SE user-id and user-name for the question asker
       $doc = new DOMDocument();
       $doc->loadHTML(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
