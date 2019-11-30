@@ -48,7 +48,7 @@ $maxday = 31;
 if(isset($_GET['month'])){
   $maxday = ccdb("select extract('day' from make_timestamp($1,$2,1,0,0,0)+'1mon - 1d'::interval)",$_GET['year'],$_GET['month']);
 }
-extract(cdb("select regular_font_name,monospace_font_name
+extract(cdb("select community_code_language,regular_font_name,monospace_font_name
                   , community_name community
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
              from community natural join room natural join my_account_community
