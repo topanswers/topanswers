@@ -114,7 +114,7 @@ create index chat_search_ind on chat using gin (room_id, chat_markdown gin_trgm_
 create table chat_history(
   chat_history_id bigint generated always as identity primary key
 , chat_id bigint not null references chat
-, chat_history_at timestamptz not null
+, chat_history_at timestamptz default current_timestamp not null
 , chat_history_markdown text not null
 );
 
@@ -221,7 +221,7 @@ create table question_history(
   question_history_id bigint generated always as identity primary key
 , question_id integer not null references question
 , account_id integer not null references account
-, question_history_at timestamptz not null
+, question_history_at timestamptz default current_timestamp not null
 , question_history_title text not null
 , question_history_markdown text not null
 );
@@ -245,7 +245,7 @@ create table answer_history(
   answer_history_id bigint generated always as identity primary key
 , answer_id integer not null references answer
 , account_id integer not null references account
-, answer_history_at timestamptz not null
+, answer_history_at timestamptz default current_timestamp not null
 , answer_history_markdown text not null
 );
 create unique index answer_history_rate_limit_ind on answer_history(account_id,answer_history_at);

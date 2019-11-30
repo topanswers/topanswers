@@ -70,12 +70,7 @@ select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change
      , exists(select 1 from db.chat_history where chat_id=chat.chat_id) chat_has_history
 from db.chat natural join room;
 --
-create view chat_history with (security_barrier) as
-select chat_id,chat_history_at,chat_history_markdown
-from (select chat_id,chat_history_at,chat_history_markdown from db.chat_history
-      union all
-      select chat_id,chat_change_at,chat_markdown from db.chat) z;
---
+create view chat_history with (security_barrier) as select chat_history_id,chat_id,chat_history_at,chat_history_markdown from db.chat_history;
 create view chat_notification with (security_barrier) as select chat_id,chat_notification_at from db.chat_notification where account_id=current_setting('custom.account_id',true)::integer;
 create view chat_flag with (security_barrier) as select chat_id,chat_flag_at from db.chat_flag where account_id=current_setting('custom.account_id',true)::integer;
 create view chat_star with (security_barrier) as select chat_id,chat_star_at from db.chat_star where account_id=current_setting('custom.account_id',true)::integer;
@@ -99,12 +94,7 @@ from db.question natural join community
      natural left join (select question_id, max(question_tag_x_at) tag_at from db.question_tag_x group by question_id) t
      natural left join (select question_id, max(greatest(question_tag_x_added_at,question_tag_x_removed_at)) tag_history_at from db.question_tag_x_history group by question_id) h;
 --
-create view question_history with (security_barrier) as
-select question_id,question_history_at,question_history_markdown,question_history_title
-     , coalesce(lag(account_id) over(partition by question_id order by question_history_at),first_value(account_id) over(partition by question_id order by question_history_at desc)) account_id
-from (select question_id,account_id,question_history_at,question_history_markdown,question_history_title from db.question_history
-      union all
-      select question_id,account_id,question_change_at,question_markdown,question_title from db.question) z;
+create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history;
 --
 create view answer with (security_barrier) as
 select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,license_id,codelicense_id,answer_se_answer_id
@@ -113,12 +103,7 @@ select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_
      , answer_at<>answer_change_at answer_has_history
 from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
 --
-create view answer_history with (security_barrier) as
-select answer_id,answer_history_at,answer_history_markdown
-     , coalesce(lag(account_id) over(partition by answer_id order by answer_history_at),first_value(account_id) over(partition by answer_id order by answer_history_at desc)) account_id
-from (select answer_id,account_id,answer_history_at,answer_history_markdown from db.answer_history
-      union all
-      select answer_id,account_id,answer_change_at,answer_markdown from db.answer) z;
+create view answer_history with (security_barrier) as select answer_history_id,answer_id,account_id,answer_history_at,answer_history_markdown from db.answer_history;
 --
 create view tag with (security_barrier) as select tag_id,community_id,tag_name,tag_implies_id,tag_question_count from db.tag natural join community;
 create view question_tag_x with (security_barrier) as select question_id,tag_id from db.question_tag_x natural join community;
@@ -197,6 +182,7 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
   --
   with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
              select community_id,roomid,current_setting('custom.account_id',true)::integer,msg,replyid from room where room_id=roomid returning community_id,room_id,chat_id)
+     , h as (insert into chat_history(chat_id,chat_history_markdown) select chat_id,msg from i)
      , n as (insert into chat_notification(chat_id,account_id)
              select chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and not (select account_is_me from chat natural join world.account where chat_id=replyid)
              returning *)
@@ -217,7 +203,7 @@ create function change_chat(id integer, msg text) returns void language sql secu
   select _error('message not mine') from chat where chat_id=id and account_id<>current_setting('custom.account_id',true)::integer;
   select _error('too late') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>300;
   select _error(413,'message too long') where length(msg)>5000;
-  insert into chat_history(chat_id,chat_history_at,chat_history_markdown) select id,chat_change_at,chat_markdown from chat where chat_id=id;
+  insert into chat_history(chat_id,chat_history_markdown) values(id,msg);
   --
   with w as (select chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
   update account set account_notification_id = default where account_id in(select account_id from w);
@@ -346,6 +332,8 @@ create function _new_question(cid integer, aid integer, typ db.question_type_enu
   with r as (insert into room(community_id) values(cid) returning room_id)
      , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id)
              select cid,aid,typ,title,markdown,room_id,lic,codelic,seqid from r returning question_id)
+     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select question_id,aid,title,markdown from q)
   select question_id from q;
 $$;
 --
@@ -370,18 +358,16 @@ create function change_question(id integer, title text, markdown text) returns v
                                          from question_history natural join (select question_id from question where account_id<>current_setting('custom.account_id',true)::integer) z
                                          where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval)>10;
   --
-  insert into question_history(question_id,account_id,question_history_at,question_history_title,question_history_markdown)
-  select question_id,current_setting('custom.account_id',true)::integer,question_change_at,question_title,question_markdown
-  from question
-  where question_id=id;
-  --
+  insert into question_history(question_id,account_id,question_history_title,question_history_markdown) values(id,current_setting('custom.account_id',true)::integer,title,markdown);
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=id;
 $$;
 --
 create function _new_answer(qid integer, aid integer, markdown text, lic integer, codelic integer, seaid integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from world.question where question_id=qid);
-  insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_se_answer_id) values(qid,aid,markdown,lic,codelic,seaid) returning answer_id;
+  --
+  with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_se_answer_id) values(qid,aid,markdown,lic,codelic,seaid) returning answer_id)
+  insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,aid,markdown from i returning answer_id;
 $$;
 --
 create function new_answer(qid integer, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
@@ -404,7 +390,7 @@ create function change_answer(id integer, markdown text) returns void language s
   --
   update question set question_poll_major_id = default where question_id=(select question_id from answer where answer_id=id);
   --
-  insert into answer_history(answer_id,account_id,answer_history_at,answer_history_markdown) select answer_id,current_setting('custom.account_id',true)::integer,answer_change_at,answer_markdown from answer where answer_id=id;
+  insert into answer_history(answer_id,account_id,answer_history_markdown) values(id,current_setting('custom.account_id',true)::integer,markdown);
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
 $$;
 --
