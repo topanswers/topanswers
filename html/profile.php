@@ -9,6 +9,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   if(isset($_POST['action'])){
     switch($_POST['action']) {
       case 'regen': db("select regenerate_account_uuid()"); header('Location: /profile'); exit;
+      case 'font': db("select change_fonts((select community_id from community where community_name=$1),$2,$3)",$_POST['community'],$_POST['regular'],$_POST['mono']); header('Location: /profile'); exit;
       default: fail(400,'unrecognized action');
     }
   }
@@ -78,6 +79,7 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
     $(function(){
       $('#pin').click(function(){ $(this).prop('disabled',true); $.get('/profile?pin=<?=$pin?>').done(function(){ $('#pin').replaceWith('<code><?=$pin?></code>'); }); });
       $('#uuid').click(function(){ var t = $(this); $.get('/profile?uuid').done(function(r){ t.replaceWith('<span>'+r+'</span>'); }); });
+      $('[name]').on('change input',function(){ console.log('boo'); $(this).parents('fieldset').siblings('fieldset').find('[name],input').prop('disabled', true); });
     });
   </script>
   <title>Profile | TopAnswers</title>
@@ -144,5 +146,34 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
       <li><form action="/profile" method="POST"><input type="hidden" name="action" value="regen"><input type="submit" value="generate new token"></form></li>
     </ul>
   </fieldset>
+  <?foreach(db("select community_name,account_community_regular_font_id,account_community_monospace_font_id
+                from account_community natural join my_account natural join community natural join (select community_id,account_community_regular_font_id,account_community_monospace_font_id from my_account_community) z
+                order by account_community_votes desc, community_id") as $r){extract($r);?>
+    <fieldset>
+      <legend><?=$community_name?></legend>
+      <fieldset>
+        <legend>fonts</legend>
+        <form action="/profile" method="post">
+          <input type="hidden" name="action" value="font">
+          <input type="hidden" name="community" value="<?=$community_name?>">
+          <label>regular
+            <select name="regular">
+              <?foreach(db("select font_id,font_name from font where not font_is_monospace") as $r){ extract($r);?>
+                <option value="<?=$font_id?>"<?=($font_id===$account_community_regular_font_id)?' selected':''?>><?=$font_name?></option>
+              <?}?>
+            </select>
+          </label>
+          <label>monospace
+            <select name="mono">
+              <?foreach(db("select font_id,font_name from font where font_is_monospace") as $r){ extract($r);?>
+                <option value="<?=$font_id?>"<?=($font_id===$account_community_monospace_font_id)?' selected':''?>><?=$font_name?></option>
+              <?}?>
+            </select>
+          </label>
+          <input type="submit" value="Save">
+        </form>
+      </fieldset>
+    </fieldset>
+  <?}?>
 </body>   
 </html>   

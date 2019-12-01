@@ -3,7 +3,7 @@
     font-weight: 400;
     font-style: normal;
     font-stretch: normal;
-    src: url('/fonts/dejavu-san/DejaVuSans.ttf') format('truetype');
+    src: url('/fonts/dejavu-sans/DejaVuSans.ttf') format('truetype');
 }
 
 @font-face{
@@ -11,5 +11,5 @@
     font-weight: 700;
     font-style: normal;
     font-stretch: normal;
-    src: url('/fonts/dejavu-san/DejaVuSans-Bold.ttf') format('truetype');
+    src: url('/fonts/dejavu-sans/DejaVuSans-Bold.ttf') format('truetype');
 }
