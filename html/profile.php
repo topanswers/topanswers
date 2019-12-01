@@ -132,18 +132,18 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
   <fieldset>
     <legend>link another device/browser to this account</legend>
     <ol>
-      <li>Go to https://topanswers.xyz on the other device and click 'link'</li>
+      <li>Go to https://topanswers.xyz on the other device and click 'log in'</li>
       <li>Enter this PIN (within 1 minute of generation): <input id="pin" type="button" value="generate PIN"></li>
     </ol>
   </fieldset>
   <fieldset>
     <legend>account recovery</legend>
     <ul>
-      <li>Your account recovery token should be kept confidential like a password</li>
+      <li>Your account 'login key' should be kept safe, and confidential, just like a password</li>
       <li>It can be used in the same way as a PIN, but does not expire</li>
-      <li><input id="uuid" type="button" value="show token"></li>
-      <li>If you suspect your token has been discovered, you should regenerate it</li>
-      <li><form action="/profile" method="POST"><input type="hidden" name="action" value="regen"><input type="submit" value="generate new token"></form></li>
+      <li><input id="uuid" type="button" value="show key"></li>
+      <li>If you suspect your 'key' has been discovered, you should regenerate it</li>
+      <li><form action="/profile" method="POST"><input type="hidden" name="action" value="regen"><input type="submit" value="generate new key"></form></li>
     </ul>
   </fieldset>
   <?foreach(db("select community_name,account_community_regular_font_id,account_community_monospace_font_id

@@ -367,7 +367,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         }) };
         location.reload(true);
       });
-      $('#link').click(function(){ var pin = prompt('Enter PIN from account profile'); if(pin!==null) { $.ajax('/uuid',{ type: "POST", data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
+      $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.ajax('/uuid',{ type: "POST", data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
@@ -576,7 +576,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <input class="panecontrol" type="button" value="chat" onclick="$('.pane').toggleClass('hidepane');">
       </div>
       <div style="display: flex; align-items: center;">
-        <?if(!$uuid){?><input id="join" type="button" value="join"> or <input id="link" type="button" value="link"><?}?>
+        <?if(!$uuid){?><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"><?}?>
         <?if(($account_community_can_import==='t')&&$sesite_url&&!$question){?>
           <form method="post" action="/question">
             <input type="hidden" name="action" value="new-se">
