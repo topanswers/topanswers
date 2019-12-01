@@ -61,6 +61,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .question { background: white; margin: 1.6rem 1.6rem 2.2rem 1.6em; border-radius: 5px 5px 0 5px; font-size: larger; }
+    #qa>:last-child { margin-bottom: 4rem; }
     .answer { background: white; margin: 0 1.2rem 2.4rem 1.2rem; border-radius: 5px; font-size: larger; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
@@ -193,7 +194,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       function updateQuestions(scroll){
         var maxQuestion = $('#qa>:first-child').data('poll-major-id');
         if($('#qa').scrollTop()<100) scroll = true;
-        $.get('/questions?community=<?=$community?>'+(($('#qa').children().length===0)?'':'&id='+maxQuestion),function(data) {
+        $.get('/questions?community=<?=$community?>'+(($('#qa').children('.question').length===0)?'':'&id='+maxQuestion),function(data) {
           if($('#qa>:first-child').data('poll-major-id')===maxQuestion){
             var newquestions;
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
@@ -208,7 +209,19 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
           <?if($uuid){?>setChatPollTimeout();<?}?>
+          if($('#qa').children('.question').length>=20) $('#more').parent().show();
         },'html').fail(setChatPollTimeout);
+      }
+      function moreQuestions(){
+        var last = $('#qa>.question').last(); minQuestion = last.data('poll-major-id');
+        $('<div style="text-align: center;"><i class="fa fa-spinner fa-pulse fa-fw"></i></div>').insertAfter($('#more'));
+        $('#more').hide().next().show();
+        $.get('/questions?community=<?=$community?>&older&id='+minQuestion,function(data) {
+          var newquestions = $(data).filter('.question').insertAfter(last).hide().slideDown(400);
+          newquestions.each(renderQuestion);
+          $('#more').show().next().hide();
+          if(newquestions.length<20) $('#more').parent().remove();
+        },'html');
       }
       function renderChat(){
         $(this).find('.markdown').renderMarkdown();
@@ -545,6 +558,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         else t.prev().animate({ 'flex-shrink': 1 });
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
+      $('#more').click(function(){ moreQuestions(); return false; });
     });
   </script>
   <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
@@ -704,6 +718,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             </div>
           </div>
         <?}?>
+      <?}else{?>
+        <div style="margin-bottom: 4rem; display: none; text-align: center;"><a id="more" href=".">show more</a><i class="fa fa-spinner fa-pulse fa-fw" style="display: none"></i></div>
       <?}?>
     </div>
   </main>

@@ -21,8 +21,8 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
                    , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
                           else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
               from question natural join account natural join community natural left join account_community
-              where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id>')."$2
-              order by question_poll_major_id desc limit 50",$community_id,$id) as $r){ extract($r);?>
+              where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id'.(isset($_GET['older'])?'<':'>'))."$2
+              order by question_poll_major_id desc limit 20",$community_id,$id) as $r){ extract($r);?>
   <div id="q<?=$question_id?>" class="question" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
     <a href="/<?=$community?>?q=<?=$question_id?>"><?=$question_type.$question_title?></a>
     <div class="bar">
