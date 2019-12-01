@@ -24,7 +24,7 @@ create view font with (security_barrier) as select font_id,font_name,font_is_mon
 --
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_sesite_id,community_code_language
-     , (current_setting('custom.account_id',true)::integer<100)::integer+trunc(log(greatest(account_community_votes,0)+1)) community_my_power
+     , 1+trunc(log(greatest(account_community_votes,0)+1)) community_my_power
 from db.community natural left join (select account_is_dev from db.account where account_id=current_setting('custom.account_id',true)::integer) y natural left join (select community_id,account_community_votes from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z
 where account_is_dev or not community_is_dev;
 --
