@@ -62,8 +62,9 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .question { background: white; margin: 1.6rem 1.6rem 2.2rem 1.6em; border-radius: 5px 5px 0 5px; font-size: larger; }
     #qa>:last-child { margin-bottom: 4rem; }
-    .answer { background: white; margin: 0 1.2rem 2.4rem 1.2rem; border-radius: 5px; font-size: larger; }
+    .answer { background: white; margin: 0 1.2rem 2.4rem 1.2rem; border-radius: 5px 0 5px 5px; font-size: larger; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
+    .answer:target { box-shadow: 0 0 3px 3px #<?=$colour_highlight?>; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
     .tags { display: flex; margin-left: 0.25rem; margin-top: 1px; white-space: nowrap; overflow: hidden; }
     .tag { padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
@@ -552,7 +553,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         }
         return false;
       });
-      setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
+      setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 300);
       $('#active-spacer').click(function(){
         var t = $(this);
         if((t.prev().css('flex-shrink')==='1')&&(t.next().css('flex-shrink')==='1')) t.next().animate({ 'flex-shrink': 100 });
