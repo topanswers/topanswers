@@ -1,4 +1,4 @@
 <?
 include 'nocache.php';
-header("Location: /databases");
+header("Location: /meta");
 ?>
