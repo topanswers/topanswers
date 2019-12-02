@@ -652,7 +652,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             <div>
               <?if($question_is_votable==='t'){?>
                 <?if($account_is_me==='f'){?>
-                  <div class="starrr" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>"></div>
+                  <div class="starrr" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
                 <?}else{?>
                   <span></span>
                 <?}?>
@@ -706,7 +706,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             <div class="bar">
               <div>
                 <?if($account_is_me==='f'){?>
-                  <div class="starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>"></div>
+                  <div class="starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
                 <?}else{?>
                   <span></span>
                 <?}?>
