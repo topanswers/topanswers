@@ -27,7 +27,7 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
     <a href="/<?=$community?>?q=<?=$question_id?>"><?=$question_type.$question_title?></a>
     <div class="bar">
       <div>
-        <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
+        <img title="Stars: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
         <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
         <?if($question_bump_reason){?><span>(<?=$question_bump_reason?>, <span class="when" data-seconds="<?=$bump_when?>"></span>)</span><?}?>
         <?if($question_votes){?>
@@ -59,7 +59,7 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
             </span>
           <?}?>
           <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-          <img title="Reputation: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
+          <img title="Stars: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
         </div>
       </div>
     <?}?>

@@ -608,7 +608,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+              <img title="Stars: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               <span>
                 <span class="when" data-seconds="<?=$question_when?>"></span>,
                 <?if($account_is_imported==='t'){?>
@@ -698,7 +698,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                     <span>by <?=htmlspecialchars($account_name)?></span>
                   <?}?>
                 </span>
-                <img title="Reputation: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+                <img title="Stars: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               </div>
             </div>
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
