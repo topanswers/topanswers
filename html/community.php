@@ -763,7 +763,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <div id="messages-wrapper" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden;">
         <div id="notification-wrapper">
           <?if($uuid&&(ccdb("select count(*)>0 from chat_notification")==='t')){?>
-            <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border-bottom: 1px solid darkgrey; background: #<?=$colour_light?>; padding: 0.3em; overflow-x: hidden; overflow-y: auto;">
+            <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border: 2px solid black; border-width: 2px 1px 2px 0; background: #<?=$colour_light?>; padding: 0.3rem; padding-top: 0; overflow-x: hidden; overflow-y: auto;">
+              <div style="font-size: 0.9rem; padding: 1px;">Notifications:</div>
               <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,community_name,question_id,chat_has_history
                                  , question_id is not null is_question_room
                                  , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) room_name
@@ -821,8 +822,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 </div>
               <?}?>
             </div>
-            <div style="position: relative;"><div style="position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(darkgrey,#<?=$colour_mid?>00);"></div></div>
           <?}?>
+          <div style="position: relative;"><div style="position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(#<?=$colour_dark?>80,transparent);"></div></div>
         </div>
         <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
           <div style="flex: 1 0 0.5em;">
