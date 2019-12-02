@@ -5,7 +5,7 @@ $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id'];
 ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
-extract(cdb("select regular_font_name,monospace_font_name
+extract(cdb("select regular_font_name,monospace_font_name,community_code_language
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
                   , community_name community
              from question natural join (select question_id,community_id from question) q natural join community natural join my_account_community

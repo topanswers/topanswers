@@ -165,7 +165,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     $(function(){
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
-      var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=ccdb("select account_notification_id from my_account")?>+0, numNewChats = 0;
+      var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=$uuid?ccdb("select account_notification_id from my_account"):'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0;
 
       function setFinalSpacer(){
