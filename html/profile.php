@@ -97,7 +97,7 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
   <fieldset>
     <legend>account recovery</legend>
     <ul>
-      <li>Your account 'login key' <span class="highlight">should be kept safe, and confidential, just like a password</span></li>
+      <li>Your 'login key' should be kept confidential, just like a password.<span class="highlight"> To ensure continued access to your account, record your 'key' somewhere safe.</span></li>
       <li>It can be used in the same way as a PIN, but does not expire</li>
       <li><input id="uuid" type="button" value="show key"></li>
       <li>If you suspect your 'key' has been discovered, you should regenerate it</li>
