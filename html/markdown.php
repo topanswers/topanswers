@@ -49,7 +49,7 @@
     script.type = 'text/javascript';
     script.async = false;
     script.src = "/lib/highlightjs/highlight.js";
-    script.addEventListener("load", () => { console.log("laoded"); hljs.initHighlighting(); })
+    script.addEventListener("load", () => { hljs.initHighlighting(); })
     script.addEventListener("error", () => { console.log("error"); hljs.initHighlighting(); })
     document.querySelector("head").appendChild(script);
   })();

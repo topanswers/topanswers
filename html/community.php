@@ -114,7 +114,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.65em; position: absolute; }
-    .message:not(:hover) .when { display: none; }
     .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
     .message .markdown { flex: 0 1 auto; max-height: 20vh; padding: 0.25rem; border: 1px solid darkgrey; border-radius: 0.3em; background: white; overflow: auto; }
 
@@ -134,6 +133,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     #chat .message .who { top: -1.2em; }
     #chat .markdown img { max-height: 7rem; }
     #chat .message.thread .markdown { background: #<?=$colour_highlight?>40; }
+    #messages .message:not(:hover) .when { display: none; }
     #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
     #notifications .message .who { top: 0.3rem; }
     #notifications .message+.message { margin-top: 0.2em; }
@@ -314,6 +314,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           var scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
           $('#notification-wrapper').replaceWith($('<div />').append(r).find('#notification-wrapper'));
           $('#notification-wrapper .markdown').renderMarkdown();
+          $('#notification-wrapper .when').each(function(){ $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
           if(scroll){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); }
           if(scroll) setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
           setChatPollTimeout();
@@ -516,6 +517,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         return false;
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
+      $('#notification-wrapper .when').each(function(){ $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
       <?if($uuid){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
           var t = $(this), v = t.data('votes');
@@ -771,7 +773,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                  , coalesce(nullif(account_name,''),'Anonymous') account_name
                                  , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                                  , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                                 , round(extract('epoch' from current_timestamp-chat_at)) chat_ago
+                                 , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
                                  , chat_flag_at is not null i_flagged
                                  , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
                                  , chat_star_at is not null i_starred
@@ -781,8 +783,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                             from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
                                  natural left join (select question_room_id room_id, question_id, question_title from question) q
                             order by chat_at limit 100") as $r){ extract($r);?>
-                <div id="n<?=$chat_id?>" class="message" style="background: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
-                  <small class="who">
+                <div id="n<?=$chat_id?>" class="message notification" style="background: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+                  <small class="who" title="<?=($account_is_me==='t')?'Me':$account_name?><?=$chat_reply_id?' replying to '.(($reply_account_is_me==='t')?'Me':$reply_account_name):''?> in <?=$room_name?>">
                     <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
                     <?if($room_id!==$room){?>
                       <?=$chat_reply_id?' replying to</span> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
@@ -790,12 +792,12 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$chat_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
                     <?}?>
                     <?if($room_id!==$room){?>
-                      <span style="color: #<?=$chat_dark_shade?>;">in&nbsp;</span>
-                      <a href="/<?=$community_name?>?<?=($is_question_room==='t')?'q='.$question_id:'room='.$room_id?>" style="color: #<?=$chat_dark_shade?>;"><?=$room_name?></a>
+                      <span style="color: #<?=$chat_dark_shade?>;">in</span>
+                      <a href="/<?=$community_name?>?<?=($is_question_room==='t')?'q='.$question_id:'room='.$room_id?>" style="color: #<?=$chat_dark_shade?>;" title="<?=$room_name?>"><?=$room_name?></a>
                     <?}?>
+                    <span class="when" data-at="<?=$chat_at_iso?>"></span>
                     —
-                    <span class="when" data-seconds="<?=$chat_ago?>"></span>
-                    <span style="color: #<?=$chat_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$chat_dark_shade?>;">dismiss</a>)</span>
+                    <span style="color: #<?=$chat_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$chat_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                   </small>
                   <img class="identicon" src="/identicon?id=<?=$account_id?>">
                   <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
