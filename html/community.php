@@ -362,10 +362,12 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       }
 
       $('#join').click(function(){
-        if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')) { $.ajax({ type: "POST", url: '/uuid', async: false }).fail(function(r){
+        if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')) { $.ajax({ type: "POST", url: '/uuid', async: false }).done(function(){
+          window.location = '/profile?highlight-recovery';
+        }).fail(function(r){
           alert((r.status)===429?'Rate limit hit, please try again later':responseText);
+          location.reload(true);
         }) };
-        location.reload(true);
       });
       $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.ajax('/uuid',{ type: "POST", data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
