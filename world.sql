@@ -65,9 +65,9 @@ create view room_account_x with (security_barrier) as select room_id,account_id,
 --
 create view chat with (security_barrier) as
 select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change_id,chat_change_at,chat_markdown
-     , (select count(*) from db.chat_flag where chat_id=chat.chat_id) chat_flag_count
-     , (select count(*) from db.chat_star where chat_id=chat.chat_id) chat_star_count
-     , exists(select 1 from db.chat_history where chat_id=chat.chat_id) chat_has_history
+     , (select count(1) from db.chat_flag where chat_id=chat.chat_id) chat_flag_count
+     , (select count(1) from db.chat_star where chat_id=chat.chat_id) chat_star_count
+     , (select count(1) from db.chat_history where chat_id=chat.chat_id)>1 chat_has_history
 from db.chat natural join room;
 --
 create view chat_history with (security_barrier) as select chat_history_id,chat_id,chat_history_at,chat_history_markdown from db.chat_history;

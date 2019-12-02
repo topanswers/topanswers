@@ -47,6 +47,8 @@ extract(cdb("select community_name community
              from room natural join community
              where room_id=$1",$room));
 $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id from chat where room_id=$1 order by chat_id desc limit 100) z",$room);
+$canchat = false;
+if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
 ?>
 <?foreach(db("select *, row_number() over(order by chat_at desc) rn
               from(select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
@@ -84,24 +86,33 @@ $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id 
           <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag<?=(($account_is_me==='t')||($i_flagged==='t'))?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
           <i></i>
         </span>
-        <?if($account_is_me==='t'){?>
-          <span class="button-group show">
-            <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
-            <i></i>
-            <?if($chat_editable_age==='t'){?><i class="fa fa-edit"></i><?}else if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
-            <i></i>
-          </span>
+        <?if($canchat){?>
+          <?if($account_is_me==='t'){?>
+            <span class="button-group show">
+              <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+              <i></i>
+              <?if($chat_editable_age==='t'){?><i class="fa fa-edit" title="edit"></i><?}else if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+              <i></i>
+            </span>
+          <?}else{?>
+            <span class="button-group show">
+              <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>" title="star"></i>
+              <i class="fa fa-ellipsis-h"></i>
+              <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>" title="flag"></i>
+              <i class="fa fa-reply fa-rotate-180" title="reply"></i>
+            </span>
+            <span class="button-group">
+              <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+              <i class="fa fa-ellipsis-h"></i>
+              <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+              <i></i>
+            </span>
+          <?}?>
         <?}else{?>
           <span class="button-group show">
-            <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>"></i>
-            <i class="fa fa-ellipsis-h"></i>
-            <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i>
-            <i class="fa fa-reply fa-rotate-180" title="reply"></i>
-          </span>
-          <span class="button-group">
-            <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
-            <i class="fa fa-ellipsis-h"></i>
-            <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
+            <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+            <i></i>
+            <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
             <i></i>
           </span>
         <?}?>
