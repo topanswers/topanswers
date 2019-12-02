@@ -50,7 +50,11 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       $tags = $elements[0]->textContent;
       $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//textarea[@id='wmd-input-".$_POST['seqid']."']");
-      $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',preg_replace('/<!--[^\n]*-->/m','',$elements[0]->textContent)));
+      $markdown = $elements[0]->textContent;
+      $markdown = preg_replace('/<!--[^\n]*-->/m','',$markdown);
+      $markdown = preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',$markdown);
+      $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
+      $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
       // add the question
       $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6,$7)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid'],$seuid,$seuname);
       // generate an array of answers to import
@@ -74,7 +78,11 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/posts/'.$aid.'/edit'),'HTML-ENTITIES','UTF-8'));
         $xpath = new DOMXpath($doc);
         $elements = $xpath->query("//textarea[@id='wmd-input-".$aid."']");
-        $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',preg_replace('/<!--[^\n]*-->/m','',$elements[0]->textContent)));
+        $markdown = $elements[0]->textContent;
+        $markdown = preg_replace('/<!--[^\n]*-->/m','',$markdown);
+        $markdown = preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',$markdown);
+        $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
+        $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
         db("select new_seanswer($1,$2,$3,$4,$5) from my_account",$id,$markdown,$aid,$answers[$aid]['uid'],$answers[$aid]['uname']);
       }
       header('Location: /'.$_POST['community'].'?q='.$id);
