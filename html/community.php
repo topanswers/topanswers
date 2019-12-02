@@ -822,8 +822,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 </div>
               <?}?>
             </div>
+            <div style="position: relative;"><div style="position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(#<?=$colour_dark?>80,transparent);"></div></div>
           <?}?>
-          <div style="position: relative;"><div style="position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(#<?=$colour_dark?>80,transparent);"></div></div>
         </div>
         <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
           <div style="flex: 1 0 0.5em;">
