@@ -48,7 +48,7 @@ $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (
                        , extract('epoch' from current_timestamp-answer_at) answer_when
                   from answer natural join account natural join (select question_id,community_id from question) q natural left join account_community
                   where question_id=$1
-                  order by answer_votes desc, answer_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
+                  order by answer_votes desc, account_community_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
       <div class="minibar">
         <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n\r"));?>"></span></a>
         <div>
