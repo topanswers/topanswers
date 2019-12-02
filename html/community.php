@@ -807,15 +807,15 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       <i></i>
                     </span>
                     <span class="button-group show">
-                      <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>"></i>
-                      <i class="fa fa-ellipsis-h"></i>
-                      <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>"></i>
+                      <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>" title="star"></i>
+                      <i class="fa fa-ellipsis-h" title="more actions"></i>
+                      <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>" title="flag"></i>
                       <?if($canchat&&($room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
                     </span>
                     <span class="button-group">
-                      <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link"></a>
-                      <i class="fa fa-ellipsis-h"></i>
-                      <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o"></a><?}else{?><i></i><?}?>
+                      <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+                      <i class="fa fa-ellipsis-h" title="more actions"></i>
+                      <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
                       <i></i>
                     </span>
                   </span>

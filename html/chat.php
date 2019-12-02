@@ -71,7 +71,7 @@ if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$roo
     <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div>
   <?}?>
   <div id="c<?=$chat_id?>" class="message<?=($account_is_me==='t')?' mine':''?><?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>" data-change-id="<?=$chat_change_id?>" data-at="<?=$chat_at_iso?>">
-    <small class="who">
+    <small class="who" title="<?=($account_is_me==='t')?'Me':$account_name?> <?=$chat_reply_id?'replying to '.(($reply_account_is_me==='t')?'Me':$reply_account_name):''?>">
       <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
       <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">replying to</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
@@ -97,13 +97,13 @@ if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$roo
           <?}else{?>
             <span class="button-group show">
               <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>" title="star"></i>
-              <i class="fa fa-ellipsis-h"></i>
+              <i class="fa fa-ellipsis-h" title="more actions"></i>
               <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>" title="flag"></i>
               <i class="fa fa-reply fa-rotate-180" title="reply"></i>
             </span>
             <span class="button-group">
               <a href="/transcript?room=<?=$room?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
-              <i class="fa fa-ellipsis-h"></i>
+              <i class="fa fa-ellipsis-h" title="more actions"></i>
               <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
               <i></i>
             </span>
