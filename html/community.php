@@ -141,12 +141,16 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
     .pane { display: flex; }
     .panecontrol { display: none; }
+    #ios-spacer { display: none; }
     @media (max-width: 576px){
       .hidepane { display: none; }
       .panecontrol { display: unset; }
       textarea,select,input { font-size: 16px; }
       #chattext-wrapper:not(:hover) button { display: unset; }
       header { flex-direction: unset; white-space: unset; }
+      #ios-spacer { display: unset; }
+      #poll { display: none; }
+      #se { display: none; }
     }
   </style>
   <script src="/lib/lodash.js"></script>
@@ -363,6 +367,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         e.trigger('input');
       }
 
+      if(localStorage.getItem('chat')) $('.pane').toggleClass('hidepane');
       $('#join').click(function(){
         if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')) { $.ajax({ type: "POST", url: '/uuid', async: false }).done(function(){
           window.location = '/profile?highlight-recovery';
@@ -569,7 +574,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
   <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
 </head>
 <body style="display: flex;">
-  <main class="pane<?=$question?'':' hidepane'?>" style="background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'70'?>%; overflow: hidden;">
+  <main class="pane" style="background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'70'?>%; overflow: hidden;">
     <header style="border-bottom: 2px solid black;">
       <div>
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
@@ -578,7 +583,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
           <?}?>
         </select>
-        <input class="panecontrol" type="button" value="chat" onclick="$('.pane').toggleClass('hidepane');">
+        <input class="panecontrol" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
       </div>
       <div style="display: flex; align-items: center;">
         <?if(!$uuid){?><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"><?}?>
@@ -728,7 +733,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" class="pane<?=!$question?'':' hidepane'?>" style="background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
+  <div id="chat-wrapper" class="pane hidepane" style="background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
+    <div id="ios-spacer" style="flex: 0 0 76px;"></div>
     <header style="border-top: 2px solid black;">
       <div style="display: flex; align-items: center;">
         <a <?=$dev?'href="/room?id='.$room.'" ':''?>class="icon"><img src="/roomicon?id=<?=$room?>"></a>
@@ -749,7 +755,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <?}?>
         <a href="/transcript?room=<?=$room?>" style="color: #<?=$colour_mid?>;">transcript</a>
       </div>
-      <input class="panecontrol" type="button" value="questions" onclick="$('.pane').toggleClass('hidepane');">
+      <input class="panecontrol" type="button" value="questions" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');">
       <?if($uuid) if(intval(ccdb("select account_id from login"))<3){?><input id="poll" type="button" value="poll"><?}?>
     </header>
     <?if($canchat){?>
