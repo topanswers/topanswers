@@ -83,7 +83,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
 
     #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); overflow: hidden; }
-    #qa .bar:last-child { border-bottom: none; border-radius: 0 0 5px 5px; }
+    <?if($question){?>#qa .bar:last-child { border-bottom: none; border-radius: 0 0 5px 5px; }<?}?>
     #qa .bar:first-child { border-top: none; border-radius: 5px 0 0 0; }
     #qa .bar .title { margin-left: 0.4rem; }
     #qa .bar+.bar { border-top: none; }
@@ -789,7 +789,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                             from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
                                  natural left join (select question_room_id room_id, question_id, question_title from question) q
                             order by chat_at limit 100") as $r){ extract($r);?>
-                <div id="n<?=$chat_id?>" class="message notification" style="background: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+                <div id="n<?=$chat_id?>" class="message" style="background: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
                   <small class="who" title="<?=($account_is_me==='t')?'Me':$account_name?><?=$chat_reply_id?' replying to '.(($reply_account_is_me==='t')?'Me':$reply_account_name):''?> in <?=$room_name?>">
                     <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
                     <?if($room_id!==$room){?>
