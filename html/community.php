@@ -401,7 +401,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('#chat-wrapper').on('click','.fa-flag-o', function(){ starflag($(this),'flag',1); });
       $('#chat-wrapper').on('click','.fa-flag', function(){ starflag($(this),'flag',-1); });
       $('body').on('click','.identicon.pingable', function(){
-        if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')); }
+        if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')+' '); }
         $(this).toggleClass('ping');
         if($('#c'+$('#replying').attr('data-id')).hasClass('mine')) $('#replying').attr('data-id','');
         $('#chattext').focus();
