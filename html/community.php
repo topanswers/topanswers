@@ -359,7 +359,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               <?if($dev){?>console.log('updating guestion change flag statuses');<?}?>
               updateQuestionPollIDs();
               maxQuestionPollMinorID = j.q
-            }else if($('.question.changed').length$$($('#search').val()==='')){
+            }else if($('.question.changed').length&&($('#search').val()==='')){
               <?if($dev){?>console.log('updating question '+$('.question.changed').first().data('id'));<?}?>
               actionQuestionChange($('.question.changed').first().data('id'));
           <?}?>
