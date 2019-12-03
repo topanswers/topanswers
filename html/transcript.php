@@ -77,7 +77,6 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
     a:not([href]) { color: #<?=$colour_highlight?>; }
 
     .period { border: 2px solid #<?=$colour_mid?>; border-right: none; }
-    .button { background: none; border: none; padding: 0; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     a[data-lightbox] img { cursor: zoom-in; }
@@ -87,10 +86,17 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
     .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
     .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
-    .message .buttons { flex: 0 0 auto; max-height: 1.3em; padding: 0.05em 0; }
-    .message .button { display: block; white-space: nowrap; color: #<?=$colour_dark?>; line-height: 0; }
-    .message .button.me { color: #<?=$colour_highlight?>; }
-    .message .button:not(.marked):not(.me) { visibility: hidden; }
+
+    .message .button-group { display: grid; grid-template: 0.8rem 0.8rem / 0.9rem 0.9rem; align-items: center; justify-items: start; font-size: 0.8rem; margin-left: 1px; }
+    .message .button-group:first-child { grid-template: 0.8rem 0.8rem / 1.7rem 0.1rem; }
+    .message .button-group .fa { color: #<?=$colour_dark?>; cursor: pointer; text-decoration: none; }
+    .message .button-group .fa.me { color: #<?=$colour_highlight?>; }
+    .message:hover .button-group:first-child { display: none; }
+    .message .button-group:not(.show) { display: none; }
+    .message:not(:hover) .button-group:not(:first-child) { display: none; }
+    .message .button-group:first-child .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
+    .message .button-group:first-child .fa[data-count][data-count="0"] { visibility: hidden; }
+
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .identicon { visibility: hidden; }
@@ -147,7 +153,7 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
       <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
         <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.3',false)");?>
         <?foreach(db("with c as (select chat.*, strict_word_similarity($2,chat_markdown) word_similarity, similarity($2,chat_markdown) similarity from chat where room_id=$1 and $2<<%chat_markdown)
-                      select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at
+                      select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,chat_at,chat_has_history
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
                            , coalesce(nullif(account_name,''),'Anonymous') account_name
                            , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
@@ -173,8 +179,18 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
               <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
             </div>
             <span class="buttons">
-              <button class="button<?=($starred_by_other==='t')?' marked':''?> <?=($i_starred==='t')?'me unstar':'star'?>"><i class="fa fa-fw fa-star"></i><span><?=($chat_star_count>0)?$chat_star_count:''?></span></button>
-              <button class="button<?=($flagged_by_other==='t')?' marked':''?> <?=($i_flagged==='t')?'me unflag':'flag'?>"><i class="fa fa-fw fa-flag"></i><span><?=($chat_flag_count>0)?$chat_flag_count:''?></span></button>
+              <span class="button-group show">
+                <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
+                <i></i>
+                <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag" data-count="<?=$chat_flag_count?>"></i>
+                <i></i>
+              </span>
+              <span class="button-group show">
+                <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+                <i></i>
+                <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+                <i></i>
+              </span>
             </span>
           </div>
         <?}?>
@@ -236,7 +252,7 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
       <?}?>
       <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
         <?foreach(db("select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
-                      from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at
+                      from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,chat_at,chat_has_history
                                  , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
                                  , coalesce(nullif(account_name,''),'Anonymous') account_name
                                  , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
@@ -270,8 +286,18 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
               <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
             </div>
             <span class="buttons">
-              <button class="button<?=($starred_by_other==='t')?' marked':''?> <?=($i_starred==='t')?'me unstar':'star'?>"><i class="fa fa-fw fa-star"></i><span><?=($chat_star_count>0)?$chat_star_count:''?></span></button>
-              <button class="button<?=($flagged_by_other==='t')?' marked':''?> <?=($i_flagged==='t')?'me unflag':'flag'?>"><i class="fa fa-fw fa-flag"></i><span><?=($chat_flag_count>0)?$chat_flag_count:''?></span></button>
+              <span class="button-group show">
+                <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
+                <i></i>
+                <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag" data-count="<?=$chat_flag_count?>"></i>
+                <i></i>
+              </span>
+              <span class="button-group show">
+                <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+                <i></i>
+                <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+                <i></i>
+              </span>
             </span>
           </div>
         <?}?>
