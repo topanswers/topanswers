@@ -129,6 +129,7 @@ create table room_account_x(
 , room_id integer references room
 , account_id integer references account
 , room_account_x_latest_chat_at timestamptz not null default current_timestamp
+, room_account_x_latest_read_chat_id bigint
 , primary key (room_id,account_id)
 );
 create index room_account_x_latest on room_account_x(room_id,room_account_x_latest_chat_at);
@@ -211,6 +212,7 @@ create unique index question_rate_limit_ind on question(account_id,question_at);
 create unique index question_se_question_id_ind on question(community_id,question_se_question_id);
 create index question_search_title_ind on question using gin (community_id, question_title gin_trgm_ops);
 create index question_search_markdown_ind on question using gin (community_id, question_markdown gin_trgm_ops);
+create index question_room_id_fk_ind on question(question_room_id);
 
 create table question_history(
   question_history_id bigint generated always as identity primary key

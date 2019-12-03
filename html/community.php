@@ -90,8 +90,11 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .identicon, #active-users .identicon, #active-rooms .roomicon { height: 1.5rem; width: 1.5rem; margin: 1px; display: block; }
-    #active-rooms .roomicon.current { outline: 1px solid #<?=$colour_highlight?>; }
-    #active-rooms .roomicon:not(.current):hover { outline: 1px solid #<?=$colour_dark?>; }
+    #active-rooms a { position: relative; }
+    #active-rooms a[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 0.5em; background: #<?=$colour_light?>e0; color: #<?=$colour_highlight?>;
+                                               width: 9px; height: 9px; text-align: center; line-height: 10px; border-radius: 30%; border: 1px solid #<?=$colour_highlight?>80; }
+    #active-rooms>a:not([href])>.roomicon { outline: 1px solid #<?=$colour_highlight?>; }
+    #active-rooms>a[href]:hover>.roomicon { outline: 1px solid #<?=$colour_dark?>; }
     #qa .markdown { padding: 0.6rem; }
     #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
     #qa .minibar:last-child { border-bottom: none; }
@@ -286,6 +289,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               });
               $.get('/chat?activerooms&room=<?=$room?>').done(function(r){
                 $('#active-rooms').html(r);
+                $('#active-rooms>a[href]').click(function(){
+                  $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
+                  return false;
+                });
               });
             <?}?>
           }
@@ -439,14 +446,18 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         $('#replying').attr('data-id','').data('update')();
       });
       $('.markdown').renderMarkdown();
-      $('.community').change(function(){ window.location = '/'+$(this).val().toLowerCase(); });
+      $('#community').change(function(){
+        $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
+      });
       $('#tags').select2({ placeholder: "select a tag" });
       function tagdrop(){ $('#tags').select2('open'); };
       $('#tags').on('select2:close', function (e) { setTimeout(function(){ $('.newtag').one('click',tagdrop); },200); });
       $('#tags').change(function(){ $.post(window.location.href, { questionid: $(this).data('question-id'), tagid: $(this).val(), action: 'new-tag' }).done(function(){ window.location.reload(); }); });
       $('.newtag').one('click',tagdrop);
       $('.tag i').click(function(){ $.post(window.location.href, { questionid: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }).done(function(){ window.location.reload(); }); });
-      $('#room').change(function(){ window.location = '/<?=$community?>?room='+$(this).val(); });
+      $('#room').change(function(){
+        $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
+      });
       $('#chattext').on('input', function(){
         var m = $('#chattext').val();
         if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
@@ -609,9 +620,9 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <header style="border-bottom: 2px solid black;">
       <div>
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
-        <select class="community">
-          <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
-            <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
+        <select id="community">
+          <?foreach(db("select community_name,community_room_id from community order by community_name desc") as $r){ extract($r);?>
+            <option value="<?=$community_room_id?>"<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
           <?}?>
         </select>
         <input class="panecontrol" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
@@ -771,11 +782,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <div style="display: flex; align-items: center;">
         <a <?=$dev?'href="/room?id='.$room.'" ':''?>class="icon"><img src="/roomicon?id=<?=$room?>"></a>
         <?if(!$question){?>
-          <select class="community">
-            <?foreach(db("select community_name from community order by community_name desc") as $r){ extract($r);?>
-              <option<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
-            <?}?>
-          </select>
           <select id="room">
             <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name
                           from room natural join community

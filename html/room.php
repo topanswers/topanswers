@@ -8,6 +8,17 @@ $id = $_GET['id'] ?? $_POST['id'] ?? 0;
 $id or fail(400,'room id not set');
 ccdb("select count(*) from room where room_id=$1",$id)==='1' or fail(400,'invalid room');
 if($_SERVER['REQUEST_METHOD']==='POST'){
+  if(isset($_POST['action'])){
+    switch($_POST['action']) {
+      case 'switch':
+        db("select read_room($1), read_room($2)",$_POST['from-id'],$id);
+        header('Location: /'.ccdb("select community_name||'?'||(case when r.room_id is null then 'room='||room_id else 'q='||r.room_id end)
+                                   from room natural join community natural left join (select question_room_id room_id from question) r
+                                   where room_id=$1",$id));
+        exit;
+      default: fail(400,'unrecognized action');
+    }
+  }
   if(isset($_POST['name'])){
     db("select change_room_name($1,nullif($1,''))",$id,$_POST['name']);
     header('Location: /room?id='.$id);

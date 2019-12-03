@@ -63,6 +63,11 @@ where room_type<>'private' or account_id is not null;
 --
 create view room_account_x with (security_barrier) as select room_id,account_id,room_account_x_latest_chat_at from db.room_account_x natural join world.room where room_account_x_latest_chat_at>(current_timestamp-'7d'::interval);
 --
+create view my_room_account_x with (security_barrier) as
+select room_id, (select count(*) from db.chat where room_id=room_account_x.room_id and chat_id>room_account_x_latest_read_chat_id) room_account_unread_messages
+from db.room_account_x natural join world.room
+where account_id=current_setting('custom.account_id',true)::integer;
+--
 create view chat with (security_barrier) as
 select community_id,room_id,account_id,chat_id,chat_reply_id,chat_at,chat_change_id,chat_change_at,chat_markdown
      , (select count(1) from db.chat_flag where chat_id=chat.chat_id) chat_flag_count
@@ -199,11 +204,9 @@ create function new_chat(roomid integer, msg text, replyid integer, pingids inte
      , p as (insert into chat_notification(chat_id,account_id)
              select chat_id,account_id
              from i cross join (select account_id from world.account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and not account_is_me) z)
-     , r as (insert into room_account_x(room_id,account_id)
-             select roomid,current_setting('custom.account_id',true)::integer
-             from room
-             where room_id=roomid
-             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default)
+     , r as (insert into room_account_x(room_id,account_id,room_account_x_latest_read_chat_id)
+             select room_id,current_setting('custom.account_id',true)::integer,chat_id from i
+             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default, room_account_x_latest_read_chat_id=excluded.room_account_x_latest_read_chat_id)
   select chat_id from i;
 $$;
 --
@@ -508,6 +511,11 @@ create function change_fonts(cid integer, regid integer, monoid integer) returns
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error(400,'invalid community') where not exists (select 1 from account_community where account_id=current_setting('custom.account_id',true)::integer and community_id=cid);
   update account_community set account_community_regular_font_id=regid, account_community_monospace_font_id=monoid where account_id=current_setting('custom.account_id',true)::integer and community_id=cid;
+$$;
+--
+create function read_room(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  update room_account_x set room_account_x_latest_read_chat_id = (select max(chat_id) from chat where room_id=id) where room_id=id and account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
 --

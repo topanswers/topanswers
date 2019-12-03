@@ -22,11 +22,13 @@ $room = $_GET['room'];
 if(isset($_GET['activerooms'])){
   foreach(db("select room_id,room_name,room_is_for_question,community_name,room_question_id
                    , encode(community_light_shade,'hex') community_colour
+                   , coalesce(room_account_unread_messages,0) room_account_unread_messages
               from room natural join community
+                   natural left join my_room_account_x
               where room_my_last_chat>(current_timestamp-'7d'::interval)
               order by room_my_last_chat desc") as $r){ extract($r);?>
-    <a href="/<?=$community_name?>?<?=($room_is_for_question==='t')?'q='.$room_question_id:'room='.$room_id?>">
-      <img title="<?=($room_name)?$room_name:''?>" class="roomicon<?=($room_id===$room)?' current':''?>" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
+    <a<?if($room_id!==$room){?> href="."<?}?> data-room="<?=$room_id?>"<?if($room_account_unread_messages>0){?> data-unread="<?=$room_account_unread_messages?>"<?}?>>
+      <img title="<?=($room_name)?$room_name:''?>" class="roomicon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
     </a><?
   }
   exit;
