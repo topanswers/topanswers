@@ -12,7 +12,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     case 'unflag': exit(ccdb("select remove_chat_flag($1)",$_POST['id']));
     case 'star': exit(ccdb("select set_chat_star($1)",$_POST['id']));
     case 'unstar': exit(ccdb("select remove_chat_star($1)",$_POST['id']));
-    case 'dismiss': exit(ccdb("select dismiss_notification($1)",$_POST['id']));
+    case 'dismiss': exit(ccdb("select dismiss_chat_notification($1)",$_POST['id']));
     default: fail(400,'unrecognized action');
   }
 }

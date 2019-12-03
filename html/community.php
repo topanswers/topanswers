@@ -134,9 +134,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     #chat .markdown img { max-height: 7rem; }
     #chat .message.thread .markdown { background: #<?=$colour_highlight?>40; }
     #messages .message:not(:hover) .when { display: none; }
-    #notifications .message { padding: 0.3em; padding-top: 1.05em; border-radius: 0.2em; }
-    #notifications .message .who { top: 0.3rem; }
     #notifications .message+.message { margin-top: 0.2em; }
+    #notifications .message { padding: 0.3em; border-radius: 0.2em; }
+    #notifications .message[data-type='chat'] { padding-top: 1.05em; }
+    #notifications .message[data-type='chat'] .who { top: 0.3rem; }
     #chatupload:active i { color: #<?=$colour_mid?>; }
 
     .pane { display: flex; }
@@ -421,11 +422,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         $('#chattext').focus();
         $('#replying').data('update')();
       });
-      $('#chat-wrapper').on('click','.dismiss', function(){
-        $.post('/chat', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-        return false;
-      });
       $('#replying').data('update',function(){
         var state = $('#replying').attr('data-id') || $('.ping').length, strings = [];
         if($('#replying').attr('data-id')) strings.push(($('#c'+$('#replying').attr('data-id'))).hasClass('mine')?'Editing':('Replying to: '+$('#c'+$('#replying').attr('data-id')).data('name')));
@@ -576,6 +572,16 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         else t.prev().animate({ 'flex-shrink': 1 });
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
+      $('#chat-wrapper').on('click','.message[data-type="chat"] .dismiss', function(){
+        $.post('/chat', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        return false;
+      });
+      $('#chat-wrapper').on('click','.message[data-type="question"] .dismiss', function(){
+        $.post('/question', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        return false;
+      });
       $('#more').click(function(){ moreQuestions(); return false; });
       function search(){
         if($('#search').val()===''){
@@ -796,63 +802,90 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
       <div id="messages-wrapper" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden;">
         <div id="notification-wrapper">
-          <?if($uuid&&(ccdb("select count(*)>0 from chat_notification")==='t')){?>
+          <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||ccdb("select count(*)>0 from question_notification")==='t')){?>
             <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border: 2px solid black; border-width: 2px 1px 2px 0; background: #<?=$colour_light?>; padding: 0.3rem; padding-top: 0; overflow-x: hidden; overflow-y: auto;">
               <div style="font-size: 0.9rem; padding: 1px;">Notifications:</div>
-              <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,community_name,question_id,chat_has_history
-                                 , question_id is not null is_question_room
-                                 , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) room_name
-                                 , coalesce(nullif(account_name,''),'Anonymous') account_name
-                                 , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
-                                 , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                                 , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
-                                 , chat_flag_at is not null i_flagged
-                                 , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
-                                 , chat_star_at is not null i_starred
-                                 , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
-                                 , encode(community_mid_shade,'hex') chat_mid_shade
-                                 , encode(community_dark_shade,'hex') chat_dark_shade
-                            from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
-                                 natural left join (select question_room_id room_id, question_id, question_title from question) q
-                            order by chat_at limit 100") as $r){ extract($r);?>
-                <div id="n<?=$chat_id?>" class="message" style="background: #<?=$chat_mid_shade?>;" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
-                  <small class="who" title="<?=($account_is_me==='t')?'Me':$account_name?><?=$chat_reply_id?' replying to '.(($reply_account_is_me==='t')?'Me':$reply_account_name):''?> in <?=$room_name?>">
-                    <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
-                    <?if($room_id!==$room){?>
-                      <?=$chat_reply_id?' replying to</span> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
-                    <?}else{?>
-                      <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$chat_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
-                    <?}?>
-                    <?if($room_id!==$room){?>
-                      <span style="color: #<?=$chat_dark_shade?>;">in</span>
-                      <a href="/<?=$community_name?>?<?=($is_question_room==='t')?'q='.$question_id:'room='.$room_id?>" style="color: #<?=$chat_dark_shade?>;" title="<?=$room_name?>"><?=$room_name?></a>
-                    <?}?>
-                    <span class="when" data-at="<?=$chat_at_iso?>"></span>
-                    —
-                    <span style="color: #<?=$chat_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$chat_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
-                  </small>
-                  <img class="identicon" src="/identicon?id=<?=$account_id?>">
-                  <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
-                  <span class="buttons">
-                    <span class="button-group show">
-                      <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star<?=(($account_is_me==='t')||($i_starred==='t'))?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
-                      <i></i>
-                      <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag<?=(($account_is_me==='t')||($i_flagged==='t'))?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
-                      <i></i>
+              <?foreach(db("with c as (select 'chat' notification_type
+                                            , chat_id notification_id
+                                            , chat_at notification_at
+                                            , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
+                                            , encode(community_mid_shade,'hex') notification_mid_shade
+                                            , encode(community_dark_shade,'hex') notification_dark_shade
+                                            , community_name notification_community_name
+                                            , null::text question_title
+                                            , account_id chat_from_account_id
+                                            , chat_reply_id
+                                            , chat_markdown
+                                            , chat_flag_count
+                                            , chat_star_count
+                                            , room_id chat_room_id
+                                            , question_id
+                                            , chat_has_history
+                                            , question_id is not null chat_is_question_room
+                                            , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) chat_room_name 
+                                            , coalesce(nullif(account_name,''),'Anonymous') chat_from_account_name
+                                            , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) chat_reply_account_name
+                                            , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) chat_reply_account_is_me
+                                            , chat_flag_at is not null chat_i_flagged
+                                            , chat_star_at is not null chat_i_starred
+                                       from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
+                                            natural left join (select question_room_id room_id, question_id, question_title from question) q)
+                               , q as (select 'question' notification_type
+                                            , question_id notification_id
+                                            , question_notification_at notification_at
+                                            , to_char(question_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
+                                            , encode(community_mid_shade,'hex') notification_mid_shade
+                                            , encode(community_dark_shade,'hex') notification_dark_shade
+                                            , community_name notification_community_name
+                                            , question_title
+                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                       from question_notification natural join question natural join community)
+                            select * from c union all select * from q
+                            order by notification_at limit 20") as $r){ extract($r);?>
+                <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
+                  <?if($notification_type==='chat'){?>
+                    <small class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
+                      <?=$chat_from_account_name?>
+                      <?if($chat_room_id!==$room){?>
+                        <?=$chat_reply_id?' replying to</span> '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
+                        <span style="color: #<?=$notification_dark_shade?>;">in</span>
+                        <a href="/<?=$notification_community_name?>?<?=($chat_is_question_room==='t')?'q='.$question_id:'room='.$chat_room_id?>" style="color: #<?=$notification_dark_shade?>;" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
+                      <?}else{?>
+                        <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$notification_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
+                      <?}?>
+                      <span class="when" data-at="<?=$notification_at_iso?>"></span>
+                      —
+                      <span style="color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
+                    </small>
+                    <img class="identicon" src="/identicon?id=<?=$chat_from_account_id?>">
+                    <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+                    <span class="buttons">
+                      <span class="button-group show">
+                        <i class="stars <?=($chat_i_starred==='t')?'me ':''?>fa fa-star<?=($chat_i_starred==='t')?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+                        <i></i>
+                        <i class="flags <?=($chat_i_flagged==='t')?'me ':''?>fa fa-flag<?=($chat_i_flagged==='t')?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
+                        <i></i>
+                      </span>
+                      <span class="button-group show">
+                        <i class="<?=($chat_i_starred==='t')?'me ':''?>fa fa-star<?=($chat_i_starred==='t')?'':'-o'?>" title="star"></i>
+                        <i class="fa fa-ellipsis-h" title="more actions"></i>
+                        <i class="<?=($chat_i_flagged==='t')?'me ':''?> fa fa-flag<?=($chat_i_flagged==='t')?'':'-o'?>" title="flag"></i>
+                        <?if($canchat&&($chat_room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
+                      </span>
+                      <span class="button-group">
+                        <a href="/transcript?room=<?=$chat_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-link" title="permalink"></a>
+                        <i class="fa fa-ellipsis-h" title="more actions"></i>
+                        <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+                        <i></i>
+                      </span>
                     </span>
-                    <span class="button-group show">
-                      <i class="<?=($i_starred==='t')?'me ':''?>fa fa-star<?=($i_starred==='t')?'':'-o'?>" title="star"></i>
-                      <i class="fa fa-ellipsis-h" title="more actions"></i>
-                      <i class="<?=($i_flagged==='t')?'me ':''?> fa fa-flag<?=($i_flagged==='t')?'':'-o'?>" title="flag"></i>
-                      <?if($canchat&&($room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
-                    </span>
-                    <span class="button-group">
-                      <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
-                      <i class="fa fa-ellipsis-h" title="more actions"></i>
-                      <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
-                      <i></i>
-                    </span>
-                  </span>
+                  <?}elseif($notification_type==='question'){?>
+                    <div style="display: flex; overflow: hidden; font-size: 0.9em; white-space: nowrap;">
+                      <a href="/<?=$notification_community_name?>?q=<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?></a>
+                      <span style="flex: 0 0 auto;">&nbsp;has been edited —&nbsp;</span>
+                      <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
+                    </div>
+                  <?}?>
                 </div>
               <?}?>
             </div>

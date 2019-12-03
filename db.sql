@@ -133,14 +133,6 @@ create table room_account_x(
 );
 create index room_account_x_latest on room_account_x(room_id,room_account_x_latest_chat_at);
 
-create table chat_notification(
-  chat_id bigint references chat
-, account_id integer references account
-, chat_notification_at timestamptz not null default current_timestamp
-, primary key (chat_id,account_id)
-);
-create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at);
-
 create table chat_flag(
   chat_id bigint references chat
 , account_id integer references account
@@ -328,4 +320,26 @@ create table answer_vote_history(
 , answer_vote_history_repute integer not null check (answer_vote_history_repute>=0)
 , answer_vote_history_votes integer not null check (answer_vote_history_votes>=0)
 , foreign key(answer_id,account_id) references answer_vote deferrable initially deferred
+);
+
+create table chat_notification(
+  chat_id bigint references chat
+, account_id integer references account
+, chat_notification_at timestamptz not null default current_timestamp
+, primary key (chat_id,account_id)
+);
+create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at);
+
+create table question_notification(
+  question_id integer references question
+, account_id integer references account
+, question_notification_at timestamptz not null default current_timestamp
+, primary key (question_id,account_id)
+);
+create index question_notification_latest_ind on question_notification(account_id,question_notification_at);
+
+create table subscription(
+  account_id integer references account
+, question_id integer references question
+, primary key (account_id,question_id)
 );
