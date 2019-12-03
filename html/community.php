@@ -225,7 +225,15 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           var newquestions = $(data).filter('.question').insertAfter(last).hide().slideDown(400);
           newquestions.each(renderQuestion);
           $('#more').show().next().hide();
-          if(newquestions.length<20) $('#more').parent().remove();
+          if(newquestions.length<20) $('#more').parent().hide();
+        },'html');
+      }
+      function searchQuestions(){
+        $.get('/questions?community=<?=$community?>&search='+$('#search').val(),function(data) {
+          $('#qa>.question').remove();
+          $(data).filter('.question').prependTo($('#qa'));
+          $('#qa>.question').each(renderQuestion);
+          $('#more').parent().hide();
         },'html');
       }
       function renderChat(){
@@ -335,7 +343,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             updateNotifications();
             maxNotificationID = j.n;
           <?if(!$question){?>
-            }else if(j.Q>maxQuestionPollMajorID){
+            }else if((j.Q>maxQuestionPollMajorID)&&($('#search').val()==='')){
               <?if($dev){?>console.log('updating questions');<?}?>
               updateQuestions();
           <?}?>
@@ -347,11 +355,11 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             <?if($dev){?>console.log('updating chat '+$('.message.changed').last().data('id'));<?}?>
             actionChatChange($('.message.changed').last().data('id'));
           <?if(!$question){?>
-            }else if(j.q>maxQuestionPollMinorID){
+            }else if((j.q>maxQuestionPollMinorID)&&($('#search').val()==='')){
               <?if($dev){?>console.log('updating guestion change flag statuses');<?}?>
               updateQuestionPollIDs();
               maxQuestionPollMinorID = j.q
-            }else if($('.question.changed').length){
+            }else if($('.question.changed').length$$($('#search').val()==='')){
               <?if($dev){?>console.log('updating question '+$('.question.changed').first().data('id'));<?}?>
               actionQuestionChange($('.question.changed').first().data('id'));
           <?}?>
@@ -569,6 +577,23 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
       $('#more').click(function(){ moreQuestions(); return false; });
+      function search(){
+        if($('#search').val()===''){
+          $('#qa>.question').remove();
+          maxQuestionPollMajorID = 0;
+          maxQuestionPollMinorID = 0;
+          updateQuestions();
+        }else{
+          searchQuestions();
+        }
+      }
+      $('#search').on('input',_.debounce(search,500));
+      $('#search').keydown(function(e){
+        if(e.which===27){
+          $(this).val('').trigger('input');
+          return false;
+        }
+      });
     });
   </script>
   <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
@@ -585,6 +610,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         </select>
         <input class="panecontrol" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
       </div>
+      <?if(!$question){?><div><input type="search" id="search" placeholder="search"></div><?}?>
       <div style="display: flex; align-items: center;">
         <?if(!$uuid){?><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"><?}?>
         <?if(($account_community_can_import==='t')&&$sesite_url&&!$question){?>

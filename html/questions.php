@@ -3,6 +3,7 @@ include 'db.php';
 include 'nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select login($1)",$uuid);
+$search = $_GET['search']??'';
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
@@ -12,17 +13,36 @@ extract(cdb("select community_id
              where community_name=$1",$community));
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where community_id=$1 and question_poll_minor_id>$2",$community_id,$_GET['fromid']));
 $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (select question_poll_major_id from question where community_id=$1 order by question_poll_major_id desc limit 50) z",$community_id);
+if($search){
+  db("select set_config('pg_trgm.strict_word_similarity_threshold','0.3',false)");
+  $results = db("with q as (select question_id, question_markdown txt, strict_word_similarity($2,question_markdown) word_similarity, similarity($2,question_markdown) similarity from question where community_id=$1 and $2<<%question_markdown)
+                   , qt as (select question_id, question_title txt, strict_word_similarity($2,question_title)*2 word_similarity, similarity($2,question_title)*2 similarity from question where community_id=$1 and $2<<%question_title)
+                    , a as (select question_id, answer_markdown txt, strict_word_similarity($2,answer_markdown) word_similarity, similarity($2,answer_markdown) similarity from answer natural join (select question_id,community_id from question) z where community_id=$1 and $2<<%answer_markdown)
+                    , s as (select question_id, bool_or(txt like '%'||$2||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
+                 select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
+                      , coalesce(account_community_votes,0) account_community_votes
+                      , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
+                      , extract('epoch' from current_timestamp-question_at) question_when
+                      , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
+                      , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
+                             else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
+                 from s natural join question natural join account natural join community natural left join account_community
+                 where community_id=$1 and $2::text is not null
+                 order by exact desc, similarity desc limit 5",$community_id,$_GET['search']);
+}else{
+  $results = db("select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
+                      , coalesce(account_community_votes,0) account_community_votes
+                      , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
+                      , extract('epoch' from current_timestamp-question_at) question_when
+                      , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
+                      , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
+                             else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
+                 from question natural join account natural join community natural left join account_community
+                 where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id'.(isset($_GET['older'])?'<':'>'))."$2
+                 order by question_poll_major_id desc limit 20",$community_id,$id);
+}
 ?>
-<?foreach(db("select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
-                   , coalesce(account_community_votes,0) account_community_votes
-                   , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
-                   , extract('epoch' from current_timestamp-question_at) question_when
-                   , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
-                   , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
-                          else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
-              from question natural join account natural join community natural left join account_community
-              where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id'.(isset($_GET['older'])?'<':'>'))."$2
-              order by question_poll_major_id desc limit 20",$community_id,$id) as $r){ extract($r);?>
+<?foreach($results as $r){ extract($r);?>
   <div id="q<?=$question_id?>" class="question" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
     <a href="/<?=$community?>?q=<?=$question_id?>" title="<?=$question_type.$question_title?>"><?=$question_type.$question_title?></a>
     <div class="bar">
