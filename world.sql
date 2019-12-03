@@ -261,7 +261,7 @@ create function regenerate_account_uuid() returns void language sql security def
 $$;
 --
 create function change_account_name(nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  select _error('invalid username') where nname is not null and not nname~'^[A-Za-zÀ-ÖØ-öø-ÿ]['' 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$';
+  select _error('invalid username') where nname is not null and not nname~'^[A-Za-zÀ-ÖØ-öø-ÿ][-'' 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$';
   update account set account_name = nname, account_change_id = default, account_change_at = default where account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --

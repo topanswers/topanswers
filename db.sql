@@ -48,7 +48,7 @@ create table codelicense(
 
 create table account(
   account_id integer generated always as identity primary key
-, account_name text check (account_name~'^[0-9A-Za-zÀ-ÖØ-öø-ÿ][ ''.0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
+, account_name text check (account_name~'^[0-9A-Za-zÀ-ÖØ-öø-ÿ][-'' .0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$')
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea check(length(account_image)>0)
