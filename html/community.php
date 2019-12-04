@@ -396,7 +396,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
-        $('#replying').attr('data-id',$(this).closest('.message').data('id')).data('update')();
+        var m = $(this).closest('.message');
+        $('#replying').attr('data-id',m.data('id')).attr('data-name',m.data('name')).data('update')();
         $('#chattext').focus();
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       });
@@ -407,7 +408,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('#chat-wrapper').on('click','.fa-edit', function(){
         var m = $(this).closest('.message');
         $('.ping').removeClass('ping');
-        $('#replying').attr('data-id',m.data('id')).data('update')();
+        $('#replying').attr('data-id',m.data('id')).attr('data-name',m.data('name')).data('update')();
         $('#chattext').val(m.find('.markdown').attr('data-markdown')).focus().trigger('input');
       });
       function starflag(t,action,direction){
@@ -431,7 +432,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       });
       $('#replying').data('update',function(){
         var state = $('#replying').attr('data-id') || $('.ping').length, strings = [];
-        if($('#replying').attr('data-id')) strings.push(($('#c'+$('#replying').attr('data-id'))).hasClass('mine')?'Editing':('Replying to: '+$('#c'+$('#replying').attr('data-id')).data('name')));
+        if($('#replying').attr('data-id')) strings.push(($('#c'+$('#replying').attr('data-id'))).hasClass('mine')?'Editing':('Replying to: '+$('#replying').attr('data-name')));
         if($('.ping').length) strings.push('Pinging: '+$('.ping').map(function(){ return $(this).data('fullname'); }).get().join(', '));
         if(strings.length){
           $('#replying').children('span').text(strings.join(', '));
@@ -443,7 +444,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       });
       $('#cancelreply').click(function(){
         $('.ping').removeClass('ping');
-        $('#replying').attr('data-id','').data('update')();
+        $('#replying').attr('data-id','').attr('data-name','').data('update')();
       });
       $('.markdown').renderMarkdown();
       $('#community').change(function(){
