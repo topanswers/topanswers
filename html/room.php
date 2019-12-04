@@ -12,8 +12,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     switch($_POST['action']) {
       case 'switch':
         db("select read_room($1), read_room($2)",$_POST['from-id'],$id);
-        header('Location: /'.ccdb("select community_name||'?'||(case when r.room_id is null then 'room='||room_id else 'q='||r.room_id end)
-                                   from room natural join community natural left join (select question_room_id room_id from question) r
+        header('Location: /'.ccdb("select community_name||'?'||(case when question_id is null then 'room='||room_id else 'q='||question_id end)
+                                   from room natural join community natural left join (select question_id, question_room_id room_id from question) q
                                    where room_id=$1",$id));
         exit;
       default: fail(400,'unrecognized action');
