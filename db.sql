@@ -338,12 +338,6 @@ create table question_notification(
 , question_notification_at timestamptz not null default current_timestamp
 , primary key (question_history_id,account_id)
 );
-create table question_notification2(
-  question_id integer references question
-, account_id integer references account
-, question_notification_at timestamptz not null default current_timestamp
-, primary key (question_id,account_id)
-);
 create index question_notification_latest_ind on question_notification(account_id,question_notification_at);
 
 create table subscription(

@@ -139,8 +139,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     #messages .message:not(:hover) .when { display: none; }
     #notifications .message+.message { margin-top: 0.2em; }
     #notifications .message { padding: 0.3em; border-radius: 0.2em; }
-    #notifications .message[data-type='chat'] { padding-top: 1.05em; }
-    #notifications .message[data-type='chat'] .who { top: 0.3rem; }
+    #notifications .message[data-type='chat'] { padding-top: 1.3em; }
+    #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 0.9rem; }
     #chatupload:active i { color: #<?=$colour_mid?>; }
 
     .pane { display: flex; }
@@ -819,6 +819,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , encode(community_mid_shade,'hex') notification_mid_shade
                                             , encode(community_dark_shade,'hex') notification_dark_shade
                                             , community_name notification_community_name
+                                            , question_id
                                             , null::text question_title
                                             , account_id chat_from_account_id
                                             , chat_reply_id
@@ -826,7 +827,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , chat_flag_count
                                             , chat_star_count
                                             , room_id chat_room_id
-                                            , question_id
                                             , chat_has_history
                                             , question_id is not null chat_is_question_room
                                             , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) chat_room_name 
@@ -838,23 +838,24 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                        from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
                                             natural left join (select question_room_id room_id, question_id, question_title from question) q)
                                , q as (select 'question' notification_type
-                                            , question_id notification_id
+                                            , question_history_id notification_id
                                             , question_notification_at notification_at
                                             , to_char(question_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
                                             , encode(community_mid_shade,'hex') notification_mid_shade
                                             , encode(community_dark_shade,'hex') notification_dark_shade
                                             , community_name notification_community_name
+                                            , question_id
                                             , question_title
-                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                                       from question_notification natural join (select question_history_id,question_id from question_history) z natural join question natural join community)
+                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                       from question_notification natural join question natural join community)
                             select * from c union all select * from q
                             order by notification_at limit 20") as $r){ extract($r);?>
                 <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
                   <?if($notification_type==='chat'){?>
-                    <small class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
+                    <span class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
                       <?=$chat_from_account_name?>
                       <?if($chat_room_id!==$room){?>
-                        <?=$chat_reply_id?' replying to</span> '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
+                        <?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
                         <span style="color: #<?=$notification_dark_shade?>;">in</span>
                         <a href="/<?=$notification_community_name?>?<?=($chat_is_question_room==='t')?'q='.$question_id:'room='.$chat_room_id?>" style="color: #<?=$notification_dark_shade?>;" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
                       <?}else{?>
@@ -863,7 +864,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       <span class="when" data-at="<?=$notification_at_iso?>"></span>
                       —
                       <span style="color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
-                    </small>
+                    </span>
                     <img class="identicon" src="/identicon?id=<?=$chat_from_account_id?>">
                     <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
                     <span class="buttons">
@@ -887,8 +888,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       </span>
                     </span>
                   <?}elseif($notification_type==='question'){?>
-                    <div style="display: flex; overflow: hidden; font-size: 0.9em; white-space: nowrap;">
-                      <a href="/<?=$notification_community_name?>?q=<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?></a>
+                    <div style="display: flex; overflow: hidden; font-size: 0.9rem; white-space: nowrap;">
+                      <a href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?></a>
                       <span style="flex: 0 0 auto;">&nbsp;has been edited —&nbsp;</span>
                       <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </div>

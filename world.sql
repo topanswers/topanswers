@@ -77,7 +77,13 @@ from db.chat natural join room;
 --
 create view chat_history with (security_barrier) as select chat_history_id,chat_id,chat_history_at,chat_history_markdown from db.chat_history;
 create view chat_notification with (security_barrier) as select chat_id,chat_notification_at from db.chat_notification where account_id=current_setting('custom.account_id',true)::integer;
-create view question_notification with (security_barrier) as select question_history_id,question_id,question_notification_at from db.question_notification natural join (select question_id,question_history_id from db.question_history) z where account_id=current_setting('custom.account_id',true)::integer;
+--
+create view question_notification with (security_barrier) as
+select question_history_id,question_id,question_notification_at
+     , question_at<>question_history_at question_notification_is_edit
+from db.question_notification natural join (select question_history_id,question_id,question_history_at from db.question_history) h natural join (select question_id,question_at from db.question) q
+where account_id=current_setting('custom.account_id',true)::integer;
+--
 create view chat_flag with (security_barrier) as select chat_id,chat_flag_at from db.chat_flag where account_id=current_setting('custom.account_id',true)::integer;
 create view chat_star with (security_barrier) as select chat_id,chat_star_at from db.chat_star where account_id=current_setting('custom.account_id',true)::integer;
 create view chat_year with (security_barrier) as select room_id,chat_year,chat_year_count from db.chat_year;
@@ -229,7 +235,7 @@ create function dismiss_chat_notification(id integer) returns void language sql 
 $$;
 --
 create function dismiss_question_notification(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
-  with d as (delete from question_notification2 where question_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
+  with d as (delete from question_notification where question_history_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
