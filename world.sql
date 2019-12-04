@@ -384,7 +384,10 @@ create function change_question(id integer, title text, markdown text) returns v
                                          from question_history natural join (select question_id from question where account_id<>current_setting('custom.account_id',true)::integer) z
                                          where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval)>10;
   --
-  insert into question_history(question_id,account_id,question_history_title,question_history_markdown) values(id,current_setting('custom.account_id',true)::integer,title,markdown);
+  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown) values(id,current_setting('custom.account_id',true)::integer,title,markdown) returning account_id,question_history_id)
+  insert into question_notification(question_history_id,account_id)
+  select question_history_id,(select account_id from question where question_id=id) from h where account_id<>(select account_id from question where question_id=id) and exists(select 1 from subscription where account_id=(select account_id from question where question_id=id) and question_id=id);
+  --
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=id;
 $$;
 --
