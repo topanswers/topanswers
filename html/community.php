@@ -334,7 +334,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           var scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
           $('#notification-wrapper').replaceWith($('<div />').append(r).find('#notification-wrapper'));
           $('#notification-wrapper .markdown').renderMarkdown();
-          $('#notification-wrapper .when').each(function(){ $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+          $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
           if(scroll){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); }
           if(scroll) setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
           setChatPollTimeout();
@@ -538,7 +538,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         return false;
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
-      $('#notification-wrapper .when').each(function(){ $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+      $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
       <?if($uuid){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
           var t = $(this), v = t.data('votes');
@@ -591,6 +591,11 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       });
       $('#chat-wrapper').on('click','.message[data-type="question"] .dismiss', function(){
         $.post('/question', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        return false;
+      });
+      $('#chat-wrapper').on('click','.message[data-type="answer"] .dismiss', function(){
+        $.post('/answer', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
@@ -821,6 +826,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , community_name notification_community_name
                                             , question_id
                                             , null::text question_title
+                                            , null::integer answer_id
                                             , account_id chat_from_account_id
                                             , chat_reply_id
                                             , chat_markdown
@@ -846,9 +852,21 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , community_name notification_community_name
                                             , question_id
                                             , question_title
-                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                            , null::integer, null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
                                        from question_notification natural join question natural join community)
-                            select * from c union all select * from q
+                               , a as (select 'answer' notification_type
+                                            , answer_history_id notification_id
+                                            , answer_notification_at notification_at
+                                            , to_char(answer_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
+                                            , encode(community_mid_shade,'hex') notification_mid_shade
+                                            , encode(community_dark_shade,'hex') notification_dark_shade
+                                            , community_name notification_community_name
+                                            , question_id
+                                            , question_title
+                                            , answer_id
+                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                       from answer_notification natural join answer natural join (select question_id,question_title,community_id from question) z natural join community)
+                            select * from c union all select * from q union all select * from a
                             order by notification_at limit 20") as $r){ extract($r);?>
                 <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
                   <?if($notification_type==='chat'){?>
@@ -889,9 +907,19 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                     </span>
                   <?}elseif($notification_type==='question'){?>
                     <div style="display: flex; overflow: hidden; font-size: 0.9rem; white-space: nowrap;">
-                      <a href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?></a>
-                      <span style="flex: 0 0 auto;">&nbsp;has been edited —&nbsp;</span>
-                      <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
+                      <span class="when" data-at="<?=$notification_at_iso?>"></span>
+                      <span style="flex: 0 0 auto;">, question edit:&nbsp;</span>
+                      <a href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+                      —
+                      <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
+                    </div>
+                  <?}elseif($notification_type==='answer'){?>
+                    <div style="display: flex; overflow: hidden; font-size: 0.9rem; white-space: nowrap;">
+                      <span class="when" data-at="<?=$notification_at_iso?>"></span>
+                      <span style="flex: 0 0 auto;">, answer edit on:&nbsp;</span>
+                      <a href="/answer-history?id=<?=$answer_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+                      —
+                      <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </div>
                   <?}?>
                 </div>

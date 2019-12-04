@@ -84,6 +84,12 @@ select question_history_id,question_id,question_notification_at
 from db.question_notification natural join (select question_history_id,question_id,question_history_at from db.question_history) h natural join (select question_id,question_at from db.question) q
 where account_id=current_setting('custom.account_id',true)::integer;
 --
+create view answer_notification with (security_barrier) as
+select answer_history_id,answer_id,answer_notification_at
+     , answer_at<>answer_history_at answer_notification_is_edit
+from db.answer_notification natural join (select answer_history_id,answer_id,answer_history_at from db.answer_history) h natural join (select answer_id,answer_at from db.answer) q
+where account_id=current_setting('custom.account_id',true)::integer;
+--
 create view chat_flag with (security_barrier) as select chat_id,chat_flag_at from db.chat_flag where account_id=current_setting('custom.account_id',true)::integer;
 create view chat_star with (security_barrier) as select chat_id,chat_star_at from db.chat_star where account_id=current_setting('custom.account_id',true)::integer;
 create view chat_year with (security_barrier) as select room_id,chat_year,chat_year_count from db.chat_year;
@@ -239,6 +245,11 @@ create function dismiss_question_notification(id integer) returns void language 
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
+create function dismiss_answer_notification(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  with d as (delete from answer_notification where answer_history_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+$$;
+--
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error(429,'rate limit') where (select count(*) from account where account_create_at>current_timestamp-'5m'::interval)>5;
   --
@@ -384,9 +395,11 @@ create function change_question(id integer, title text, markdown text) returns v
                                          from question_history natural join (select question_id from question where account_id<>current_setting('custom.account_id',true)::integer) z
                                          where account_id=current_setting('custom.account_id',true)::integer and question_history_at>current_timestamp-'5m'::interval)>10;
   --
-  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown) values(id,current_setting('custom.account_id',true)::integer,title,markdown) returning account_id,question_history_id)
+  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown) values(id,current_setting('custom.account_id',true)::integer,title,markdown) returning question_id,question_history_id)
   insert into question_notification(question_history_id,account_id)
-  select question_history_id,(select account_id from question where question_id=id) from h where account_id<>(select account_id from question where question_id=id) and exists(select 1 from subscription where account_id=(select account_id from question where question_id=id) and question_id=id);
+  select question_history_id,account_id from h natural join (select question_id,account_id from question) z where account_id<>current_setting('custom.account_id',true)::integer
+  union
+  select question_history_id,account_id from h natural join subscription where account_id<>current_setting('custom.account_id',true)::integer;
   --
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=id;
 $$;
@@ -420,7 +433,12 @@ create function change_answer(id integer, markdown text) returns void language s
   --
   update question set question_poll_major_id = default where question_id=(select question_id from answer where answer_id=id);
   --
-  insert into answer_history(answer_id,account_id,answer_history_markdown) values(id,current_setting('custom.account_id',true)::integer,markdown);
+  with h as (insert into answer_history(answer_id,account_id,answer_history_markdown) values(id,current_setting('custom.account_id',true)::integer,markdown) returning answer_id,answer_history_id)
+  insert into answer_notification(answer_history_id,account_id)
+  select answer_history_id,account_id from h natural join (select answer_id,question_id,account_id from answer) z where account_id<>current_setting('custom.account_id',true)::integer
+  union
+  select answer_history_id,account_id from h natural join (select answer_id,question_id from answer) z natural join subscription where account_id<>current_setting('custom.account_id',true)::integer;
+  --
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
 $$;
 --

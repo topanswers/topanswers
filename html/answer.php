@@ -25,6 +25,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       header('Location: /'.ccdb("select community_name from answer natural join (select question_id,community_id from question) z natural join community where answer_id=$1",$id).'?q='.ccdb("select question_id from answer where answer_id=$1",$id));
       exit;
     case 'vote': exit(ccdb("select vote_answer($1,$2)",$_POST['id'],$_POST['votes']));
+    case 'dismiss': exit(ccdb("select dismiss_answer_notification($1)",$_POST['id']));
     default: fail(400,'unrecognized action');
   }
 }

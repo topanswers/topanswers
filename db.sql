@@ -340,6 +340,14 @@ create table question_notification(
 );
 create index question_notification_latest_ind on question_notification(account_id,question_notification_at);
 
+create table answer_notification(
+  answer_history_id integer references answer_history
+, account_id integer references account
+, answer_notification_at timestamptz not null default current_timestamp
+, primary key (answer_history_id,account_id)
+);
+create index answer_notification_latest_ind on answer_notification(account_id,answer_notification_at);
+
 create table subscription(
   account_id integer references account
 , question_id integer references question

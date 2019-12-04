@@ -23,7 +23,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    html, body { margin: 0; padding: 0; }
+    html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
     textarea, pre, code { font-family: '<?=$monospace_font_name?>', monospace; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     header select { margin-right: 0.5rem; }
@@ -32,6 +32,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
     .separator { border-bottom: 0.3rem solid #<?=$colour_dark?>; margin: 1rem -1rem; }
     .separator:last-child { display: none; }
     .diff { background-color: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; }
+    .diff:target { box-shadow: 0 0 3px 3px #<?=$colour_highlight?>; }
 
     .who, .when { white-space: nowrap; }
     .when { font-size: smaller; }
@@ -61,6 +62,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
         dmp.diff_cleanupSemantic(d);
         $(this).html(dmp.diff_prettyHtml(d));
       });
+      setTimeout(function(){ $('.diff:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 300);
     });
   </script>
   <title>Answer History - TopAnswers</title>
@@ -75,7 +77,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
     </div>
   </header>
   <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
-    <?foreach(db("select account_id,account_name,answer_history_markdown
+    <?foreach(db("select answer_history_id,account_id,account_name,answer_history_markdown
                        , to_char(answer_history_at,'YYYY-MM-DD HH24:MI:SS') answer_history_at
                        , lag(answer_history_markdown) over (order by answer_history_at) prev_markdown
                        , row_number() over (order by answer_history_at) rn
@@ -91,7 +93,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
       <textarea data-grid-area="<?=(1+$rowoffset)?> / 2 / span 1 / 3"><?=htmlspecialchars($answer_history_markdown)?></textarea>
       <div style="grid-area: <?=(1+$rowoffset)?> / 3 / span 1 / 4; overflow: hidden;" class="markdown"></div>
       <?if($rn>1){?>
-        <div style="grid-area: <?=(2+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($answer_history_markdown)?>"></div>
+        <div id="h<?=$answer_history_id?>" style="grid-area: <?=(2+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($answer_history_markdown)?>"></div>
       <?}?>
       <div style="grid-area: <?=(1+$rowspan+$rowoffset)?> / 1 / span 1 / 4;" class="separator"></div>
     <?}?>

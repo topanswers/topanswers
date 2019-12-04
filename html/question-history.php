@@ -23,7 +23,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
-    html, body { margin: 0; padding: 0; }
+    html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$monospace_font_name?>', monospace; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     header select { margin-right: 0.5rem; }
@@ -33,6 +33,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
     .separator { border-bottom: 0.3rem solid #<?=$colour_dark?>; margin: 1rem -1rem; }
     .separator:last-child { display: none; }
     .diff { background-color: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; }
+    .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px #<?=$colour_highlight?>; }
 
     .who, .when { white-space: nowrap; }
     .when { font-size: smaller; }
@@ -62,6 +63,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
         dmp.diff_cleanupSemantic(d);
         $(this).html(dmp.diff_prettyHtml(d));
       });
+      setTimeout(function(){ $('.diff:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 300);
     });
   </script>
   <title>Question History - TopAnswers</title>
@@ -76,7 +78,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
     </div>
   </header>
   <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
-    <?foreach(db("select account_id,account_name,question_history_markdown,question_history_title
+    <?foreach(db("select question_history_id,account_id,account_name,question_history_markdown,question_history_title
                        , to_char(question_history_at,'YYYY-MM-DD HH24:MI:SS') question_history_at
                        , lag(question_history_markdown) over (order by question_history_at) prev_markdown
                        , lag(question_history_title) over (order by question_history_at) prev_title
@@ -94,7 +96,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
       <textarea data-grid-area="<?=(2+$rowoffset)?> / 2 / span 1 / 3"><?=htmlspecialchars($question_history_markdown)?></textarea>
       <div style="grid-area: <?=(2+$rowoffset)?> / 3 / span 1 / 4; overflow: hidden;" class="markdown"></div>
       <?if($rn>1){?>
-        <div style="grid-area: <?=(3+$rowoffset)?> / 2 / span 1 / 4;" class="diff" data-from="<?=htmlspecialchars($prev_title)?>" data-to="<?=htmlspecialchars($question_history_title)?>"></div>
+        <div id="h<?=$question_history_id?>" style="grid-area: <?=(3+$rowoffset)?> / 2 / span 1 / 4;" class="diff" data-from="<?=htmlspecialchars($prev_title)?>" data-to="<?=htmlspecialchars($question_history_title)?>"></div>
         <div style="grid-area: <?=(4+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($question_history_markdown)?>"></div>
       <?}?>
       <div style="grid-area: <?=(1+$rowspan+$rowoffset)?> / 1 / span 1 / 4;" class="separator"></div>
