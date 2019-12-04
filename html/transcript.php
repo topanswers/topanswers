@@ -132,7 +132,7 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
       threadChat();
       $('.message .markdown :not(a)>img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-      setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 0);
+      setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
     });
   </script>
   <title><?=$room_name?> Transcript - TopAnswers</title>

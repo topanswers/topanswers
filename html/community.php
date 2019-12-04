@@ -574,7 +574,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         }
         return false;
       });
-      setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 300);
+      setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
       $('#active-spacer').click(function(){
         var t = $(this);
         if((t.prev().css('flex-shrink')==='1')&&(t.next().css('flex-shrink')==='1')) t.next().animate({ 'flex-shrink': 100 });

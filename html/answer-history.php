@@ -62,7 +62,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
         dmp.diff_cleanupSemantic(d);
         $(this).html(dmp.diff_prettyHtml(d));
       });
-      setTimeout(function(){ $('.diff:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 300);
+      setTimeout(function(){ $('.diff:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
     });
   </script>
   <title>Answer History - TopAnswers</title>
