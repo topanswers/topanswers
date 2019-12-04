@@ -333,6 +333,12 @@ create table chat_notification(
 create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at);
 
 create table question_notification(
+  question_history_id integer references question_history
+, account_id integer references account
+, question_notification_at timestamptz not null default current_timestamp
+, primary key (question_history_id,account_id)
+);
+create table question_notification2(
   question_id integer references question
 , account_id integer references account
 , question_notification_at timestamptz not null default current_timestamp

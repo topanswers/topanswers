@@ -846,7 +846,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , community_name notification_community_name
                                             , question_title
                                             , null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                                       from question_notification natural join question natural join community)
+                                       from question_notification natural join (select question_history_id,question_id from question_history) natural join question natural join community)
                             select * from c union all select * from q
                             order by notification_at limit 20") as $r){ extract($r);?>
                 <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
