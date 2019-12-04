@@ -208,8 +208,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             var newquestions;
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
             newquestions = $(data).filter('.question').prependTo($('#qa')).hide().slideDown(maxQuestionPollMajorID?400:0);
-            if(maxQuestionPollMajorID) numNewChats += newquestions.length;
-            if(maxQuestionPollMajorID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
             newquestions.each(renderQuestion);
             newquestions.each(function(){
               if($(this).data('poll-major-id')>maxQuestionPollMajorID) maxQuestionPollMajorID = $(this).data('poll-major-id');
