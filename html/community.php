@@ -651,6 +651,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
                              ,account_name,account_is_me,question_se_question_id,account_is_imported,account_community_se_user_id
+                            , question_i_subscribed
                             , coalesce(account_community_votes,0) account_community_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
@@ -719,8 +720,9 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 <?if($account_is_me==='f'){?><a href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
-            <div>
-            </div>
+            <!--<div>
+              <i class="fa fw fa-bell<?=($question_i_subscribed)?'':'-o'?>"></i>
+            </div>-->
           </div>
         </div>
         <?if($question_is_blog==='f'){?>

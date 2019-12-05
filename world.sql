@@ -106,6 +106,7 @@ select question_id,community_id,account_id,question_type,question_at,question_ti
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
      , question_at<>question_change_at question_has_history
      , greatest(tag_at,tag_history_at) question_retag_at
+     , exists(select 1 from db.subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=question.question_id) question_i_subscribed
 from db.question natural join community
      natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) v
      natural left join (select question_id, max(answer_at) question_answer_at, max(answer_change_at) question_answer_change_at from db.answer group by question_id) a
