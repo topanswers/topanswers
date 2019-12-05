@@ -562,6 +562,16 @@ create function read_room(id integer) returns void language sql security definer
   update room_account_x set room_account_x_latest_read_chat_id = (select max(chat_id) from chat where room_id=id) where room_id=id and account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
+create function subscribe_question(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('already subscribed') where exists(select 1 from subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=id);
+  insert into subscription(account_id,question_id) values(current_setting('custom.account_id',true)::integer,id);
+$$;
+--
+create function unsubscribe_question(id integer) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  select _error('not subscribed') where not exists(select 1 from subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=id);
+  delete from subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=id;
+$$;
+--
 --
 revoke all on all functions in schema world from public;
 do $$

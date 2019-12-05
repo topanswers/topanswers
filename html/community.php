@@ -81,6 +81,11 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .starrr { margin-left: 0.2rem; }
     .starrr a.fa-star { color: #<?=$colour_highlight?>; }
     .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
+    #question .fa-bell, #question .fa-bell-o { font-size: 1rem; margin-right: 0.2rem; cursor: pointer; }
+    #question .fa-bell { color: #<?=$colour_highlight?>; }
+    #question .fa-bell-o { color: #<?=$colour_dark?>; }
+    #question:not(.subscribed) .fa-bell { display: none; }
+    #question.subscribed .fa-bell-o { display: none; }
 
     #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); overflow: hidden; }
     <?if($question){?>#qa .bar:last-child { border-bottom: none; border-radius: 0 0 5px 5px; }<?}?>
@@ -417,10 +422,19 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
            .each(function changecount(){ $(this).attr('data-count',(+$(this).attr('data-count'))+direction); });
         });
       };
+      function subscribe(state){
+        var b = $('#question .fa-bell, #question .fa-bell-o');
+        b.css({'opacity':'0.3','pointer-events':'none'});
+        $.post('/question',{ action: (state?'':'un')+'subscribe', id: <?=$question?> }).done(function(r){
+          b.css({ 'opacity':'1','pointer-events':'auto' }).toggle();
+        });
+      }
       $('#chat-wrapper').on('click','.fa-star-o', function(){ starflag($(this),'star',1); });
       $('#chat-wrapper').on('click','.fa-star', function(){ starflag($(this),'star',-1); });
       $('#chat-wrapper').on('click','.fa-flag-o', function(){ starflag($(this),'flag',1); });
       $('#chat-wrapper').on('click','.fa-flag', function(){ starflag($(this),'flag',-1); });
+      $('.fa-bell').click(function(){ subscribe(false); });
+      $('.fa-bell-o').click(function(){ subscribe(true); });
       $('body').on('click','.identicon.pingable', function(){
         if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')+' '); }
         $(this).toggleClass('ping');
@@ -660,7 +674,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account natural join community natural join license natural join codelicense natural left join account_community
                        where question_id=$1",$question));?>
-        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?>" style="border-radius: 0 0 5px 5px; font-size: larger; background: white;">
+        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?> <?=($question_i_subscribed==='t')?'subscribed':''?>" style="border-radius: 0 0 5px 5px; font-size: larger; background: white;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
@@ -720,9 +734,12 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 <?if($account_is_me==='f'){?><a href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
-            <!--<div>
-              <i class="fa fw fa-bell<?=($question_i_subscribed)?'':'-o'?>"></i>
-            </div>-->
+            <div>
+              <div>
+                <div class="fa fw fa-bell" title="unsubscribe from this question"></div>
+                <div class="fa fw fa-bell-o" title="subscribe to this question"></div>
+              </div>
+            </div>
           </div>
         </div>
         <?if($question_is_blog==='f'){?>

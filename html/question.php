@@ -115,6 +115,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       exit;
     case 'vote': exit(ccdb("select vote_question($1,$2)",$_POST['id'],$_POST['votes']));
     case 'dismiss': exit(ccdb("select dismiss_question_notification($1)",$_POST['id']));
+    case 'subscribe': exit(ccdb("select subscribe_question($1)",$_POST['id']));
+    case 'unsubscribe': exit(ccdb("select unsubscribe_question($1)",$_POST['id']));
     default: fail(400,'unrecognized action');
   }
 }
