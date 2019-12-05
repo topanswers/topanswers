@@ -24,6 +24,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       exit;
     case 'new-se':
       extract(cdb("select sesite_url,account_community_se_user_id from community join sesite on community_sesite_id=sesite_id natural join my_account_community where community_name=$1",$_POST['community']));
+      libxml_use_internal_errors(true);
       // get the SE user-id and user-name for the question asker
       $doc = new DOMDocument();
       $doc->loadHTML(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
@@ -31,8 +32,11 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       $elements = $xpath->query("//div[@id='question-header']/h1/a");
       $title = $elements[0]->childNodes[0]->nodeValue;
       $elements = $xpath->query("//div[@id='question']//div[contains(concat(' ', @class, ' '), ' owner ')]//div[contains(concat(' ', @class, ' '), ' user-details ')]/a");
-      $seuid = explode('/',$elements[0]->getAttribute('href'))[2];
-      $seuname = explode('/',$elements[0]->getAttribute('href'))[3];
+      $qanon = (count($elements)===0);
+      if(!$qanon){
+        $seuid = explode('/',$elements[0]->getAttribute('href'))[2];
+        $seuname = explode('/',$elements[0]->getAttribute('href'))[3];
+      }
       // get every answer id with matching SE user-id and user-name
       $answers = [];
       $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ')]/@id");
@@ -40,7 +44,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         $a = $xpath->query("//div[@id='".$element->textContent."']"
                           ."//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
                           ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a");
-        $answers[explode('-',$element->textContent)[1]] = ["uid"=>explode('/',$a[0]->getAttribute('href'))[2],"uname"=>explode('/',$a[0]->getAttribute('href'))[3]];
+        $answers[explode('-',$element->textContent)[1]] = (count($a)===0)?["anon"=>true]:["anon"=>false,"uid"=>explode('/',$a[0]->getAttribute('href'))[2],"uname"=>explode('/',$a[0]->getAttribute('href'))[3]];
       }
       // get the markdown and tags for the question
       $doc = new DOMDocument();
@@ -55,23 +59,37 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
       $markdown = preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',$markdown);
       $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
       $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
+     //error_log('length: '.strlen($markdown));
       // add the question
-      $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6,$7)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid'],$seuid,$seuname);
+      if($qanon){
+        $id=ccdb("select new_sequestionanon((select community_id from community where community_name=$1),$2,$3,$4,$5)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid']);
+      }else{
+        $id=ccdb("select new_sequestion((select community_id from community where community_name=$1),$2,$3,$4,$5,$6,$7)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid'],$seuid,$seuname);
+      }
       // generate an array of answers to import
       $aids = [];
-      if($_POST['seaids']) $aids = explode(' ',$_POST['seaids']);
-      if($account_community_se_user_id){
+      if($_POST['seaids']==='*'){
         $doc = new DOMDocument();
         $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']),'HTML-ENTITIES','UTF-8'));
         $xpath = new DOMXpath($doc);
-        $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
-                                 ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
-                                 ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$account_community_se_user_id."/')])]");
-        foreach($elements as $element){
-          $aid = explode('-',$element->getAttribute('id'))[1];
-          if(!in_array($aid,$aids,true)) array_push($aids,$aid);
+        $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ')]");
+        foreach($elements as $element) array_push($aids,explode('-',$element->getAttribute('id'))[1]);
+      }else{
+        if($_POST['seaids']) $aids = explode(' ',$_POST['seaids']);
+        if($account_community_se_user_id){
+          $doc = new DOMDocument();
+          $doc->loadHTML(mb_convert_encoding(file_get_contents($sesite_url.'/questions/'.$_POST['seqid']),'HTML-ENTITIES','UTF-8'));
+          $xpath = new DOMXpath($doc);
+          $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
+                                   ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
+                                   ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$account_community_se_user_id."/')])]");
+          foreach($elements as $element){
+            $aid = explode('-',$element->getAttribute('id'))[1];
+            if(!in_array($aid,$aids,true)) array_push($aids,$aid);
+          }
         }
       }
+     //error_log('aids: '.print_r($aids,true));
       // import each selected answer
       foreach($aids as $aid){
         $doc = new DOMDocument();
@@ -83,7 +101,11 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         $markdown = preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',$markdown);
         $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
         $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
-        db("select new_seanswer($1,$2,$3,$4,$5) from my_account",$id,$markdown,$aid,$answers[$aid]['uid'],$answers[$aid]['uname']);
+        if($answers[$aid]['anon']){
+          db("select new_seansweranon($1,$2,$3) from my_account",$id,$markdown,$aid);
+        }else{
+          db("select new_seanswer($1,$2,$3,$4,$5) from my_account",$id,$markdown,$aid,$answers[$aid]['uid'],$answers[$aid]['uname']);
+        }
       }
       header('Location: /'.$_POST['community'].'?q='.$id);
       exit;

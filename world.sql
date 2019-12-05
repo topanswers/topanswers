@@ -143,6 +143,10 @@ declare
 begin
   insert into room(community_id) values(0) returning room_id into rid;
   insert into community(community_name,community_room_id) values(cname,rid) returning community_id into cid;
+  --
+  insert into account_community(account_id,community_id,account_community_se_user_id,account_community_regular_font_id,account_community_monospace_font_id)
+  select 208,cid,0,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
+  --
   update room set community_id=cid where room_id=rid;
   return cid;
 end$$;
@@ -389,6 +393,15 @@ create function new_sequestion(cid integer, title text, markdown text, tags text
   select qid from q cross join (select count(1) cn from t) z;
 $$;
 --
+create function new_sequestionanon(cid integer, title text, markdown text, tags text, seqid integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error(400,'already imported') where exists (select 1 from question where community_id=cid and question_se_question_id=seqid);
+  --
+  with u as (select account_id uid from account_community where community_id=cid and account_community_se_user_id=0)
+     , q as (select uid, _new_question(cid,uid,'question',title,markdown,4,1,seqid) qid from u)
+     , t as (select new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=cid)
+  select qid from q cross join (select count(1) cn from t) z;
+$$;
+--
 create function change_question(id integer, title text, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('only author can edit blog post') where exists (select 1 from question where question_id=id and question_type='blog' and account_id<>current_setting('custom.account_id',true)::integer);
@@ -427,6 +440,11 @@ $$;
 create function new_seanswer(qid integer, markdown text, seaid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,world,pg_temp as $$
   select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
   select _new_answer(qid,_create_seuser(community_id,seuid,seuname),markdown,4,1,seaid) from question where question_id=qid;
+$$;
+--
+create function new_seansweranon(qid integer, markdown text, seaid integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
+  select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
+  select _new_answer(qid,(select account_id from account_community where community_id=question.community_id and account_community_se_user_id=0),markdown,4,1,seaid) from question where question_id=qid;
 $$;
 --
 create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,world,pg_temp as $$

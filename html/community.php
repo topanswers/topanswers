@@ -668,7 +668,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               <span>
                 <span class="when" data-seconds="<?=$question_when?>"></span>,
                 <?if($account_is_imported==='t'){?>
-                  <span>by <a href="<?=$sesite_url.'/users/'.$account_community_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                  <span><?if($account_community_se_user_id>0){?>by <a href="<?=$sesite_url.'/users/'.$account_community_se_user_id?>"><?=htmlspecialchars($account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
                 <?}else{?>
                   <span>by <?=htmlspecialchars($account_name)?></span>
                 <?}?>
