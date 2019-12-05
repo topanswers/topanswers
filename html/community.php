@@ -812,7 +812,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
       <div id="messages-wrapper" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden;">
         <div id="notification-wrapper">
-          <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||ccdb("select count(*)>0 from question_notification")==='t')){?>
+          <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||ccdb("select count(*)>0 from question_notification")==='t'||ccdb("select count(*)>0 from answer_notification")==='t')){?>
             <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border: 2px solid black; border-width: 2px 1px 2px 0; background: #<?=$colour_light?>; padding: 0.3rem; padding-top: 0; overflow-x: hidden; overflow-y: auto;">
               <div style="font-size: 0.9rem; padding: 1px;">Notifications:</div>
               <?foreach(db("with c as (select 'chat' notification_type
@@ -825,6 +825,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , question_id
                                             , null::text question_title
                                             , null::integer answer_id
+                                            , null::boolean answer_notification_is_edit
                                             , account_id chat_from_account_id
                                             , chat_reply_id
                                             , chat_markdown
@@ -850,7 +851,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , community_name notification_community_name
                                             , question_id
                                             , question_title
-                                            , null::integer, null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                            , null::integer, null::boolean, null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
                                        from question_notification natural join question natural join community)
                                , a as (select 'answer' notification_type
                                             , answer_history_id notification_id
@@ -862,6 +863,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , question_id
                                             , question_title
                                             , answer_id
+                                            , answer_notification_is_edit
                                             , null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
                                        from answer_notification natural join answer natural join (select question_id,question_title,community_id from question) z natural join community)
                             select * from c union all select * from q union all select * from a
@@ -914,7 +916,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                   <?}elseif($notification_type==='answer'){?>
                     <div style="display: flex; overflow: hidden; font-size: 0.9rem; white-space: nowrap;">
                       <span class="when" data-at="<?=$notification_at_iso?>"></span>
-                      <span style="flex: 0 0 auto;">, answer edit on:&nbsp;</span>
+                      <span style="flex: 0 0 auto;">, answer <?=($answer_notification_is_edit==='t')?'edit':'posted'?> on:&nbsp;</span>
                       <a href="/answer-history?id=<?=$answer_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
                       —
                       <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>

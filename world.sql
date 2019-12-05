@@ -410,7 +410,10 @@ create function _new_answer(qid integer, aid integer, markdown text, lic integer
   select _ensure_account_community(aid,community_id) from question where question_id=qid;
   --
   with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_se_answer_id) values(qid,aid,markdown,lic,codelic,seaid) returning answer_id)
-  insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,aid,markdown from i returning answer_id;
+     , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,aid,markdown from i returning answer_id,answer_history_id)
+     , n as (insert into answer_notification(answer_history_id,account_id)
+             select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=qid and account_id<>current_setting('custom.account_id',true)::integer) z)
+  select answer_id from i;
 $$;
 --
 create function new_answer(qid integer, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,world,pg_temp as $$
