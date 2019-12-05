@@ -72,6 +72,7 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
     header select, header input, header a:not(.icon) { margin: 3px; }
     header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }
     header .icon>img { background: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
+    mark[data-markjs] { background-color: #<?=$colour_highlight?>80; }
     .period>div { margin: 0.5em; white-space: nowrap; }
     .period>div>span { font-size: smaller; font-style: italic; }
     a:not([href]) { color: #<?=$colour_highlight?>; }
@@ -114,6 +115,7 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
   <?require './markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
+  <script src="/lib/mark.js"></script>
   <script>
     $(function(){
       function threadChat(){
@@ -129,9 +131,10 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
       }
       $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('.markdown').renderMarkdown();
-      threadChat();
+      <?if(!$search){?>threadChat();<?}?>
       $('.message .markdown :not(a)>img').each(function(i){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+      $('.markdown').mark('<?=$search?>', { "separateWordSearch": false, "ignoreJoiners": true });
       setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
     });
   </script>
@@ -148,8 +151,8 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
       <a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
-  <?if($search){?>
-    <main style="background-color: #<?=$colour_light?>; overflow: hidden;">
+  <main style="display: flex; margin: 2px; background-color: #<?=$colour_light?>; overflow: hidden;">
+    <?if($search){?>
       <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
         <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.3',false)");?>
         <?foreach(db("with c as (select chat.*, strict_word_similarity($2,chat_markdown) word_similarity, similarity($2,chat_markdown) similarity from chat where room_id=$1 and $2<<%chat_markdown)
@@ -195,9 +198,7 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
           </div>
         <?}?>
       </div>
-    </main>
-  <?}else{?>
-    <main style="display: flex; margin: 2px; background-color: #<?=$colour_light?>; overflow: hidden;">
+    <?}else{?>
       <?if(isset($_GET['year'])){?>
         <div class="period" style="flex 0 0 auto;">
           <div>
@@ -302,7 +303,7 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
           </div>
         <?}?>
       </div>
-    </main>
-  <?}?>
+    <?}?>
+  </main>
 </body>   
 </html>   
