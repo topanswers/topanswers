@@ -258,7 +258,7 @@ create function dismiss_answer_notification(id integer) returns void language sq
 $$;
 --
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,world,pg_temp as $$
-  select _error(429,'rate limit') where (select count(*) from account where account_create_at>current_timestamp-'5m'::interval)>5;
+  select _error(429,'rate limit') where (select count(*) from account where account_create_at>current_timestamp-'5m'::interval and account_is_imported=false)>5;
   --
   with a as (insert into account default values returning account_id)
   insert into login(account_id,login_uuid) select account_id,luuid from a returning account_id;
