@@ -9,6 +9,8 @@ create table font(
 , font_is_monospace boolean not null
 );
 
+create type community_type_enum as enum ('public','private');
+
 create table community(
   community_id integer generated always as identity primary key
 , community_name text not null
@@ -17,11 +19,12 @@ create table community(
 , community_mid_shade bytea not null default decode('d4dfec','hex') check(length(community_mid_shade)=3)
 , community_light_shade bytea not null default decode('e7edf4','hex') check(length(community_light_shade)=3)
 , community_highlight_color bytea not null default decode('f79804','hex') check(length(community_highlight_color)=3)
-, community_is_dev boolean default false not null
 , community_sesite_id integer references sesite
 , community_code_language text 
 , community_regular_font_id integer default 3 not null references font
 , community_monospace_font_id integer default 2 not null references font
+, community_display_name text not null
+, community_type community_type_enum not null default 'private'
 );
 
 create type room_type_enum as enum ('public','gallery','private');
@@ -61,6 +64,12 @@ create table account(
 , account_is_imported boolean default false not null
 );
 create unique index account_rate_limit_ind on account(account_create_at);
+
+create table member(
+  account_id integer references account
+, community_id integer references community
+, primary key (account_id,community_id)
+);
 
 create table account_community(
   account_id integer references account

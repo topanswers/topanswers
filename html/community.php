@@ -639,8 +639,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <div>
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
         <select id="community">
-          <?foreach(db("select community_name,community_room_id from community order by community_name desc") as $r){ extract($r);?>
-            <option value="<?=$community_room_id?>"<?=($community===$community_name)?' selected':''?>><?=ucfirst($community_name)?></option>
+          <?foreach(db("select community_name,community_room_id,community_display_name from community order by community_name desc") as $r){ extract($r);?>
+            <option value="<?=$community_room_id?>"<?=($community===$community_name)?' selected':''?>><?=$community_display_name?></option>
           <?}?>
         </select>
         <input class="panecontrol" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
