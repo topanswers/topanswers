@@ -824,7 +824,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <div id="chattext-wrapper" style="position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>;">
           <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
           <button id="chatupload" class="button" style="position: absolute; right: 0.15em; top: 0; bottom: 0; font-size: 1.5em; color: #<?=$colour_dark?>;" title="embed image"><i class="fa fa-picture-o" style="display: block;"></i></button>
-          <textarea id="chattext" style="flex: 0 0 auto; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000" autofocus></textarea>
+          <textarea id="chattext" style="flex: 0 0 auto; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000"></textarea>
         </div>
       </div>
     <?}?>
