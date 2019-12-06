@@ -1,1 +1,1 @@
-highlight.min.js
+highlight.pack.js
