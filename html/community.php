@@ -338,6 +338,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           $('#notification-wrapper').replaceWith($('<div />').append(r).find('#notification-wrapper'));
           $('#notification-wrapper .markdown').renderMarkdown();
           $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+          $('#notification-wrapper a[data-room]').click(function(){
+            $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
+            return false;
+          });
           if(scroll){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); }
           if(scroll) setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
           setChatPollTimeout();
@@ -574,6 +578,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('#qa .summary span[data-markdown]').renderMarkdownSummary();
       $('#qa .summary span[data-markdown]').each(function(){ alert('called'); });
       updateChat(true);
+      updateNotifications();
       <?if(!$question){?>updateQuestions(true);<?}?>
       $('#se').click(function(){
         var t = $(this), f = t.closest('form')
@@ -845,12 +850,12 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , null::text question_title
                                             , null::integer answer_id
                                             , null::boolean answer_notification_is_edit
+                                            , room_id notification_room_id
                                             , account_id chat_from_account_id
                                             , chat_reply_id
                                             , chat_markdown
                                             , chat_flag_count
                                             , chat_star_count
-                                            , room_id chat_room_id
                                             , chat_has_history
                                             , question_id is not null chat_is_question_room
                                             , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) chat_room_name 
@@ -870,7 +875,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , community_name notification_community_name
                                             , question_id
                                             , question_title
-                                            , null::integer, null::boolean, null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                            , null::integer
+                                            , null::boolean
+                                            , question_room_id
+                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
                                        from question_notification natural join question natural join community)
                                , a as (select 'answer' notification_type
                                             , answer_history_id notification_id
@@ -883,18 +891,19 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , question_title
                                             , answer_id
                                             , answer_notification_is_edit
-                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                                       from answer_notification natural join answer natural join (select question_id,question_title,community_id from question) z natural join community)
+                                            , question_room_id
+                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                       from answer_notification natural join answer natural join (select question_id,question_title,community_id,question_room_id from question) z natural join community)
                             select * from c union all select * from q union all select * from a
                             order by notification_at limit 20") as $r){ extract($r);?>
                 <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
                   <?if($notification_type==='chat'){?>
                     <span class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
                       <?=$chat_from_account_name?>
-                      <?if($chat_room_id!==$room){?>
+                      <?if($notification_room_id!==$room){?>
                         <?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
                         <span style="color: #<?=$notification_dark_shade?>;">in</span>
-                        <a href="/<?=$notification_community_name?>?<?=($chat_is_question_room==='t')?'q='.$question_id:'room='.$chat_room_id?>" style="color: #<?=$notification_dark_shade?>;" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
+                        <a href="/<?=$notification_community_name?>?<?=($chat_is_question_room==='t')?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>"  style="color: #<?=$notification_dark_shade?>;" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
                       <?}else{?>
                         <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$notification_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
                       <?}?>
@@ -915,10 +924,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                         <i class="<?=($chat_i_starred==='t')?'me ':''?>fa fa-star<?=($chat_i_starred==='t')?'':'-o'?>" title="star"></i>
                         <i class="fa fa-ellipsis-h" title="more actions"></i>
                         <i class="<?=($chat_i_flagged==='t')?'me ':''?> fa fa-flag<?=($chat_i_flagged==='t')?'':'-o'?>" title="flag"></i>
-                        <?if($canchat&&($chat_room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
+                        <?if($canchat&&($notification_room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
                       </span>
                       <span class="button-group">
-                        <a href="/transcript?room=<?=$chat_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-link" title="permalink"></a>
+                        <a href="/transcript?room=<?=$notification_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-link" title="permalink"></a>
                         <i class="fa fa-ellipsis-h" title="more actions"></i>
                         <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
                         <i></i>
