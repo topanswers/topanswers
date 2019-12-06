@@ -362,3 +362,13 @@ create table subscription(
 , question_id integer references question
 , primary key (account_id,question_id)
 );
+
+create table import(
+  import_id integer generated always as identity primary key
+, import_at timestamptz not null default current_timestamp
+, account_id integer references account
+, community_id integer references community
+, import_qid text not null
+, import_aids text not null
+);
+

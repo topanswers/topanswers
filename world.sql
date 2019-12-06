@@ -574,6 +574,10 @@ create function unsubscribe_question(id integer) returns void language sql secur
   delete from subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=id;
 $$;
 --
+create function new_import(cid integer, qid text, aids text) returns void language sql security definer set search_path=db,world,pg_temp as $$
+  insert into import(account_id,community_id,import_qid,import_aids) values(current_setting('custom.account_id',true)::integer,cid,coalesce(qid,''),coalesce(aids,''));
+$$;
+--
 --
 revoke all on all functions in schema world from public;
 do $$

@@ -23,6 +23,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         </html><?}
       exit;
     case 'new-se':
+      db("select new_import(community_id,$2,$3) from community where community_name=$1",$_POST['community'],$_POST['seqid'],$_POST['seaids']);
       extract(cdb("select sesite_url,account_community_se_user_id from community join sesite on community_sesite_id=sesite_id natural join my_account_community where community_name=$1",$_POST['community']));
       libxml_use_internal_errors(true);
       // get the SE user-id and user-name for the question asker
