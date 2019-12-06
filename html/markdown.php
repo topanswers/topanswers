@@ -21,6 +21,9 @@
   .markdown nav li { display: block; counter-increment: list-item; }
   .markdown nav li:before { content: counters(list-item,'.') ' '; }
   .markdown .header-anchor { text-decoration: none; }
+  .markdown .footnote-item { font-size: smaller; }
+  .markdown .footnote-ref { font-size: 70%; }
+  .markdown .footnote-ref>a { text-decoration: none; }
   .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 4px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
@@ -103,6 +106,7 @@
     {
       if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
       if(tokens[idx].attrGet('href')==='http://dba.se') tokens[idx].attrSet('href','https://dba.stackexchange.com');
+      if(tokens[idx].attrGet('href')==='http://tex.se') tokens[idx].attrSet('href','https://tex.stackexchange.com');
     });
 
     md.renderer.rules.code_block = function(tokens, idx, options, env, slf){
@@ -129,7 +133,7 @@
         var t = $(this), m = t.attr('data-markdown');
         prefix = t.closest('[data-id]').attr('id')||'';
         //if(m.length>10000) md.enable('anchor'); else md.disable('anchor');
-        t.html(md.render(m));
+        t.html(md.render(m,{ docId: prefix }));
         t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
         t.find(':not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });

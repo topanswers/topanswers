@@ -543,7 +543,7 @@ $$;
 create function change_room_name(id integer, nname text) returns void language sql security definer set search_path=db,world,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('not authorised') from my_account where not account_is_dev;
-  select _error(400,'invalid room name') where nname is not null and not nname~'^[A-Za-zÀ-ÖØ-öø-ÿ]['' 0-9A-Za-zÀ-ÖØ-öø-ÿ]{1,25}[0-9A-Za-zÀ-ÖØ-öø-ÿ]$';
+  select _error(400,'invalid room name') where nname is not null and not nname~'^[0-9[:alpha:]][-'' ,.0-9[:alpha:]]{1,25}[0-9[:alpha:]]$';
   update room set room_name = nname where room_id=id;
 $$;
 --

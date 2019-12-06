@@ -20,7 +20,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     }
   }
   if(isset($_POST['name'])){
-    db("select change_room_name($1,nullif($1,''))",$id,$_POST['name']);
+    db("select change_room_name($1,nullif($2,''))",$id,$_POST['name']);
     header('Location: /room?id='.$id);
     exit;
   }
