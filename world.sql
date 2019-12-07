@@ -15,6 +15,8 @@ set local schema 'world';
 create function _error(integer,text) returns void language plpgsql as $$begin raise exception '%', $2 using errcode='H0'||$1; end;$$;
 create function _error(text) returns void language sql as $$select _error(403,$1);$$;
 --
+create view environment with (security_barrier) as select environment_name from db.environment;
+--
 create view sitemap with (security_barrier) as
 select community_name, question_id, greatest(question_change_at,change_at) change_at, votes::real/max(votes) over (partition by community_id) priority
 from (select question_id, max(answer_change_at) change_at, sum(answer_votes) votes from db.answer group by question_id) z natural join db.question natural join db.community;

@@ -372,3 +372,6 @@ create table import(
 , import_aids text not null
 );
 
+create table environment(
+  environment_name text primary key
+);

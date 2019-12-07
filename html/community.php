@@ -2,6 +2,7 @@
 include 'db.php';
 include 'nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
+$environment = $_COOKIE['environment'] ?? 'prod';
 $dev = false;
 if($uuid){
   ccdb("select login($1)",$uuid);
@@ -162,6 +163,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       #se { display: none; }
     }
   </style>
+  <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.waitforimages.js"></script>
@@ -644,6 +646,15 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           return false;
         }
       });
+      $('#environment').change(function(){
+        var v = $(this).val();
+        if(v==='prod'){
+          Cookies.remove('environment');
+        }else{
+          Cookies.set('environment',v);
+        }
+        window.location.reload(true);
+      });
     });
   </script>
   <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
@@ -658,6 +669,13 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             <option value="<?=$community_room_id?>" data-name="<?=$community_name?>"<?=($community===$community_name)?' selected':''?>><?=$community_display_name?></option>
           <?}?>
         </select>
+        <?if($dev){?>
+          <select id="environment">
+            <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
+              <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
+            <?}?>
+          </select>
+        <?}?>
         <input class="panecontrol" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
       </div>
       <?if(!$question){?><div><input type="search" id="search" placeholder="search"></div><?}?>
