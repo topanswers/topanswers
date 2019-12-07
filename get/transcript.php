@@ -1,6 +1,6 @@
 <?    
-include 'db.php';
-include 'nocache.php';
+include '../db.php';
+include '../nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select login($1)",$uuid);
 if(!isset($_GET['room'])) die('Room not set');
@@ -112,7 +112,7 @@ extract(cdb("select community_code_language,regular_font_name,monospace_font_nam
   <script src="/lib/jquery.js"></script>
   <script src="/lib/codemirror/codemirror.js"></script>
   <script src="/lib/codemirror/sql.js"></script>
-  <?require './markdown.php';?>
+  <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
   <script src="/lib/mark.js"></script>

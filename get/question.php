@@ -1,6 +1,6 @@
 <?    
-include 'db.php';
-include 'nocache.php';
+include '../db.php';
+include '../nocache.php';
 $uuid = $_COOKIE['uuid']??'';
 if($uuid) ccdb("select login($1)",$uuid);
 $id = $_GET['id']??$_POST['id']??'0';
@@ -176,7 +176,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <script src="/lib/codemirror/markdown.js"></script>
   <script src="/lib/codemirror/sql.js"></script>
   <script src="/lib/codemirror/placeholder.js"></script>
-  <?require './markdown.php';?>
+  <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
   <script src="/lib/favico.js"></script>

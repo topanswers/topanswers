@@ -1,26 +1,29 @@
 <?php
-include 'db.php';
+include '../db.php';
+
+$uuid = $_COOKIE['uuid'] ?? false;
+if($uuid) ccdb("select login($1)",$uuid);
 
 isset($_GET['id']) or die('id not set');
 $id = intval($_GET['id']);
 $id>0 or die('id not positive integer');
 
 header('X-Powered-By: ');
-header('Last-Modified: '.ccdb("select to_char(account_change_at,'fmDy, dd Mon YYYY HH24:MI:SS') from account where account_id=$1",$id)." GMT");
+header('Cache-Control: max-age=8600');
 
-if(ccdb("select account_image is null from account where account_id=$1",$id)==='f'){
+if(ccdb("select room_image is null from room where room_id=$1",$id)==='f'){
   header("Content-Type: image/jpeg");
-  echo pg_unescape_bytea(ccdb("select account_image from account where account_id=$1",$id));
+  echo pg_unescape_bytea(ccdb("select room_image from room where room_id=$1",$id));
   exit;
 }
 
 // Settings
 define('MARGIN_X', 0);        // Margin on the left and right edge in px
 define('MARGIN_Y', 0);        // Margin on the upper and lower edge in px
-define('BOX_SIZE_W', 10);      // Width of the individual "pixels" in px
-define('BOX_SIZE_H', 10);      // Height of the individual "pixels" in px
-define('GRID_COUNT_W', 7);     // Horizontal "pixel"-count
-define('GRID_COUNT_H', 7);     // Vertical "pixel"-count
+define('BOX_SIZE_W', 14);      // Width of the individual "pixels" in px
+define('BOX_SIZE_H', 14);      // Height of the individual "pixels" in px
+define('GRID_COUNT_W', 5);     // Horizontal "pixel"-count
+define('GRID_COUNT_H', 5);     // Vertical "pixel"-count
 define('BG_COLOR', '#FFFFFF'); // Background color as 6-digit hexadecimal rgb code
 
 // calculate image dimensions based on settings

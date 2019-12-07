@@ -1,6 +1,6 @@
 <?
-include 'db.php';
-include 'nocache.php';
+include '../db.php';
+include '../nocache.php';
 if(!isset($_COOKIE['uuid'])) fail(403,'not logged in');
 db("select login($1)",$_COOKIE['uuid']);
 if(!isset($_GET['room'])) fail(400,'missing room parameter');

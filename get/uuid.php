@@ -1,6 +1,6 @@
 <?    
-include 'db.php';
-include 'nocache.php';
+include '../db.php';
+include '../nocache.php';
 $uuid = exec('uuidgen');
 if(isset($_POST['pin'])){
   if(is_numeric($_POST['pin'])) db('select link_account($1,$2)',$uuid,$_POST['pin']);

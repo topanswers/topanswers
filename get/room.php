@@ -1,6 +1,6 @@
 <?    
-include 'db.php';
-include 'nocache.php';
+include '../db.php';
+include '../nocache.php';
 isset($_COOKIE['uuid']) or fail(403,'Not registered');
 $uuid = $_COOKIE['uuid'];
 if($uuid) ccdb("select login($1)",$uuid);

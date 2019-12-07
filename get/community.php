@@ -1,6 +1,6 @@
 <?
-include 'db.php';
-include 'nocache.php';
+include '../db.php';
+include '../nocache.php';
 $uuid = $_COOKIE['uuid'] ?? false;
 $environment = $_COOKIE['environment'] ?? 'prod';
 $dev = false;
@@ -169,7 +169,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
   <script src="/lib/jquery.waitforimages.js"></script>
   <script src="/lib/codemirror/codemirror.js"></script>
   <script src="/lib/codemirror/sql.js"></script>
-  <?require './markdown.php';?>
+  <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
   <script src="/lib/resizer.js"></script>
