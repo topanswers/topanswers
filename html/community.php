@@ -338,10 +338,12 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           $('#notification-wrapper').replaceWith($('<div />').append(r).find('#notification-wrapper'));
           $('#notification-wrapper .markdown').renderMarkdown();
           $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-          $('#notification-wrapper a[data-room]').click(function(){
-            $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
-            return false;
-          });
+          <?if($uuid){?>
+            $('#notification-wrapper a[data-room]').click(function(){
+              $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
+              return false;
+            });
+          <?}?>
           if(scroll){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); }
           if(scroll) setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
           setChatPollTimeout();
@@ -464,7 +466,11 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       });
       $('.markdown').renderMarkdown();
       $('#community').change(function(){
-        $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
+        <?if($uuid){?>
+          $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
+        <?}else{?>
+          window.location = '/'+$(this).find(':selected').attr('data-name');
+        <?}?>
       });
       $('#tags').select2({ placeholder: "select a tag" });
       function tagdrop(){ $('#tags').select2('open'); };
@@ -473,7 +479,11 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('.newtag').one('click',tagdrop);
       $('.tag i').click(function(){ $.post(window.location.href, { questionid: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){
-        $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
+        <?if($uuid){?>
+          $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
+        <?}else{?>
+          window.location = '/<?=$community?>?room='+$(this).val();
+        <?}?>
       });
       $('#chattext').on('input', function(){
         var m = $('#chattext').val();
@@ -645,7 +655,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
         <select id="community">
           <?foreach(db("select community_name,community_room_id,community_display_name from community order by community_name desc") as $r){ extract($r);?>
-            <option value="<?=$community_room_id?>"<?=($community===$community_name)?' selected':''?>><?=$community_display_name?></option>
+            <option value="<?=$community_room_id?>" data-name="<?=$community_name?>"<?=($community===$community_name)?' selected':''?>><?=$community_display_name?></option>
           <?}?>
         </select>
         <input class="panecontrol" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
