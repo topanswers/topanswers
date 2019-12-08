@@ -9,7 +9,7 @@ create view environment with (security_barrier) as select environment_name from 
 --
 create view sitemap with (security_barrier) as
 select community_name, question_id, greatest(question_change_at,change_at) change_at, votes::real/max(votes) over (partition by community_id) priority
-from (select question_id, max(answer_change_at) change_at, sum(answer_votes) votes from db.answer group by question_id) z natural join db.question natural join db.community;
+from (select question_id, max(answer_change_at) change_at, sum(answer_votes) votes from db.answer group by question_id) z natural join db.question natural join db.community where community_type='public';
 --
 create view sesite with (security_barrier) as select sesite_id,sesite_url from db.sesite;
 create view font with (security_barrier) as select font_id,font_name,font_is_monospace from db.font;

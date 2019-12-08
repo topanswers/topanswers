@@ -3,13 +3,13 @@
 */
 begin;
 --
-revoke usage on schema x_pg_trgm from post;
-drop schema if exists post cascade;
-drop role if exists post;
---
 revoke usage on schema x_pg_trgm from get;
 drop schema if exists get cascade;
 drop role if exists get;
+--
+revoke usage on schema x_pg_trgm from post;
+drop schema if exists post cascade;
+drop role if exists post;
 --
 revoke usage on schema x_pg_trgm from shared;
 drop schema if exists shared cascade;
