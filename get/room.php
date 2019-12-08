@@ -31,7 +31,7 @@ extract(cdb("select room_name, room_image is not null room_has_image from room w
 <body>
   <fieldset>
     <legend>name</legend>
-    <form action="/room" method="post">
+    <form action="//post.topanswers.xyz/room" method="post">
       <input type="hidden" name="id" value="<?=$id?>">
       <input type="text" name="name" placeholder="name" value="<?=$room_name?>" autocomplete="off" autofocus>
       <input type="submit" value="Save">
@@ -41,14 +41,14 @@ extract(cdb("select room_name, room_image is not null room_has_image from room w
     <legend>picture</legend>
     <img src="/roomicon?id=<?=$id?>">
     <?if($room_has_image==='t'){?>
-      <form action="/room" method="post">
+      <form action="//post.topanswers.xyz/room" method="post">
         <input type="hidden" name="id" value="<?=$id?>">
         <input type="hidden" name="image">
         <input type="submit" value="Remove">
       </form>
     <?}?>
     <hr>
-    <form action="/room" method="post" enctype="multipart/form-data">
+    <form action="//post.topanswers.xyz/room" method="post" enctype="multipart/form-data">
       <input type="hidden" name="id" value="<?=$id?>">
       <input type="file" name="image" accept=".png,.gif,.jpg,.jpeg">
       <input type="submit" value="Save">
