@@ -8,7 +8,7 @@ ccdb("select login($1)",$_COOKIE['uuid']) || fail(403,'invalid uuid');
 if(isset($_POST['action'])){
   switch($_POST['action']) {
     case 'authenticate-pin': db("select authenticate_pin($1)",$_POST['pin']); exit;
-    case 'regen': db("select regenerate_account_uuid()"); header('Location: //topanswers.xyz//profile'); exit;
+    case 'regen': db("select regenerate_account_uuid()"); header('Location: //topanswers.xyz/profile?highlight-recovery'); exit;
     case 'font': db("select change_fonts((select community_id from get.community where community_name=$1),$2,$3)",$_POST['community'],$_POST['regular'],$_POST['mono']); header('Location: //topanswers.xyz/profile'); exit;
     default: fail(400,'unrecognized action');
   }
