@@ -6,10 +6,10 @@ $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id'];
 ccdb("select count(*) from answer where answer_id=$1",$id)==='1' || die('invalid answer id');
-extract(cdb("select regular_font_name,monospace_font_name,community_code_language
+extract(cdb("select regular_font_name,monospace_font_name,community_code_language,community_display_name,question_id,question_title
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
                   , community_name community
-             from answer natural join (select question_id,community_id from question) q natural join community natural join my_account_community
+             from answer natural join (select question_id,community_id,question_title from question) q natural join community natural join my_account_community
              where answer_id=$1",$id));
 ?>
 <!doctype html>
@@ -26,8 +26,10 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
     *:not(hr) { box-sizing: inherit; }
     html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
     textarea, pre, code { font-family: '<?=$monospace_font_name?>', monospace; }
-    header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
-    header select { margin-right: 0.5rem; }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; white-space: nowrap; }
+    header>div>:not(.icon) { margin: 3px; }
+    header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }
+    header .icon>img { background: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
 
     .markdown, .diff { border: 1px solid #<?=$colour_dark?>; padding: 0.5rem; border-radius: 4px; }
     .separator { border-bottom: 0.3rem solid #<?=$colour_dark?>; margin: 1rem -1rem; }
@@ -69,12 +71,13 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
   <title>Answer History - TopAnswers</title>
 </head>
 <body style="font-size: larger; background-color: #<?=$colour_light?>;">
-  <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
-    <div style="margin: 0.5rem; margin-right: 0.1rem;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
-    </div>
+  <header style="border-bottom: 2px solid black;">
     <div style="display: flex; align-items: center; height: 100%;">
-      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
+      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=$community_display_name?></a>
+      <span>Answer History for <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$id?>" style="color: #<?=$colour_mid?>;">an answer</a> on: "<?=$question_title?>"</span>
+    </div>
+    <div style="display: flex; align-items: center;">
+      <a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
   <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
