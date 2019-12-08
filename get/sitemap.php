@@ -1,6 +1,6 @@
 <?
-$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 include '../db.php';
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 header("Content-type: text/xml; charset=utf-8");
 echo '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL;
 ?>

@@ -1,6 +1,6 @@
 <?php
-$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 include '../db.php';
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 
 $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select login($1)",$uuid);

@@ -1,7 +1,7 @@
 <?    
-$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 include '../db.php';
 include '../nocache.php';
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 isset($_COOKIE['uuid']) or die('Not registered');
 $uuid = $_COOKIE['uuid'];
 $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);

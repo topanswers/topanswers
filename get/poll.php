@@ -1,7 +1,7 @@
 <?
-$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 include '../db.php';
 include '../nocache.php';
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_COOKIE['uuid'])) fail(403,'not logged in');
 db("select login($1)",$_COOKIE['uuid']);
 if(!isset($_GET['room'])) fail(400,'missing room parameter');

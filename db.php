@@ -3,6 +3,7 @@ function fail($code = 500,$msg = ''){
   switch($code){
     case 400: header('HTTP/1.1 400 Bad Request'); break;
     case 403: header('HTTP/1.1 403 Forbidden'); break;
+    case 405: header('HTTP/1.1 405 Method Not Allowed'); break;
     case 413: header('HTTP/1.1 413 Payload Too Large'); break;
     case 429: header('HTTP/1.1 429 Too Many Requests'); break;
     case 500: header('HTTP/1.1 500 Internal Server Error'); break;

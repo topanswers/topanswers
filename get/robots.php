@@ -1,4 +1,5 @@
 <?
+include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 header("Content-Type: text/plain");
 if($_SERVER['SERVER_NAME']==='topanswers.xyz'){?>
