@@ -1,24 +1,16 @@
 <?
 include '../db.php';
 include '../nocache.php';
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 $uuid = $_COOKIE['uuid'] ?? false;
+$clearlocal = $_COOKIE['clearlocal']??'';
+setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
+if($uuid) setcookie("uuid",$uuid,2147483647,'/','topanswers.xyz',null,true);
 $environment = $_COOKIE['environment'] ?? 'prod';
 $dev = false;
 if($uuid){
   ccdb("select login($1)",$uuid);
   $dev = (ccdb("select account_is_dev from my_account")==='t');
-}
-if($_SERVER['REQUEST_METHOD']==='POST'){
-  isset($_POST['action']) or die('posts must have an "action" parameter');
-  switch($_POST['action']) {
-    case 'new-tag': exit(ccdb("select new_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
-    case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['questionid'],$_POST['tagid']));
-    default: fail(400,'unrecognized action');
-  }
-}
-if(isset($_GET['resizer'])){
-  db("select change_resizer($1)",$_GET['resizer']);
-  exit;
 }
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
@@ -119,7 +111,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
     .identicon.pingable:not(.ping):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
     .identicon.ping { outline: 1px solid #<?=$colour_highlight?>; }
-    #chattext-wrapper:not(:hover) button { display: none; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.65em; position: absolute; }
@@ -183,6 +174,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=$uuid?ccdb("select account_notification_id from my_account"):'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0;
+
+      <?if($clearlocal){?>
+        localStorage.removeItem('<?=$clearlocal?>');
+      <?}?>
 
       function setFinalSpacer(){
         var scroll, last = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:last-child');
@@ -295,7 +290,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               $.get('/chat?activerooms&room=<?=$room?>').done(function(r){
                 $('#active-rooms').html(r);
                 $('#active-rooms>a[href]').click(function(){
-                  $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
+                  $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
                   return false;
                 });
               });
@@ -342,7 +337,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
           <?if($uuid){?>
             $('#notification-wrapper a[data-room]').click(function(){
-              $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
+              $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
               return false;
             });
           <?}?>
@@ -396,14 +391,14 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
       if(localStorage.getItem('chat')) $('.pane').toggleClass('hidepane');
       $('#join').click(function(){
-        if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')) { $.ajax({ type: "POST", url: '/uuid', async: false }).done(function(){
+        if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')) { $.post({ url: '//post.topanswers.xyz/uuid', async: false }).done(function(){
           window.location = '/profile?highlight-recovery';
         }).fail(function(r){
           alert((r.status)===429?'Rate limit hit, please try again later':responseText);
           location.reload(true);
         }) };
       });
-      $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.ajax('/uuid',{ type: "POST", data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
+      $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.post('//post.topanswers.xyz/uuid',{ data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
@@ -425,7 +420,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       function starflag(t,action,direction){
         var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
         m.css({'opacity':'0.3','pointer-events':'none'});
-        $.post('/chat',{ action: ((direction===-1)?'un':'')+action, id: id }).done(function(r){
+        $.post({ url: '//post.topanswers.xyz/chat', data: { action: ((direction===-1)?'un':'')+action, id: id }, xhrFields: { withCredentials: true } }).done(function(r){
           m.css({ 'opacity':'1','pointer-events':'auto' }).toggleClass('me fa-'+action+' fa-'+action+'-o').closest('.buttons').find('.button-group:first-child .'+action+'s[data-count]').toggleClass('me fa-'+action+' fa-'+action+'-o')
            .each(function changecount(){ $(this).attr('data-count',(+$(this).attr('data-count'))+direction); });
         });
@@ -433,7 +428,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       function subscribe(state){
         var b = $('#question .fa-bell, #question .fa-bell-o');
         b.css({'opacity':'0.3','pointer-events':'none'});
-        $.post('/question',{ action: (state?'':'un')+'subscribe', id: <?=$question?> }).done(function(r){
+        $.post({ url: '//post.topanswers.xyz/question', data: { action: (state?'':'un')+'subscribe', id: <?=$question?> }, xhrFields: { withCredentials: true } }).done(function(r){
           b.css({ 'opacity':'1','pointer-events':'auto' }).toggle();
         });
       }
@@ -469,7 +464,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('.markdown').renderMarkdown();
       $('#community').change(function(){
         <?if($uuid){?>
-          $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
+          $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
         <?}else{?>
           window.location = '/'+$(this).find(':selected').attr('data-name');
         <?}?>
@@ -477,9 +472,9 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('#tags').select2({ placeholder: "select a tag" });
       function tagdrop(){ $('#tags').select2('open'); };
       $('#tags').on('select2:close', function (e) { setTimeout(function(){ $('.newtag').one('click',tagdrop); },200); });
-      $('#tags').change(function(){ $.post(window.location.href, { questionid: $(this).data('question-id'), tagid: $(this).val(), action: 'new-tag' }).done(function(){ window.location.reload(); }); });
+      $('#tags').change(function(){ $.post({ url: '//post.topanswers.xyz/question', data: { id: $(this).data('question-id'), tagid: $(this).val(), action: 'new-tag' }, xhrFields: { withCredentials: true } }).done(function(){ window.location.reload(); }); });
       $('.newtag').one('click',tagdrop);
-      $('.tag i').click(function(){ $.post(window.location.href, { questionid: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }).done(function(){ window.location.reload(); }); });
+      $('.tag i').click(function(){ $.post({ url: '//post.topanswers.xyz/question', data: { id: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }, xhrFields: { withCredentials: true } }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){
         <?if($uuid){?>
           $('<form action="/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
@@ -508,7 +503,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 $('.ping').each(function(){ arr.push($(this).data('id')); });
                 post = { room: <?=$room?>, msg: msg, replyid: replyid, pings: arr, action: 'new' };
               }
-              $.post('/chat',post).done(function(){
+              $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).done(function(){
                 if(edit){
                   c.css('opacity',1).find('.markdown').attr('data-markdown',msg).end().each(renderChat);
                   checkChat();
@@ -542,7 +537,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         }
       });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
-      const myResizer = new Resizer('body', { callback: function(w) { $.get(window.location.href, { resizer: Math.round(w) }); } });
+      const myResizer = new Resizer('body', { callback: function(w) { $.post({ url: '//post.topanswers.xyz/community', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); } });
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
       $('#chatuploadfile').change(function() {
         if(this.files[0].size > 2097152){
@@ -555,7 +550,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('#chatuploadfile').closest('form').submit(function(){
         var d = new FormData($(this)[0]);
         $('#chattext').prop('disabled',true);
-        $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){
+        $.post({ url: "//post.topanswers.xyz/upload", data: d, processData: false, cache: false, contentType: false, xhrFields: { withCredentials: true } }).done(function(r){
           $('#chattext').prop('disabled',false).focus();
           textareaInsertTextAtCursor($('#chattext'),'!['+d.get('image').name+'](/image?hash='+r+')');
           $('#chatuploadfile').closest('form').trigger('reset');
@@ -577,7 +572,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               n = n||0;
               if(n!==v){
                 t.css({'opacity':'0.3','pointer-events':'none'});
-                $.post('/'+t.data('type'),{ action: 'vote', id: t.data('id'), votes: n }).done(function(r){
+                $.post({ url: '//post.topanswers.xyz/'+t.data('type'), data: { action: 'vote', id: t.data('id'), votes: n }, xhrFields: { withCredentials: true } }).done(function(r){
                   t.css({'opacity':'1','pointer-events':'auto'}).siblings('.score').html('<span>score: '+r+'</span>');
                   v = n;
                 }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); });
@@ -614,17 +609,17 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
       $('#chat-wrapper').on('click','.message[data-type="chat"] .dismiss', function(){
-        $.post('/chat', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
+        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="question"] .dismiss', function(){
-        $.post('/question', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
+        $.post({ url: '//topanswers.xyz/question', data: { action: 'dismiss', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="answer"] .dismiss', function(){
-        $.post('/answer', { action: 'dismiss', id: $(this).closest('.message').attr('data-id'), action: 'dismiss' }).done(function(){ updateNotifications(); });
+        $.post({ url: '//post.topanswers.xyz/answer', data: { action: 'dismiss', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
@@ -649,9 +644,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       $('#environment').change(function(){
         var v = $(this).val();
         if(v==='prod'){
-          Cookies.remove('environment');
+          Cookies.remove('environment',{ secure: true, domain: '.topanswers.xyz' });
         }else{
-          Cookies.set('environment',v);
+          Cookies.set('environment',v,{ secure: true, domain: '.topanswers.xyz' });
+          //Cookies.set('environment',v,{ secure: true, domain: 'post.topanswers.xyz' });
         }
         window.location.reload(true);
       });
@@ -682,7 +678,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <div style="display: flex; align-items: center;">
         <?if(!$uuid){?><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"><?}?>
         <?if(($account_community_can_import==='t')&&$sesite_url&&!$question){?>
-          <form method="post" action="/question">
+          <form method="post" action="//post.topanswers.xyz/question">
             <input type="hidden" name="action" value="new-se">
             <input type="hidden" name="community" value="<?=$community?>">
             <input type="hidden" name="seqid" value="">

@@ -10,7 +10,10 @@ function fail($code = 500,$msg = ''){
   }
   exit($msg);
 }
-$connection = pg_connect('dbname=postgres user=world') or fail(403);
+$user = '';
+if($_SERVER['SERVER_NAME']==='topanswers.xyz') $user = 'get';
+if($_SERVER['SERVER_NAME']==='post.topanswers.xyz') $user = 'post';
+$connection = pg_connect('dbname=postgres user='.$user) or fail(403);
 function db($query,...$params) {
   global $connection;
   pg_send_query_params($connection, $query, $params);

@@ -1,34 +1,10 @@
 <?    
 include '../db.php';
 include '../nocache.php';
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
-$id = $_GET['id']??$_POST['id']??'0';
-if($_SERVER['REQUEST_METHOD']==='POST'){
-  isset($_POST['action']) or die('posts must have an "action" parameter');
-  switch($_POST['action']) {
-    case 'new':
-      $id=ccdb("select new_answer($1,$2,$3,$4)",$_POST['question'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
-      if($id){?>
-        <!doctype html>
-        <html>
-        <head>
-          <script>
-            localStorage.removeItem('<?=$_POST['community']?>.answer.<?=$_POST['question']?>');
-            window.location.href = '/<?=$_POST['community']?>?q=<?=$_POST['question']?>';
-          </script>
-        </head>
-        </html><?}
-      exit;
-    case 'change':
-      db("select change_answer($1,$2)",$id,$_POST['markdown']);
-      header('Location: /'.ccdb("select community_name from answer natural join (select question_id,community_id from question) z natural join community where answer_id=$1",$id).'?q='.ccdb("select question_id from answer where answer_id=$1",$id));
-      exit;
-    case 'vote': exit(ccdb("select vote_answer($1,$2)",$_POST['id'],$_POST['votes']));
-    case 'dismiss': exit(ccdb("select dismiss_answer_notification($1)",$_POST['id']));
-    default: fail(400,'unrecognized action');
-  }
-}
+$id = $_GET['id']??'0';
 if($id) {
   ccdb("select count(*) from answer where answer_id=$1",$id)==='1' || die('invalid answer id');
   extract(cdb("select community_name community, question_id question, question_title, question_markdown, answer_markdown
@@ -128,7 +104,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       $('#uploadfile').change(function() { if(this.files[0].size > 2097152){ alert("File is too big — maximum 2MB"); $(this).val(''); }else{ $('#imageupload').submit(); }; });
       $('#imageupload').submit(function(){
         var d = new FormData($(this)[0]);
-        $.ajax({ url: "/upload", type: "POST", data: d, processData: false, cache: false, contentType: false }).done(function(r){
+        $.post({ url: "//post.topanswers.xyz/upload", data: d, processData: false, cache: false, contentType: false, xhrFields: { withCredentials: true } }).done(function(r){
           var selectionStart = cm.getCursor(), selectionEnd = cm.getCursor();
           cm.replaceSelection('!['+d.get('image').name+'](/image?hash='+r+')');
           cm.focus();
@@ -203,7 +179,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
     </div>
   </header>
-  <form id="form" method="POST" action="/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
+  <form id="form" method="POST" action="//post.topanswers.xyz/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
     <?if($id){?>
       <input type="hidden" name="action" value="change">
       <input type="hidden" name="id" value="<?=$id?>">
@@ -241,6 +217,6 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
     </main>
   </form>
-  <form id="imageupload" action="/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
+  <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
 </body>   
 </html>   

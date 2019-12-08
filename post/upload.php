@@ -1,7 +1,10 @@
 <?
+include '../cors.php';
+$_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
+isset($_COOKIE['uuid']) || fail(403,'only registered users can POST');
 include '../db.php';
-isset($_COOKIE['uuid']) || exit('no account cookie set');
-db("select login($1)",$_COOKIE['uuid']);
+ccdb("select login($1)",$_COOKIE['uuid']) || fail(403,'invalid uuid');
+
 isset($_FILES['image']) || exit('no file uploaded');
 $hash = hash_file('sha256',$_FILES['image']['tmp_name']);
 $path = '/srv/uploads/'.substr($hash,0,2).'/'.substr($hash,2,2).'/'.substr($hash,4,2);

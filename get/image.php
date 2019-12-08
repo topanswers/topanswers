@@ -1,4 +1,5 @@
 <?    
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 header('X-Powered-By: ');
 header('Cache-Control: max-age=31536000');
 header("Content-type: image");

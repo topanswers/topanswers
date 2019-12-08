@@ -1,4 +1,5 @@
 <?
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 include '../db.php';
 include '../nocache.php';
 if(!isset($_COOKIE['uuid'])) fail(403,'not logged in');

@@ -1,4 +1,5 @@
 <? 
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 function transpose($arr) {
   $out = array();
   foreach ($arr as $key => $subarr) {

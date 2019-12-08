@@ -1,4 +1,5 @@
 <?php
+$_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 include '../db.php';
 
 $uuid = $_COOKIE['uuid'] ?? false;
