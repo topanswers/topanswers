@@ -250,18 +250,24 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           if($('#messages>.message').last().data('id')===maxChat){
             var newchat;
             $('#messages>.spacer:last-child').remove();
+            if(!maxChatChangeID) $('#messages').css('scroll-behavior','auto');
             newchat = $(data).appendTo($('#messages')).css('opacity','0');
             newchat.filter('.message').each(renderChat).find('.when').each(function(){ $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
             if(maxChatChangeID) numNewChats += newchat.filter('.message').length;
             if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
-            newchat.find('img').waitForImages(true).done(function(){
-              newchat.css('opacity','1');
-              if(scroll){
-                setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
-              }else{
-                $('#messages').css('border-bottom','3px solid #<?=$colour_highlight?>').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
-              }
-            });
+            if(newchat.find('img').length===0){
+              if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
+              else $('#messages').css('scroll-behavior','smooth');
+            }else{
+              newchat.find('img').waitForImages(true).done(function(){
+                newchat.css('opacity','1');
+                if(scroll){
+                  setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
+                }else{
+                  $('#messages').css('scroll-behavior','smooth').css('border-bottom','3px solid #<?=$colour_highlight?>').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
+                }
+              });
+            }
             $('.message').each(function(){
               var id = $(this).data('id'), rid = id;
               function foo(b){
@@ -280,7 +286,13 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             if(!maxChatChangeID) $('#messages').children().first().next().filter('.spacer').remove();
             if(!maxChatChangeID) $('#messages>.message').first().removeClass('merged');
             if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
-            if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+            if(scroll){
+              if(maxChatChangeID){
+                //setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+              }else{
+                //setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
+              }
+            }
             <?if($uuid){?>
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
@@ -853,7 +865,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <div id="chattext-wrapper" style="position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>;">
           <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
           <button id="chatupload" class="button" style="position: absolute; right: 0.15em; top: 0; bottom: 0; font-size: 1.5em; color: #<?=$colour_dark?>;" title="embed image"><i class="fa fa-picture-o" style="display: block;"></i></button>
-          <textarea id="chattext" style="flex: 0 0 auto; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 0.3em; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000"></textarea>
+          <textarea id="chattext" style="flex: 0 0 auto; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 0.3em; padding-right: 2rem; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000"></textarea>
         </div>
       </div>
     <?}?>
