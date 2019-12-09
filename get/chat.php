@@ -66,7 +66,7 @@ if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$roo
       <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">replying to</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
-    <img title="Stars: <?=$communicant_votes?>" class="identicon" src="/identicon?id=<?=$account_id?>">
+    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="identicon" src="/identicon?id=<?=$account_id?>">
     <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
     <?if($uuid){?>
       <span class="buttons">

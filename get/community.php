@@ -947,7 +947,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       —
                       <span style="color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </span>
-                    <img class="identicon" src="/identicon?id=<?=$chat_from_account_id?>">
+                    <img title="<?=($chat_from_account_name)?$chat_from_account_name:'Anonymous'?>" class="identicon" src="/identicon?id=<?=$chat_from_account_id?>">
                     <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
                     <span class="buttons">
                       <span class="button-group show">
