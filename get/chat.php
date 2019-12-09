@@ -24,11 +24,11 @@ if(isset($_GET['activerooms'])){
 ccdb("select count(*) from room where room_id=$1",$room)==='1' or die('invalid room');
 if(isset($_GET['activeusers'])){
   foreach(db("select account_id,account_name,account_is_me
-                   , coalesce(account_community_votes,0) account_community_votes
-              from room_account_x natural join account natural left join (select * from account_community natural join room where room_id=$1) z
+                   , coalesce(communicant_votes,0) communicant_votes
+              from room_account_x natural join account natural left join (select * from communicant natural join room where room_id=$1) z
               where room_id=$1
               order by room_account_x_latest_chat_at desc",$room) as $r){ extract($r);?>
-    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$account_community_votes?>)" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>"><?
+    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>"><?
   }
   exit;
 }
@@ -43,7 +43,7 @@ if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$roo
 <?foreach(db("select *, row_number() over(order by chat_at desc) rn
               from(select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
                    from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,chat_at,chat_change_id,chat_has_history
-                              , coalesce(account_community_votes,0) account_community_votes
+                              , coalesce(communicant_votes,0) communicant_votes
                               , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
                               , coalesce(nullif(account_name,''),'Anonymous') account_name
                               , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
@@ -53,7 +53,7 @@ if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$roo
                               , chat_flag_at is not null i_flagged
                               , chat_star_at is not null i_starred
                               , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
-                         from chat c natural join account natural left join chat_flag natural left join chat_star natural left join account_community
+                         from chat c natural join account natural left join chat_flag natural left join chat_star natural left join communicant
                          where room_id=$1 and chat_id".(isset($_GET['one'])?'=':'>=')."$2".($uuid?"":" and chat_flag_count=0").") z ) z
               where chat_id".(isset($_GET['one'])?'=':'>')."$2
               order by chat_at",$room,$id) as $r){ extract($r);?>
@@ -66,7 +66,7 @@ if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$roo
       <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">replying to</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </small>
-    <img title="Stars: <?=$account_community_votes?>" class="identicon" src="/identicon?id=<?=$account_id?>">
+    <img title="Stars: <?=$communicant_votes?>" class="identicon" src="/identicon?id=<?=$account_id?>">
     <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
     <?if($uuid){?>
       <span class="buttons">

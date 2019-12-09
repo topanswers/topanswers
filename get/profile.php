@@ -98,8 +98,8 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
     </form>
   </fieldset>
   <?foreach(db("select community_name,my_community_regular_font_id,my_community_monospace_font_id
-                from account_community natural join my_account natural join community natural join (select community_id,my_community_regular_font_id,my_community_monospace_font_id from my_community) z
-                order by account_community_votes desc, community_id") as $r){extract($r);?>
+                from communicant natural join my_account natural join community natural join (select community_id,my_community_regular_font_id,my_community_monospace_font_id from my_community) z
+                order by communicant_votes desc, community_id") as $r){extract($r);?>
     <fieldset>
       <legend><?=$community_name?></legend>
       <fieldset>

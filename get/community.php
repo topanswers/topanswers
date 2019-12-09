@@ -705,25 +705,25 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <div id="qa" style="overflow: auto; scroll-behavior: smooth;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
-                             ,account_name,account_is_me,question_se_question_id,account_is_imported,account_community_se_user_id
+                             ,account_name,account_is_me,question_se_question_id,account_is_imported,communicant_se_user_id
                             , question_i_subscribed
-                            , coalesce(account_community_votes,0) account_community_votes
+                            , coalesce(communicant_votes,0) communicant_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
                             , question_type<>'question' question_is_votable
                             , question_type='blog' question_is_blog
                             , extract('epoch' from current_timestamp-question_at) question_when
-                       from question natural join account natural join community natural join license natural join codelicense natural left join account_community
+                       from question natural join account natural join community natural join license natural join codelicense natural left join communicant
                        where question_id=$1",$question));?>
         <div id="question" class="<?=($question_have_voted==='t')?'voted':''?> <?=($question_i_subscribed==='t')?'subscribed':''?>" style="border-radius: 0 0 5px 5px; font-size: larger; background: white;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Stars: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+              <img title="Stars: <?=$communicant_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               <span>
                 <span class="when" data-seconds="<?=$question_when?>"></span>,
                 <?if($account_is_imported==='t'){?>
-                  <span><?if($account_community_se_user_id>0){?>by <a href="<?=$sesite_url.'/users/'.$account_community_se_user_id?>"><?=htmlspecialchars($account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                  <span><?if($communicant_se_user_id>0){?>by <a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
                 <?}else{?>
                   <span>by <?=htmlspecialchars($account_name)?></span>
                 <?}?>
@@ -790,13 +790,13 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           </form>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me,account_is_imported
-                            ,account_community_se_user_id,answer_se_answer_id
-                           , coalesce(account_community_votes,0) account_community_votes
+                            ,communicant_se_user_id,answer_se_answer_id
+                           , coalesce(communicant_votes,0) communicant_votes
                            , extract('epoch' from current_timestamp-answer_at) answer_when
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
-                      from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join account_community
+                      from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join communicant
                       where question_id=$1
-                      order by answer_votes desc, account_community_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
+                      order by answer_votes desc, communicant_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
           <div id="a<?=$answer_id?>" class="answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
             <div class="bar">
               <div><span class="title"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
@@ -808,12 +808,12 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                 <span>
                   <span class="when" data-seconds="<?=$answer_when?>"></span>
                   <?if($account_is_imported==='t'){?>
-                    <span>by <a href="<?=$sesite_url.'/users/'.$account_community_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                    <span>by <a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
                   <?}else{?>
                     <span>by <?=htmlspecialchars($account_name)?></span>
                   <?}?>
                 </span>
-                <img title="Stars: <?=$account_community_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+                <img title="Stars: <?=$communicant_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               </div>
             </div>
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>

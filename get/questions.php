@@ -21,24 +21,24 @@ if($search){
                     , a as (select question_id, answer_markdown txt, strict_word_similarity($2,answer_markdown) word_similarity, similarity($2,answer_markdown) similarity from answer natural join (select question_id,community_id from question) z where community_id=$1 and $2<<%answer_markdown)
                     , s as (select question_id, bool_or(txt like '%'||$2||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
                  select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
-                      , coalesce(account_community_votes,0) account_community_votes
+                      , coalesce(communicant_votes,0) communicant_votes
                       , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
                       , extract('epoch' from current_timestamp-question_at) question_when
                       , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
                       , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
                              else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
-                 from s natural join question natural join account natural join community natural left join account_community
+                 from s natural join question natural join account natural join community natural left join communicant
                  where community_id=$1 and $2::text is not null
                  order by exact desc, similarity desc limit 5",$community_id,$_GET['search']);
 }else{
   $results = db("select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
-                      , coalesce(account_community_votes,0) account_community_votes
+                      , coalesce(communicant_votes,0) communicant_votes
                       , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
                       , extract('epoch' from current_timestamp-question_at) question_when
                       , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
                       , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
                              else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
-                 from question natural join account natural join community natural left join account_community
+                 from question natural join account natural join community natural left join communicant
                  where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id'.(isset($_GET['older'])?'<':'>'))."$2
                  order by question_poll_major_id desc limit 20",$community_id,$id);
 }
@@ -48,7 +48,7 @@ if($search){
     <a href="/<?=$community?>?q=<?=$question_id?>" title="<?=$question_type.$question_title?>"><?=$question_type.$question_title?></a>
     <div class="bar">
       <div>
-        <img title="Stars: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
+        <img title="Stars: <?=$communicant_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
         <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
         <?if($question_bump_reason){?><span>(<?=$question_bump_reason?>, <span class="when" data-seconds="<?=$bump_when?>"></span>)</span><?}?>
         <?if($question_votes){?>
@@ -65,11 +65,11 @@ if($search){
       </div>
     </div>
     <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,account_name,account_is_me
-                       , coalesce(account_community_votes,0) account_community_votes
+                       , coalesce(communicant_votes,0) communicant_votes
                        , extract('epoch' from current_timestamp-answer_at) answer_when
-                  from answer natural join account natural join (select question_id,community_id from question) q natural left join account_community
+                  from answer natural join account natural join (select question_id,community_id from question) q natural left join communicant
                   where question_id=$1
-                  order by answer_votes desc, account_community_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
+                  order by answer_votes desc, communicant_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
       <div class="minibar">
         <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n\r"));?>"></span></a>
         <div>
@@ -80,7 +80,7 @@ if($search){
             </span>
           <?}?>
           <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-          <img title="Stars: <?=$account_community_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
+          <img title="Stars: <?=$communicant_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
         </div>
       </div>
     <?}?>

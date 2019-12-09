@@ -39,18 +39,7 @@ create view my_account with (security_barrier) as
 select account_id,account_name,account_image,account_uuid,account_is_dev,account_license_id,account_codelicense_id,account_notification_id from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
 create view account_community with (security_barrier) as select account_id,community_id,account_community_votes,account_community_se_user_id from db.account_community;
---
---TODELETE
-create view my_account_community with (security_barrier) as
-select z.*, regular_font_name,monospace_font_name
-from (select community_id,account_community_se_user_id
-           , coalesce(account_community_can_import,false) account_community_can_import
-           , coalesce(account_community_regular_font_id,community_regular_font_id) account_community_regular_font_id
-           , coalesce(account_community_monospace_font_id,community_monospace_font_id) account_community_monospace_font_id
-      from db.community
-           natural left join (select * from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z ) z
-     natural join (select font_id account_community_regular_font_id, font_name regular_font_name from font) r
-     natural join (select font_id account_community_monospace_font_id, font_name monospace_font_name from font) m;
+create view communicant with (security_barrier) as select account_id,community_id,account_community_votes communicant_votes,account_community_se_user_id communicant_se_user_id from db.account_community;
 --
 create view room with (security_barrier) as
 select community_id,room_id,room_image,room_can_chat
