@@ -58,7 +58,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .answer { background: white; margin: 0 1.2rem 2.4rem 1.2rem; border-radius: 5px 0 5px 5px; font-size: larger; }
     .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
     .answer:target { box-shadow: 0 0 3px 3px #<?=$colour_highlight?>; }
-    .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
+    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
     .tags { display: flex; margin-left: 0.25rem; margin-top: 1px; white-space: nowrap; overflow: hidden; }
     .tag { padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
@@ -113,7 +113,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .identicon.ping { outline: 1px solid #<?=$colour_highlight?>; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
-    .message .who { white-space: nowrap; font-size: 0.65em; position: absolute; }
+    .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
     .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
     .message .markdown { flex: 0 1 auto; max-height: 20vh; padding: 0.25rem; border: 1px solid darkgrey; border-radius: 0.3em; background: white; overflow: auto; }
 
@@ -1014,7 +1014,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         </div>
         <?if($canchat){?>
           <div id="preview" class="message" style="display: block; width: 100%; background: #<?=$colour_light?>; margin-top: 0.1rem; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
-            <div id="replying" style="width: 100%; font-style: italic; font-size: 0.6rem;" data-id="">
+            <div id="replying" style="width: 100%; font-style: italic; font-size: 10px;" data-id="">
               <span>Preview:</span>
               <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
             </div>
