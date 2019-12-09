@@ -177,6 +177,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
       <?if($clearlocal){?>
         localStorage.removeItem('<?=$clearlocal?>');
+        localStorage.removeItem('<?=$clearlocal?>.title');
+        localStorage.removeItem('<?=$clearlocal?>.type');
       <?}?>
 
       function setFinalSpacer(){

@@ -11,18 +11,10 @@ switch($_POST['action']) {
   case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['id'],$_POST['tagid']));
   case 'new':
     $id=ccdb("select new_question((select community_id from get.community where community_name=$1),(select question_type from get.question_type_enums where question_type=$2),$3,$4,$5,$6)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
-    if($id){?>
-      <!doctype html>
-      <html>
-      <head>
-        <script>
-          localStorage.removeItem('<?=$_POST['community']?>.ask');
-          localStorage.removeItem('<?=$_POST['community']?>.ask.title');
-          localStorage.removeItem('<?=$_POST['community']?>.ask.type');
-          window.location.href = '//topanswers.xyz/<?=$_POST['community']?>?q=<?=$id?>';
-        </script>
-      </head>
-      </html><?}
+    if($id){
+      setcookie('clearlocal',$_POST['community'].'.ask',0,'/','topanswers.xyz',true,true);
+      header('Location: //topanswers.xyz/'.$_POST['community'].'?q='.$id);
+    }
     exit;
   case 'new-se':
     db("select new_import(community_id,$2,$3) from get.community where community_name=$1",$_POST['community'],$_POST['seqid'],$_POST['seaids']);
