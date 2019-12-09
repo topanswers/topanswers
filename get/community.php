@@ -391,14 +391,14 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
 
       if(localStorage.getItem('chat')) $('.pane').toggleClass('hidepane');
       $('#join').click(function(){
-        if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')) { $.post({ url: '//post.topanswers.xyz/uuid', async: false }).done(function(){
+        if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')) { $.post({ url: '//post.topanswers.xyz/uuid', async: false, xhrFields: { withCredentials: true } }).done(function(){
           window.location = '/profile?highlight-recovery';
         }).fail(function(r){
           alert((r.status)===429?'Rate limit hit, please try again later':responseText);
           location.reload(true);
         }) };
       });
-      $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.post('//post.topanswers.xyz/uuid',{ data: { pin: pin }, async: false }).fail(function(r){ alert(r.responseText); }); location.reload(true); } });
+      $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.post({ url: '//post.topanswers.xyz/uuid', data: { pin: pin }, async: false, xhrFields: { withCredentials: true } }).fail(function(r){ alert(r.responseText); }).done(function(){ location.reload(true); }); } });
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
