@@ -71,19 +71,17 @@ create table member(
 , primary key (account_id,community_id)
 );
 
---create table communicant(
-
-create table account_community(
+create table communicant(
   account_id integer references account
 , community_id integer references community
-, account_community_votes integer default 0 not null
-, account_community_can_import boolean default false not null
-, account_community_se_user_id integer
-, account_community_regular_font_id integer not null references font
-, account_community_monospace_font_id integer not null references font
+, communicant_votes integer default 0 not null
+, communicant_can_import boolean default false not null
+, communicant_se_user_id integer
+, communicant_regular_font_id integer not null references font
+, communicant_monospace_font_id integer not null references font
 , primary key (account_id,community_id)
 );
-create unique index account_se_user_ind on account_community(community_id,account_community_se_user_id);
+create unique index communicant_se_user_ind on communicant(community_id,communicant_se_user_id);
 
 create table account_history(
   account_history_id integer generated always as identity primary key

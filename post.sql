@@ -21,7 +21,7 @@ begin
   insert into room(community_id) values(0) returning room_id into rid;
   insert into community(community_name,community_room_id,community_display_name) values(cname,rid,initcap(cname)) returning community_id into cid;
   --
-  insert into account_community(account_id,community_id,account_community_se_user_id,account_community_regular_font_id,account_community_monospace_font_id)
+  insert into communicant(account_id,community_id,communicant_se_user_id,communicant_regular_font_id,communicant_monospace_font_id)
   select 208,cid,0,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
   --
   update room set community_id=cid where room_id=rid;
@@ -32,29 +32,29 @@ create function _create_seuser(cid integer, seuid integer, seuname text) returns
 declare
   id integer;
 begin
-  if exists(select 1 from account_community where community_id=cid and account_community_se_user_id=seuid) then
-    select account_id from account_community where community_id=cid and account_community_se_user_id=seuid into id;
+  if exists(select 1 from communicant where community_id=cid and communicant_se_user_id=seuid) then
+    select account_id from communicant where community_id=cid and communicant_se_user_id=seuid into id;
   else
     insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(replace(seuname,'-',' '),4,1,true) returning account_id into id;
     --
-    insert into account_community(account_id,community_id,account_community_se_user_id,account_community_regular_font_id,account_community_monospace_font_id)
+    insert into communicant(account_id,community_id,communicant_se_user_id,communicant_regular_font_id,communicant_monospace_font_id)
     select id,cid,seuid,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
   end if;
   return id;
 end;
 $$;
 --
-create function _ensure_account_community(aid integer, cid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
-  insert into account_community(account_id,community_id,account_community_regular_font_id,account_community_monospace_font_id)
+create function _ensure_communicant(aid integer, cid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
+  insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
   select aid,cid,community_regular_font_id,community_monospace_font_id from community where community_id=cid
-  on conflict on constraint account_community_pkey do nothing;
+  on conflict on constraint communicant_pkey do nothing;
 $$;
 --
 create function new_chat(roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,post,pg_temp as $$
   select _error('room does not exist') where not exists(select 1 from room where room_id=roomid);
   select _error('access denied') where not exists(select 1 from shared.room where room_id=roomid and room_can_chat);
   select _error(413,'message too long') where length(msg)>5000;
-  select _ensure_account_community(current_setting('custom.account_id',true)::integer,community_id) from room where room_id=roomid;;
+  select _ensure_communicant(current_setting('custom.account_id',true)::integer,community_id) from room where room_id=roomid;;
   --
   with d as (delete from chat_notification where chat_id=replyid and account_id=current_setting('custom.account_id',true)::integer returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
@@ -205,7 +205,7 @@ create function _new_question_tag(aid integer, qid integer, tid integer) returns
   select _error('invalid question') where not exists (select 1 from question natural join shared.community where question_id=qid);
   select _error('invalid tag') where not exists (select 1 from tag natural join shared.community where tag_id=tid);
   --
-  select _ensure_account_community(current_setting('custom.account_id',true)::integer,community_id) from question where question_id=qid;;
+  select _ensure_communicant(current_setting('custom.account_id',true)::integer,community_id) from question where question_id=qid;;
   update question set question_poll_minor_id = default where question_id=qid;
   --
   with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
@@ -234,7 +234,7 @@ create function _new_question(cid integer, aid integer, typ db.question_type_enu
                 returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid community') where not exists (select 1 from community where community_id=cid);
-  select _ensure_account_community(aid,cid);
+  select _ensure_communicant(aid,cid);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
      , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id)
@@ -262,7 +262,7 @@ $$;
 create function new_sequestionanon(cid integer, title text, markdown text, tags text, seqid integer) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error(400,'already imported') where exists (select 1 from question where community_id=cid and question_se_question_id=seqid);
   --
-  with u as (select account_id uid from account_community where community_id=cid and account_community_se_user_id=0)
+  with u as (select account_id uid from communicant where community_id=cid and communicant_se_user_id=0)
      , q as (select uid, _new_question(cid,uid,'question',title,markdown,4,1,seqid) qid from u)
      , t as (select new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=cid)
   select qid from q cross join (select count(1) cn from t) z;
@@ -287,7 +287,7 @@ $$;
 create function _new_answer(qid integer, aid integer, markdown text, lic integer, codelic integer, seaid integer) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from question natural join shared.community where question_id=qid);
-  select _ensure_account_community(aid,community_id) from question where question_id=qid;
+  select _ensure_communicant(aid,community_id) from question where question_id=qid;
   --
   with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_se_answer_id) values(qid,aid,markdown,lic,codelic,seaid) returning answer_id)
      , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,aid,markdown from i returning answer_id,answer_history_id)
@@ -310,7 +310,7 @@ $$;
 --
 create function new_seansweranon(qid integer, markdown text, seaid integer) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
-  select _new_answer(qid,(select account_id from account_community where community_id=question.community_id and account_community_se_user_id=0),markdown,4,1,seaid) from question where question_id=qid;
+  select _new_answer(qid,(select account_id from communicant where community_id=question.community_id and communicant_se_user_id=0),markdown,4,1,seaid) from question where question_id=qid;
 $$;
 --
 create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,post,pg_temp as $$
@@ -360,23 +360,23 @@ create function vote_question(qid integer, votes integer) returns integer langua
   select _error(429,'rate limit') where (select count(1) from question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_at>current_timestamp-'1m'::interval)>4;
   select _error(429,'rate limit') where (select count(1) from question_vote_history where account_id=current_setting('custom.account_id',true)::integer and question_vote_history_at>current_timestamp-'1m'::interval)>10;
   --
-  select _ensure_account_community(current_setting('custom.account_id',true)::integer,community_id) from question where question_id=qid;;
+  select _ensure_communicant(current_setting('custom.account_id',true)::integer,community_id) from question where question_id=qid;;
   update question set question_poll_minor_id = default where question_id=qid;
   --
   with d as (delete from question_vote where question_id=qid and account_id=current_setting('custom.account_id',true)::integer returning *)
      , r as (select question_id,community_id,q.account_id,question_vote_votes from d join question q using(question_id))
      , q as (update question set question_votes = question_votes-question_vote_votes from d where question.question_id=qid)
-     , a as (insert into account_community(account_id,community_id,account_community_votes,account_community_regular_font_id,account_community_monospace_font_id)
+     , a as (insert into communicant(account_id,community_id,communicant_votes,communicant_regular_font_id,communicant_monospace_font_id)
              select account_id,community_id,-question_vote_votes,community_regular_font_id,community_monospace_font_id from r natural join community
-             on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes+excluded.account_community_votes)
+             on conflict on constraint communicant_pkey do update set communicant_votes = communicant.communicant_votes+excluded.communicant_votes)
   insert into question_vote_history(question_id,account_id,question_vote_history_at,question_vote_history_votes)
   select question_id,account_id,question_vote_at,question_vote_votes from d;
   --
   with i as (insert into question_vote(question_id,account_id,question_vote_votes) values(qid,current_setting('custom.account_id',true)::integer,votes) returning *)
-     , c as (insert into account_community(account_id,community_id,account_community_votes,account_community_regular_font_id,account_community_monospace_font_id)
+     , c as (insert into communicant(account_id,community_id,communicant_votes,communicant_regular_font_id,communicant_monospace_font_id)
              select account_id,community_id,question_vote_votes,community_regular_font_id,community_monospace_font_id
              from (select question_id,community_id,q.account_id,question_vote_votes from i join question q using(question_id)) z natural join community
-             on conflict on constraint account_community_pkey do update set account_community_votes = account_community.account_community_votes+excluded.account_community_votes)
+             on conflict on constraint communicant_pkey do update set communicant_votes = communicant.communicant_votes+excluded.communicant_votes)
   update question set question_votes = question_votes+question_vote_votes from i where question.question_id=qid returning question_votes;
 $$;
 --
@@ -388,19 +388,19 @@ create function vote_answer(aid integer, votes integer) returns integer language
   select _error(429,'rate limit') where (select count(*) from answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_at>current_timestamp-'1m'::interval)>4;
   select _error(429,'rate limit') where (select count(*) from answer_vote_history where account_id=current_setting('custom.account_id',true)::integer and answer_vote_history_at>current_timestamp-'1m'::interval)>10;
   --
-  select _ensure_account_community(current_setting('custom.account_id',true)::integer,community_id) from question where question_id=(select question_id from answer where answer_id=aid);
+  select _ensure_communicant(current_setting('custom.account_id',true)::integer,community_id) from question where question_id=(select question_id from answer where answer_id=aid);
   update question set question_poll_minor_id = default where question_id=(select question_id from answer where answer_id=aid);
   --
   with d as (delete from answer_vote where answer_id=aid and account_id=current_setting('custom.account_id',true)::integer returning *)
      , r as (select answer_id,community_id,a.account_id,answer_vote_votes from d join answer a using(answer_id) natural join (select question_id,community_id from question) q )
      , q as (update answer set answer_votes = answer_votes-answer_vote_votes from d where answer.answer_id=aid)
-     , c as (update account_community set account_community_votes = account_community_votes-answer_vote_votes from r where account_community.account_id=r.account_id and account_community.community_id=r.community_id)
+     , c as (update communicant set communicant_votes = communicant_votes-answer_vote_votes from r where communicant.account_id=r.account_id and communicant.community_id=r.community_id)
   insert into answer_vote_history(answer_id,account_id,answer_vote_history_at,answer_vote_history_votes)
   select answer_id,account_id,answer_vote_at,answer_vote_votes from d;
   --
   with i as (insert into answer_vote(answer_id,account_id,answer_vote_votes) values(aid,current_setting('custom.account_id',true)::integer,votes) returning *)
      , r as (select answer_id,community_id,a.account_id,answer_vote_votes from i join answer a using(answer_id) natural join (select question_id,community_id from question) q )
-     , c as (update account_community set account_community_votes = account_community_votes+answer_vote_votes from r where account_community.account_id=r.account_id and account_community.community_id=r.community_id)
+     , c as (update communicant set communicant_votes = communicant_votes+answer_vote_votes from r where communicant.account_id=r.account_id and communicant.community_id=r.community_id)
   update answer set answer_votes = answer_votes+answer_vote_votes from i where answer.answer_id=aid returning answer_votes;
 $$;
 --
@@ -421,8 +421,8 @@ $$;
 --
 create function change_fonts(cid integer, regid integer, monoid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
-  select _error(400,'invalid community') where not exists (select 1 from account_community where account_id=current_setting('custom.account_id',true)::integer and community_id=cid);
-  update account_community set account_community_regular_font_id=regid, account_community_monospace_font_id=monoid where account_id=current_setting('custom.account_id',true)::integer and community_id=cid;
+  select _error(400,'invalid community') where not exists (select 1 from communicant where account_id=current_setting('custom.account_id',true)::integer and community_id=cid);
+  update communicant set communicant_regular_font_id=regid, communicant_monospace_font_id=monoid where account_id=current_setting('custom.account_id',true)::integer and community_id=cid;
 $$;
 --
 create function read_room(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$

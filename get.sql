@@ -21,12 +21,12 @@ from shared.community;
 create view my_community with (security_barrier) as
 select z.*, my_community_regular_font_name,my_community_monospace_font_name
 from (select community_id
-           , account_community_se_user_id my_community_se_user_id
-           , coalesce(account_community_can_import,false) my_community_can_import
-           , coalesce(account_community_regular_font_id,community_regular_font_id) my_community_regular_font_id
-           , coalesce(account_community_monospace_font_id,community_monospace_font_id) my_community_monospace_font_id
+           , communicant_se_user_id my_community_se_user_id
+           , coalesce(communicant_can_import,false) my_community_can_import
+           , coalesce(communicant_regular_font_id,community_regular_font_id) my_community_regular_font_id
+           , coalesce(communicant_monospace_font_id,community_monospace_font_id) my_community_monospace_font_id
       from db.community
-           natural left join (select * from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z ) z
+           natural left join (select * from db.communicant where account_id=current_setting('custom.account_id',true)::integer) z ) z
      natural join (select font_id my_community_regular_font_id, font_name my_community_regular_font_name from font) r
      natural join (select font_id my_community_monospace_font_id, font_name my_community_monospace_font_name from font) m;
 --
@@ -38,8 +38,7 @@ select account_id,account_name,account_image,account_change_id,account_change_at
 create view my_account with (security_barrier) as
 select account_id,account_name,account_image,account_uuid,account_is_dev,account_license_id,account_codelicense_id,account_notification_id from db.account where account_id=current_setting('custom.account_id',true)::integer;
 --
-create view account_community with (security_barrier) as select account_id,community_id,account_community_votes,account_community_se_user_id from db.account_community;
-create view communicant with (security_barrier) as select account_id,community_id,account_community_votes communicant_votes,account_community_se_user_id communicant_se_user_id from db.account_community;
+create view communicant with (security_barrier) as select account_id,community_id,communicant_votes,communicant_se_user_id from db.communicant;
 --
 create view room with (security_barrier) as
 select community_id,room_id,room_image,room_can_chat

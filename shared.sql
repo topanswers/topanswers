@@ -23,9 +23,9 @@ set local schema 'shared';
 --
 create view community with (security_barrier) as
 select community.*
-     , 1+trunc(log(greatest(account_community_votes,0)+1)) community_my_power
+     , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
 from db.community
-     natural left join (select community_id,account_community_votes from db.account_community where account_id=current_setting('custom.account_id',true)::integer) a
+     natural left join (select community_id,communicant_votes from db.communicant where account_id=current_setting('custom.account_id',true)::integer) a
      natural left join (select community_id, account_id from db.member where account_id=current_setting('custom.account_id',true)::integer) m
 where community_type='public' or account_id is not null;
 --
