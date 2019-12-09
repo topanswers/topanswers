@@ -119,6 +119,7 @@ create table chat(
 );
 create index chat_latest_ind on chat(room_id,chat_at);
 create index chat_search_ind on chat using gin (room_id, chat_markdown gin_trgm_ops);
+create index chat_room_id_chat_id_fk_ind on chat(room_id,chat_id);
 
 create table chat_history(
   chat_history_id bigint generated always as identity primary key
@@ -268,6 +269,7 @@ create table tag(
 , unique (community_id,tag_name)
 , foreign key (community_id,tag_implies_id) references tag (community_id,tag_id)
 );
+create index tag_implies_id_fk_ind on tag(tag_implies_id);
 
 create table question_tag_x(
   question_id integer
@@ -279,6 +281,7 @@ create table question_tag_x(
 , foreign key (community_id,question_id) references question (community_id,question_id)
 , foreign key (community_id,tag_id) references tag (community_id,tag_id)
 );
+create index question_tag_x_tag_id_fk_ind on question_tag_x(tag_id,question_id);
 
 create table question_tag_x_history(
   question_tag_x_history_id integer generated always as identity primary key
@@ -292,6 +295,8 @@ create table question_tag_x_history(
 , foreign key (community_id,question_id) references question (community_id,question_id)
 , foreign key (community_id,tag_id) references tag (community_id,tag_id)
 );
+create index question_tag_x_history_question_id_fk_ind on question_tag_x_history(question_id,tag_id);
+create index question_tag_x_history_tag_id_fk_ind on question_tag_x_history(tag_id,question_id);
 
 create table question_vote(
   question_id integer references question
