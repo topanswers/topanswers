@@ -6,16 +6,16 @@ $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id'];
 ccdb("select count(*) from chat where chat_id=$1",$id)==='1' || die('invalid chat id');
-extract(cdb("select regular_font_name,monospace_font_name
+extract(cdb("select my_community_regular_font_name,my_community_monospace_font_name
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from chat natural join (select question_id,community_id from question) q natural join community natural join my_account_community
+             from chat natural join (select question_id,community_id from question) q natural join community natural join my_community
              where chat_id=$1",$id));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$regular_font_name?>', serif; font-size: smaller;">
+<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
 <head>
-  <link rel="stylesheet" href="/fonts/<?=$regular_font_name?>.css">
-  <link rel="stylesheet" href="/fonts/<?=$monospace_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
@@ -24,7 +24,7 @@ extract(cdb("select regular_font_name,monospace_font_name
   <style>
     *:not(hr) { box-sizing: inherit; }
     html, body { margin: 0; padding: 0; }
-    textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$monospace_font_name?>', monospace; }
+    textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     header select { margin-right: 0.5rem; }
 

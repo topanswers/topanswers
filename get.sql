@@ -18,6 +18,18 @@ create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_sesite_id,community_code_language,community_display_name,community_my_power
 from shared.community;
 --
+create view my_community with (security_barrier) as
+select z.*, my_community_regular_font_name,my_community_monospace_font_name
+from (select community_id
+           , account_community_se_user_id my_community_se_user_id
+           , coalesce(account_community_can_import,false) my_community_can_import
+           , coalesce(account_community_regular_font_id,community_regular_font_id) my_community_regular_font_id
+           , coalesce(account_community_monospace_font_id,community_monospace_font_id) my_community_monospace_font_id
+      from db.community
+           natural left join (select * from db.account_community where account_id=current_setting('custom.account_id',true)::integer) z ) z
+     natural join (select font_id my_community_regular_font_id, font_name my_community_regular_font_name from font) r
+     natural join (select font_id my_community_monospace_font_id, font_name my_community_monospace_font_name from font) m;
+--
 create view login with (security_barrier) as select account_id,login_resizer_percent, true as login_is_me from db.login where login_uuid=current_setting('custom.uuid',true)::uuid;
 --
 create view account with (security_barrier) as
@@ -28,6 +40,7 @@ select account_id,account_name,account_image,account_uuid,account_is_dev,account
 --
 create view account_community with (security_barrier) as select account_id,community_id,account_community_votes,account_community_se_user_id from db.account_community;
 --
+--TODELETE
 create view my_account_community with (security_barrier) as
 select z.*, regular_font_name,monospace_font_name
 from (select community_id,account_community_se_user_id

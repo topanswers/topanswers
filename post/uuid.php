@@ -10,4 +10,4 @@ if(isset($_POST['pin'])){
 }else{
   db('select new_account($1)',$uuid);
 }
-setcookie("uuid",$uuid,2147483647,'/','topanswers.xyz',true,true);
+setcookie("uuid",$uuid,2147483647,'/','.topanswers.xyz',true,true);

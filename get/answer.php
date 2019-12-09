@@ -17,17 +17,17 @@ if($id) {
   ccdb("select count(*) from question where question_id=$1",$question)==='1' or die('invalid question');
   extract(cdb("select community_name community, question_title, question_markdown from question natural join community where question_id=$1",$question));
 }
-extract(cdb("select community_code_language,regular_font_name,monospace_font_name
+extract(cdb("select community_code_language,my_community_regular_font_name,my_community_monospace_font_name
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community natural join my_account_community
+             from community natural join my_community
              where community_name=$1",$community));
 extract(cdb("select account_license_id,account_codelicense_id from my_account"));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$regular_font_name?>', serif; font-size: smaller;">
+<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
 <head>
-  <link rel="stylesheet" href="/fonts/<?=$regular_font_name?>.css">
-  <link rel="stylesheet" href="/fonts/<?=$monospace_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">

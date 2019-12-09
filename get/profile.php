@@ -97,8 +97,8 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
       <input type="submit" value="Save">
     </form>
   </fieldset>
-  <?foreach(db("select community_name,account_community_regular_font_id,account_community_monospace_font_id
-                from account_community natural join my_account natural join community natural join (select community_id,account_community_regular_font_id,account_community_monospace_font_id from my_account_community) z
+  <?foreach(db("select community_name,my_community_regular_font_id,my_community_monospace_font_id
+                from account_community natural join my_account natural join community natural join (select community_id,my_community_regular_font_id,my_community_monospace_font_id from my_community) z
                 order by account_community_votes desc, community_id") as $r){extract($r);?>
     <fieldset>
       <legend><?=$community_name?></legend>
@@ -110,14 +110,14 @@ extract(cdb("select account_name,account_license_id,account_codelicense_id, acco
           <label>regular
             <select name="regular">
               <?foreach(db("select font_id,font_name from font where not font_is_monospace") as $r){ extract($r);?>
-                <option value="<?=$font_id?>"<?=($font_id===$account_community_regular_font_id)?' selected':''?>><?=$font_name?></option>
+                <option value="<?=$font_id?>"<?=($font_id===$my_community_regular_font_id)?' selected':''?>><?=$font_name?></option>
               <?}?>
             </select>
           </label>
           <label>monospace
             <select name="mono">
               <?foreach(db("select font_id,font_name from font where font_is_monospace") as $r){ extract($r);?>
-                <option value="<?=$font_id?>"<?=($font_id===$account_community_monospace_font_id)?' selected':''?>><?=$font_name?></option>
+                <option value="<?=$font_id?>"<?=($font_id===$my_community_monospace_font_id)?' selected':''?>><?=$font_name?></option>
               <?}?>
             </select>
           </label>

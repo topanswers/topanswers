@@ -71,6 +71,8 @@ create table member(
 , primary key (account_id,community_id)
 );
 
+--create table communicant(
+
 create table account_community(
   account_id integer references account
 , community_id integer references community

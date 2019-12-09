@@ -26,7 +26,7 @@ switch($_POST['action']) {
     exit;
   case 'new-se':
     db("select new_import(community_id,$2,$3) from get.community where community_name=$1",$_POST['community'],$_POST['seqid'],$_POST['seaids']);
-    extract(cdb("select sesite_url,account_community_se_user_id from get.community join get.sesite on community_sesite_id=sesite_id natural join get.my_account_community where community_name=$1",$_POST['community']));
+    extract(cdb("select sesite_url,my_community_se_user_id from get.community join get.sesite on community_sesite_id=sesite_id natural join get.my_community where community_name=$1",$_POST['community']));
     libxml_use_internal_errors(true);
     // get the SE user-id and user-name for the question asker
     $doc = new DOMDocument();
@@ -79,13 +79,13 @@ switch($_POST['action']) {
       foreach($elements as $element) array_push($aids,explode('-',$element->getAttribute('id'))[1]);
     }else{
       if($_POST['seaids']) $aids = explode(' ',$_POST['seaids']);
-      if($account_community_se_user_id){
+      if($my_community_se_user_id){
         $doc = new DOMDocument();
         $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
         $xpath = new DOMXpath($doc);
         $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
                                  ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
-                                 ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$account_community_se_user_id."/')])]");
+                                 ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$my_community_se_user_id."/')])]");
         foreach($elements as $element){
           $aid = explode('-',$element->getAttribute('id'))[1];
           if(!in_array($aid,$aids,true)) array_push($aids,$aid);

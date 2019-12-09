@@ -6,17 +6,17 @@ $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id'];
 ccdb("select count(*) from answer where answer_id=$1",$id)==='1' || die('invalid answer id');
-extract(cdb("select regular_font_name,monospace_font_name,community_code_language,community_display_name,question_id,question_title
+extract(cdb("select my_community_regular_font_name,my_community_monospace_font_name,community_code_language,community_display_name,question_id,question_title
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
                   , community_name community
-             from answer natural join (select question_id,community_id,question_title from question) q natural join community natural join my_account_community
+             from answer natural join (select question_id,community_id,question_title from question) q natural join community natural join my_community
              where answer_id=$1",$id));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$regular_font_name?>', serif; font-size: smaller;">
+<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
 <head>
-  <link rel="stylesheet" href="/fonts/<?=$regular_font_name?>.css">
-  <link rel="stylesheet" href="/fonts/<?=$monospace_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
+  <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
@@ -25,7 +25,7 @@ extract(cdb("select regular_font_name,monospace_font_name,community_code_languag
   <style>
     *:not(hr) { box-sizing: inherit; }
     html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
-    textarea, pre, code { font-family: '<?=$monospace_font_name?>', monospace; }
+    textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; white-space: nowrap; }
     header>div>:not(.icon) { margin: 3px; }
     header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }

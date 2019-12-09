@@ -11,7 +11,7 @@
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
   .markdown th { background-color: #<?=$colour_mid?>; }
   .markdown td { background-color: white; }
-  .markdown td, .markdown th { font-family: monospace; font-size: 1em; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
+  .markdown td, .markdown th { font-family: '<?=$my_community_monospace_font_name?>', monospace; font-size: 1em; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
   .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
@@ -30,7 +30,7 @@
   .dbfiddle .tablewrapper { margin-top: 0.5rem; }
   .dbfiddle>div { margin-top: 0.5rem; }
   .dbfiddle .batch { overflow: hidden; min-width: 0; }
-  .dbfiddle .error { overflow: auto; white-space: pre; font-family: monospace; background-color: #<?=$colour_highlight?>40; }
+  .dbfiddle .error { overflow: auto; white-space: pre; font-family: '<?=$my_community_monospace_font_name?>', monospace; background-color: #<?=$colour_highlight?>40; }
   .dbfiddle a { font-size: smaller; }
 </style>
 <script src="/lib/markdown-it.js"></script>
