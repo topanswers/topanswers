@@ -89,8 +89,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
     #qa .identicon, #active-users .identicon, #active-rooms .roomicon { height: 1.5rem; width: 1.5rem; margin: 1px; display: block; }
     #active-rooms a { position: relative; }
-    #active-rooms a[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 0.5em; background: #<?=$colour_light?>e0; color: black;
-                                               width: 9px; height: 9px; text-align: center; line-height: 10px; border-radius: 30%; border: 2px solid #<?=$colour_highlight?>80; pointer-events: none; }
+    #active-rooms a[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: #<?=$colour_highlight?>; color: black;
+                                               width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
     #active-rooms>a:not([href])>.roomicon { outline: 1px solid #<?=$colour_highlight?>; }
     #active-rooms>a[href]:hover>.roomicon { outline: 1px solid #<?=$colour_dark?>; }
     #qa .markdown { padding: 0.6rem; }
