@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="/lib/highlightjs/default.css">
+<link rel="stylesheet" href="/lib/qp/qp.css">
 <style>
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>:first-child { margin-top: 0; }
@@ -11,7 +12,7 @@
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
   .markdown th { background-color: #<?=$colour_mid?>; }
   .markdown td { background-color: white; }
-  .markdown td, .markdown th { font-family: '<?=$my_community_monospace_font_name?>', monospace; font-size: 1em; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
+  .markdown td, .markdown th { font-family: '<?=$my_community_monospace_font_name?>', monospace; font-size: 14px; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
   .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
@@ -25,13 +26,17 @@
   .markdown .footnote-ref { font-size: 70%; }
   .markdown .footnote-ref>a { text-decoration: none; }
   .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 4px; }
-  .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0.2rem; }
+  .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 14px; border-radius: 0.2rem; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 0.5rem; }
   .dbfiddle>div { margin-top: 0.5rem; }
   .dbfiddle .batch { overflow: hidden; min-width: 0; }
   .dbfiddle .error { overflow: auto; white-space: pre; font-family: '<?=$my_community_monospace_font_name?>', monospace; background-color: #<?=$colour_highlight?>40; }
   .dbfiddle a { font-size: smaller; }
+  .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid #<?=$colour_dark?>; border-radius: 4px; margin-top: 5px; padding: 2px }
+  .dbfiddle .qp-statement-header { display: none; }
+  .qp-tt { z-index: 999; box-shadow: 0 0 2px 2px white; }
+
 </style>
 <script src="/lib/markdown-it.js"></script>
 <script src="/lib/markdown-it-inject-linenumbers.js"></script>
@@ -45,6 +50,7 @@
 <script src="/lib/markdownItAnchor.js"></script>
 <script src="/lib/markdownItTocDoneRight.js"></script>
 <script src="/lib/highlightjs/highlight.js"></script>
+<script src="/lib/qp/qp.js"></script>
 <script>
   // we have no idea why this works but without it cs highlighting doesn't happen
   (function(){
@@ -64,6 +70,7 @@
       function addfiddle(o,r){
         var l = o.attr('data-source-line'), f = $(r).replaceAll(o);
         if(l) f.attr('data-source-line',l);
+        f.find('.qp').each(function(){ QP.showPlan($(this).get(0),$(this).attr('data-xml')); });
         f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity, mode: 'sql' }); });
         f.find('input').click(function(){
           f.css('opacity',0.5);

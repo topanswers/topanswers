@@ -33,13 +33,14 @@ header('Cache-Control: max-age=60');
                 <?foreach(transpose($result['data']) as $row){?>
                   <tr>
                     <?foreach($row as $data){?>
-                      <td><?=$data?></td>
+                      <td><?=htmlspecialchars($data)?></td>
                     <?}?>
                   <tr>
                 <?}?>
               </tbody>
             </table>
           </div>
+          <?if($head==='Microsoft SQL Server 2005 XML Showplan'){?><div class="qp" data-xml="<?=htmlspecialchars($data)?>"></div><?}?>
         <?}?>
       <?}?>
     </div>
