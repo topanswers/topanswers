@@ -16,6 +16,7 @@ create view font with (security_barrier) as select font_id,font_name,font_is_mon
 --
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_sesite_id,community_code_language,community_display_name,community_my_power
+      ,community_warning_color
 from shared.community;
 --
 create view my_community with (security_barrier) as
@@ -25,6 +26,7 @@ from (select community_id
            , coalesce(communicant_can_import,false) my_community_can_import
            , coalesce(communicant_regular_font_id,community_regular_font_id) my_community_regular_font_id
            , coalesce(communicant_monospace_font_id,community_monospace_font_id) my_community_monospace_font_id
+           , coalesce(communicant_is_post_flag_crew,false) my_community_is_post_flag_crew
       from db.community
            natural left join (select * from db.communicant where account_id=current_setting('custom.account_id',true)::integer) z ) z
      natural join (select font_id my_community_regular_font_id, font_name my_community_regular_font_name from font) r
@@ -88,18 +90,22 @@ create view question_type_enums with (security_barrier) as select unnest(enum_ra
 --
 create view question with (security_barrier) as
 select question_id,community_id,account_id,question_type,question_at,question_title,question_markdown,question_room_id,question_change_at,question_votes,license_id,codelicense_id,question_poll_id,question_poll_major_id
-      ,question_poll_minor_id,question_se_question_id,question_answer_at,question_answer_change_at
+      ,question_poll_minor_id,question_se_question_id,question_answer_at,question_answer_change_at,question_flags,question_crew_flags,question_active_flags
      , coalesce(question_vote_votes>=community_my_power,false) question_have_voted
      , coalesce(question_vote_votes,0) question_votes_from_me
      , exists(select account_id from db.answer where question_id=question.question_id and account_id=current_setting('custom.account_id',true)::integer) question_answered_by_me
      , question_at<>question_change_at question_has_history
      , greatest(tag_at,tag_history_at) question_retag_at
      , exists(select 1 from db.subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=question.question_id) question_i_subscribed
+     , exists(select 1 from db.question_flag where account_id=current_setting('custom.account_id',true)::integer and question_id=question.question_id and question_flag_direction=1) question_i_flagged
+     , exists(select 1 from db.question_flag where account_id=current_setting('custom.account_id',true)::integer and question_id=question.question_id and question_flag_direction=-1) question_i_counterflagged
 from db.question natural join community
+     natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=current_setting('custom.account_id',true)::integer) c
      natural left join (select question_id,question_vote_votes from db.question_vote where account_id=current_setting('custom.account_id',true)::integer and question_vote_votes>0) v
      natural left join (select question_id, max(answer_at) question_answer_at, max(answer_change_at) question_answer_change_at from db.answer group by question_id) a
      natural left join (select question_id, max(question_tag_x_at) tag_at from db.question_tag_x group by question_id) t
-     natural left join (select question_id, max(greatest(question_tag_x_added_at,question_tag_x_removed_at)) tag_history_at from db.question_tag_x_history group by question_id) h;
+     natural left join (select question_id, max(greatest(question_tag_x_added_at,question_tag_x_removed_at)) tag_history_at from db.question_tag_x_history group by question_id) h
+where (question_flags<=0 or current_setting('custom.account_id',true)::integer is not null) and (question_crew_flags<=0 or communicant_is_post_flag_crew);
 --
 create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history;
 --
@@ -108,7 +114,8 @@ select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_
      , coalesce(answer_vote_votes>=community_my_power,false) answer_have_voted
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
-from db.answer natural join (select question_id,community_id from question) z natural join community natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
+from db.answer natural join (select question_id,community_id from question) z natural join community
+     natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
 --
 create view answer_history with (security_barrier) as select answer_history_id,answer_id,account_id,answer_history_at,answer_history_markdown from db.answer_history;
 --
@@ -122,6 +129,7 @@ where not exists (select 1 from db.question_tag_x natural join db.tag where ques
 create view license with (security_barrier) as select license_id,license_name,license_href from db.license;
 create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
 create view subscription with (security_barrier) as select account_id,question_id from db.subscription;
+create view question_flag with (security_barrier) as select question_id,account_id,question_flag_at,question_flag_direction,question_flag_is_crew from db.question_flag;
 --
 --
 create function login(luuid uuid) returns boolean language sql security definer set search_path=db,get,pg_temp as $$

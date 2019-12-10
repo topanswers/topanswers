@@ -25,6 +25,7 @@ create table community(
 , community_monospace_font_id integer default 2 not null references font
 , community_display_name text not null
 , community_type community_type_enum not null default 'private'
+, community_warning_color bytea not null default decode('990000','hex') check(length(community_warning_color)=3)
 );
 
 create type room_type_enum as enum ('public','gallery','private');
@@ -79,6 +80,7 @@ create table communicant(
 , communicant_se_user_id integer
 , communicant_regular_font_id integer not null references font
 , communicant_monospace_font_id integer not null references font
+, communicant_is_post_flag_crew boolean default false not null
 , primary key (account_id,community_id)
 );
 create unique index communicant_se_user_ind on communicant(community_id,communicant_se_user_id);
@@ -214,6 +216,9 @@ create table question(
 , question_poll_major_id bigint generated always as identity unique
 , question_poll_minor_id bigint generated always as identity unique
 , question_se_question_id integer
+, question_flags integer default 0 not null
+, question_crew_flags integer default 0 not null
+, question_active_flags integer default 0 not null
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
@@ -314,6 +319,26 @@ create table question_vote_history(
 , question_vote_history_at timestamptz not null
 , question_vote_history_votes integer not null check (question_vote_history_votes>=0)
 , foreign key(question_id,account_id) references question_vote deferrable initially deferred
+);
+
+create table question_flag(
+  question_id integer references question
+, account_id integer references account
+, question_flag_at timestamptz default current_timestamp not null
+, question_flag_direction integer not null check (question_flag_direction in (-1,0,1))
+, question_flag_is_crew boolean default false not null
+, primary key (question_id,account_id)
+, unique (account_id,question_id)
+);
+
+create table question_flag_history(
+  question_flag_history_id integer generated always as identity primary key
+, question_id integer not null
+, account_id integer not null
+, question_flag_history_at timestamptz default current_timestamp not null
+, question_flag_history_direction integer not null check (question_flag_history_direction in (-1,0,1))
+, question_flag_history_is_crew boolean default false not null
+, foreign key(question_id,account_id) references question_flag deferrable initially deferred
 );
 
 create table answer_vote(

@@ -20,8 +20,12 @@ if($question) ccdb("select count(*) from question where question_id=$1",$questio
 $room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
 $canchat = false;
 if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
-extract(cdb("select community_id,community_my_power,sesite_url,community_code_language,my_community_regular_font_name,my_community_monospace_font_name
-                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
+extract(cdb("select community_id,community_my_power,sesite_url,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,my_community_is_post_flag_crew
+                  , encode(community_dark_shade,'hex') colour_dark
+                  , encode(community_mid_shade,'hex') colour_mid
+                  , encode(community_light_shade,'hex') colour_light
+                  , encode(community_highlight_color,'hex') colour_highlight
+                  , encode(community_warning_color,'hex') colour_warning
                   , coalesce(my_community_can_import,false) my_community_can_import
              from community natural join my_community
                   left join sesite on sesite_id=community_sesite_id
@@ -74,11 +78,14 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .starrr { margin-left: 0.2rem; }
     .starrr a.fa-star { color: #<?=$colour_highlight?>; }
     .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
-    #question .fa-bell, #question .fa-bell-o { font-size: 1rem; margin-right: 0.2rem; cursor: pointer; }
-    #question .fa-bell { color: #<?=$colour_highlight?>; }
-    #question .fa-bell-o { color: #<?=$colour_dark?>; }
-    #question:not(.subscribed) .fa-bell { display: none; }
-    #question.subscribed .fa-bell-o { display: none; }
+    #question .action { font-size: 16px; cursor: pointer; color: #<?=$colour_dark?>; }
+    #question .action.fa-bell { color: #<?=$colour_highlight?>; }
+    #question .action.fa-flag { color: #<?=$colour_warning?>; }
+    #question:not(.subscribed) .action.fa-bell { display: none; }
+    #question.subscribed .action.fa-bell-o { display: none; }
+    #question:not(.flagged) .action.fa-flag { display: none; }
+    #question.flagged .action.fa-flag-o { display: none; }
+    #question.counterflagged .action.fa-flag-checkered { color: #<?=$colour_highlight?>; }
 
     #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); overflow: hidden; }
     <?if($question){?>#qa .bar:last-child { border-bottom: none; border-radius: 0 0 5px 5px; }<?}?>
@@ -439,19 +446,33 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
            .each(function changecount(){ $(this).attr('data-count',(+$(this).attr('data-count'))+direction); });
         });
       };
-      function subscribe(state){
-        var b = $('#question .fa-bell, #question .fa-bell-o');
-        b.css({'opacity':'0.3','pointer-events':'none'});
-        $.post({ url: '//post.topanswers.xyz/question', data: { action: (state?'':'un')+'subscribe', id: <?=$question?> }, xhrFields: { withCredentials: true } }).done(function(r){
-          b.css({ 'opacity':'1','pointer-events':'auto' }).toggle();
-        });
-      }
       $('#chat-wrapper').on('click','.fa-star-o', function(){ starflag($(this),'star',1); });
       $('#chat-wrapper').on('click','.fa-star', function(){ starflag($(this),'star',-1); });
       $('#chat-wrapper').on('click','.fa-flag-o', function(){ starflag($(this),'flag',1); });
       $('#chat-wrapper').on('click','.fa-flag', function(){ starflag($(this),'flag',-1); });
+      function subscribe(state){
+        var b = $('#question .fa-bell, #question .fa-bell-o');
+        b.css({'opacity':'0.3','pointer-events':'none'});
+        $.post({ url: '//post.topanswers.xyz/question', data: { action: (state?'':'un')+'subscribe', id: <?=$question?> }, xhrFields: { withCredentials: true } }).done(function(r){
+          b.css({ 'opacity':'1','pointer-events':'auto' });
+          $('#question').toggleClass('subscribed');
+        });
+      }
       $('.fa-bell').click(function(){ subscribe(false); });
       $('.fa-bell-o').click(function(){ subscribe(true); });
+      function flag(direction){
+        var b = $('#question .fa-flag, #question .fa-flag-o, #question .fa-flag-checkered');
+        b.css({'opacity':'0.3','pointer-events':'none'});
+        $.post({ url: '//post.topanswers.xyz/question', data: { action: 'flag', id: <?=$question?>, direction: direction }, xhrFields: { withCredentials: true } }).done(function(r){
+          b.css({ 'opacity':'1','pointer-events':'auto' });
+          $('#question').removeClass('flagged counterflagged');
+          if(direction===1) $('#question').addClass('flagged');
+          if(direction===-1) $('#question').addClass('counterflagged');
+        });
+      }
+      $('.fa-flag').click(function(){ flag(0); });
+      $('.fa-flag-o').click(function(){ flag(1); });
+      $('.fa-flag-checkered').click(function(){ flag($('#question').is('.counterflagged')?0:-1); });
       $('body').on('click','.identicon.pingable', function(){
         if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')+' '); }
         $(this).toggleClass('ping');
@@ -707,8 +728,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <div id="qa" style="overflow: auto; scroll-behavior: smooth;">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
-                             ,account_name,account_is_me,question_se_question_id,account_is_imported,communicant_se_user_id
-                            , question_i_subscribed
+                             ,account_name,account_is_me,question_se_question_id,account_is_imported,communicant_se_user_id,question_i_subscribed,question_i_flagged,question_i_counterflagged
+                             ,question_crew_flags,question_active_flags
                             , coalesce(communicant_votes,0) communicant_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
@@ -717,7 +738,9 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account natural join community natural join license natural join codelicense natural left join communicant
                        where question_id=$1",$question));?>
-        <div id="question" class="<?=($question_have_voted==='t')?'voted':''?> <?=($question_i_subscribed==='t')?'subscribed':''?>" style="border-radius: 0 0 5px 5px; font-size: larger; background: white;">
+        <div id="question"
+             class="<?=($question_have_voted==='t')?'voted':''?> <?=($question_i_subscribed==='t')?'subscribed':''?> <?=($question_i_flagged==='t')?'flagged':''?> <?=($question_i_counterflagged==='t')?'counterflagged':''?>"
+             style="border-radius: 0 0 5px 5px; font-size: larger; background: white;">
           <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
@@ -778,10 +801,35 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               <?}?>
             </div>
             <div>
+              <?if(($account_is_me==='f')&&(($question_crew_flags==='0')||($my_community_is_post_flag_crew==='t'))){?>
+                <?foreach(db("select question_flag_is_crew,question_flag_direction
+                                   , account_id flag_account_id
+                                   , account_name flag_account_name
+                              from question_flag natural join account
+                              where question_id=$1 and question_flag_direction<>0 and not account_is_me
+                              order by question_flag_is_crew, question_flag_at",$question) as $r){ extract($r);?>
+                  <img class="identicon pingable"
+                       title="<?=$account_name?><?=($question_flag_is_crew==='t')?(($question_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
+                       data-id="<?=$flag_account_id?>"
+                       data-name="<?=explode(' ',$flag_account_name)[0]?>"
+                       data-fullname="<?=$flag_account_name?>"
+                       src="/identicon?id=<?=$flag_account_id?>">
+                <?}?>
+                <div>
+                  <div class="action fa fw fa-flag" title="unflag this question"></div>
+                  <div class="action fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
+                </div>
+                <?if(($my_community_is_post_flag_crew==='t')&&(intval($question_active_flags)>0)){?>
+                  <div>
+                    <div class="action fa fw fa-flag-checkered" title="counterflag"></div>
+                  </div>
+                <?}?>
+              <?}?>
               <div>
-                <div class="fa fw fa-bell" title="unsubscribe from this question"></div>
-                <div class="fa fw fa-bell-o" title="subscribe to this question"></div>
+                <div class="action fa fw fa-bell" title="unsubscribe from this question"></div>
+                <div class="action fa fw fa-bell-o" title="subscribe to this question"></div>
               </div>
+              &nbsp;
             </div>
           </div>
         </div>

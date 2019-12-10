@@ -441,6 +441,37 @@ create function unsubscribe_question(id integer) returns void language sql secur
   delete from subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=id;
 $$;
 --
+create function flag_question(id integer, direction integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid flag direction') where direction not in(-1,0,1);
+  select _error('invalid question') where not exists (select 1 from question natural join shared.community where question_id=id);
+  select _error('cant flag own question') where exists (select 1 from question where question_id=id and account_id=current_setting('custom.account_id',true)::integer);
+  select _error(429,'rate limit') where (select count(1) from question_flag_history where account_id=current_setting('custom.account_id',true)::integer and question_flag_history_at>current_timestamp-'1m'::interval)>6;
+  --
+  select _ensure_communicant(current_setting('custom.account_id',true)::integer,community_id) from question where question_id=id;
+  --
+  with d as (delete from question_flag where question_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
+     , q as (update question set question_active_flags = question_active_flags-abs(d.question_flag_direction)
+                               , question_flags = question_flags-(case when d.question_flag_is_crew then 0 else d.question_flag_direction end)
+                               , question_crew_flags = question_crew_flags-(case when d.question_flag_is_crew then d.question_flag_direction else 0 end)
+             from d
+             where question.question_id=id)
+  select question_id,account_id,question_flag_at,question_flag_direction,question_flag_is_crew from d;
+  --
+  with i as (insert into question_flag(question_id,account_id,question_flag_direction,question_flag_is_crew)
+             select id,account_id,direction,communicant_is_post_flag_crew
+             from db.communicant
+             where account_id=current_setting('custom.account_id',true)::integer and community_id=(select community_id from db.question where question_id=id)
+             returning *)
+     , u as (update question set question_active_flags = question_active_flags+abs(i.question_flag_direction)
+                               , question_flags = question_flags+(case when i.question_flag_is_crew then 0 else i.question_flag_direction end)
+                               , question_crew_flags = question_crew_flags+(case when i.question_flag_is_crew then i.question_flag_direction else 0 end)
+             from i
+             where question.question_id=id)
+  insert into question_flag_history(question_id,account_id,question_flag_history_direction,question_flag_history_is_crew)
+  select question_id,account_id,question_flag_direction,question_flag_is_crew from i;
+$$;
+--
 create function new_import(cid integer, qid text, aids text) returns void language sql security definer set search_path=db,post,pg_temp as $$
   insert into import(account_id,community_id,import_qid,import_aids) values(current_setting('custom.account_id',true)::integer,cid,coalesce(qid,''),coalesce(aids,''));
 $$;

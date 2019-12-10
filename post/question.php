@@ -9,6 +9,15 @@ ccdb("select login($1)",$_COOKIE['uuid']) || fail(403,'invalid uuid');
 switch($_POST['action']) {
   case 'new-tag': exit(ccdb("select new_question_tag($1,$2)",$_POST['id'],$_POST['tagid']));
   case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['id'],$_POST['tagid']));
+  case 'vote': exit(ccdb("select vote_question($1,$2)",$_POST['id'],$_POST['votes']));
+  case 'dismiss': exit(ccdb("select dismiss_question_notification($1)",$_POST['id']));
+  case 'subscribe': exit(ccdb("select subscribe_question($1)",$_POST['id']));
+  case 'unsubscribe': exit(ccdb("select unsubscribe_question($1)",$_POST['id']));
+  case 'flag': exit(ccdb("select flag_question($1,$2)",$_POST['id'],$_POST['direction']));
+  case 'change':
+    db("select change_question($1,$2,$3)",$_POST['id'],$_POST['title'],$_POST['markdown']);
+    header('Location: //topanswers.xyz/'.ccdb("select community_name from get.question natural join get.community where question_id=$1",$_POST['id']).'?q='.$_POST['id']);
+    exit;
   case 'new':
     $id=ccdb("select new_question((select community_id from get.community where community_name=$1),(select question_type from get.question_type_enums where question_type=$2),$3,$4,$5,$6)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
     if($id){
@@ -104,13 +113,5 @@ switch($_POST['action']) {
     }
     header('Location: //topanswers.xyz/'.$_POST['community'].'?q='.$id);
     exit;
-  case 'change':
-    db("select change_question($1,$2,$3)",$_POST['id'],$_POST['title'],$_POST['markdown']);
-    header('Location: //topanswers.xyz/'.ccdb("select community_name from get.question natural join get.community where question_id=$1",$_POST['id']).'?q='.$_POST['id']);
-    exit;
-  case 'vote': exit(ccdb("select vote_question($1,$2)",$_POST['id'],$_POST['votes']));
-  case 'dismiss': exit(ccdb("select dismiss_question_notification($1)",$_POST['id']));
-  case 'subscribe': exit(ccdb("select subscribe_question($1)",$_POST['id']));
-  case 'unsubscribe': exit(ccdb("select unsubscribe_question($1)",$_POST['id']));
   default: fail(400,'unrecognized action');
 }
