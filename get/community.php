@@ -741,7 +741,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <div id="question"
              class="<?=($question_have_voted==='t')?'voted':''?> <?=($question_i_subscribed==='t')?'subscribed':''?> <?=($question_i_flagged==='t')?'flagged':''?> <?=($question_i_counterflagged==='t')?'counterflagged':''?>"
              style="border-radius: 0 0 5px 5px; font-size: larger; background: white;">
-          <div style="font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
+          <div style="font-size: larger; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
               <img title="Stars: <?=$communicant_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
