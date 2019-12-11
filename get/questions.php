@@ -45,7 +45,7 @@ if($search){
 ?>
 <?foreach($results as $r){ extract($r);?>
   <div id="q<?=$question_id?>" class="question" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
-    <a href="/<?=$community?>?q=<?=$question_id?>" title="<?=$question_type.$question_title?>"><?=$question_type.$question_title?></a>
+    <a href="/<?=$community?>?q=<?=$question_id?>#question" title="<?=$question_type.$question_title?>"><?=$question_type.$question_title?></a>
     <div class="bar">
       <div>
         <img title="Stars: <?=$communicant_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
