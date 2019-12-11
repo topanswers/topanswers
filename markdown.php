@@ -21,6 +21,9 @@
   .markdown nav ol { counter-reset: list-item; }
   .markdown nav li { display: block; counter-increment: list-item; }
   .markdown nav li:before { content: counters(list-item,'.') ' '; }
+  .markdown dt { font-weight: bold; }
+  .markdown dd { margin-left: 16px; }
+  .markdown dd>* { margin: 5px 0; }
   .markdown .header-anchor { text-decoration: none; }
   .markdown .footnote-item { font-size: smaller; }
   .markdown .footnote-ref { font-size: 70%; }
