@@ -814,7 +814,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                               where question_id=$1 and question_flag_direction<>0 and not account_is_me
                               order by question_flag_is_crew, question_flag_at",$question) as $r){ extract($r);?>
                   <img class="identicon pingable"
-                       title="<?=$account_name?><?=($question_flag_is_crew==='t')?(($question_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
+                       title="<?=$flag_account_name?><?=($question_flag_is_crew==='t')?(($question_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
                        data-id="<?=$flag_account_id?>"
                        data-name="<?=explode(' ',$flag_account_name)[0]?>"
                        data-fullname="<?=$flag_account_name?>"
