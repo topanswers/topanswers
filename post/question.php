@@ -11,6 +11,7 @@ switch($_POST['action']) {
   case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['id'],$_POST['tagid']));
   case 'vote': exit(ccdb("select vote_question($1,$2)",$_POST['id'],$_POST['votes']));
   case 'dismiss': exit(ccdb("select dismiss_question_notification($1)",$_POST['id']));
+  case 'dismiss-flag': exit(ccdb("select dismiss_question_flag_notification($1)",$_POST['id']));
   case 'subscribe': exit(ccdb("select subscribe_question($1)",$_POST['id']));
   case 'unsubscribe': exit(ccdb("select unsubscribe_question($1)",$_POST['id']));
   case 'flag': exit(ccdb("select flag_question($1,$2)",$_POST['id'],$_POST['direction']));

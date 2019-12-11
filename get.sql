@@ -130,6 +130,8 @@ create view license with (security_barrier) as select license_id,license_name,li
 create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
 create view subscription with (security_barrier) as select account_id,question_id from db.subscription;
 create view question_flag with (security_barrier) as select question_id,account_id,question_flag_at,question_flag_direction,question_flag_is_crew from db.question_flag;
+create view question_flag_history with (security_barrier) as select question_flag_history_id,question_id,account_id,question_flag_history_at,question_flag_history_direction,question_flag_history_is_crew from db.question_flag_history;
+create view question_flag_notification with (security_barrier) as select question_flag_history_id,question_flag_notification_at from db.question_flag_notification where account_id=current_setting('custom.account_id',true)::integer;
 --
 --
 create function login(luuid uuid) returns boolean language sql security definer set search_path=db,get,pg_temp as $$

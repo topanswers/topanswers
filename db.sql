@@ -341,6 +341,14 @@ create table question_flag_history(
 , foreign key(question_id,account_id) references question_flag deferrable initially deferred
 );
 
+create table question_flag_notification(
+  question_flag_history_id integer references question_flag_history
+, account_id integer references account
+, question_flag_notification_at timestamptz not null default current_timestamp
+, primary key (question_flag_history_id,account_id)
+);
+create index question_flag_notification_latest_ind on question_flag_notification(account_id,question_flag_notification_at);
+
 create table answer_vote(
   answer_id integer references answer
 , account_id integer references account

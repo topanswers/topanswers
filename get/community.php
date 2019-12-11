@@ -653,6 +653,11 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
+      $('#chat-wrapper').on('click','.message[data-type="question flag"] .dismiss', function(){
+        $.post({ url: '//post.topanswers.xyz/question', data: { action: 'dismiss-flag', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        return false;
+      });
       $('#chat-wrapper').on('click','.message[data-type="answer"] .dismiss', function(){
         $.post({ url: '//post.topanswers.xyz/answer', data: { action: 'dismiss', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
@@ -966,6 +971,20 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , question_room_id
                                             , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
                                        from question_notification natural join question natural join community)
+                              , qf as (select 'question flag' notification_type
+                                            , question_flag_history_id notification_id
+                                            , question_flag_notification_at notification_at
+                                            , to_char(question_flag_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
+                                            , encode(community_mid_shade,'hex') notification_mid_shade
+                                            , encode(community_dark_shade,'hex') notification_dark_shade
+                                            , community_name notification_community_name
+                                            , question_id
+                                            , question_title
+                                            , null::integer
+                                            , null::boolean
+                                            , null::integer
+                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                       from question_flag_notification natural join (select question_flag_history_id,question_id from question_flag_history) qh natural join (select question_id,community_id,question_title from question) q natural join community)
                                , a as (select 'answer' notification_type
                                             , answer_history_id notification_id
                                             , answer_notification_at notification_at
@@ -980,7 +999,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                                             , question_room_id
                                             , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
                                        from answer_notification natural join answer natural join (select question_id,question_title,community_id,question_room_id from question) z natural join community)
-                            select * from c union all select * from q union all select * from a
+                            select * from c union all select * from q union all select * from qf union all select * from a
                             order by notification_at limit 20") as $r){ extract($r);?>
                 <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
                   <?if($notification_type==='chat'){?>
@@ -1024,6 +1043,14 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       <span class="when" data-at="<?=$notification_at_iso?>"></span>
                       <span style="flex: 0 0 auto;">, question edit:&nbsp;</span>
                       <a href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+                      —
+                      <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
+                    </div>
+                  <?}elseif($notification_type==='question flag'){?>
+                    <div style="display: flex; overflow: hidden; font-size: 0.9rem; white-space: nowrap;">
+                      <span class="when" data-at="<?=$notification_at_iso?>"></span>
+                      <span style="flex: 0 0 auto;">, question flag:&nbsp;</span>
+                      <a href="/<?=$notification_community_name?>?q=<?=$question_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
                       —
                       <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </div>
