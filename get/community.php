@@ -927,7 +927,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
       <div id="messages-wrapper" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden;">
         <div id="notification-wrapper">
-          <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||ccdb("select count(*)>0 from question_notification")==='t'||ccdb("select count(*)>0 from answer_notification")==='t')){?>
+          <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||(ccdb("select count(*)>0 from question_notification")==='t')||(ccdb("select count(*)>0 from answer_notification")==='t')||(ccdb("select count(*)>0 from question_flag_notification")==='t'))){?>
             <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border: 2px solid black; border-width: 2px 1px 2px 0; background: #<?=$colour_light?>; padding: 0.3rem; padding-top: 0; overflow-x: hidden; overflow-y: auto;">
               <div style="font-size: 0.9rem; padding: 1px;">Notifications:</div>
               <?foreach(db("with c as (select 'chat' notification_type
