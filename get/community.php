@@ -624,13 +624,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <?if(!$question){?>updateQuestions(true);<?}?>
       $('#se').click(function(){
         var t = $(this), f = t.closest('form')
-          , ids = prompt('Enter question id (and optionally answer ids) from <?=$sesite_url?>.\nSeparate each id with a space. No need to list your own answers; they will be imported automatically.');
+          , ids = prompt('Enter question or answer id or url (and optionally futther answer ids/urls from the same question) from <?=$sesite_url?>.\nSeparate each id/url with a space. No need to list your own answers; they will be imported automatically.');
         if(ids!==null) {
-          qid = ids.split(' ')[0];
-          aids = ids.split(' ').slice(1).join(' ');
           t.hide().after('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-          f.find('[name=seqid]').attr('value',qid);
-          f.find('[name=seaids]').attr('value',aids);
+          f.find('[name=seids]').attr('value',ids);
           f.submit();
         }
         return false;
@@ -687,7 +684,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           Cookies.remove('environment',{ secure: true, domain: '.topanswers.xyz' });
         }else{
           Cookies.set('environment',v,{ secure: true, domain: '.topanswers.xyz' });
-          //Cookies.set('environment',v,{ secure: true, domain: 'post.topanswers.xyz' });
         }
         window.location.reload(true);
       });
@@ -721,9 +717,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
           <form method="post" action="//post.topanswers.xyz/question">
             <input type="hidden" name="action" value="new-se">
             <input type="hidden" name="community" value="<?=$community?>">
-            <input type="hidden" name="seqid" value="">
-            <input type="hidden" name="seaids" value="">
-            <input id="se" type="submit" value="import question from SE">
+            <input type="hidden" name="seids" value="">
+            <input id="se" type="submit" value="import from SE">
           </form>
         <?}?>
         <?if($uuid){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question"></form><?}?>

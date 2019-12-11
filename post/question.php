@@ -27,12 +27,39 @@ switch($_POST['action']) {
     }
     exit;
   case 'new-se':
-    db("select new_import(community_id,$2,$3) from get.community where community_name=$1",$_POST['community'],$_POST['seqid'],$_POST['seaids']);
-    extract(cdb("select sesite_url,my_community_se_user_id from get.community join get.sesite on community_sesite_id=sesite_id natural join get.my_community where community_name=$1",$_POST['community']));
+    db("select new_import(community_id,$2,'') from get.community where community_name=$1",$_POST['community'],$_POST['seids']);
+    extract(cdb("select community_id,sesite_url,my_community_se_user_id from get.community join get.sesite on community_sesite_id=sesite_id natural join get.my_community where community_name=$1",$_POST['community']));
     libxml_use_internal_errors(true);
+    // turn posted string into an array
+    $seids = explode(' ',$_POST['seids']);
+    // pop last id if '*'
+    $last = array_pop($seids);
+    $all = ($last==='*');
+    if(!$all) array_push($seids,$last);
+    // at this point there should be at least one id
+    if(count($seids)===0) fail(400,'no id or url given');
+    // map urls/ids to integer ids
+    $seids = array_map(function($id){
+      $id = preg_replace('/.*\/([0-9]+)$/','$1',preg_replace('/.*\/([0-9]+)\/.*/','$1',preg_replace('/.*\/[0-9]+\/[^\/]+\/([0-9]+)$/','$1',preg_replace('/.*#([0-9]+)$/','$1',$id))));
+      if(!ctype_digit($id)) fail(400,'"'.$id.'" is not an integer or a recognized SE urls');
+      $id=intval($id);
+      return $id;
+    },$seids);
+    // check if first id is a question or an answer (in the latter case find the question id)
+    $doc = new DOMDocument();
+    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$seids[0].'/edit'));
+    $xpath = new DOMXpath($doc);
+    $elements = $xpath->query("//a[contains(concat(' ', @class, ' '), ' question-hyperlink ')]");
+    if(count($elements)){
+      $seqid = explode('/',$elements[0]->getAttribute('href'))[2];
+      $seaids = array_unique($seids);
+    }else{
+      $seqid = $seids[0];
+      $seaids = array_unique(array_slice($seids,1));
+    }
     // get the SE user-id and user-name for the question asker
     $doc = new DOMDocument();
-    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
+    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
     $xpath = new DOMXpath($doc);
     $elements = $xpath->query("//div[@id='question-header']/h1/a");
     $title = $elements[0]->childNodes[0]->nodeValue;
@@ -51,39 +78,45 @@ switch($_POST['action']) {
                         ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a");
       $answers[explode('-',$element->textContent)[1]] = (count($a)===0)?["anon"=>true]:["anon"=>false,"uid"=>explode('/',$a[0]->getAttribute('href'))[2],"uname"=>$a[0]->textContent];
     }
-    // get the markdown and tags for the question
-    $doc = new DOMDocument();
-    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$_POST['seqid'].'/edit'));
-    $xpath = new DOMXpath($doc);
-    $elements = $xpath->query("//input[@id='tagnames']/@value");
-    $tags = $elements[0]->textContent;
-    $xpath = new DOMXpath($doc);
-    $elements = $xpath->query("//textarea[@id='wmd-input-".$_POST['seqid']."']");
-    $markdown = $elements[0]->textContent;
-    $markdown = preg_replace('/<!--[^\n]*-->/m','',$markdown);
-    $markdown = preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',$markdown);
-    $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
-    $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
-   //error_log('length: '.strlen($markdown));
-    // add the question
-    if($qanon){
-      $id=ccdb("select new_sequestionanon((select community_id from get.community where community_name=$1),$2,$3,$4,$5)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid']);
+   //error_log($seqid);
+   //error_log($community_id);
+    if(ccdb("select count(*) from get.question where community_id=$1 and question_se_question_id=$2",$community_id,$seqid)==='0'){
+      // get the markdown and tags for the question
+      $doc = new DOMDocument();
+      $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$seqid.'/edit'));
+      $xpath = new DOMXpath($doc);
+      $elements = $xpath->query("//input[@id='tagnames']/@value");
+      $tags = $elements[0]->textContent;
+      $xpath = new DOMXpath($doc);
+      $elements = $xpath->query("//textarea[@id='wmd-input-".$seqid."']");
+      $markdown = $elements[0]->textContent;
+      $markdown = preg_replace('/<!--[^\n]*-->/m','',$markdown);
+      $markdown = preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',$markdown);
+      $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
+      $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
+     //error_log('length: '.strlen($markdown));
+      // add the question
+      if($qanon){
+        $id=ccdb("select new_sequestionanon($1,$2,$3,$4,$5)",$community_id,$title,$markdown,$tags,$seqid);
+      }else{
+        $id=ccdb("select new_sequestion($1,$2,$3,$4,$5,$6,$7)",$community_id,$title,$markdown,$tags,$seqid,$seuid,$seuname);
+      }
     }else{
-      $id=ccdb("select new_sequestion((select community_id from get.community where community_name=$1),$2,$3,$4,$5,$6,$7)",$_POST['community'],$title,$markdown,$tags,$_POST['seqid'],$seuid,$seuname);
+      $id=ccdb("select question_id from get.question where community_id=$1 and question_se_question_id=$2",$community_id,$seqid);
     }
     // generate an array of answers to import
     $aids = [];
-    if($_POST['seaids']==='*'){
+    if($all){
       $doc = new DOMDocument();
-      $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
+      $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
       $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ')]");
       foreach($elements as $element) array_push($aids,explode('-',$element->getAttribute('id'))[1]);
     }else{
-      if($_POST['seaids']) $aids = explode(' ',$_POST['seaids']);
+      if($seaids) $aids = $seaids;
       if($my_community_se_user_id){
         $doc = new DOMDocument();
-        $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$_POST['seqid']));
+        $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
         $xpath = new DOMXpath($doc);
         $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
                                  ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
@@ -97,19 +130,21 @@ switch($_POST['action']) {
    //error_log('aids: '.print_r($aids,true));
     // import each selected answer
     foreach($aids as $aid){
-      $doc = new DOMDocument();
-      $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$aid.'/edit'));
-      $xpath = new DOMXpath($doc);
-      $elements = $xpath->query("//textarea[@id='wmd-input-".$aid."']");
-      $markdown = $elements[0]->textContent;
-      $markdown = preg_replace('/<!--[^\n]*-->/m','',$markdown);
-      $markdown = preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',$markdown);
-      $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
-      $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
-      if($answers[$aid]['anon']){
-        db("select new_seansweranon($1,$2,$3)",$id,$markdown,$aid);
-      }else{
-        db("select new_seanswer($1,$2,$3,$4,$5)",$id,$markdown,$aid,$answers[$aid]['uid'],$answers[$aid]['uname']);
+      if(ccdb("select count(*) from get.answer where question_id=$1 and answer_se_answer_id=$2",$id,$aid)==='0'){
+        $doc = new DOMDocument();
+        $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$aid.'/edit'));
+        $xpath = new DOMXpath($doc);
+        $elements = $xpath->query("//textarea[@id='wmd-input-".$aid."']");
+        $markdown = $elements[0]->textContent;
+        $markdown = preg_replace('/<!--[^\n]*-->/m','',$markdown);
+        $markdown = preg_replace('/^(#+)([^\n# ][^\n]*[^\n# ])(#+)$/m','$1 $2 $3',$markdown);
+        $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
+        $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
+        if($answers[$aid]['anon']){
+          db("select new_seansweranon($1,$2,$3)",$id,$markdown,$aid);
+        }else{
+          db("select new_seanswer($1,$2,$3,$4,$5)",$id,$markdown,$aid,$answers[$aid]['uid'],$answers[$aid]['uname']);
+        }
       }
     }
     header('Location: //topanswers.xyz/'.$_POST['community'].'?q='.$id);
