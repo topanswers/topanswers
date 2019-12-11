@@ -624,7 +624,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       <?if(!$question){?>updateQuestions(true);<?}?>
       $('#se').click(function(){
         var t = $(this), f = t.closest('form')
-          , ids = prompt('Enter question or answer id or url (and optionally futther answer ids/urls from the same question) from <?=$sesite_url?>.\nSeparate each id/url with a space. No need to list your own answers; they will be imported automatically.');
+          , ids = prompt('Enter question or answer id or url (and optionally further answer ids/urls from the same question) from <?=$sesite_url?>.\nSeparate each id/url with a space. No need to list your own answers; they will be imported automatically.');
         if(ids!==null) {
           t.hide().after('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
           f.find('[name=seids]').attr('value',ids);
