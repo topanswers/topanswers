@@ -262,8 +262,8 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             if(!maxChatChangeID) $('#messages').css('scroll-behavior','auto');
             newchat = $(data).appendTo($('#messages')).css('opacity','0');
             newchat.filter('.message').each(renderChat).find('.when').each(function(){ $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-            if(maxChatChangeID) numNewChats += newchat.filter('.message').length;
-            if(maxChatChangeID && (document.visibilityState==='hidden')){ document.title = '('+numNewChats+') '+title; }
+            if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
+            if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
             if(newchat.find('img').length===0){
               if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
               else $('#messages').css('scroll-behavior','smooth');
