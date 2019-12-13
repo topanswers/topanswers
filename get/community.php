@@ -118,9 +118,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #qa .bar .icon+.icon { margin-left: 0; }
 
-    #qa .starrr { margin-left: 0.2rem; }
-    #qa .starrr a.fa-star { color: #<?=$colour_highlight?>; }
-    #qa .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
+    #qa .bar .starrr { margin-left: 0.2rem; }
+    #qa .bar .starrr a.fa-star { color: #<?=$colour_highlight?>; }
+    #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
 
     #answer { margin: 2rem auto; display: block; }
     #more { margin-bottom: 1.2rem; display: none; text-align: center; }
