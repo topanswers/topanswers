@@ -44,45 +44,48 @@ if($search){
 }
 ?>
 <?foreach($results as $r){ extract($r);?>
-  <div id="q<?=$question_id?>" class="question" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
+  <div id="q<?=$question_id?>" class="question post" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
     <a href="/<?=$community?>?q=<?=$question_id?>#question" title="<?=$question_type.$question_title?>"><?=$question_type.$question_title?></a>
     <div class="bar">
       <div>
-        <img title="Stars: <?=$communicant_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
-        <span><span class="when" data-seconds="<?=$question_when?>"></span>, by <?=htmlspecialchars($account_name)?></span>
-        <?if($question_bump_reason){?><span>(<?=$question_bump_reason?>, <span class="when" data-seconds="<?=$bump_when?>"></span>)</span><?}?>
+        <img title="Stars: <?=$communicant_votes?>" class="icon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
+        <span class="element"><?=htmlspecialchars($account_name)?></span>
+        <span class="when element" data-seconds="<?=$question_when?>"><?=htmlspecialchars($account_name)?></span>
+        <?if($question_bump_reason){?><span class="element when" data-prefix="(<?=$question_bump_reason?>, " data-postfix=")" data-seconds="<?=$bump_when?>"></span><?}?>
         <?if($question_votes){?>
-          <span class="score<?=($question_have_voted==='t')?' me':''?>">
+          <span class="element<?=($question_have_voted==='t')?' me':''?>">
             <i class="fa fa-star<?=(($account_is_me==='f')&&($question_have_voted==='f')&&$question_votes)?'-o':''?>"></i>
             <?=($question_votes>1)?$question_votes:''?>
           </span>
         <?}?>
       </div>
-      <div class="tags">
+      <div class="element container">
         <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question_id) as $r){ extract($r);?>
           <span class="tag" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
         <?}?>
       </div>
     </div>
-    <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,account_name,account_is_me
-                       , coalesce(communicant_votes,0) communicant_votes
-                       , extract('epoch' from current_timestamp-answer_at) answer_when
-                  from answer natural join account natural join (select question_id,community_id from question) q natural left join communicant
-                  where question_id=$1
-                  order by answer_votes desc, communicant_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
-      <div class="minibar">
-        <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="summary">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n\r"));?>"></span></a>
-        <div>
-          <?if($answer_votes){?>
-            <span class="score<?=($answer_have_voted==='t')?' me':''?>">
-              <?=($answer_votes>1)?$answer_votes:''?>
-              <i class="fa fa-star<?=(($account_is_me==='f')&&($answer_have_voted==='f')&&$answer_votes)?'-o':''?>"></i>
-            </span>
-          <?}?>
-          <span><span class="when" data-seconds="<?=$answer_when?>"></span> by <?=htmlspecialchars($account_name)?></span>
-          <img title="Stars: <?=$communicant_votes?>" class="identicon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
+    <div class="answers">
+      <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,account_name,account_is_me
+                         , coalesce(communicant_votes,0) communicant_votes
+                         , extract('epoch' from current_timestamp-answer_at) answer_when
+                    from answer natural join account natural join (select question_id,community_id from question) q natural left join communicant
+                    where question_id=$1
+                    order by answer_votes desc, communicant_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
+        <div class="bar">
+          <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element summary shrink">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n\r"));?>"></span></a>
+          <div>
+            <span class="when element" data-seconds="<?=$answer_when?>"></span>
+            <?if($answer_votes){?>
+              <span class="element">
+                <i class="fa fa-star<?=(($account_is_me==='f')&&($answer_have_voted==='f')&&$answer_votes)?'-o':''?><?=($answer_have_voted==='t')?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
+              </span>
+            <?}?>
+            <span class="element"><?=htmlspecialchars($account_name)?></span>
+            <img title="Stars: <?=$communicant_votes?>" class="icon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
+          </div>
         </div>
-      </div>
-    <?}?>
+      <?}?>
+    </div>
   </div>
 <?}?>

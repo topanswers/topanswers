@@ -12,7 +12,7 @@
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
   .markdown th { background-color: #<?=$colour_mid?>; }
   .markdown td { background-color: white; }
-  .markdown td, .markdown th { font-family: '<?=$my_community_monospace_font_name?>', monospace; font-size: 14px; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
+  .markdown td, .markdown th { font-family: '<?=$my_community_monospace_font_name?>', monospace; font-size: 90%; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
   .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
@@ -29,7 +29,7 @@
   .markdown .footnote-ref { font-size: 70%; }
   .markdown .footnote-ref>a { text-decoration: none; }
   .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 4px; }
-  .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-size: 14px; border-radius: 0.2rem; }
+  .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-family: '<?=$my_community_monospace_font_name?>', monospace; border-radius: 0.2rem; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 0.5rem; }
   .dbfiddle>div { margin-top: 0.5rem; }

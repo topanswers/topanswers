@@ -16,7 +16,7 @@ if(isset($_GET['activerooms'])){
               where room_my_last_chat>(current_timestamp-'7d'::interval)
               order by room_my_last_chat desc") as $r){ extract($r);?>
     <a<?if($room_id!==$room){?> href="."<?}?> data-room="<?=$room_id?>"<?if($room_account_unread_messages>0){?> data-unread="<?=$room_account_unread_messages?>"<?}?>>
-      <img title="<?=($room_name)?$room_name:''?>" class="roomicon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
+      <img title="<?=($room_name)?$room_name:''?>" class="icon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
     </a><?
   }
   exit;
@@ -28,7 +28,7 @@ if(isset($_GET['activeusers'])){
               from room_account_x natural join account natural left join (select * from communicant natural join room where room_id=$1) z
               where room_id=$1
               order by room_account_x_latest_chat_at desc",$room) as $r){ extract($r);?>
-    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>"><?
+    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="icon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>"><?
   }
   exit;
 }
@@ -66,7 +66,7 @@ if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$roo
       <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">replying to</a> '.(($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
-    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="identicon" src="/identicon?id=<?=$account_id?>">
+    <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="icon" src="/identicon?id=<?=$account_id?>">
     <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
     <?if($uuid){?>
       <span class="buttons">

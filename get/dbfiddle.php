@@ -19,7 +19,7 @@ header('Cache-Control: max-age=60');
     <div class="batch">
       <textarea rows="1"><?=$batchplusoutput['batch']?></textarea>
       <?if($batchplusoutput['output']['error']){?>
-        <p class="error"><?=$batchplusoutput['output']['error']?></p>
+        <pre class="error"><?=$batchplusoutput['output']['error']?></pre>
       <?}else{?>
         <?foreach($batchplusoutput['output']['result'] as $result){?>
           <div class="tablewrapper">

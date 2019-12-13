@@ -30,9 +30,10 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
              from community natural join my_community
                   left join sesite on sesite_id=community_sesite_id
              where community_name=$1",$community));
+ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
+<html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
@@ -46,86 +47,133 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
+    body { display: flex }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; white-space: nowrap; }
-    header select, header input, header a:not(.icon) { margin: 3px; }
-    header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }
-    header .icon>img { background: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
+    main { background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'70'?>%; overflow: hidden; }
+
+    textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
+    textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
     [data-rz-handle] { flex: 0 0 2px; background: black; }
     [data-rz-handle] div { width: 2px; background: black; }
 
-    <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
-    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .question { background: white; margin-bottom: 2rem; border-radius: 5px 5px 0 5px; font-size: larger; }
-    .answer { background: white; margin-bottom: 2rem; border-radius: 5px 0 5px 5px; font-size: larger; }
-    .answer .bar { border-top: 1px solid #<?=$colour_dark?>; }
-    .answer:target, #question:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
-    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
-    .tags { display: flex; margin-left: 0.25rem; margin-top: 1px; white-space: nowrap; overflow: hidden; }
-    .tag { padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 0.8rem; border-radius: 0 1rem 1rem 0; position: relative; margin-right: 0.2rem; margin-bottom: 0.1rem; display: inline-block; }
-    .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 0.5rem; width: 0.5rem; content: ''; top: calc(50% - 0.25rem); right: 0.25rem; box-sizing: border-box; }
+    header, header>div, #qa .bar, #qa .bar>div, .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
+    header, #qa .bar>div, .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
+    header>div, #qa .bar, .container.shrink, .element.shrink { flex: 0 1 auto; }
+
+    header { line-height: 0; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
+    main header { border-bottom: 2px solid black; }
+    #chat-wrapper header { border-top: 2px solid black; }
+    header a { color: #<?=$colour_light?>; }
+
+    .element { margin: 0 4px; }
+
+    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
+
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; }
+    .icon.pingable:not(.ping):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
+
+    .highlight { color: #<?=$colour_highlight?>; }
+
+    .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 12px; border-radius: 0 8px 8px 0; position: relative; }
+    .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
     .tag i::before { border-radius: 50%; }
     <?if($uuid&&$question){?>.tag:hover i { visibility: visible; }<?}?>
     .newtag { position: relative; cursor: pointer; }
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
+    .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
+
+    #qa { overflow: auto; scroll-behavior: smooth; }
+
+    #qa .answers { border-top: 1px solid #<?=$colour_dark?>; }
+    #qa .answers .bar { background-color: white; }
+    #qa .answers .bar:not(:last-child) { border-bottom: 1px solid #<?=$colour_dark?>80; height: 23px; }
+    #qa .answers .bar:last-child { border-bottom-right-radius: 0; }
+    #qa .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px;font-family: '<?=$my_community_regular_font_name?>', serif; }
+
+    #qa .post { background-color: white; border-radius: 5px; margin: 16px; margin-bottom: 32px; }
+    #qa .post:not(:hover) .when { display: none; }
+    #qa .post.answer { border-top-right-radius: 0; }
+    #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
+    #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
+
+    #qa .title { border-bottom: 1px solid #<?=$colour_dark?>; font-size: 19px; padding: 8px }
+    #qa .question>a { display: block; padding: 8px; border-bottom: 1px solid #<?=$colour_dark?>; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #qa .bar { height: 22px; background: #<?=$colour_light?>; justify-content: space-between; font-size: 12px; }
+    #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }
+    #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
+    #qa .bar:last-child { border-radius: 0 0 5px 5px; }
+    #qa .bar:first-child { border-radius: 5px 0 0 0; }
+
+    #qa .bar .element.fa-bell { color: #<?=$colour_highlight?>; }
+    #qa .bar .element.fa-flag { color: #<?=$colour_warning?>; }
+    #qa .post:not(.subscribed) .bar .element.fa-bell { display: none; }
+    #qa .post.subscribed .bar .element.fa-bell-o { display: none; }
+    #qa .post:not(.flagged) .bar .element.fa-flag { display: none; }
+    #qa .post.flagged .bar .element.fa-flag-o { display: none; }
+    #qa .post.counterflagged .bar .element.fa-flag-checkered { color: #<?=$colour_highlight?>; }
+
+    #qa .bar .icon+.icon { margin-left: 0; }
+
+    #qa .starrr { margin-left: 0.2rem; }
+    #qa .starrr a.fa-star { color: #<?=$colour_highlight?>; }
+    #qa .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
+
+    #answer { margin: 2rem auto; display: block; }
+    #more { margin-bottom: 1.2rem; display: none; text-align: center; }
+    #more a { display: none; }
+
+    #chat-wrapper { font-size: 14px; background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
+    #chat-wrapper .label { font-size: 12px; padding: 2px 0; }
+    #chat { display: flex; flex: 1 0 0; min-height: 0; }
+    #messages-wrapper { flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; }
+    #notifications { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border: 2px solid black; border-width: 2px 1px 2px 0; background: #<?=$colour_light?>; padding: 0.3rem; padding-top: 0; overflow-x: hidden; overflow-y: auto; }
+    #ios-spacer { flex: 0 0 76px; }
+
+    #chat .message .who { top: -1.2em; }
+    #chat .markdown img { max-height: 7rem; }
+    #chat .message.thread .markdown { background: #<?=$colour_highlight?>40; }
+    #messages .message:not(:hover) .when { display: none; }
+    #notifications .message+.message { margin-top: 0.2em; }
+    #notifications .message { padding: 0.3em; border-radius: 0.2em; }
+    #notifications .message[data-type='chat'] { padding-top: 1.3em; }
+    #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
+
+    #canchat-wrapper { flex: 0 0 auto; }
+    #chattext-wrapper { position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>; }
+    #chatuploadfile { display: none; }
+    #chatupload { position: absolute; right: 4px; top: 0; bottom: 0; font-size: 18px; color: #<?=$colour_dark?>; }
+    #chatupload:active>div { color: #<?=$colour_mid?>; }
+    #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; }
+
+    <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
+    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
+    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
 
     .select2-dropdown { border: 1px solid #<?=$colour_dark?> !important; box-shadow: 0 0 0.2rem 0.3rem white; }
     a[data-lightbox] img { cursor: zoom-in; }
-    .starrr { margin-left: 0.2rem; }
-    .starrr a.fa-star { color: #<?=$colour_highlight?>; }
-    .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
-    #question .action { font-size: 16px; cursor: pointer; color: #<?=$colour_dark?>; }
-    #question .action.fa-bell { color: #<?=$colour_highlight?>; }
-    #question .action.fa-flag { color: #<?=$colour_warning?>; }
-    #question:not(.subscribed) .action.fa-bell { display: none; }
-    #question.subscribed .action.fa-bell-o { display: none; }
-    #question:not(.flagged) .action.fa-flag { display: none; }
-    #question.flagged .action.fa-flag-o { display: none; }
-    #question.counterflagged .action.fa-flag-checkered { color: #<?=$colour_highlight?>; }
 
-    #qa .bar { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; font-size: 0.8rem; background: #<?=$colour_light?>; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); overflow: hidden; }
-    <?if($question){?>#qa .bar:last-child { border-bottom: none; border-radius: 0 0 5px 5px; }<?}?>
-    #qa .bar:first-child { border-top: none; border-radius: 5px 0 0 0; }
-    #qa .bar .title { margin-left: 0.4rem; }
-    #qa .bar+.bar { border-top: none; }
-    #qa .bar>* { display: flex; align-items: center; white-space: nowrap; }
-    #qa .bar>*>*:not(:last-child) { margin-right: 0.4rem; }
-    #qa .identicon, #active-users .identicon, #active-rooms .roomicon { height: 1.5rem; width: 1.5rem; margin: 1px; display: block; }
-    #qa .question:nth-last-child(2) { margin-bottom: 1rem; }
+    #active { flex: 0 0 23px; display: flex; flex-direction: column; justify-content: space-between; background: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; overflow-y: hidden; }
+    #active-rooms { flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden; }
     #active-rooms a { position: relative; }
     #active-rooms a[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: #<?=$colour_highlight?>; color: black;
                                                width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
-    #active-rooms>a:not([href])>.roomicon { outline: 1px solid #<?=$colour_highlight?>; }
-    #active-rooms>a[href]:hover>.roomicon { outline: 1px solid #<?=$colour_dark?>; }
-    #qa .markdown { padding: 0.6rem; }
-    #qa .minibar { border: 1px solid #<?=$colour_light?>; border-width: 1px 0;font-size: 0.8rem; display: flex; align-items: center; justify-content: space-between; min-height: calc(1.5rem + 2px); }
-    #qa .minibar:last-child { border-bottom: none; }
-    #qa .minibar+.minibar { border-top: none; }
-    #qa .bar+.minibar { border-top: none; }
-    #qa .score { color: #<?=$colour_dark?>; }
-    #qa .score.me { color: #<?=$colour_highlight?>; }
-    #qa .minibar>* { display: flex; align-items: center; min-width: 0; }
-    #qa .minibar>*>*:not(:last-child) { margin-right: 0.4rem; }
-    #qa .minibar .summary { min-width: 0; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; margin-left: 0.5rem; }
-    #qa .minibar .summary>span>p { display: inline; }
-    #qa .minibar>:first-child { flex: 1 1 auto; margin-right: 1rem; text-overflow: ellipsis; }
-    #qa .minibar>:last-child { flex: 0 0 auto; margin-left: 1rem; }
-    #qa .minibar>a:first-child { display: block; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0.2rem; }
-    #qa .question>a:first-child { display: block; padding: 0.6rem; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-
-    .identicon.pingable:not(.ping):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
-    .identicon.ping { outline: 1px solid #<?=$colour_highlight?>; }
+    #active-rooms>a:not([href])>.icon { outline: 1px solid #<?=$colour_highlight?>; }
+    #active-rooms>a[href]:hover>.icon { outline: 1px solid #<?=$colour_dark?>; }
+    #active-spacer { flex: 0 0 auto; padding: 1rem 0; cursor: pointer; }
+    #active-spacer>div { background: #<?=$colour_dark?>; height: 1px; }
+    #active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
     .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
     .message .markdown { flex: 0 1 auto; max-height: 20vh; padding: 0.25rem; border: 1px solid darkgrey; border-radius: 0.3em; background: white; overflow: auto; }
 
-    .message .button-group { display: grid; grid-template: 0.8rem 0.8rem / 0.9rem 0.9rem; align-items: center; justify-items: start; font-size: 0.8rem; margin-left: 1px; }
-    .message .button-group:first-child { grid-template: 0.8rem 0.8rem / 1.7rem 0.1rem; }
+    .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
+    .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
     .message .button-group .fa { color: #<?=$colour_dark?>; cursor: pointer; text-decoration: none; }
     .message .button-group .fa.me { color: #<?=$colour_highlight?>; }
     .message:hover .button-group:first-child { display: none; }
@@ -137,15 +185,6 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
     .message.merged { margin-top: -1px; }
     .message.merged .who, .message.merged .identicon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
-    #chat .message .who { top: -1.2em; }
-    #chat .markdown img { max-height: 7rem; }
-    #chat .message.thread .markdown { background: #<?=$colour_highlight?>40; }
-    #messages .message:not(:hover) .when { display: none; }
-    #notifications .message+.message { margin-top: 0.2em; }
-    #notifications .message { padding: 0.3em; border-radius: 0.2em; }
-    #notifications .message[data-type='chat'] { padding-top: 1.3em; }
-    #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 0.9rem; }
-    #chatupload:active i { color: #<?=$colour_mid?>; }
 
     .pane { display: flex; }
     .panecontrol { display: none; }
@@ -209,7 +248,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
       }
       function renderQuestion(){
         $(this).find('.summary span[data-markdown]').renderMarkdownSummary();
-        $(this).find('.when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
+        $(this).find('.when').each(function(){ var t = $(this); $(this).text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||'')); });
       }
       function updateQuestions(scroll){
         var maxQuestion = $('#qa>:first-child').data('poll-major-id');
@@ -608,7 +647,7 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
               if(n!==v){
                 t.css({'opacity':'0.3','pointer-events':'none'});
                 $.post({ url: '//post.topanswers.xyz/'+t.data('type'), data: { action: 'vote', id: t.data('id'), votes: n }, xhrFields: { withCredentials: true } }).done(function(r){
-                  t.css({'opacity':'1','pointer-events':'auto'}).siblings('.score').html('<span>score: '+r+'</span>');
+                  t.css({'opacity':'1','pointer-events':'auto'}).next().html(r+' star'+((r==='1')?'':'s'));
                   v = n;
                 }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); });
               }
@@ -691,41 +730,41 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
   </script>
   <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
 </head>
-<body style="display: flex;">
-  <main class="pane" style="background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'70'?>%; overflow: hidden;">
-    <header style="border-bottom: 2px solid black;">
+<body>
+  <main class="pane">
+    <header>
       <div>
-        <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers</a>
-        <select id="community">
+        <a class="element" href="/<?=$community?>">TopAnswers</a>
+        <select id="community" class="element">
           <?foreach(db("select community_name,community_room_id,community_display_name from community order by community_name desc") as $r){ extract($r);?>
             <option value="<?=$community_room_id?>" data-name="<?=$community_name?>"<?=($community===$community_name)?' selected':''?>><?=$community_display_name?></option>
           <?}?>
         </select>
         <?if($dev){?>
-          <select id="environment">
+          <select id="environment" class="element">
             <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
               <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
             <?}?>
           </select>
         <?}?>
-        <input class="panecontrol" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
+        <input class="panecontrol element" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
       </div>
-      <?if(!$question){?><div><input type="search" id="search" placeholder="search"></div><?}?>
-      <div style="display: flex; align-items: center;">
-        <?if(!$uuid){?><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"><?}?>
+      <?if(!$question){?><div><input class="element" type="search" id="search" placeholder="search"></div><?}?>
+      <div>
+        <?if(!$uuid){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if(($my_community_can_import==='t')&&$sesite_url&&!$question){?>
           <form method="post" action="//post.topanswers.xyz/question">
             <input type="hidden" name="action" value="new-se">
             <input type="hidden" name="community" value="<?=$community?>">
             <input type="hidden" name="seids" value="">
-            <input id="se" type="submit" value="import from SE">
+            <input id="se" class="element" type="submit" value="import from SE">
           </form>
         <?}?>
-        <?if($uuid){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" type="submit" value="ask question"></form><?}?>
-        <?if($uuid){?><a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select account_id from login")?>"></a><?}?>
+        <?if($uuid){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" class="element" type="submit" value="ask question"></form><?}?>
+        <?if($uuid){?><a class="frame" href="/profile"><img class="icon" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a><?}?>
       </div>
     </header>
-    <div id="qa" style="overflow: auto; scroll-behavior: smooth; padding: 1.2rem;">
+    <div id="qa">
       <?if($question){?>
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
                              ,account_name,account_is_me,question_se_question_id,account_is_imported,communicant_se_user_id,question_i_subscribed,question_i_flagged,question_i_counterflagged
@@ -739,30 +778,32 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                        from question natural join account natural join community natural join license natural join codelicense natural left join communicant
                        where question_id=$1",$question));?>
         <div id="question"
-             class="<?=($question_have_voted==='t')?'voted':''?> <?=($question_i_subscribed==='t')?'subscribed':''?> <?=($question_i_flagged==='t')?'flagged':''?> <?=($question_i_counterflagged==='t')?'counterflagged':''?>"
-             style="border-radius: 5px; font-size: larger; background: white;">
-          <div style="font-size: larger; padding: 0.6rem;"><?=$question_type.htmlspecialchars($question_title)?></div>
+             class="post<?=($question_have_voted==='t')?' voted':''?><?=($question_i_subscribed==='t')?' subscribed':''?><?=($question_i_flagged==='t')?' flagged':''?><?=($question_i_counterflagged==='t')?' counterflagged':''?>">
+          <div class="title"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Stars: <?=$communicant_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
-              <span>
-                <span class="when" data-seconds="<?=$question_when?>"></span>,
+              <img title="Stars: <?=$communicant_votes?>" class="icon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+              <span class="element">
                 <?if($account_is_imported==='t'){?>
-                  <span><?if($communicant_se_user_id>0){?>by <a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                  <span><?if($communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
                 <?}else{?>
-                  <span>by <?=htmlspecialchars($account_name)?></span>
+                  <span><?=htmlspecialchars($account_name)?></span>
                 <?}?>
               </span>
-              <span>
+              <span class="when element" data-seconds="<?=$question_when?>"></span>
+              <span class="element">
                 <a href="<?=$license_href?>"><?=$license_name?></a>
-                <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
+                <?if($has_codelicense==='t'){?>
+                  <span> + </span>
+                  <a href="/meta?q=24"><?=$codelicense_name?> for original code</a>
+                <?}?>
               </span>
             </div>
             <div>
-              <div class="tags">
+              <div class="element container">
                 <?if($uuid){?>
-                  <span class="newtag" style="margin-right: 0.2rem; margin-bottom: 0.1rem;">
-                    <div style="position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden;">
+                  <span class="newtag">
+                    <div>
                       <select id="tags" data-question-id="<?=$question?>">
                         <option></option>
                         <?foreach(db("select tag_id,tag_name
@@ -773,11 +814,11 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                         <?}?>
                       </select>
                     </div>
-                    <span class="tag">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span class="tag element">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                   </span>
                 <?}?>
                 <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question) as $r){ extract($r);?>
-                  <span class="tag" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+                  <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
                 <?}?>
               </div>
             </div>
@@ -787,56 +828,53 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             <div>
               <?if($question_is_votable==='t'){?>
                 <?if($account_is_me==='f'){?>
-                  <div class="starrr" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
-                <?}else{?>
-                  <span></span>
+                  <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
                 <?}?>
-                <span class="score">score: <?=$question_votes?></span>
+                <span class="element"><?=$question_votes?> star<?=($question_votes==='1')?'':'s'?></span>
               <?}?>
               <?if($uuid){?>
-                <span></span>
-                <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a href="/question?id=<?=$question?>">edit</a><?}?>
-                <?if($question_has_history==='t'){?><a href="/question-history?id=<?=$question?>">history</a><?}?>
-                <?if($account_is_me==='f'){?><a href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
+                <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
+                <?if($question_has_history==='t'){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
+                <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
             <div>
               <?if(($account_is_me==='f')&&(($question_crew_flags==='0')||($my_community_is_post_flag_crew==='t'))){?>
-                <?foreach(db("select question_flag_is_crew,question_flag_direction
-                                   , account_id flag_account_id
-                                   , account_name flag_account_name
-                              from question_flag natural join account
-                              where question_id=$1 and question_flag_direction<>0 and not account_is_me
-                              order by question_flag_is_crew, question_flag_at",$question) as $r){ extract($r);?>
-                  <img class="identicon pingable"
-                       title="<?=$flag_account_name?><?=($question_flag_is_crew==='t')?(($question_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
-                       data-id="<?=$flag_account_id?>"
-                       data-name="<?=explode(' ',$flag_account_name)[0]?>"
-                       data-fullname="<?=$flag_account_name?>"
-                       src="/identicon?id=<?=$flag_account_id?>">
-                <?}?>
-                <div>
-                  <div class="action fa fw fa-flag" title="unflag this question"></div>
-                  <div class="action fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
-                </div>
-                <?if(($my_community_is_post_flag_crew==='t')&&(intval($question_active_flags)>0)){?>
-                  <div>
-                    <div class="action fa fw fa-flag-checkered" title="counterflag"></div>
+                <?if($question_active_flags<>"0"){?>
+                  <div class="element container shrink">
+                    <span>flagged by:</span>
+                    <div class="container shrink">
+                      <?foreach(db("select question_flag_is_crew,question_flag_direction
+                                         , account_id flag_account_id
+                                         , account_name flag_account_name
+                                    from question_flag natural join account
+                                    where question_id=$1 and question_flag_direction<>0 and not account_is_me
+                                    order by question_flag_is_crew, question_flag_at",$question) as $i=>$r){ extract($r);?>
+                        <img class="icon pingable"
+                             title="<?=$flag_account_name?><?=($question_flag_is_crew==='t')?(($question_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
+                             data-id="<?=$flag_account_id?>"
+                             data-name="<?=explode(' ',$flag_account_name)[0]?>"
+                             data-fullname="<?=$flag_account_name?>"
+                             src="/identicon?id=<?=$flag_account_id?>">
+                      <?}?>
+                    </div>
                   </div>
                 <?}?>
+                <div class="element fa fw fa-flag" title="unflag this question"></div>
+                <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
+                <?if(($my_community_is_post_flag_crew==='t')&&(intval($question_active_flags)>0)){?>
+                  <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
+                <?}?>
               <?}?>
-              <div>
-                <div class="action fa fw fa-bell" title="unsubscribe from this question"></div>
-                <div class="action fa fw fa-bell-o" title="subscribe to this question"></div>
-              </div>
-              &nbsp;
+              <div class="element fa fw fa-bell" title="unsubscribe from this question"></div>
+              <div class="element fa fw fa-bell-o" title="subscribe to this question"></div>
             </div>
           </div>
         </div>
         <?if($question_is_blog==='f'){?>
           <form method="GET" action="/answer">
             <input type="hidden" name="question" value="<?=$question?>">
-            <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>" style="margin: 2rem auto; display: block;"<?=$uuid?'':' disabled'?>>
+            <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>"<?=$uuid?'':' disabled'?>>
           </form>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me,account_is_imported
@@ -847,54 +885,54 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join communicant
                       where question_id=$1
                       order by answer_votes desc, communicant_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
-          <div id="a<?=$answer_id?>" class="answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
+          <div id="a<?=$answer_id?>" class="post answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
             <div class="bar">
-              <div><span class="title"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
+              <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
               <div>
-                <span>
+                <span class="element">
                   <a href="<?=$license_href?>"><?=$license_name?></a>
-                  <?if($has_codelicense==='t'){?><span>+ <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span><?}?>
-                </span>
-                <span>
-                  <span class="when" data-seconds="<?=$answer_when?>"></span>
-                  <?if($account_is_imported==='t'){?>
-                    <span>by <a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
-                  <?}else{?>
-                    <span>by <?=htmlspecialchars($account_name)?></span>
+                  <?if($has_codelicense==='t'){?>
+                    <span> + </span>
+                    <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span>
                   <?}?>
                 </span>
-                <img title="Stars: <?=$communicant_votes?>" class="identicon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+                <span class="when element" data-seconds="<?=$answer_when?>"></span>
+                <span class="element">
+                  <?if($account_is_imported==='t'){?>
+                    <span><a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                  <?}else{?>
+                    <span><?=htmlspecialchars($account_name)?></span>
+                  <?}?>
+                </span>
+                <img title="Stars: <?=$communicant_votes?>" class="icon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
               </div>
             </div>
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
             <div class="bar">
               <div>
                 <?if($account_is_me==='f'){?>
-                  <div class="starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
-                <?}else{?>
-                  <span></span>
+                  <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
                 <?}?>
-                <span class="score">score: <?=$answer_votes?></span>
+                <span class="element"><?=$answer_votes?> star<?=($answer_votes==='1')?'':'s'?></span>
                 <?if($uuid){?>
-                  <span></span>
-                  <a href="/answer?id=<?=$answer_id?>">edit</a>
-                  <?if($answer_has_history==='t'){?><a href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
-                  <?if($account_is_me==='f'){?><a href='.' onclick="$(this).closest('.answer').find('.identicon').click(); return false;">comment</a><?}?>
+                  <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
+                  <?if($answer_has_history==='t'){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
+                  <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.identicon').click(); return false;">comment</a><?}?>
                 <?}?>
               </div>
             </div>
           </div>
         <?}?>
       <?}else{?>
-        <div style="margin-bottom: 1.2rem; display: none; text-align: center;"><a id="more" href=".">show more</a><i class="fa fa-spinner fa-pulse fa-fw" style="display: none"></i></div>
+        <div id="more"><a id="more" href=".">show more</a><i class="fa fa-spinner fa-pulse fa-fw"></i></div>
       <?}?>
     </div>
   </main>
-  <div id="chat-wrapper" class="pane hidepane" style="background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden;">
-    <div id="ios-spacer" style="flex: 0 0 76px;"></div>
-    <header style="border-top: 2px solid black;">
-      <div style="display: flex; align-items: center;">
-        <a <?=$dev?'href="/room?id='.$room.'" ':''?>class="icon"><img src="/roomicon?id=<?=$room?>"></a>
+  <div id="chat-wrapper" class="pane hidepane">
+    <div id="ios-spacer"></div>
+    <header>
+      <div>
+        <a class="frame"<?=$dev?' href="/room?id='.$room.'" ':''?>><img class="icon" src="/roomicon?id=<?=$room?>"></a>
         <?if(!$question){?>
           <select id="room">
             <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name
@@ -905,26 +943,28 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
             <?}?>
           </select>
         <?}?>
-        <a href="/transcript?room=<?=$room?>" style="color: #<?=$colour_mid?>;">transcript</a>
+        <a class="element" href="/transcript?room=<?=$room?>">transcript</a>
       </div>
-      <input class="panecontrol" type="button" value="questions" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');">
-      <?if($uuid) if(intval(ccdb("select account_id from login"))<3){?><input id="poll" type="button" value="poll"><?}?>
+      <div>
+        <input class="panecontrol element" type="button" value="questions" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');">
+        <?if($uuid) if(intval(ccdb("select account_id from login"))<3){?><input id="poll" class="element" type="button" value="poll"><?}?>
+      </div>
     </header>
     <?if($canchat){?>
-      <div id="canchat-wrapper" style="flex: 0 0 auto;">
-        <div id="chattext-wrapper" style="position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>;">
-          <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
-          <button id="chatupload" class="button" style="position: absolute; right: 0.15em; top: 0; bottom: 0; font-size: 1.5em; color: #<?=$colour_dark?>;" title="embed image"><i class="fa fa-picture-o" style="display: block;"></i></button>
-          <textarea id="chattext" style="flex: 0 0 auto; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 0.3em; padding-right: 2rem; margin: 0; font-family: inherit; font-size: inherit;" rows="1" placeholder="type message here" maxlength="5000"></textarea>
+      <div id="canchat-wrapper">
+        <div id="chattext-wrapper">
+          <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
+          <button id="chatupload" class="button" title="embed image"><div class="fa fa-picture-o"></div></button>
+          <textarea id="chattext" rows="1" placeholder="type message here" maxlength="5000"></textarea>
         </div>
       </div>
     <?}?>
-    <div id="chat" style="display: flex; flex: 1 0 0; min-height: 0;">
-      <div id="messages-wrapper" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden;">
+    <div id="chat">
+      <div id="messages-wrapper">
         <div id="notification-wrapper">
           <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||(ccdb("select count(*)>0 from question_notification")==='t')||(ccdb("select count(*)>0 from answer_notification")==='t')||(ccdb("select count(*)>0 from question_flag_notification")==='t'))){?>
-            <div id="notifications" style="display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border: 2px solid black; border-width: 2px 1px 2px 0; background: #<?=$colour_light?>; padding: 0.3rem; padding-top: 0; overflow-x: hidden; overflow-y: auto;">
-              <div style="font-size: 0.9rem; padding: 1px;">Notifications:</div>
+            <div id="notifications">
+              <div class="label">Notifications:</div>
               <?foreach(db("with c as (select 'chat' notification_type
                                             , chat_id notification_id
                                             , chat_at notification_at
@@ -1002,13 +1042,13 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       <?=$chat_from_account_name?>
                       <?if($notification_room_id!==$room){?>
                         <?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
-                        <span style="color: #<?=$notification_dark_shade?>;">in</span>
-                        <a href="/<?=$notification_community_name?>?<?=($chat_is_question_room==='t')?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>"  style="color: #<?=$notification_dark_shade?>;" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
+                        <span style="color: #<?=$notification_dark_shade?>;"> in </span>
+                        <a href="/<?=$notification_community_name?>?<?=($chat_is_question_room==='t')?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>" style="color: #<?=$notification_dark_shade?>;" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
                       <?}else{?>
                         <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$notification_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
                       <?}?>
-                      <span class="when" data-at="<?=$notification_at_iso?>"></span>
-                      —
+                      <span class="when element" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
+                      — 
                       <span style="color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </span>
                     <img title="<?=($chat_from_account_name)?$chat_from_account_name:'Anonymous'?>" class="identicon" src="/identicon?id=<?=$chat_from_account_id?>">
@@ -1034,24 +1074,24 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
                       </span>
                     </span>
                   <?}elseif($notification_type==='question'){?>
-                    <div style="display: flex; overflow: hidden; font-size: 0.9rem; white-space: nowrap;">
-                      <span class="when" data-at="<?=$notification_at_iso?>"></span>
+                    <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
+                      <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
                       <span style="flex: 0 0 auto;">, question edit:&nbsp;</span>
                       <a href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
                       —
                       <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </div>
                   <?}elseif($notification_type==='question flag'){?>
-                    <div style="display: flex; overflow: hidden; font-size: 0.9rem; white-space: nowrap;">
-                      <span class="when" data-at="<?=$notification_at_iso?>"></span>
+                    <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
+                      <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
                       <span style="flex: 0 0 auto;">, question flag:&nbsp;</span>
                       <a href="/<?=$notification_community_name?>?q=<?=$question_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
                       —
                       <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </div>
                   <?}elseif($notification_type==='answer'){?>
-                    <div style="display: flex; overflow: hidden; font-size: 0.9rem; white-space: nowrap;">
-                      <span class="when" data-at="<?=$notification_at_iso?>"></span>
+                    <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
+                      <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
                       <span style="flex: 0 0 auto;">, answer <?=($answer_notification_is_edit==='t')?'edit':'posted'?> on:&nbsp;</span>
                       <a href="/answer-history?id=<?=$answer_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
                       —
@@ -1095,15 +1135,14 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
         <?}?>
       </div>
       <?if($uuid){?>
-        <div id="active" style="flex: 0 0 calc(1.5rem + 5px); display: flex; flex-direction: column; justify-content: space-between; background: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; padding: 1px; overflow-y: hidden;">
-          <div id="active-rooms" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden;"></div>
-          <div id="active-spacer" style="flex: 0 0 auto; padding: 1rem 0; cursor: pointer;">
-            <div style="background: #<?=$colour_dark?>; height: 1px;"></div>
-          </div>
-          <div id="active-users" style="flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden;"></div>
+        <div id="active">
+          <div id="active-rooms"></div>
+          <div id="active-spacer"><div></div></div>
+          <div id="active-users"></div>
         </div>
       <?}?>
     </div>
   </div>
 </body>   
-</html>   
+</html>
+<?ob_end_flush();
