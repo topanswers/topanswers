@@ -966,6 +966,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div id="notifications">
               <div class="label">Notifications:</div>
               <?foreach(db("with c as (select 'chat' notification_type
+                                            , 1 notification_count
                                             , chat_id notification_id
                                             , chat_at notification_at
                                             , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
@@ -993,6 +994,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                        from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
                                             natural left join (select question_room_id room_id, question_id, question_title from question) q)
                                , q as (select 'question' notification_type
+                                            , 1 notification_count
                                             , question_history_id notification_id
                                             , question_notification_at notification_at
                                             , to_char(question_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
@@ -1007,6 +1009,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                             , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
                                        from question_notification natural join question natural join community)
                               , qf as (select 'question flag' notification_type
+                                            , question_flag_count notification_count
                                             , question_flag_history_id notification_id
                                             , question_flag_notification_at notification_at
                                             , to_char(question_flag_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
@@ -1019,8 +1022,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                             , null::boolean
                                             , null::integer
                                             , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                                       from question_flag_notification natural join (select question_flag_history_id,question_id from question_flag_history) qh natural join (select question_id,community_id,question_title from question) q natural join community)
+                                       from (select question_id
+                                                  , max(question_flag_history_id) question_flag_history_id
+                                                  , max(question_flag_notification_at) question_flag_notification_at
+                                                  , count(distinct account_id) question_flag_count
+                                             from question_flag_notification natural join question_flag_history group by question_id) n
+                                            natural join (select question_id,community_id,question_title from question) q natural join community)
                                , a as (select 'answer' notification_type
+                                            , 1 notification_count
                                             , answer_history_id notification_id
                                             , answer_notification_at notification_at
                                             , to_char(answer_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
@@ -1084,7 +1093,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <?}elseif($notification_type==='question flag'){?>
                     <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
                       <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
-                      <span style="flex: 0 0 auto;">, question flag:&nbsp;</span>
+                      <span style="flex: 0 0 auto;">, <?=($notification_count>1)?$notification_count.' ':''?> question flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
                       <a href="/<?=$notification_community_name?>?q=<?=$question_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
                       —
                       <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>

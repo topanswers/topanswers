@@ -117,7 +117,9 @@ create function dismiss_question_notification(id integer) returns void language 
 $$;
 --
 create function dismiss_question_flag_notification(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
-  with d as (delete from question_flag_notification where question_flag_history_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
+  with d as (delete from question_flag_notification
+             where question_flag_history_id in(select question_flag_history_id from question_flag_history where question_id=(select question_id from question_flag_history where question_flag_history_id=id))
+                   and account_id=current_setting('custom.account_id',true)::integer returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
@@ -481,11 +483,12 @@ create function flag_question(id integer, direction integer) returns void langua
              where question.question_id=id)
      , h as (insert into question_flag_history(question_id,account_id,question_flag_history_direction,question_flag_history_is_crew)
              select question_id,account_id,question_flag_direction,question_flag_is_crew from i
-             returning question_flag_history_id)
+             returning question_flag_history_id,question_flag_history_direction)
    , qfn as (insert into question_flag_notification(question_flag_history_id,account_id)
              select question_flag_history_id,account_id
              from h cross join (select account_id from communicant
                                 where community_id=(select community_id from db.question where question_id=id) and communicant_is_post_flag_crew and account_id<>current_setting('custom.account_id',true)::integer) c
+             where question_flag_history_direction>0
              returning account_id)
   update account set account_notification_id = default where account_id in (select account_id from qfn);
 $$;
