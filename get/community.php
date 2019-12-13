@@ -58,8 +58,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     [data-rz-handle] div { width: 2px; background: black; }
 
     header, header>div, #qa .bar, #qa .bar>div, .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
-    header, #qa .bar>div, .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
-    header>div, #qa .bar, .container.shrink, .element.shrink { flex: 0 1 auto; }
+    header, #qa .bar>div:not(.shrink), .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
+    header>div, #qa .bar.shrink, .container.shrink, .element.shrink { flex: 0 1 auto; }
 
     header { line-height: 0; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
     main header { border-bottom: 2px solid black; }
@@ -838,7 +838,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
-            <div>
+            <div class="shrink">
               <?if(($account_is_me==='f')&&(($question_crew_flags==='0')||($my_community_is_post_flag_crew==='t'))){?>
                 <?if($question_active_flags<>"0"){?>
                   <div class="element container shrink">
