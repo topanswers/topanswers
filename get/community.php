@@ -61,7 +61,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     header, #qa .bar>div:not(.shrink), .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
     header>div, #qa .bar.shrink, .container.shrink, .element.shrink { flex: 0 1 auto; }
 
-    header { line-height: 0; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
+    header { xline-height: 0; min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
     main header { border-bottom: 2px solid black; }
     #chat-wrapper header { border-top: 2px solid black; }
     header a { color: #<?=$colour_light?>; }
@@ -934,7 +934,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div>
         <a class="frame"<?=$dev?' href="/room?id='.$room.'" ':''?>><img class="icon" src="/roomicon?id=<?=$room?>"></a>
         <?if(!$question){?>
-          <select id="room">
+          <select id="room" class="element">
             <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name
                           from room natural join community
                           where community_name=$1 and (not room_is_for_question or room_id=$2)
