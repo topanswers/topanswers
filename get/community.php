@@ -345,7 +345,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
                 $('#active-users').html(r);
-                $.each(savepings,function(){ $('#active-users .identicon[data-id='+this+']').addClass('ping'); });
+                $.each(savepings,function(){ $('#active-users .icon[data-id='+this+']').addClass('ping'); });
               });
               $.get('/chat?activerooms&room=<?=$room?>').done(function(r){
                 $('#active-rooms').html(r);
@@ -512,7 +512,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('.fa-flag').click(function(){ flag(0); });
       $('.fa-flag-o').click(function(){ flag(1); });
       $('.fa-flag-checkered').click(function(){ flag($('#question').is('.counterflagged')?0:-1); });
-      $('body').on('click','.identicon.pingable', function(){
+      $('body').on('click','.icon.pingable', function(){
         if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')+' '); }
         $(this).toggleClass('ping');
         if($('#c'+$('#replying').attr('data-id')).hasClass('mine')) $('#replying').attr('data-id','');
@@ -835,7 +835,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <?if($uuid){?>
                 <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
                 <?if($question_has_history==='t'){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
-                <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$('#question .identicon').click(); return false;">comment</a><?}?>
+                <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
             <div class="shrink">
@@ -1060,7 +1060,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                       — 
                       <span style="color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </span>
-                    <img title="<?=($chat_from_account_name)?$chat_from_account_name:'Anonymous'?>" class="identicon" src="/identicon?id=<?=$chat_from_account_id?>">
+                    <img title="<?=($chat_from_account_name)?$chat_from_account_name:'Anonymous'?>" class="icon" src="/identicon?id=<?=$chat_from_account_id?>">
                     <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
                     <span class="buttons">
                       <span class="button-group show">
