@@ -15,11 +15,6 @@ if($uuid){
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
-$question = $_GET['q']??'0';
-if($question) ccdb("select count(*) from question where question_id=$1",$question)==='1' || die('invalid question id');;
-$room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
-$canchat = false;
-if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
 extract(cdb("select community_id,community_my_power,sesite_url,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,my_community_is_post_flag_crew
                   , encode(community_dark_shade,'hex') colour_dark
                   , encode(community_mid_shade,'hex') colour_mid
@@ -30,6 +25,13 @@ extract(cdb("select community_id,community_my_power,sesite_url,community_code_la
              from community natural join my_community
                   left join sesite on sesite_id=community_sesite_id
              where community_name=$1",$community));
+$question = $_GET['q']??'0';
+if($question) ccdb("select count(*) from question where question_id=$1",$question)==='1' || die('invalid question id');;
+if($question) ccdb("select count(*) from question where question_id=$1 and community_id=$2",$question,$community_id)==='1' || die('invalid question id for this community');;
+$room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
+ccdb("select count(*) from room where room_id=$1 and community_id=$2",$room,$community_id)==='1' || die('invalid room for this community');;
+$canchat = false;
+if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
