@@ -69,12 +69,13 @@ if($search){
     </div>
     <div class="answers">
       <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,account_name,account_is_me
+                         , answer_crew_flags>0 answer_is_deleted
                          , coalesce(communicant_votes,0) communicant_votes
                          , extract('epoch' from current_timestamp-answer_at) answer_when
                     from answer natural join account natural join (select question_id,community_id from question) q natural left join communicant
                     where question_id=$1
                     order by answer_votes desc, communicant_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
-        <div class="bar">
+        <div class="bar<?=($answer_is_deleted==='t')?' deleted':''?>">
           <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element summary shrink">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n\r"));?>"></span></a>
           <div>
             <span class="when element" data-seconds="<?=$answer_when?>"></span>

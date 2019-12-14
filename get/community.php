@@ -97,7 +97,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px;font-family: '<?=$my_community_regular_font_name?>', serif; }
 
     #qa .post { background-color: white; border-radius: 5px; margin: 16px; margin-bottom: 32px; }
-    #qa .post.deleted>:not(.bar) { background-color: #<?=$colour_warning?>20; }
+    #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background-color: #<?=$colour_warning?>20; }
     #qa .post:not(:hover) .when { display: none; }
     #qa .post.answer { border-top-right-radius: 0; }
     #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
@@ -891,13 +891,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me,account_is_imported
                             ,communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
+                           , answer_crew_flags>0 answer_is_deleted
                            , coalesce(communicant_votes,0) communicant_votes
                            , extract('epoch' from current_timestamp-answer_at) answer_when
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                       from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join communicant
                       where question_id=$1
                       order by answer_votes desc, communicant_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
-          <div id="a<?=$answer_id?>" class="post answer<?=($answer_have_voted==='t')?' voted':''?><?=($answer_i_flagged==='t')?' flagged':''?><?=($answer_i_counterflagged==='t')?' counterflagged':''?>" data-id="<?=$answer_id?>">
+          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post<?=($answer_have_voted==='t')?' voted':''?><?
+                                                                        ?><?=($answer_i_flagged==='t')?' flagged':''?><?
+                                                                        ?><?=($answer_i_counterflagged==='t')?' counterflagged':''?><?
+                                                                        ?><?=($answer_is_deleted==='t')?' deleted':''?>">
             <div class="bar">
               <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
               <div>

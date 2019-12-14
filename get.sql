@@ -116,8 +116,10 @@ select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_
      , answer_at<>answer_change_at answer_has_history
      , exists(select 1 from db.answer_flag where account_id=current_setting('custom.account_id',true)::integer and answer_id=answer.answer_id and answer_flag_direction=1) answer_i_flagged
      , exists(select 1 from db.answer_flag where account_id=current_setting('custom.account_id',true)::integer and answer_id=answer.answer_id and answer_flag_direction=-1) answer_i_counterflagged
-from db.answer natural join (select question_id,community_id from question) z natural join community
-     natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
+from db.answer natural join (select question_id,community_id from db.question) q natural join community
+     natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) v
+     natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=current_setting('custom.account_id',true)::integer) c
+where (answer_flags<=0 or current_setting('custom.account_id',true)::integer is not null) and (answer_crew_flags<=0 or communicant_is_post_flag_crew);
 --
 create view answer_history with (security_barrier) as select answer_history_id,answer_id,account_id,answer_history_at,answer_history_markdown from db.answer_history;
 --
