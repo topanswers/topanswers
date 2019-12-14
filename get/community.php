@@ -915,7 +915,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 </span>
                 <span class="element">
                   <?if($account_is_imported==='t'){?>
-                    <span><a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                    <span><?if($communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
                   <?}else{?>
                     <span><?=htmlspecialchars($account_name)?></span>
                   <?}?>

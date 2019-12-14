@@ -63,7 +63,7 @@ switch($_POST['action']) {
     $xpath = new DOMXpath($doc);
     $elements = $xpath->query("//div[@id='question-header']/h1/a");
     $title = $elements[0]->childNodes[0]->nodeValue;
-    $elements = $xpath->query("//div[@id='question']//div[contains(concat(' ', @class, ' '), ' owner ')]//div[contains(concat(' ', @class, ' '), ' user-details ')]/a");
+    $elements = $xpath->query("//div[@id='question']//div[contains(concat(' ', @class, ' '), ' owner ')]//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[not(@id)]");
     $qanon = (count($elements)===0);
     if(!$qanon){
       $seuid = explode('/',$elements[0]->getAttribute('href'))[2];
@@ -75,7 +75,7 @@ switch($_POST['action']) {
     foreach($elements as $element){
       $a = $xpath->query("//div[@id='".$element->textContent."']"
                         ."//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
-                        ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a");
+                        ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[not(@id)]");
       $answers[explode('-',$element->textContent)[1]] = (count($a)===0)?["anon"=>true]:["anon"=>false,"uid"=>explode('/',$a[0]->getAttribute('href'))[2],"uname"=>$a[0]->textContent];
     }
    //error_log($seqid);
