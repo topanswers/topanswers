@@ -927,7 +927,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <?if($uuid){?>
                   <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
                   <?if($answer_has_history==='t'){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
-                  <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.identicon').click(); return false;">comment</a><?}?>
+                  <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
                 <?}?>
               </div>
               <div class="shrink">
