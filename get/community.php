@@ -898,10 +898,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                       from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join communicant
                       where question_id=$1
                       order by answer_votes desc, communicant_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
-          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post<?=($answer_have_voted==='t')?' voted':''?><?
-                                                                        ?><?=($answer_i_flagged==='t')?' flagged':''?><?
-                                                                        ?><?=($answer_i_counterflagged==='t')?' counterflagged':''?><?
-                                                                        ?><?=($answer_is_deleted==='t')?' deleted':''?>">
+          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post answer<?=($answer_have_voted==='t')?' voted':''?><?
+                                                                               ?><?=($answer_i_flagged==='t')?' flagged':''?><?
+                                                                               ?><?=($answer_i_counterflagged==='t')?' counterflagged':''?><?
+                                                                               ?><?=($answer_is_deleted==='t')?' deleted':''?>">
             <div class="bar">
               <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
               <div>
