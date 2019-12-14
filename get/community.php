@@ -500,18 +500,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('.fa-bell').click(function(){ subscribe(false); });
       $('.fa-bell-o').click(function(){ subscribe(true); });
       function flag(direction){
-        var b = $('#question .fa-flag, #question .fa-flag-o, #question .fa-flag-checkered');
+        var t = $(this), b = t.parent().find('.fa-flag, .fa-flag-o, .fa-flag-checkered'), p = t.closest('.post');
         b.css({'opacity':'0.3','pointer-events':'none'});
-        $.post({ url: '//post.topanswers.xyz/question', data: { action: 'flag', id: <?=$question?>, direction: direction }, xhrFields: { withCredentials: true } }).done(function(r){
+        $.post({ url: '//post.topanswers.xyz/'+(p.is('#question')?'question':'answer'), data: { action: 'flag', id: p.data('id'), direction: direction }, xhrFields: { withCredentials: true } }).done(function(r){
           b.css({ 'opacity':'1','pointer-events':'auto' });
-          $('#question').removeClass('flagged counterflagged');
-          if(direction===1) $('#question').addClass('flagged');
-          if(direction===-1) $('#question').addClass('counterflagged');
+          p.removeClass('flagged counterflagged');
+          if(direction===1) p.addClass('flagged');
+          if(direction===-1) p.addClass('counterflagged');
         });
       }
-      $('.fa-flag').click(function(){ flag(0); });
-      $('.fa-flag-o').click(function(){ flag(1); });
-      $('.fa-flag-checkered').click(function(){ flag($('#question').is('.counterflagged')?0:-1); });
+      $('.fa-flag').click(function(){ flag.call(this,0); });
+      $('.fa-flag-o').click(function(){ flag.call(this,1); });
+      $('.fa-flag-checkered').click(function(){ flag.call(this,$('#question').is('.counterflagged')?0:-1); });
       $('body').on('click','.icon.pingable', function(){
         if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')+' '); }
         $(this).toggleClass('ping');
@@ -699,6 +699,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
+      $('#chat-wrapper').on('click','.message[data-type="answer flag"] .dismiss', function(){
+        $.post({ url: '//post.topanswers.xyz/answer', data: { action: 'dismiss-flag', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        return false;
+      });
       $('#more').click(function(){ moreQuestions(); return false; });
       function search(){
         if($('#search').val()===''){
@@ -777,7 +782,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account natural join community natural join license natural join codelicense natural left join communicant
                        where question_id=$1",$question));?>
-        <div id="question"
+        <div id="question" data-id="<?=$question?>"
              class="post<?=($question_have_voted==='t')?' voted':''?><?=($question_i_subscribed==='t')?' subscribed':''?><?=($question_i_flagged==='t')?' flagged':''?><?=($question_i_counterflagged==='t')?' counterflagged':''?>">
           <div class="title"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
@@ -790,7 +795,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <span><?=htmlspecialchars($account_name)?></span>
                 <?}?>
               </span>
-              <span class="when element" data-seconds="<?=$question_when?>"></span>
               <span class="element">
                 <a href="<?=$license_href?>"><?=$license_name?></a>
                 <?if($has_codelicense==='t'){?>
@@ -798,6 +802,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <a href="/meta?q=24"><?=$codelicense_name?> for original code</a>
                 <?}?>
               </span>
+              <span class="when element" data-seconds="<?=$question_when?>"></span>
             </div>
             <div>
               <div class="element container">
@@ -878,17 +883,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </form>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me,account_is_imported
-                            ,communicant_se_user_id,answer_se_answer_id
+                            ,communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
                            , coalesce(communicant_votes,0) communicant_votes
                            , extract('epoch' from current_timestamp-answer_at) answer_when
                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                       from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join communicant
                       where question_id=$1
                       order by answer_votes desc, communicant_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
-          <div id="a<?=$answer_id?>" class="post answer<?=($answer_have_voted==='t')?' voted':''?>" data-id="<?=$answer_id?>">
+          <div id="a<?=$answer_id?>" class="post answer<?=($answer_have_voted==='t')?' voted':''?><?=($answer_i_flagged==='t')?' flagged':''?><?=($answer_i_counterflagged==='t')?' counterflagged':''?>" data-id="<?=$answer_id?>">
             <div class="bar">
               <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
               <div>
+                <span class="when element" data-seconds="<?=$answer_when?>"></span>
                 <span class="element">
                   <a href="<?=$license_href?>"><?=$license_name?></a>
                   <?if($has_codelicense==='t'){?>
@@ -896,7 +902,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span>
                   <?}?>
                 </span>
-                <span class="when element" data-seconds="<?=$answer_when?>"></span>
                 <span class="element">
                   <?if($account_is_imported==='t'){?>
                     <span><a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
@@ -920,11 +925,40 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.identicon').click(); return false;">comment</a><?}?>
                 <?}?>
               </div>
+              <div class="shrink">
+                <?if(($account_is_me==='f')&&(($answer_crew_flags==='0')||($my_community_is_post_flag_crew==='t'))){?>
+                  <?if($answer_active_flags<>"0"){?>
+                    <div class="element container shrink">
+                      <span>flagged by:</span>
+                      <div class="container shrink">
+                        <?foreach(db("select answer_flag_is_crew,answer_flag_direction
+                                           , account_id flag_account_id
+                                           , account_name flag_account_name
+                                      from answer_flag natural join account
+                                      where answer_id=$1 and answer_flag_direction<>0 and not account_is_me
+                                      order by answer_flag_is_crew, answer_flag_at",$answer_id) as $i=>$r){ extract($r);?>
+                          <img class="icon pingable"
+                               title="<?=$flag_account_name?><?=($answer_flag_is_crew==='t')?(($answer_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
+                               data-id="<?=$flag_account_id?>"
+                               data-name="<?=explode(' ',$flag_account_name)[0]?>"
+                               data-fullname="<?=$flag_account_name?>"
+                               src="/identicon?id=<?=$flag_account_id?>">
+                        <?}?>
+                      </div>
+                    </div>
+                  <?}?>
+                  <div class="element fa fw fa-flag" title="unflag this answer"></div>
+                  <div class="element fa fw fa-flag-o" title="flag this answer (n.b. flags are public)"></div>
+                  <?if(($my_community_is_post_flag_crew==='t')&&(intval($answer_active_flags)>0)){?>
+                    <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
+                  <?}?>
+                <?}?>
+              </div>
             </div>
           </div>
         <?}?>
       <?}else{?>
-        <div id="more"><a id="more" href=".">show more</a><i class="fa fa-spinner fa-pulse fa-fw"></i></div>
+        <div><a id="more" href=".">show more</a><i class="fa fa-spinner fa-pulse fa-fw"></i></div>
       <?}?>
     </div>
   </main>
@@ -962,7 +996,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <div id="chat">
       <div id="messages-wrapper">
         <div id="notification-wrapper">
-          <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||(ccdb("select count(*)>0 from question_notification")==='t')||(ccdb("select count(*)>0 from answer_notification")==='t')||(ccdb("select count(*)>0 from question_flag_notification")==='t'))){?>
+          <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||(ccdb("select count(*)>0 from question_notification")==='t')||(ccdb("select count(*)>0 from answer_notification")==='t')||(ccdb("select count(*)>0 from question_flag_notification")==='t')||(ccdb("select count(*)>0 from answer_flag_notification")==='t'))){?>
             <div id="notifications">
               <div class="label">Notifications:</div>
               <?foreach(db("with c as (select 'chat' notification_type
@@ -1043,7 +1077,27 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                             , question_room_id
                                             , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
                                        from answer_notification natural join answer natural join (select question_id,question_title,community_id,question_room_id from question) z natural join community)
-                            select * from c union all select * from q union all select * from qf union all select * from a
+                              , af as (select 'answer flag' notification_type
+                                            , answer_flag_count notification_count
+                                            , answer_flag_history_id notification_id
+                                            , answer_flag_notification_at notification_at
+                                            , to_char(answer_flag_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
+                                            , encode(community_mid_shade,'hex') notification_mid_shade
+                                            , encode(community_dark_shade,'hex') notification_dark_shade
+                                            , community_name notification_community_name
+                                            , question_id
+                                            , question_title
+                                            , answer_id
+                                            , null::boolean
+                                            , null::integer
+                                            , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                                       from (select answer_id
+                                                  , max(answer_flag_history_id) answer_flag_history_id
+                                                  , max(answer_flag_notification_at) answer_flag_notification_at
+                                                  , count(distinct account_id) answer_flag_count
+                                             from answer_flag_notification natural join answer_flag_history group by answer_id) n
+                                            natural join (select answer_id,question_id from answer) a natural join (select question_id,community_id,question_title from question) q natural join community)
+                            select * from c union all select * from q union all select * from qf union all select * from a union all select * from af
                             order by notification_at limit 20") as $r){ extract($r);?>
                 <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
                   <?if($notification_type==='chat'){?>
@@ -1094,7 +1148,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
                       <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
                       <span style="flex: 0 0 auto;">, <?=($notification_count>1)?$notification_count.' ':''?> question flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
-                      <a href="/<?=$notification_community_name?>?q=<?=$question_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+                      <a href="/<?=$notification_community_name?>?q=<?=$question_id?>#question" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
                       —
                       <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </div>
@@ -1103,6 +1157,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                       <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
                       <span style="flex: 0 0 auto;">, answer <?=($answer_notification_is_edit==='t')?'edit':'posted'?> on:&nbsp;</span>
                       <a href="/answer-history?id=<?=$answer_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+                      —
+                      <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
+                    </div>
+                  <?}elseif($notification_type==='answer flag'){?>
+                    <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
+                      <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
+                      <span style="flex: 0 0 auto;">, <?=($notification_count>1)?$notification_count.' ':''?> answer flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
+                      <a href="/<?=$notification_community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
                       —
                       <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
                     </div>

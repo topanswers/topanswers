@@ -50,14 +50,14 @@ if($search){
       <div>
         <img title="Stars: <?=$communicant_votes?>" class="icon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
         <span class="element"><?=htmlspecialchars($account_name)?></span>
-        <span class="when element" data-seconds="<?=$question_when?>"><?=htmlspecialchars($account_name)?></span>
-        <?if($question_bump_reason){?><span class="element when" data-prefix="(<?=$question_bump_reason?>, " data-postfix=")" data-seconds="<?=$bump_when?>"></span><?}?>
         <?if($question_votes){?>
           <span class="element<?=($question_have_voted==='t')?' me':''?>">
             <i class="fa fa-star<?=(($account_is_me==='f')&&($question_have_voted==='f')&&$question_votes)?'-o':''?>"></i>
             <?=($question_votes>1)?$question_votes:''?>
           </span>
         <?}?>
+        <span class="when element" data-seconds="<?=$question_when?>"><?=htmlspecialchars($account_name)?></span>
+        <?if($question_bump_reason){?><span class="element when" data-prefix="(<?=$question_bump_reason?>, " data-postfix=")" data-seconds="<?=$bump_when?>"></span><?}?>
       </div>
       <div class="element container">
         <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question_id) as $r){ extract($r);?>

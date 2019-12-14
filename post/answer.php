@@ -7,6 +7,10 @@ include '../db.php';
 ccdb("select login($1)",$_COOKIE['uuid']) || fail(403,'invalid uuid');
 
 switch($_POST['action']) {
+  case 'vote': exit(ccdb("select vote_answer($1,$2)",$_POST['id'],$_POST['votes']));
+  case 'dismiss': exit(ccdb("select dismiss_answer_notification($1)",$_POST['id']));
+  case 'dismiss-flag': exit(ccdb("select dismiss_answer_flag_notification($1)",$_POST['id']));
+  case 'flag': exit(ccdb("select flag_answer($1,$2)",$_POST['id'],$_POST['direction']));
   case 'new':
     $id=ccdb("select new_answer($1,$2,$3,$4)",$_POST['question'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
     if($id){
@@ -19,7 +23,5 @@ switch($_POST['action']) {
     extract(cdb("select community_name,question_id from get.answer natural join (select question_id,community_id from get.question) z natural join get.community where answer_id=$1",$_POST['id']));
     header('Location: //topanswers.xyz/'.$community_name.'?q='.$question_id);
     exit;
-  case 'vote': exit(ccdb("select vote_answer($1,$2)",$_POST['id'],$_POST['votes']));
-  case 'dismiss': exit(ccdb("select dismiss_answer_notification($1)",$_POST['id']));
   default: fail(400,'unrecognized action');
 }

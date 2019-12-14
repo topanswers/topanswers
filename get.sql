@@ -110,10 +110,12 @@ where (question_flags<=0 or current_setting('custom.account_id',true)::integer i
 create view question_history with (security_barrier) as select question_history_id,question_id,account_id,question_history_at,question_history_title,question_history_markdown from db.question_history;
 --
 create view answer with (security_barrier) as
-select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,license_id,codelicense_id,answer_se_answer_id
+select answer_id,question_id,account_id,answer_at,answer_markdown,answer_change_at,answer_votes,license_id,codelicense_id,answer_se_answer_id,answer_flags,answer_crew_flags,answer_active_flags
      , coalesce(answer_vote_votes>=community_my_power,false) answer_have_voted
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
+     , exists(select 1 from db.answer_flag where account_id=current_setting('custom.account_id',true)::integer and answer_id=answer.answer_id and answer_flag_direction=1) answer_i_flagged
+     , exists(select 1 from db.answer_flag where account_id=current_setting('custom.account_id',true)::integer and answer_id=answer.answer_id and answer_flag_direction=-1) answer_i_counterflagged
 from db.answer natural join (select question_id,community_id from question) z natural join community
      natural left join (select answer_id,answer_vote_votes from db.answer_vote where account_id=current_setting('custom.account_id',true)::integer and answer_vote_votes>0) zz;
 --
@@ -132,6 +134,9 @@ create view subscription with (security_barrier) as select account_id,question_i
 create view question_flag with (security_barrier) as select question_id,account_id,question_flag_at,question_flag_direction,question_flag_is_crew from db.question_flag;
 create view question_flag_history with (security_barrier) as select question_flag_history_id,question_id,account_id,question_flag_history_at,question_flag_history_direction,question_flag_history_is_crew from db.question_flag_history;
 create view question_flag_notification with (security_barrier) as select question_flag_history_id,question_flag_notification_at from db.question_flag_notification where account_id=current_setting('custom.account_id',true)::integer;
+create view answer_flag with (security_barrier) as select answer_id,account_id,answer_flag_at,answer_flag_direction,answer_flag_is_crew from db.answer_flag;
+create view answer_flag_history with (security_barrier) as select answer_flag_history_id,answer_id,account_id,answer_flag_history_at,answer_flag_history_direction,answer_flag_history_is_crew from db.answer_flag_history;
+create view answer_flag_notification with (security_barrier) as select answer_flag_history_id,answer_flag_notification_at from db.answer_flag_notification where account_id=current_setting('custom.account_id',true)::integer;
 --
 --
 create function login(luuid uuid) returns boolean language sql security definer set search_path=db,get,pg_temp as $$

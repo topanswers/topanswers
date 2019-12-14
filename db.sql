@@ -248,6 +248,9 @@ create table answer(
 , answer_change_at timestamptz not null default current_timestamp
 , answer_votes integer default 0 not null
 , answer_se_answer_id integer
+, answer_flags integer default 0 not null
+, answer_crew_flags integer default 0 not null
+, answer_active_flags integer default 0 not null
 , license_id integer references license not null
 , codelicense_id integer references codelicense not null
 );
@@ -370,6 +373,34 @@ create table answer_vote_history(
 , answer_vote_history_votes integer not null check (answer_vote_history_votes>=0)
 , foreign key(answer_id,account_id) references answer_vote deferrable initially deferred
 );
+
+create table answer_flag(
+  answer_id integer references answer
+, account_id integer references account
+, answer_flag_at timestamptz default current_timestamp not null
+, answer_flag_direction integer not null check (answer_flag_direction in (-1,0,1))
+, answer_flag_is_crew boolean default false not null
+, primary key (answer_id,account_id)
+, unique (account_id,answer_id)
+);
+
+create table answer_flag_history(
+  answer_flag_history_id integer generated always as identity primary key
+, answer_id integer not null
+, account_id integer not null
+, answer_flag_history_at timestamptz default current_timestamp not null
+, answer_flag_history_direction integer not null check (answer_flag_history_direction in (-1,0,1))
+, answer_flag_history_is_crew boolean default false not null
+, foreign key(answer_id,account_id) references answer_flag deferrable initially deferred
+);
+
+create table answer_flag_notification(
+  answer_flag_history_id integer references answer_flag_history
+, account_id integer references account
+, answer_flag_notification_at timestamptz not null default current_timestamp
+, primary key (answer_flag_history_id,account_id)
+);
+create index answer_flag_notification_latest_ind on answer_flag_notification(account_id,answer_flag_notification_at);
 
 create table chat_notification(
   chat_id bigint references chat

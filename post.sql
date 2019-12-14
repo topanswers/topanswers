@@ -128,6 +128,13 @@ create function dismiss_answer_notification(id integer) returns void language sq
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
+create function dismiss_answer_flag_notification(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
+  with d as (delete from answer_flag_notification
+             where answer_flag_history_id in(select answer_flag_history_id from answer_flag_history where answer_id=(select answer_id from answer_flag_history where answer_flag_history_id=id))
+                   and account_id=current_setting('custom.account_id',true)::integer returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+$$;
+--
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error(429,'rate limit') where (select count(*) from account where account_create_at>current_timestamp-'5m'::interval and account_is_imported=false)>5;
   --
@@ -489,6 +496,47 @@ create function flag_question(id integer, direction integer) returns void langua
              from h cross join (select account_id from communicant
                                 where community_id=(select community_id from db.question where question_id=id) and communicant_is_post_flag_crew and account_id<>current_setting('custom.account_id',true)::integer) c
              where question_flag_history_direction>0
+             returning account_id)
+  update account set account_notification_id = default where account_id in (select account_id from qfn);
+$$;
+--
+create function flag_answer(id integer, direction integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
+  select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
+  select _error('invalid flag direction') where direction not in(-1,0,1);
+  select _error('invalid answer') where not exists (select 1 from answer where answer_id=id);
+  select _error('cant flag own answer') where exists (select 1 from answer where answer_id=id and account_id=current_setting('custom.account_id',true)::integer);
+  select _error(429,'rate limit') where (select count(1) from answer_flag_history where account_id=current_setting('custom.account_id',true)::integer and answer_flag_history_at>current_timestamp-'1m'::interval)>6;
+  --
+  select _ensure_communicant(current_setting('custom.account_id',true)::integer,community_id) from answer natural join (select question_id,community_id from question) q where answer_id=id;
+  --
+  with d as (delete from answer_flag where answer_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
+     , q as (update answer set answer_active_flags = answer_active_flags-abs(d.answer_flag_direction)
+                             , answer_flags = answer_flags-(case when d.answer_flag_is_crew then 0 else d.answer_flag_direction end)
+                             , answer_crew_flags = answer_crew_flags-(case when d.answer_flag_is_crew then d.answer_flag_direction else 0 end)
+             from d
+             where answer.answer_id=id)
+  select answer_id,account_id,answer_flag_at,answer_flag_direction,answer_flag_is_crew from d;
+  --
+  with i as (insert into answer_flag(answer_id,account_id,answer_flag_direction,answer_flag_is_crew)
+             select id,account_id,direction,communicant_is_post_flag_crew
+             from db.communicant
+             where account_id=current_setting('custom.account_id',true)::integer and community_id=(select community_id from answer natural join (select question_id,community_id from question) q where answer_id=id)
+             returning *)
+     , u as (update answer set answer_active_flags = answer_active_flags+abs(i.answer_flag_direction)
+                               , answer_flags = answer_flags+(case when i.answer_flag_is_crew then 0 else i.answer_flag_direction end)
+                               , answer_crew_flags = answer_crew_flags+(case when i.answer_flag_is_crew then i.answer_flag_direction else 0 end)
+             from i
+             where answer.answer_id=id)
+     , h as (insert into answer_flag_history(answer_id,account_id,answer_flag_history_direction,answer_flag_history_is_crew)
+             select answer_id,account_id,answer_flag_direction,answer_flag_is_crew from i
+             returning answer_flag_history_id,answer_flag_history_direction)
+   , qfn as (insert into answer_flag_notification(answer_flag_history_id,account_id)
+             select answer_flag_history_id,account_id
+             from h cross join (select account_id from communicant
+                                where community_id=(select community_id from answer natural join (select question_id,community_id from question) q where answer_id=id)
+                                      and communicant_is_post_flag_crew
+                                      and account_id<>current_setting('custom.account_id',true)::integer) c
+             where answer_flag_history_direction>0
              returning account_id)
   update account set account_notification_id = default where account_id in (select account_id from qfn);
 $$;
