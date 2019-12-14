@@ -61,7 +61,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     header, #qa .bar>div:not(.shrink), .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
     header>div, #qa .bar.shrink, .container.shrink, .element.shrink { flex: 0 1 auto; }
 
-    header { xline-height: 0; min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
+    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
     main header { border-bottom: 2px solid black; }
     #chat-wrapper header { border-top: 2px solid black; }
     header a { color: #<?=$colour_light?>; }
@@ -95,6 +95,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px;font-family: '<?=$my_community_regular_font_name?>', serif; }
 
     #qa .post { background-color: white; border-radius: 5px; margin: 16px; margin-bottom: 32px; }
+    #qa .post.deleted>:not(.bar) { background-color: #<?=$colour_warning?>20; }
     #qa .post:not(:hover) .when { display: none; }
     #qa .post.answer { border-top-right-radius: 0; }
     #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
@@ -774,6 +775,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
                              ,account_name,account_is_me,question_se_question_id,account_is_imported,communicant_se_user_id,question_i_subscribed,question_i_flagged,question_i_counterflagged
                              ,question_crew_flags,question_active_flags
+                            , question_crew_flags>0 question_is_deleted
                             , coalesce(communicant_votes,0) communicant_votes
                             , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
                             , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
@@ -782,8 +784,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                             , extract('epoch' from current_timestamp-question_at) question_when
                        from question natural join account natural join community natural join license natural join codelicense natural left join communicant
                        where question_id=$1",$question));?>
-        <div id="question" data-id="<?=$question?>"
-             class="post<?=($question_have_voted==='t')?' voted':''?><?=($question_i_subscribed==='t')?' subscribed':''?><?=($question_i_flagged==='t')?' flagged':''?><?=($question_i_counterflagged==='t')?' counterflagged':''?>">
+        <div id="question" data-id="<?=$question?>" class="post<?=($question_have_voted==='t')?' voted':''?><?
+                                                             ?><?=($question_i_subscribed==='t')?' subscribed':''?><?
+                                                             ?><?=($question_i_flagged==='t')?' flagged':''?><?
+                                                             ?><?=($question_i_counterflagged==='t')?' counterflagged':''?><?
+                                                             ?><?=($question_is_deleted==='t')?' deleted':''?>">
           <div class="title"><?=$question_type.htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>

@@ -21,6 +21,7 @@ if($search){
                     , a as (select question_id, answer_markdown txt, strict_word_similarity($2,answer_markdown) word_similarity, similarity($2,answer_markdown) similarity from answer natural join (select question_id,community_id from question) z where community_id=$1 and $2<<%answer_markdown)
                     , s as (select question_id, bool_or(txt like '%'||$2||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
                  select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
+                      , question_crew_flags>0 question_is_deleted
                       , coalesce(communicant_votes,0) communicant_votes
                       , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
                       , extract('epoch' from current_timestamp-question_at) question_when
@@ -32,6 +33,7 @@ if($search){
                  order by exact desc, similarity desc limit 5",$community_id,$_GET['search']);
 }else{
   $results = db("select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
+                      , question_crew_flags>0 question_is_deleted
                       , coalesce(communicant_votes,0) communicant_votes
                       , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
                       , extract('epoch' from current_timestamp-question_at) question_when
@@ -44,7 +46,7 @@ if($search){
 }
 ?>
 <?foreach($results as $r){ extract($r);?>
-  <div id="q<?=$question_id?>" class="question post" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
+  <div id="q<?=$question_id?>" class="question post<?=($question_is_deleted==='t')?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
     <a href="/<?=$community?>?q=<?=$question_id?>#question" title="<?=$question_type.$question_title?>"><?=$question_type.$question_title?></a>
     <div class="bar">
       <div>
