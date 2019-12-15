@@ -9,8 +9,8 @@ if($uuid) setcookie("uuid",$uuid,2147483647,'/','topanswers.xyz',null,true);
 $environment = $_COOKIE['environment'] ?? 'prod';
 $dev = false;
 if($uuid){
-  ccdb("select login($1)",$uuid);
-  $dev = (ccdb("select account_is_dev from my_account")==='t');
+  if(ccdb("select login($1)",$uuid)==='t') $dev = (ccdb("select account_is_dev from my_account")==='t');
+  else $uuid = false;
 }
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
