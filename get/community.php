@@ -127,7 +127,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #answer { margin: 2rem auto; display: block; }
     #more { margin-bottom: 1.2rem; display: none; text-align: center; }
-    #more a { display: none; }
 
     #chat-wrapper { font-size: 14px; background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
     #chat-wrapper .label { font-size: 12px; padding: 2px 0; }
@@ -269,18 +268,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
           <?if($uuid){?>setChatPollTimeout();<?}?>
-          if($('#qa').children('.question').length>=20) $('#more').parent().show();
+          if($('#qa').children('.question').length>=20) $('#more').show().find('i').hide();;
         },'html').fail(setChatPollTimeout);
       }
       function moreQuestions(){
         var last = $('#qa>.question').last(); minQuestion = last.data('poll-major-id');
-        $('<div style="text-align: center;"><i class="fa fa-spinner fa-pulse fa-fw"></i></div>').insertAfter($('#more'));
-        $('#more').hide().next().show();
+        $('#more>a').hide().next().show();
         $.get('/questions?community=<?=$community?>&older&id='+minQuestion,function(data) {
           var newquestions = $(data).filter('.question').insertAfter(last).hide().slideDown(400);
           newquestions.each(renderQuestion);
-          $('#more').show().next().hide();
-          if(newquestions.length<20) $('#more').parent().hide();
+          $('#more>a').show().next().hide();
+          if(newquestions.length<20) $('#more').hide();
         },'html');
       }
       function searchQuestions(){
@@ -288,7 +286,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#qa>.question').remove();
           $(data).filter('.question').prependTo($('#qa'));
           $('#qa>.question').each(renderQuestion);
-          $('#more').parent().hide();
+          $('#more').hide();
         },'html');
       }
       function renderChat(){
@@ -707,7 +705,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
-      $('#more').click(function(){ moreQuestions(); return false; });
+      $('#more>a').click(function(){ moreQuestions(); return false; });
       function search(){
         if($('#search').val()===''){
           $('#qa>.question').remove();
@@ -969,7 +967,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         <?}?>
       <?}else{?>
-        <div><a id="more" href=".">show more</a><i class="fa fa-spinner fa-pulse fa-fw"></i></div>
+        <div id='more'><a href=".">show more</a><i class="fa fa-spinner fa-pulse fa-fw"></i></div>
       <?}?>
     </div>
   </main>
