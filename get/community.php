@@ -577,11 +577,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
           setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
         }
+        console.log('render');
       }
+      var renderPreviewThrottle;
+      renderPreviewThrottle = _.throttle(renderPreview,100);
       $('#chattext').on('input', function(){
         if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
         if(this.scrollHeight>$(this).outerHeight()) $(this).css('height',this.scrollHeight);
-        _.debounce(renderPreview,200)();
+        //_.debounce(renderPreview,5000,{ 'leading': true, 'maxWait': 1000, 'trailing': false })();
+        renderPreviewThrottle();
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){

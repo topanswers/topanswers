@@ -35,7 +35,7 @@ begin
   if exists(select 1 from communicant where community_id=cid and communicant_se_user_id=seuid) then
     select account_id from communicant where community_id=cid and communicant_se_user_id=seuid into id;
   else
-    insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(replace(seuname,'-',' '),4,1,true) returning account_id into id;
+    insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(trim(regexp_replace(seuname,'-|\.',' ','g')),4,1,true) returning account_id into id;
     --
     insert into communicant(account_id,community_id,communicant_se_user_id,communicant_regular_font_id,communicant_monospace_font_id)
     select id,cid,seuid,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
