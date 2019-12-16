@@ -5,6 +5,16 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 $uuid = $_COOKIE['uuid'] ?? false;
 if($uuid) ccdb("select login($1)",$uuid);
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]') from chat where room_id=$1 and chat_change_id>$2",$_GET['room'],$_GET['fromid']));
+if(isset($_GET['quote'])) exit(ccdb("select account_name
+                                            ||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)
+                                            ||' — '
+                                            ||to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."')
+                                            ||'  '
+                                            ||chr(10)
+                                            ||regexp_replace(chat_markdown,'^','>','mg')
+                                     from (select chat_reply_id chat_id, chat_at, chat_markdown, account_name from chat natural join account where chat_id=$1) c
+                                          natural left join (select chat_id, account_name reply_account_name from chat natural join account) r
+                                     ",$_GET['id']));
 if(!isset($_GET['room'])) die('room not set');
 $room = $_GET['room'];
 if(isset($_GET['activerooms'])){

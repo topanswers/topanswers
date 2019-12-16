@@ -557,11 +557,31 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           window.location = '/<?=$community?>?room='+$(this).val();
         <?}?>
       });
+      function renderPreview(sync){
+        var m = $('#chattext').val(), s;
+        sync = typeof sync !== 'undefined' ? sync : false;
+        s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=[1-9][0-9]*&id=([1-9][0-9]*)(#c([1-9][0-9]*))?$/);
+        if(s&&(s[1]===s[3])){
+          $.get({ url: '/chat?quote&id='+s[1], async: !sync }).done(function(r){
+            if($('#chattext').val()===m){
+              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ console.log(match); return '['+(moment(match).fromNow())+']('+s[0]+')'; })).renderMarkdown();
+              setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
+            }
+          }).fail(function(){
+            if($('#chattext').val()===m){
+              $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
+              setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
+            }
+          });
+        }else{
+          $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
+          setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
+        }
+      }
       $('#chattext').on('input', function(){
-        var m = $('#chattext').val();
         if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
         if(this.scrollHeight>$(this).outerHeight()) $(this).css('height',this.scrollHeight);
-        $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
+        _.debounce(renderPreview,200)();
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){
@@ -570,13 +590,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           if(!e.shiftKey) {
             if(msg.trim()){
               clearTimeout(chatTimer);
+              renderPreview(true);
               if(edit){
-                post = { msg: msg, editid: replyid, action: 'edit' };
+                post = { msg: $('#preview .markdown').attr('data-markdown'), editid: replyid, action: 'edit' };
                 c.css('opacity',0.5);
               }else{
                 arr = [];
                 $('.ping').each(function(){ arr.push($(this).data('id')); });
-                post = { room: <?=$room?>, msg: msg, replyid: replyid, pings: arr, action: 'new' };
+                post = { room: <?=$room?>, msg: $('#preview .markdown').attr('data-markdown'), replyid: replyid, pings: arr, action: 'new' };
               }
               $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).done(function(){
                 if(edit){
