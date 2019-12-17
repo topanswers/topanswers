@@ -8,9 +8,9 @@ $search = $_GET['search']??'';
 if(!isset($_GET['community'])) die('Community not set');
 $community = $_GET['community'];
 ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
-extract(cdb("select community_id
+extract(cdb("select community_id,community_my_power
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community
+             from community natural join my_community
              where community_name=$1",$community));
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where community_id=$1 and question_poll_minor_id>$2",$community_id,$_GET['fromid']));
 $id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (select question_poll_major_id from question where community_id=$1 order by question_poll_major_id desc limit 50) z",$community_id);
@@ -68,7 +68,7 @@ if($search){
       </div>
     </div>
     <div class="answers">
-      <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,account_name,account_is_me
+      <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,account_name,account_is_me
                          , answer_crew_flags>0 answer_is_deleted
                          , coalesce(communicant_votes,0) communicant_votes
                          , extract('epoch' from current_timestamp-answer_at) answer_when
@@ -81,7 +81,8 @@ if($search){
             <span class="when element" data-seconds="<?=$answer_when?>"></span>
             <?if($answer_votes){?>
               <span class="element">
-                <i class="fa fa-star<?=(($account_is_me==='f')&&($answer_have_voted==='f')&&$answer_votes)?'-o':''?><?=($answer_have_voted==='t')?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
+                <i class="fa fa-star<?=((($account_is_me==='f')&&($answer_votes>0)) && (($answer_have_voted==='f') || (($answer_votes_from_me>0)&&($community_my_power>$answer_votes_from_me))))?'-o':''?><?
+                                  ?><?=($answer_votes_from_me>0)?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
               </span>
             <?}?>
             <span class="element"><?=htmlspecialchars($account_name)?></span>
