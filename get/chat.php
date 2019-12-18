@@ -5,8 +5,8 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('room not set');
 db("set search_path to api,chat,pg_temp");
 extract(cdb("select uuid,community_name,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight
-             from login_room($1::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']));
-if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]') from chat where chat_change_id>$2",$_GET['fromid']));
+             from login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']));
+if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]') from chat where chat_change_id>$1",$_GET['fromid']));
 if(isset($_GET['quote'])) exit(ccdb("select quote($1)",$_GET['id']));
 if(isset($_GET['activerooms'])){
   foreach(db("select room_id,room_name,community_colour,room_account_unread_messages from activerooms()") as $r){ extract($r);?>
@@ -24,8 +24,8 @@ if(isset($_GET['activeusers'])){
 }
 $id = $_GET['id']??ccdb("select greatest(min(chat_id)-1,0) from (select chat_id from chat order by chat_id desc limit 100) z");
 ?>
-<?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,communicant_votes,chat_editable_age,i_flagged,i_starred,chat_account_will_repeat
-                    ,chat_flag_count,chat_star_count,chat_has_history,chat_account_is_repeat,rn
+<?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,communicant_votes,chat_editable_age
+                    ,i_flagged,i_starred,chat_account_will_repeat,chat_flag_count,chat_star_count,chat_has_history,chat_account_is_repeat,rn
                    , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
               from range($1,nullif($2,'')::bigint)",$id,isset($_GET['one'])?$id:'') as $r){ extract($r);?>
   <?if(($chat_account_is_repeat==='f')&&!isset($_GET['one'])){?>

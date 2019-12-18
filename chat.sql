@@ -7,6 +7,50 @@ create view account with (security_barrier) as select account_id,account_name fr
 create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
 --
 --
+create function range2(startid bigint, endid bigint) 
+                     returns table (chat_id bigint
+                                  , account_id integer
+                                  , chat_reply_id integer
+                                  , chat_markdown text
+                                  , chat_at timestamptz
+                                  , chat_change_id bigint
+                                  , account_is_me boolean
+                                  , account_name text
+                                  , reply_account_name text
+                                  , reply_account_is_me boolean
+                                  , chat_gap integer
+                                  , communicant_votes integer
+                                  , chat_editable_age boolean
+                                  , i_flagged boolean
+                                  , i_starred boolean
+                                  , chat_account_will_repeat boolean
+                                  , chat_flag_count integer
+                                  , chat_star_count integer
+                                  , chat_has_history boolean
+                                  , chat_account_is_repeat boolean
+                                  , rn bigint
+                                   ) language sql security definer set search_path=db,api,chat,pg_temp as $$
+  select *, row_number() over(order by chat_at desc) rn
+  from (select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
+        from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id
+                   , account_id=get_account_id() account_is_me
+                   , coalesce(nullif(account_name,''),'Anonymous') account_name
+                   , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+                   , (select account_id=get_account_id() from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
+                   , round(extract('epoch' from chat_at-(lag(chat_at) over (order by chat_at))))::integer chat_gap
+                   , coalesce(communicant_votes,0) communicant_votes
+                   , extract('epoch' from current_timestamp-chat_at)<240 chat_editable_age
+                   , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=get_account_id()) i_flagged
+                   , exists(select 1 from chat_star where chat_id=c.chat_id and account_id=get_account_id()) i_starred
+                   , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
+                   , (select count(1)::integer from chat_flag where chat_id=c.chat_id) chat_flag_count
+                   , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
+                   , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
+              from chat c natural join account natural left join (select community_id,communicant_votes from communicant where account_id=get_account_id()) v
+              where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
+        where chat_id>startid and (get_account_id() is not null or chat_flag_count=0)) z
+  order by chat_at;
+$$;
 create function range(startid bigint, endid bigint) 
                      returns table (chat_id bigint
                                   , account_id integer
@@ -47,8 +91,8 @@ create function range(startid bigint, endid bigint)
                    , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
                    , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
               from chat c natural join account natural left join (select community_id,communicant_votes from communicant where account_id=get_account_id()) v
-              where room_id=get_room_id() and chat_id>startid and (endid is null or chat_id<=endid)) z
-        where get_account_id() is not null or chat_flag_count=0) z
+              where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
+        where chat_id>startid and (get_account_id() is not null or chat_flag_count=0)) z
   order by chat_at;
 $$;
 --
