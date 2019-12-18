@@ -64,7 +64,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <script src="/lib/favico.js"></script>
   <script>
     $(function(){
-      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', extraKeys: {
+      var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', inputStyle: 'contenteditable', spellcheck: true, extraKeys: {
         Home: "goLineLeft",
         End: "goLineRight",
         'Ctrl-B': function(){ $('.button.fa-bold').click(); },
