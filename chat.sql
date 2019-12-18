@@ -49,7 +49,7 @@ create function range(startid bigint, endid bigint)
               from chat c natural join account natural left join (select community_id,communicant_votes from communicant where account_id=get_account_id()) v
               where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
         where get_account_id() is not null or chat_flag_count=0) z
-  where chat_id>startid
+  where chat_id>startid or endid is not null
   order by chat_at;
 $$;
 --
