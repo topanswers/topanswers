@@ -560,9 +560,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function renderPreview(sync){
         var m = $('#chattext').val(), s;
         sync = typeof sync !== 'undefined' ? sync : false;
-        s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=[1-9][0-9]*&id=([1-9][0-9]*)(#c([1-9][0-9]*))?$/);
-        if(s&&(s[1]===s[3])){
-          $.get({ url: '/chat?quote&id='+s[1], async: !sync }).done(function(r){
+        s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=([1-9][0-9]*)(#c([1-9][0-9]*))?$/);
+        if(s&&(s[2]===s[4])){
+          $.get({ url: '/chat?quote&room='+s[1]+'&id='+s[2], async: !sync }).done(function(r){
             if($('#chattext').val()===m){
               $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ console.log(match); return '['+(moment(match).fromNow())+']('+s[0]+')'; })).renderMarkdown();
               setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);

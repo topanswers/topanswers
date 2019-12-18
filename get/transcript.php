@@ -2,42 +2,40 @@
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-$uuid = $_COOKIE['uuid'] ?? false;
-if($uuid) ccdb("select login($1)",$uuid);
 if(!isset($_GET['room'])) die('Room not set');
-$room = $_GET['room'];
+db("set search_path to api,transcript,pg_temp");
+extract(cdb("select uuid,community_name,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight
+             from login_room($1::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']));
 $max = 500;
 $search = $_GET['search']??'';
-ccdb("select count(*) from room where room_id=$1",$room)==='1' or die('invalid room');
-extract(cdb("select room_name from room where room_id=$1",$room));
 $id = $_GET['id']??0;
-if($id){ ccdb("select count(*) from chat where room_id=$1 and chat_id=$2",$room,$id)==='1' or die('invalid id'); }
+if($id){ ccdb("select count(*) from chat where chat_id=$1",$id)==='1' or die('invalid id'); }
 if(!$search){
   if(!isset($_GET['year'])){
-    if(ccdb("select sum(chat_year_count) from chat_year where room_id=$1",$room)>=$max){
+    if(ccdb("select sum(chat_year_count) from chat_year")>=$max){
       if($id) header("Location: ".$_SERVER['REQUEST_URI'].'&year='.ccdb("select extract('year' from chat_at) from chat where chat_id=$1",$id));
-      else header("Location: ".$_SERVER['REQUEST_URI'].'&year='.ccdb("select max(chat_year) from chat_year where room_id=$1",$room));
+      else header("Location: ".$_SERVER['REQUEST_URI'].'&year='.ccdb("select max(chat_year) from chat_year"));
       exit;
     }
   }else{
     if(!isset($_GET['month'])){
-      if(ccdb("select chat_year_count from chat_year where room_id=$1 and chat_year=$2",$room,$_GET['year'])>=$max){
+      if(ccdb("select chat_year_count from chat_year where chat_year=$1",$_GET['year'])>=$max){
         if($id) header("Location: ".$_SERVER['REQUEST_URI'].'&month='.ccdb("select extract('month' from chat_at) from chat where chat_id=$1",$id));
-        else header("Location: ".$_SERVER['REQUEST_URI'].'&month='.ccdb("select max(chat_month) from chat_month where room_id=$1 and chat_year=$2",$room,$_GET['year']));
+        else header("Location: ".$_SERVER['REQUEST_URI'].'&month='.ccdb("select max(chat_month) from chat_month where chat_year=$1",$_GET['year']));
         exit;
       }
     }else{
       if(!isset($_GET['day'])){
-        if(ccdb("select chat_month_count from chat_month where room_id=$1 and chat_year=$2 and chat_month=$3",$room,$_GET['year'],$_GET['month'])>=$max){
+        if(ccdb("select chat_month_count from chat_month where chat_year=$1 and chat_month=$2",$_GET['year'],$_GET['month'])>=$max){
           if($id) header("Location: ".$_SERVER['REQUEST_URI'].'&day='.ccdb("select extract('day' from chat_at) from chat where chat_id=$1",$id));
-          else header("Location: ".$_SERVER['REQUEST_URI'].'&day='.ccdb("select max(chat_day) from chat_day where room_id=$1 and chat_year=$2 and chat_month=$3",$room,$_GET['year'],$_GET['month']));
+          else header("Location: ".$_SERVER['REQUEST_URI'].'&day='.ccdb("select max(chat_day) from chat_day where chat_year=$1 and chat_month=$2",$_GET['year'],$_GET['month']));
           exit;
         }
       }else{
         if(!isset($_GET['hour'])){
-          if(ccdb("select chat_day_count from chat_day where room_id=$1 and chat_year=$2 and chat_month=$3 and chat_day=$4",$room,$_GET['year'],$_GET['month'],$_GET['day'])>=$max){
+          if(ccdb("select chat_day_count from chat_day where chat_year=$1 and chat_month=$2 and chat_day=$3",$_GET['year'],$_GET['month'],$_GET['day'])>=$max){
             if($id) header("Location: ".$_SERVER['REQUEST_URI'].'&hour='.ccdb("select extract('hour' from chat_at) from chat where chat_id=$1",$id));
-            else header("Location: ".$_SERVER['REQUEST_URI'].'&hour='.ccdb("select max(chat_hour) from chat_hour where room_id=$1 and chat_year=$2 and chat_month=$3 and chat_day=$4",$room,$_GET['year'],$_GET['month'],$_GET['day']));
+            else header("Location: ".$_SERVER['REQUEST_URI'].'&hour='.ccdb("select max(chat_hour) from chat_hour where chat_year=$1 and chat_month=$2 and chat_day=$3",$_GET['year'],$_GET['month'],$_GET['day']));
             exit;
           }
         }
@@ -49,11 +47,6 @@ $maxday = 31;
 if(isset($_GET['month'])){
   $maxday = ccdb("select extract('day' from make_timestamp($1,$2,1,0,0,0)+'1mon - 1d'::interval)",$_GET['year'],$_GET['month']);
 }
-extract(cdb("select community_code_language,my_community_regular_font_name,my_community_monospace_font_name
-                  , community_name community
-                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community natural join room natural join my_community
-             where room_id=$1",$room));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
@@ -144,31 +137,21 @@ extract(cdb("select community_code_language,my_community_regular_font_name,my_co
 <body style="display: flex; flex-direction: column;">
   <header xstyle="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div xstyle="margin: 0.5rem; margin-right: 0.1rem;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
+      <a href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community_name)?></a>
       <span style="color: #<?=$colour_mid?>;">transcript for "<?=$room_name?>"</span>
-      <form action="/transcript" method="get" style="display: inline;"><input type="search" name="search" placeholder="search"><input type="hidden" name="room" value="<?=$room?>"></form>
+      <form action="/transcript" method="get" style="display: inline;"><input type="search" name="search" placeholder="search"><input type="hidden" name="room" value="<?=$_GET['room']?>"></form>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
-      <a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
+      <a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select get_account_id()")?>"></a>
     </div>
   </header>
   <main style="display: flex; margin: 2px; background-color: #<?=$colour_light?>; overflow: hidden;">
     <?if($search){?>
       <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
-        <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.3',false)");?>
-        <?foreach(db("with c as (select chat.*, strict_word_similarity($2,chat_markdown) word_similarity, similarity($2,chat_markdown) similarity from chat where room_id=$1 and $2<<%chat_markdown)
-                      select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,chat_at,chat_has_history
+        <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.37',false)");?>
+        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,i_flagged,i_starred,chat_flag_count,chat_star_count,chat_has_history
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
-                           , coalesce(nullif(account_name,''),'Anonymous') account_name
-                           , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
-                           , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                           , chat_flag_at is not null i_flagged
-                           , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
-                           , chat_star_at is not null i_starred
-                           , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
-                      from c natural join account natural left join chat_flag natural left join chat_star
-                      where room_id=$1".($uuid?"":" and chat_flag_count=0")."
-                      order by word_similarity+similarity desc, chat_at desc limit 100",$room,$search) as $r){ extract($r);?>
+                      from search($1)",$search) as $r){ extract($r);?>
           <small class="who">
             <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
             <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
@@ -190,7 +173,7 @@ extract(cdb("select community_code_language,my_community_regular_font_name,my_co
                 <i></i>
               </span>
               <span class="button-group show">
-                <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+                <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
                 <i></i>
                 <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
                 <i></i>
@@ -205,9 +188,9 @@ extract(cdb("select community_code_language,my_community_regular_font_name,my_co
           <div>
             <div>year</div>
           </div>
-          <?foreach(db("select chat_year,chat_year_count from chat_year where room_id=$1 order by chat_year",$room) as $r){extract($r);?>
+          <?foreach(db("select chat_year,chat_year_count from chat_year order by chat_year") as $r){extract($r);?>
             <div>
-              <a<?if($chat_year!==$_GET['year']){?>  href="/transcript?room=<?=$room?>&year=<?=$chat_year?>"<?}?>><?=$chat_year?></a>
+              <a<?if($chat_year!==$_GET['year']){?>  href="/transcript?room=<?=$_GET['room']?>&year=<?=$chat_year?>"<?}?>><?=$chat_year?></a>
               <span>(<?=$chat_year_count?>)</span>
             </div>
           <?}?>
@@ -218,9 +201,9 @@ extract(cdb("select community_code_language,my_community_regular_font_name,my_co
           <div>
             <div>month</div>
           </div>
-          <?foreach(db("select chat_month,chat_month_count,to_char(to_timestamp(chat_month::text,'MM'),'Month') month_text from chat_month where room_id=$1 and chat_year=$2 order by chat_month",$room,$_GET['year']) as $r){extract($r);?>
+          <?foreach(db("select chat_month,chat_month_count,to_char(to_timestamp(chat_month::text,'MM'),'Month') month_text from chat_month where chat_year=$1 order by chat_month",$_GET['year']) as $r){extract($r);?>
             <div>
-              <a class="month"<?if($chat_month!==$_GET['month']){?>  href="/transcript?room=<?=$room?>&year=<?=$_GET['year']?>&month=<?=$chat_month?>"<?}?>><?=$month_text?></a>
+              <a class="month"<?if($chat_month!==$_GET['month']){?>  href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$chat_month?>"<?}?>><?=$month_text?></a>
               <span>(<?=$chat_month_count?>)</span>
             </div>
           <?}?>
@@ -231,9 +214,9 @@ extract(cdb("select community_code_language,my_community_regular_font_name,my_co
           <div>
             <div>day</div>
           </div>
-          <?foreach(db("select chat_day,chat_day_count from chat_day where room_id=$1 and chat_year=$2 and chat_month=$3 order by chat_day",$room,$_GET['year'],$_GET['month']) as $r){extract($r);?>
+          <?foreach(db("select chat_day,chat_day_count from chat_day where chat_year=$1 and chat_month=$2 order by chat_day",$_GET['year'],$_GET['month']) as $r){extract($r);?>
             <div>
-              <a<?if($chat_day!==$_GET['day']){?>  href="/transcript?room=<?=$room?>&year=<?=$_GET['year']?>&month=<?=$_GET['month']?>&day=<?=$chat_day?>"<?}?>><?=$chat_day?></a>
+              <a<?if($chat_day!==$_GET['day']){?>  href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$_GET['month']?>&day=<?=$chat_day?>"<?}?>><?=$chat_day?></a>
               <span>(<?=$chat_day_count?>)</span>
             </div>
           <?}?>
@@ -244,31 +227,20 @@ extract(cdb("select community_code_language,my_community_regular_font_name,my_co
           <div>
             <div>hour</div>
           </div>
-          <?foreach(db("select chat_hour,chat_hour_count from chat_hour where room_id=$1 and chat_year=$2 and chat_month=$3 and chat_day=$4 order by chat_hour",$room,$_GET['year'],$_GET['month'],$_GET['day']) as $r){extract($r);?>
+          <?foreach(db("select chat_hour,chat_hour_count from chat_hour where chat_year=$1 and chat_month=$2 and chat_day=$3 order by chat_hour",$_GET['year'],$_GET['month'],$_GET['day']) as $r){extract($r);?>
             <div>
-              <a<?if($chat_hour!==$_GET['hour']){?> href="/transcript?room=<?=$room?>&year=<?=$_GET['year']?>&month=<?=$_GET['month']?>&day=<?=$_GET['day']?>&hour=<?=$chat_hour?>"<?}?>><?=$chat_hour?>:00-<?=$chat_hour+1?>:00</a>
+              <a<?if($chat_hour!==$_GET['hour']){?> href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$_GET['month']?>&day=<?=$_GET['day']?>&hour=<?=$chat_hour?>"<?}?>><?=$chat_hour?>:00-<?=$chat_hour+1?>:00</a>
               <span>(<?=$chat_hour_count?>)</span>
             </div>
           <?}?>
         </div>
       <?}?>
       <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
-        <?foreach(db("select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
-                      from (select chat_id,account_id,chat_reply_id,chat_markdown,account_is_me,chat_flag_count,chat_star_count,room_id,chat_at,chat_has_history
-                                 , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
-                                 , coalesce(nullif(account_name,''),'Anonymous') account_name
-                                 , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
-                                 , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                                 , round(extract('epoch' from chat_at-(lag(chat_at) over (order by chat_at)))) chat_gap
-                                 , chat_flag_at is not null i_flagged
-                                 , (chat_flag_count-(chat_flag_at is not null)::integer) > 0 flagged_by_other
-                                 , chat_star_at is not null i_starred
-                                 , (chat_star_count-(chat_star_at is not null)::integer) > 0 starred_by_other
-                                 , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
-                                 , chat_reply_id<(min(chat_id) over()) reply_is_different_segment
-                            from chat c natural join account natural left join chat_flag natural left join chat_star
-                            where room_id=$1 and chat_at>=make_timestamp($2,$3,$4,$5,0,0) and chat_at<make_timestamp($6,$7,$8,$9,0,0)+'1h'::interval".($uuid?"":" and chat_flag_count=0").") z
-                      order by chat_at",$room,$_GET['year']??1,$_GET['month']??1,$_GET['day']??1,$_GET['hour']??0,$_GET['year']??9999,$_GET['month']??12,$_GET['day']??$maxday,$_GET['hour']??23) as $r){ extract($r);?>
+        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,i_flagged,i_starred,chat_account_will_repeat
+                            ,reply_is_different_segment,chat_flag_count,chat_star_count,chat_has_history,chat_account_is_repeat
+                           , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
+                      from range(make_timestamp($1,$2,$3,$4,0,0),make_timestamp($5,$6,$7,$8,0,0)+'1h'::interval)
+                     ",$_GET['year']??1,$_GET['month']??1,$_GET['day']??1,$_GET['hour']??0,$_GET['year']??9999,$_GET['month']??12,$_GET['day']??$maxday,$_GET['hour']??23) as $r){ extract($r);?>
           <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
           <div id="c<?=$chat_id?>" class="message<?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small class="who">
@@ -276,7 +248,7 @@ extract(cdb("select community_code_language,my_community_regular_font_name,my_co
               <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
               <?if($chat_reply_id){?>
                 <?if($reply_is_different_segment==='t'){?>
-                  <a href="/transcript?room=<?=$room?>&id=<?=$chat_reply_id?>#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
+                  <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_reply_id?>#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
                 <?}else{?>
                   <a href="#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
                 <?}?>
@@ -295,7 +267,7 @@ extract(cdb("select community_code_language,my_community_regular_font_name,my_co
                 <i></i>
               </span>
               <span class="button-group show">
-                <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+                <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
                 <i></i>
                 <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
                 <i></i>

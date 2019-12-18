@@ -63,6 +63,7 @@ create table account(
 , account_codelicense_id integer references codelicense default 1 not null
 , account_notification_id integer generated always as identity unique
 , account_is_imported boolean default false not null
+, account_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
 );
 create unique index account_rate_limit_ind on account(account_create_at);
 
@@ -141,7 +142,7 @@ create table room_account_x(
 , room_id integer references room
 , account_id integer references account
 , room_account_x_latest_chat_at timestamptz not null default current_timestamp
-, room_account_x_latest_read_chat_id bigint
+, room_account_x_latest_read_chat_id bigint not null
 , primary key (room_id,account_id)
 );
 create index room_account_x_latest on room_account_x(room_id,room_account_x_latest_chat_at);
