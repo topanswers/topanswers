@@ -148,7 +148,8 @@ if(isset($_GET['month'])){
   <main style="display: flex; margin: 2px; background-color: #<?=$colour_light?>; overflow: hidden;">
     <?if($search){?>
       <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
-        <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.37',false)");?>
+        <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.55',false)");?>
+        <?db("select set_config('pg_trgm.gin_fuzzy_search_limit','1000',false)");?>
         <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,i_flagged,i_starred,chat_flag_count,chat_star_count,chat_has_history
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
                       from search($1)",$search) as $r){ extract($r);?>

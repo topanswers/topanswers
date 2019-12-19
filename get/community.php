@@ -564,7 +564,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         if(s&&(s[2]===s[4])){
           $.get({ url: '/chat?quote&room='+s[1]+'&id='+s[2], async: !sync }).done(function(r){
             if($('#chattext').val()===m){
-              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ console.log(match); return '['+(moment(match).fromNow())+']('+s[0]+')'; })).renderMarkdown();
+              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return '['+(moment(match).fromNow())+']('+s[0]+')'; })).renderMarkdown();
               setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
             }
           }).fail(function(){
@@ -577,7 +577,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
           setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
         }
-        console.log('render');
       }
       var renderPreviewThrottle;
       renderPreviewThrottle = _.throttle(renderPreview,100);
