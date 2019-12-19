@@ -15,22 +15,20 @@ set local search_path to api,pg_temp;
 create function _error(integer,text) returns void language plpgsql as $$begin raise exception '%', $2 using errcode='H0'||$1; end;$$;
 create function _error(text) returns void language sql as $$select _error(403,$1);$$;
 --
-create function _get_id(text) returns integer stable language sql security definer set search_path=db,pg_temp as $$
-  select null::integer;
-  select x_pgcrypto.pgp_sym_decrypt(current_setting('custom.'||$1||'_id',true)::bytea,account_encryption_key::text||current_setting('custom.timestamp',true))::integer
-  from login natural join (select account_id,account_uuid,account_encryption_key from account) a
-  where login_uuid=current_setting('custom.uuid',true)::uuid;
+create function get_login_uuid() returns uuid stable language sql security definer as $$select current_setting('custom.uuid',true)::uuid;$$;
+--
+create function _get_id(text) returns integer stable language sql security definer set search_path=db,api,pg_temp as $$
+  with w as (select account_encryption_key from login natural join account where login_uuid=get_login_uuid() union all select one_encryption_key from one where get_login_uuid() is null)
+  select x_pgcrypto.pgp_sym_decrypt(current_setting('custom.'||$1||'_id',true)::bytea,(select account_encryption_key from w)::text||current_setting('custom.timestamp',true))::integer
 $$;
 --
-create function get_login_uuid() returns uuid stable language sql security definer as $$select current_setting('custom.uuid',true)::uuid;$$;
 create function get_account_id() returns integer stable language sql security definer as $$select api._get_id('account'::text);$$;
 create function get_room_id() returns integer stable language sql security definer as $$select api._get_id('room'::text);$$;
 create function get_community_id() returns integer stable language sql security definer as $$select api._get_id('community'::text);$$;
 --
 create function _set_id(text,integer) returns void stable language sql security definer set search_path=db,api,pg_temp as $$
-  select set_config('custom.'||$1||'_id',x_pgcrypto.pgp_sym_encrypt($2::text,account_encryption_key::text||current_setting('custom.timestamp',true))::text,false)
-  from login natural join (select account_id,account_uuid,account_encryption_key from account) a
-  where login_uuid=get_login_uuid();
+  with w as (select account_encryption_key from login natural join account where login_uuid=get_login_uuid() union all select one_encryption_key from one where get_login_uuid() is null)
+  select set_config('custom.'||$1||'_id',x_pgcrypto.pgp_sym_encrypt($2::text,(select account_encryption_key from w)::text||current_setting('custom.timestamp',true))::text,false)
 $$;
 --
 create function _set_account_id() returns void stable language sql security definer set search_path=db,api,pg_temp as $$
@@ -38,7 +36,8 @@ create function _set_account_id() returns void stable language sql security defi
 $$;
 --
 create function login(uuid uuid) returns uuid language sql security definer set search_path=db,api,pg_temp as $$
-  select set_config('custom.uuid',login_uuid::text,false), set_config('custom.timestamp',current_timestamp::text,false) from login where login_uuid=uuid;
+  select set_config('custom.uuid',login_uuid::text,false) from login where login_uuid=uuid;
+  select set_config('custom.timestamp',current_timestamp::text,false);
   select _set_account_id();
   select get_login_uuid();
 $$;

@@ -1,3 +1,8 @@
+create table one(
+  one_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
+);
+create unique index one_only_ind on one((1));
+
 create table sesite(
   sesite_id integer generated always as identity primary key
 , sesite_url text not null unique
