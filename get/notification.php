@@ -8,7 +8,11 @@ $uuid || fail(403,'not logged in');
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <div id="notification-wrapper">
-  <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')||(ccdb("select count(*)>0 from question_notification")==='t')||(ccdb("select count(*)>0 from answer_notification")==='t')||(ccdb("select count(*)>0 from question_flag_notification")==='t')||(ccdb("select count(*)>0 from answer_flag_notification")==='t'))){?>
+  <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')
+             ||(ccdb("select count(*)>0 from question_notification")==='t')
+             ||(ccdb("select count(*)>0 from answer_notification")==='t')
+             ||(ccdb("select count(*)>0 from question_flag_notification")==='t')
+             ||(ccdb("select count(*)>0 from answer_flag_notification")==='t'))){?>
     <div id="notifications">
       <div class="label">Notifications:</div>
       <?foreach(db("with c as (select 'chat' notification_type
@@ -30,15 +34,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , chat_flag_count
                                     , chat_star_count
                                     , chat_has_history
-                                    , question_id is not null chat_is_question_room
-                                    , coalesce(room_name,(select question_title from question where question_room_id=room.room_id)) chat_room_name 
+                                    , chat_is_question_room
+                                    , chat_room_name 
                                     , coalesce(nullif(account_name,''),'Anonymous') chat_from_account_name
-                                    , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) chat_reply_account_name
-                                    , (select account_is_me from chat natural join account where chat_id=c.chat_reply_id) chat_reply_account_is_me
+                                    , (select coalesce(nullif(account_name,''),'Anonymous') from account where account_id=c.chat_reply_account_id) chat_reply_account_name
+                                    , chat_reply_account_is_me
                                     , chat_flag_at is not null chat_i_flagged
                                     , chat_star_at is not null chat_i_starred
-                               from chat_notification natural join chat c natural join room natural join community natural join account natural left join chat_flag natural left join chat_star
-                                    natural left join (select question_room_id room_id, question_id, question_title from question) q)
+                               from chat_notification natural join chat c natural join account
+                                    natural left join chat_flag
+                                    natural left join chat_star)
                        , q as (select 'question' notification_type
                                     , 1 notification_count
                                     , question_history_id notification_id
@@ -53,7 +58,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , null::boolean
                                     , question_room_id
                                     , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                               from question_notification natural join question natural join community)
+                               from question_notification natural join question)
                       , qf as (select 'question flag' notification_type
                                     , question_flag_count notification_count
                                     , question_flag_history_id notification_id
@@ -68,12 +73,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , null::boolean
                                     , null::integer
                                     , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                               from (select question_id
+                               from (select question_id,question_title,community_name,community_mid_shade,community_dark_shade
                                           , max(question_flag_history_id) question_flag_history_id
                                           , max(question_flag_notification_at) question_flag_notification_at
                                           , count(distinct account_id) question_flag_count
-                                     from question_flag_notification natural join question_flag_history group by question_id) n
-                                    natural join (select question_id,community_id,question_title from question) q natural join community)
+                                     from question_flag_notification
+                                     group by question_id,question_title,community_name,community_mid_shade,community_dark_shade) n )
                        , a as (select 'answer' notification_type
                                     , 1 notification_count
                                     , answer_history_id notification_id
@@ -88,7 +93,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , answer_notification_is_edit
                                     , question_room_id
                                     , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                               from answer_notification natural join answer natural join (select question_id,question_title,community_id,question_room_id from question) z natural join community)
+                               from answer_notification natural join answer)
                       , af as (select 'answer flag' notification_type
                                     , answer_flag_count notification_count
                                     , answer_flag_history_id notification_id
@@ -103,13 +108,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , null::boolean
                                     , null::integer
                                     , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                               from (select answer_id
+                               from (select answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade
                                           , max(answer_flag_history_id) answer_flag_history_id
                                           , max(answer_flag_notification_at) answer_flag_notification_at
                                           , count(distinct account_id) answer_flag_count
-                                     from answer_flag_notification natural join answer_flag_history group by answer_id) n
-                                    natural join (select answer_id,question_id from answer) a natural join (select question_id,community_id,question_title from question) q natural join community)
-                    select * from c union all select * from q union all select * from qf union all select * from a union all select * from af
+                                     from answer_flag_notification
+                                     group by answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade) n)
+                    --select * from c union all select * from q union all select * from qf union all select * from a union all select * from af
+                    select * from c
                     order by notification_at limit 20") as $r){ extract($r);?>
         <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
           <?if($notification_type==='chat'){?>
@@ -186,25 +192,5 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </div>
     <div style="position: relative;"><div style="position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(#<?=$colour_dark?>80,transparent);"></div></div>
   <?}?>
-</div>
-<div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
-  <div style="flex: 1 0 0.5em;">
-    <?if($question&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
-      <div style="padding: 10vh 20%;">
-        <?if($uuid){?>
-          <?if(ccdb("select question_se_question_id is null from question where question_id=$1",$question)==='t'){?>
-            <p>This is a dedicated room for discussion about this question.</p>
-            <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
-          <?}else{?>
-            <p>This is a dedicated room for discussion about this imported question.</p>
-            <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
-          <?}?>
-        <?}else{?>
-          <p>This is a dedicated room for discussion about this question.</p>
-          <p>Once logged in you can direct comments to the question poster (or any answer poster) here.</p>
-        <?}?>
-      </div>
-    <?}?>
-  </div>
 </div>
 <?ob_end_flush();

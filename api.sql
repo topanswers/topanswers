@@ -5,6 +5,7 @@ begin;
 --
 drop schema if exists transcript cascade;
 drop schema if exists chat cascade;
+drop schema if exists notification cascade;
 drop schema if exists api cascade;
 create schema api;
 grant usage on schema api to get;
@@ -126,5 +127,6 @@ end$$;
 --
 \i ~/git/transcript.sql
 \i ~/git/chat.sql
+\i ~/git/notification.sql
 --
 commit;

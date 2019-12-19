@@ -55,15 +55,17 @@ $$;
 --
 create function activerooms() returns table (room_id integer, room_name text, community_colour text, room_account_unread_messages bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
   select room_id,room_name,community_colour,room_account_unread_messages
-  from (select room_id
+  from (select room_id,room_account_x_latest_chat_at
              , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
              , encode(community_light_shade,'hex') community_colour
              , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.room_account_x_latest_read_chat_id) room_account_unread_messages
-             , (select max(chat_at) from chat c where room_id=r.room_id and account_id=get_account_id()) room_my_last_chat
-        from room r natural join community natural join (select room_id,room_account_x_latest_read_chat_id from room_account_x where account_id=get_account_id()) x
+        from (select room_id,room_account_x_latest_chat_at,room_account_x_latest_read_chat_id
+              from room_account_x
+              where account_id=get_account_id() and room_account_x_latest_chat_at>(current_timestamp-'7d'::interval)) x
+             natural join room r
+             natural join community
              natural left join (select question_room_id room_id, question_title from question) q) z
-  where room_my_last_chat>(current_timestamp-'7d'::interval)
-  order by room_my_last_chat desc;
+  order by room_account_x_latest_chat_at desc;
 $$;
 --
 create function activeusers() returns table (account_id integer, account_name text, account_is_me boolean, communicant_votes integer) language sql security definer set search_path=db,api,chat,pg_temp as $$
