@@ -2,17 +2,16 @@
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-db("set search_path to api,notification,pg_temp");
-$uuid = extract(cdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??''));
-$uuid || fail(403,'not logged in');
+db("set search_path to notification,pg_temp");
+ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'') || fail(403,'not logged in');
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <div id="notification-wrapper">
-  <?if($uuid&&((ccdb("select count(*)>0 from chat_notification")==='t')
-             ||(ccdb("select count(*)>0 from question_notification")==='t')
-             ||(ccdb("select count(*)>0 from answer_notification")==='t')
-             ||(ccdb("select count(*)>0 from question_flag_notification")==='t')
-             ||(ccdb("select count(*)>0 from answer_flag_notification")==='t'))){?>
+  <?if((ccdb("select count(*)>0 from chat_notification")==='t')
+     ||(ccdb("select count(*)>0 from question_notification")==='t')
+     ||(ccdb("select count(*)>0 from answer_notification")==='t')
+     ||(ccdb("select count(*)>0 from question_flag_notification")==='t')
+     ||(ccdb("select count(*)>0 from answer_flag_notification")==='t')){?>
     <div id="notifications">
       <div class="label">Notifications:</div>
       <?foreach(db("with c as (select 'chat' notification_type

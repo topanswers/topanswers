@@ -9,47 +9,22 @@ create view chat_month with (security_barrier) as select chat_year,chat_month,ch
 create view chat_day with (security_barrier) as select chat_year,chat_month,chat_day,chat_day_count from db.chat_day where room_id=get_room_id();
 create view chat_hour with (security_barrier) as select chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour where room_id=get_room_id();
 --
+create view one with (security_barrier) as
+select account_id,account_is_dev,community_id,community_name,community_code_language,room_id,room_name
+     , encode(community_dark_shade,'hex') colour_dark
+     , encode(community_mid_shade,'hex') colour_mid
+     , encode(community_light_shade,'hex') colour_light
+     , encode(community_highlight_color,'hex') colour_highlight
+     , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
+     , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
+     , (room_type='public' or x.account_id is not null) room_can_chat
+from db.login natural join db.account natural join db.room natural join db.community
+     natural left join db.communicant
+     natural left join db.account_room_x x
+where login_uuid=get_login_uuid() and room_id=get_room_id();
 --
-create function login(inout uuid uuid
-                    , in rid integer
-                    , out community_name text
-                    , out room_name text
-                    , out community_code_language text
-                    , out my_community_regular_font_name text
-                    , out my_community_monospace_font_name text
-                    , out colour_dark text
-                    , out colour_mid text
-                    , out colour_light text
-                    , out colour_highlight text) language sql security definer set search_path=db,api,transcript,pg_temp as $$
-  --
-  select login(uuid);
-  --
-  select _error('invalid room') where not exists (select 1
-                                                  from room r natural join (select community_id,community_type from community) c 
-                                                  where room_id=rid and (community_type='public' or exists (select 1 from member m where m.community_id=r.community_id and m.account_id=get_account_id()))
-                                                                    and (room_type<>'private' or exists (select 1 from account_room_x a where a.room_id=r.room_id and a.account_id=get_account_id())));
-  --
-  select _set_id('room',room_id),_set_id('community',community_id) from room where room_id=rid;
-  --
-  select current_setting('custom.uuid',true)::uuid
-       , community_name
-       , room_name
-       , community_code_language
-       , regular_font_name
-       , monospace_font_name
-       , encode(community_dark_shade,'hex')
-       , encode(community_mid_shade,'hex')
-       , encode(community_light_shade,'hex')
-       , encode(community_highlight_color,'hex')
-  from room
-       natural join (select community_id,community_name,community_code_language,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color
-                          , coalesce(communicant_regular_font_id,community_regular_font_id) regular_font_id
-                          , coalesce(communicant_monospace_font_id,community_monospace_font_id) monospace_font_id
-                     from community natural join (select community_id,communicant_regular_font_id,communicant_monospace_font_id from communicant where account_id=get_account_id()) z) c
-       natural join (select font_id regular_font_id, font_name regular_font_name from font) r
-       natural join (select font_id monospace_font_id, font_name monospace_font_name from font) m
-  where room_id=rid;
-$$;
+--
+create function login_room(uuid,integer) returns boolean language sql security definer as $$select * from api.login_room2($1,$2);$$;
 --
 create function search(text) 
                      returns table (chat_id bigint

@@ -3,9 +3,9 @@ include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('Room not set');
-db("set search_path to api,transcript,pg_temp");
-extract(cdb("select uuid,community_name,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight
-             from login_room($1::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']));
+db("set search_path to transcript,pg_temp");
+$authenticated = (ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room'])==='t');
+extract(cdb("select account_id,community_name,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight from one"));
 $max = 500;
 $search = $_GET['search']??'';
 $id = $_GET['id']??0;
@@ -142,7 +142,7 @@ if(isset($_GET['month'])){
       <form action="/transcript" method="get" style="display: inline;"><input type="search" name="search" placeholder="search"><input type="hidden" name="room" value="<?=$_GET['room']?>"></form>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
-      <a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select get_account_id()")?>"></a>
+      <a href="/profile" class="icon"><img src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
   <main style="display: flex; margin: 2px; background-color: #<?=$colour_light?>; overflow: hidden;">

@@ -3,9 +3,24 @@ grant usage on schema chat to get;
 set local search_path to chat,api,pg_temp;
 --
 --
-create view account with (security_barrier) as select account_id,account_name from db.account;
 create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
 --
+create view one with (security_barrier) as
+select account_id,account_is_dev,community_id,community_name,community_code_language,room_id,room_name
+     , encode(community_dark_shade,'hex') colour_dark
+     , encode(community_mid_shade,'hex') colour_mid
+     , encode(community_light_shade,'hex') colour_light
+     , encode(community_highlight_color,'hex') colour_highlight
+     , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
+     , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
+     , (room_type='public' or x.account_id is not null) room_can_chat
+from db.login natural join db.account natural join db.room natural join db.community
+     natural left join db.communicant
+     natural left join db.account_room_x x
+where login_uuid=get_login_uuid() and room_id=get_room_id();
+--
+--
+create function login_room(uuid,integer) returns boolean language sql security definer as $$select * from api.login_room2($1,$2);$$;
 --
 create function range(startid bigint, endid bigint) 
                      returns table (chat_id bigint
@@ -47,7 +62,7 @@ create function range(startid bigint, endid bigint)
                    , (select count(1)::integer from chat_flag where chat_id=c.chat_id) chat_flag_count
                    , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
                    , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
-              from chat c natural join account natural left join (select community_id,communicant_votes from communicant where account_id=(select account_id from g)) v
+              from chat c natural join account natural join (select account_id,community_id,communicant_votes from communicant) v
               where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
         where (select account_id from g) is not null or chat_flag_count=0) z
   where chat_id>startid or endid is not null

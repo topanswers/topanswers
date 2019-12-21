@@ -55,8 +55,14 @@ from (select answer_flag_history_id,answer_flag_notification_at from db.answer_f
      natural join db.community;
 --
 --
+create function login(uuid) returns boolean language sql security definer as $$select * from api.login2($1);$$;
+--
+--
 revoke all on all functions in schema notification from public;
 do $$
 begin
   execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='notification' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+            from pg_proc p join pg_namespace n on p.pronamespace=n.oid
+            where n.nspname='notification' and proname!~'^_' );
 end$$;
