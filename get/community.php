@@ -1,37 +1,41 @@
 <?
 include '../db.php';
-include '../nocache.php';
+include '../locache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-$uuid = $_COOKIE['uuid'] ?? false;
+isset($_GET['community']) || fail(400,'community must be set');
+db("set search_path to community,pg_temp");
 $clearlocal = $_COOKIE['clearlocal']??'';
+$environment = $_COOKIE['environment']??'prod';
 setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
-if($uuid) setcookie("uuid",$uuid,2147483647,'/','topanswers.xyz',null,true);
-$environment = $_COOKIE['environment'] ?? 'prod';
-$dev = false;
-if($uuid){
-  if(ccdb("select login($1)",$uuid)==='t') $dev = (ccdb("select account_is_dev from my_account")==='t');
-  else $uuid = false;
+if(!isset($_GET['room'])&&!isset($_GET['q'])){
+  $auth = (ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community'])==='t');
+}elseif(isset($_GET['room'])&&!isset($_GET['q'])){
+  $auth = (ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room'])==='t');
+}elseif(isset($_GET['q'])&&!isset($_GET['room'])){
+  $auth = (ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['q'])==='t');
+}else{
+  fail(400,"exactly one of 'q' or 'room' must be set");
 }
-if(!isset($_GET['community'])) die('Community not set');
-$community = $_GET['community'];
-ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
-extract(cdb("select community_id,community_my_power,sesite_url,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,my_community_is_post_flag_crew
-                  , encode(community_dark_shade,'hex') colour_dark
-                  , encode(community_mid_shade,'hex') colour_mid
-                  , encode(community_light_shade,'hex') colour_light
-                  , encode(community_highlight_color,'hex') colour_highlight
-                  , encode(community_warning_color,'hex') colour_warning
-                  , coalesce(my_community_can_import,false) my_community_can_import
-             from community natural join my_community
-                  left join sesite on sesite_id=community_sesite_id
-             where community_name=$1",$community));
+if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
+extract(cdb("select login_resizer_percent
+                   ,account_id,account_is_dev,account_notification_id
+                   ,community_id,community_name,community_my_power,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,communicant_is_post_flag_crew,communicant_can_import
+                   ,room_id,room_name,room_can_chat,room_has_chat
+                   ,my_community_regular_font_name,my_community_monospace_font_name
+                   ,sesite_url
+                   ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
+                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged,question_is_votable
+                   ,question_is_blog,question_is_meta,question_when
+                   ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
+                   ,question_communicant_se_user_id,question_communicant_votes
+                   ,question_license_href,question_has_codelicense,question_codelicense_name
+             from one"));
+$dev = ($account_is_dev==='t');
+$_GET['community']===$community_name || fail(400,'invalid community');
 $question = $_GET['q']??'0';
-if($question) ccdb("select count(*) from question where question_id=$1",$question)==='1' || die('invalid question id');;
-if($question) ccdb("select count(*) from question where question_id=$1 and community_id=$2",$question,$community_id)==='1' || die('invalid question id for this community');;
-$room = $_GET['room']??($question?ccdb("select question_room_id from question where question_id=$1",$question):ccdb("select community_room_id from community where community_name=$1",$community));
-ccdb("select count(*) from room where room_id=$1 and community_id=$2",$room,$community_id)==='1' || die('invalid room for this community');;
-$canchat = false;
-if($uuid) $canchat = ccdb("select room_can_chat from room where room_id=$1",$room)==='t';
+$room = $room_id;
+$canchat = ($room_can_chat==='t');
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
@@ -52,7 +56,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
     body { display: flex }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    main { background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=($uuid)?ccdb("select login_resizer_percent from login"):'70'?>%; overflow: hidden; }
+    main { background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=$auth?$login_resizer_percent:'70'?>%; overflow: hidden; }
 
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
@@ -81,7 +85,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
     .tag i::before { border-radius: 50%; }
-    <?if($uuid&&$question){?>.tag:hover i { visibility: visible; }<?}?>
+    <?if($auth&&$question){?>.tag:hover i { visibility: visible; }<?}?>
     .newtag { position: relative; cursor: pointer; }
     .newtag .tag { opacity: 0.4; margin: 0; }
     .newtag:hover .tag { opacity: 1; }
@@ -128,7 +132,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #answer { margin: 2rem auto; display: block; }
     #more { margin-bottom: 1.2rem; display: none; text-align: center; }
 
-    #chat-wrapper { font-size: 14px; background: #<?=$colour_mid?>; flex: 1 1 <?=($uuid)?ccdb("select 100-login_resizer_percent from login"):'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
+    #chat-wrapper { font-size: 14px; background: #<?=$colour_mid?>; flex: 1 1 <?=($auth)?100-$login_resizer_percent:'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
     #chat-wrapper .label { font-size: 12px; padding: 2px 0; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
     #messages-wrapper { flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; }
@@ -220,7 +224,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     $(function(){
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
-      var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=$uuid?ccdb("select account_notification_id from my_account"):'0'?>, numNewChats = 0;
+      var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0;
 
       <?if($clearlocal){?>
@@ -255,7 +259,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function updateQuestions(scroll){
         var maxQuestion = $('#qa>:first-child').data('poll-major-id');
         if($('#qa').scrollTop()<100) scroll = true;
-        $.get('/questions?community=<?=$community?>'+(($('#qa').children('.question').length===0)?'':'&id='+maxQuestion),function(data) {
+        $.get('/questions?community=<?=$community_name?>'+(($('#qa').children('.question').length===0)?'':'&id='+maxQuestion),function(data) {
           if($('#qa>:first-child').data('poll-major-id')===maxQuestion){
             var newquestions;
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
@@ -267,14 +271,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             });
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
-          <?if($uuid){?>setChatPollTimeout();<?}?>
+          <?if($auth){?>setChatPollTimeout();<?}?>
           if($('#qa').children('.question').length>=20) $('#more').show().find('i').hide();;
         },'html').fail(setChatPollTimeout);
       }
       function moreQuestions(){
         var last = $('#qa>.question').last(); minQuestion = last.data('poll-major-id');
         $('#more>a').hide().next().show();
-        $.get('/questions?community=<?=$community?>&older&id='+minQuestion,function(data) {
+        $.get('/questions?community=<?=$community_name?>&older&id='+minQuestion,function(data) {
           var newquestions = $(data).filter('.question').insertAfter(last).hide().slideDown(400);
           newquestions.each(renderQuestion);
           $('#more>a').show().next().hide();
@@ -282,7 +286,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         },'html');
       }
       function searchQuestions(){
-        $.get('/questions?community=<?=$community?>&search='+$('#search').val(),function(data) {
+        $.get('/questions?community=<?=$community_name?>&search='+$('#search').val(),function(data) {
           $('#qa>.question').remove();
           $(data).filter('.question').prependTo($('#qa'));
           $('#qa>.question').each(renderQuestion);
@@ -342,7 +346,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 //setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
               }
             }
-            <?if($uuid){?>
+            <?if($auth){?>
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
                 $('#active-users').html(r);
@@ -357,7 +361,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               });
             <?}?>
           }
-          <?if($uuid){?>setChatPollTimeout();<?}?>
+          <?if($auth){?>setChatPollTimeout();<?}?>
         },'html').fail(setChatPollTimeout);
       }
       function updateChatChangeIDs(){
@@ -367,7 +371,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }).fail(setChatPollTimeout);
       }
       function updateQuestionPollIDs(){
-        $.get('/questions?changes&community=<?=$community?>&fromid='+maxQuestionPollMinorID,function(r){
+        $.get('/questions?changes&community=<?=$community_name?>&fromid='+maxQuestionPollMinorID,function(r){
           _(JSON.parse(r)).forEach(function(e){ $('#q'+e[0]).each(function(){ if(e[1]>$(this).data('poll-minor-id')) $(this).addClass('changed'); }); });
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
@@ -384,7 +388,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function actionQuestionChange(id){
         $('#q'+id).css('opacity',0.5);
-        $.get('/questions?one&community=<?=$community?>&id='+id,function(r){
+        $.get('/questions?one&community=<?=$community_name?>&id='+id,function(r){
           $('#q'+id).replaceWith(r);
           $('#q'+id).each(renderQuestion);
           setChatPollTimeout();
@@ -396,7 +400,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#notification-wrapper').replaceWith(r);
           $('#notification-wrapper .markdown').renderMarkdown();
           $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-          <?if($uuid){?>
+          <?if($auth){?>
             $('#notification-wrapper a[data-room]').click(function(){
               $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
               return false;
@@ -538,7 +542,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       $('.markdown').renderMarkdown();
       $('#community').change(function(){
-        <?if($uuid){?>
+        <?if($auth){?>
           $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
         <?}else{?>
           window.location = '/'+$(this).find(':selected').attr('data-name');
@@ -551,10 +555,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('.newtag').one('click',tagdrop);
       $('.tag i').click(function(){ $.post({ url: '//post.topanswers.xyz/question', data: { id: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }, xhrFields: { withCredentials: true } }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){
-        <?if($uuid){?>
+        <?if($auth){?>
           $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
         <?}else{?>
-          window.location = '/<?=$community?>?room='+$(this).val();
+          window.location = '/<?=$community_name?>?room='+$(this).val();
         <?}?>
       });
       function renderPreview(sync){
@@ -661,7 +665,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
       $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-      <?if($uuid){?>
+      <?if($auth){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
           var t = $(this), v = t.data('votes');
           t.starrr({
@@ -758,16 +762,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
     });
   </script>
-  <title><?=$question?ccdb('select question_title from question where question_id=$1',$question):ccdb("select coalesce(room_name,initcap(community_name)||' Chat') room_name from room natural join community where room_id=$1",$room)?> - TopAnswers</title>
+  <title><?=$room_name?> - TopAnswers</title>
 </head>
 <body>
   <main class="pane">
     <header>
       <div>
-        <a class="element" href="/<?=$community?>">TopAnswers</a>
+        <a class="element" href="/<?=$community_name?>">TopAnswers</a>
         <select id="community" class="element">
-          <?foreach(db("select community_name,community_room_id,community_display_name from community order by community_name desc") as $r){ extract($r);?>
-            <option value="<?=$community_room_id?>" data-name="<?=$community_name?>"<?=($community===$community_name)?' selected':''?>><?=$community_display_name?></option>
+          <?foreach(db("select community_name,community_room_id,community_display_name from community order by community_name desc") as $r){ extract($r,EXTR_PREFIX_ALL,'s');?>
+            <option value="<?=$s_community_room_id?>" data-name="<?=$s_community_name?>"<?=($community_name===$s_community_name)?' selected':''?>><?=$s_community_display_name?></option>
           <?}?>
         </select>
         <?if($dev){?>
@@ -781,69 +785,53 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       </div>
       <?if(!$question){?><div><input class="element" type="search" id="search" placeholder="search"></div><?}?>
       <div>
-        <?if(!$uuid){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
-        <?if(($my_community_can_import==='t')&&$sesite_url&&!$question){?>
+        <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
+        <?if(($communicant_can_import==='t')&&$sesite_url&&!$question){?>
           <form method="post" action="//post.topanswers.xyz/question">
             <input type="hidden" name="action" value="new-se">
-            <input type="hidden" name="community" value="<?=$community?>">
+            <input type="hidden" name="community" value="<?=$community_name?>">
             <input type="hidden" name="seids" value="">
             <input id="se" class="element" type="submit" value="import from SE">
           </form>
         <?}?>
-        <?if($uuid){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community?>"><input id="ask" class="element" type="submit" value="ask question"></form><?}?>
-        <?if($uuid){?><a class="frame" href="/profile"><img class="icon" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a><?}?>
+        <?if($auth){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask question"></form><?}?>
+        <?if($auth){?><a class="frame" href="/profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
       </div>
     </header>
     <div id="qa">
       <?if($question){?>
-        <?extract(cdb("select question_title,question_markdown,question_votes,question_have_voted,question_votes_from_me,question_answered_by_me,question_has_history,license_name,license_href,codelicense_name,account_id
-                             ,account_name,account_is_me,question_se_question_id,account_is_imported,communicant_se_user_id,question_i_subscribed,question_i_flagged,question_i_counterflagged
-                             ,question_crew_flags,question_active_flags
-                            , question_crew_flags>0 question_is_deleted
-                            , coalesce(communicant_votes,0) communicant_votes
-                            , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
-                            , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
-                            , question_type<>'question' question_is_votable
-                            , question_type='blog' question_is_blog
-                            , extract('epoch' from current_timestamp-question_at) question_when
-                       from question natural join account natural join community natural join license natural join codelicense natural left join communicant
-                       where question_id=$1",$question));?>
-        <div id="question" data-id="<?=$question?>" class="post<?=($question_have_voted==='t')?' voted':''?><?
-                                                             ?><?=($question_i_subscribed==='t')?' subscribed':''?><?
+        <div id="question" data-id="<?=$question?>" class="post<?=($question_i_subscribed==='t')?' subscribed':''?><?
                                                              ?><?=($question_i_flagged==='t')?' flagged':''?><?
                                                              ?><?=($question_i_counterflagged==='t')?' counterflagged':''?><?
                                                              ?><?=($question_is_deleted==='t')?' deleted':''?>">
-          <div class="title"><?=$question_type.htmlspecialchars($question_title)?></div>
+          <div class="title"><?=((($question_is_meta==='t')&&($community_name!=='meta'))?'Meta Question: ':'').(($question_is_blog==='t')?'Blog Post: ':'').htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Stars: <?=$communicant_votes?>" class="icon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($question_account_is_me==='f')?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
               <span class="element">
-                <?if($account_is_imported==='t'){?>
-                  <span><?if($communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                <?if($question_account_is_imported==='t'){?>
+                  <span><?if($question_communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_communicant_se_user_id?>"><?=htmlspecialchars($question_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
                 <?}else{?>
-                  <span><?=htmlspecialchars($account_name)?></span>
+                  <span><?=htmlspecialchars($question_account_name)?></span>
                 <?}?>
               </span>
               <span class="element">
-                <a href="<?=$license_href?>"><?=$license_name?></a>
-                <?if($has_codelicense==='t'){?>
+                <a href="<?=$question_license_href?>"><?=$question_license_name?></a>
+                <?if($question_has_codelicense==='t'){?>
                   <span> + </span>
-                  <a href="/meta?q=24"><?=$codelicense_name?> for original code</a>
+                  <a href="/meta?q=24"><?=$question_codelicense_name?> for original code</a>
                 <?}?>
               </span>
               <span class="when element" data-seconds="<?=$question_when?>"></span>
             </div>
             <div>
               <div class="element container">
-                <?if($uuid){?>
+                <?if($auth){?>
                   <span class="newtag">
                     <div>
                       <select id="tags" data-question-id="<?=$question?>">
                         <option></option>
-                        <?foreach(db("select tag_id,tag_name
-                                      from tag natural join community
-                                      where community_name=$1 and tag_id not in (select tag_id from question_tag_x where question_id=$2)
-                                      order by tag_question_count desc,tag_name",$community,$question) as $r){ extract($r);?>
+                        <?foreach(db("select tag_id,tag_name from tag where not tag_is order by tag_question_count desc,tag_name") as $r){ extract($r);?>
                           <option value="<?=$tag_id?>"><?=$tag_name?></option>
                         <?}?>
                       </select>
@@ -851,7 +839,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     <span class="tag element">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                   </span>
                 <?}?>
-                <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question) as $r){ extract($r);?>
+                <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
                   <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
                 <?}?>
               </div>
@@ -861,42 +849,40 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="bar">
             <div>
               <?if($question_is_votable==='t'){?>
-                <?if($account_is_me==='f'){?>
+                <?if($question_account_is_me==='f'){?>
                   <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
                 <?}?>
                 <span class="element"><?=$question_votes?> star<?=($question_votes==='1')?'':'s'?></span>
               <?}?>
-              <?if($uuid){?>
-                <?if(($account_is_me==='t')||($question_is_blog==='f')){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
+              <?if($auth){?>
+                <?if(($question_account_is_me==='t')||($question_is_blog==='f')){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
                 <?if($question_has_history==='t'){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
-                <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
+                <?if($question_account_is_me==='f'){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
             <div class="shrink">
-              <?if(($account_is_me==='f')&&(($question_crew_flags==='0')||($my_community_is_post_flag_crew==='t'))){?>
+              <?if(($question_account_is_me==='f')&&(($question_crew_flags==='0')||($communicant_is_post_flag_crew==='t'))){?>
                 <?if($question_active_flags<>"0"){?>
                   <div class="element container shrink">
                     <span>flagged by:</span>
                     <div class="container shrink">
-                      <?foreach(db("select question_flag_is_crew,question_flag_direction
-                                         , account_id flag_account_id
-                                         , account_name flag_account_name
-                                    from question_flag natural join account
-                                    where question_id=$1 and question_flag_direction<>0 and not account_is_me
-                                    order by question_flag_is_crew, question_flag_at",$question) as $i=>$r){ extract($r);?>
+                      <?foreach(db("select question_flag_account_id,question_flag_account_name,question_flag_is_crew,question_flag_direction
+                                    from question_flag
+                                    where question_flag_account_id<>$1
+                                    order by question_flag_is_crew, question_flag_at",$account_id) as $i=>$r){ extract($r);?>
                         <img class="icon pingable"
-                             title="<?=$flag_account_name?><?=($question_flag_is_crew==='t')?(($question_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
-                             data-id="<?=$flag_account_id?>"
-                             data-name="<?=explode(' ',$flag_account_name)[0]?>"
-                             data-fullname="<?=$flag_account_name?>"
-                             src="/identicon?id=<?=$flag_account_id?>">
+                             title="<?=$question_flag_account_name?><?=($question_flag_is_crew==='t')?(($question_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
+                             data-id="<?=$question_flag_account_id?>"
+                             data-name="<?=explode(' ',$question_flag_account_name)[0]?>"
+                             data-fullname="<?=$question_flag_account_name?>"
+                             src="/identicon?id=<?=$question_flag_account_id?>">
                       <?}?>
                     </div>
                   </div>
                 <?}?>
                 <div class="element fa fw fa-flag" title="unflag this question"></div>
                 <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
-                <?if(($my_community_is_post_flag_crew==='t')&&(intval($question_active_flags)>0)){?>
+                <?if(($communicant_is_post_flag_crew==='t')&&(intval($question_active_flags)>0)){?>
                   <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
                 <?}?>
               <?}?>
@@ -908,20 +894,20 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?if($question_is_blog==='f'){?>
           <form method="GET" action="/answer">
             <input type="hidden" name="question" value="<?=$question?>">
-            <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>"<?=$uuid?'':' disabled'?>>
+            <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>"<?=$auth?'':' disabled'?>>
           </form>
         <?}?>
-        <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,answer_has_history,license_name,codelicense_name,account_name,account_is_me,account_is_imported
-                            ,communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
+        <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
+                            ,answer_license_href,answer_license_name,answer_codelicense_name,answer_account_name,answer_account_is_imported
+                            ,answer_communicant_votes,answer_communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
+                           , answer_account_id=$1 answer_account_is_me
                            , answer_crew_flags>0 answer_is_deleted
-                           , coalesce(communicant_votes,0) communicant_votes
                            , extract('epoch' from current_timestamp-answer_at) answer_when
-                           , codelicense_id<>1 and codelicense_name<>license_name has_codelicense
-                      from answer natural join account natural join (select question_id,community_id from question) q natural join license natural join codelicense natural left join communicant
-                      where question_id=$1
-                      order by answer_votes desc, communicant_votes desc, answer_id desc",$question) as $i=>$r){ extract($r);?>
-          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post answer<?=($answer_have_voted==='t')?' voted':''?><?
-                                                                               ?><?=($answer_i_flagged==='t')?' flagged':''?><?
+                           , answer_codelicense_name is not null and answer_codelicense_name<>answer_license_name answer_has_codelicense
+                           , answer_active_flags>(answer_i_flagged::integer) answer_other_flags
+                      from answer
+                      order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$account_id) as $i=>$r){ extract($r);?>
+          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post answer<?=($answer_i_flagged==='t')?' flagged':''?><?
                                                                                ?><?=($answer_i_counterflagged==='t')?' counterflagged':''?><?
                                                                                ?><?=($answer_is_deleted==='t')?' deleted':''?>">
             <div class="bar">
@@ -929,47 +915,45 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <div>
                 <span class="when element" data-seconds="<?=$answer_when?>"></span>
                 <span class="element">
-                  <a href="<?=$license_href?>"><?=$license_name?></a>
-                  <?if($has_codelicense==='t'){?>
+                  <a href="<?=$answer_license_href?>"><?=$answer_license_name?></a>
+                  <?if($answer_has_codelicense==='t'){?>
                     <span> + </span>
-                    <a href="/meta?q=24"><?=$codelicense_name?> for original code</a></span>
+                    <a href="/meta?q=24"><?=$answer_codelicense_name?> for original code</a></span>
                   <?}?>
                 </span>
                 <span class="element">
-                  <?if($account_is_imported==='t'){?>
-                    <span><?if($communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>"><?=htmlspecialchars($account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                  <?if($answer_account_is_imported==='t'){?>
+                    <span><?if($answer_communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_communicant_se_user_id?>"><?=htmlspecialchars($answer_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
                   <?}else{?>
-                    <span><?=htmlspecialchars($account_name)?></span>
+                    <span><?=htmlspecialchars($answer_account_name)?></span>
                   <?}?>
                 </span>
-                <img title="Stars: <?=$communicant_votes?>" class="icon<?=($account_is_me==='f')?' pingable':''?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>">
+                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($answer_account_is_me==='f')?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
               </div>
             </div>
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
             <div class="bar">
               <div>
-                <?if($account_is_me==='f'){?>
+                <?if($answer_account_is_me==='f'){?>
                   <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
                 <?}?>
                 <span class="element"><?=$answer_votes?> star<?=($answer_votes==='1')?'':'s'?></span>
-                <?if($uuid){?>
+                <?if($auth){?>
                   <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
                   <?if($answer_has_history==='t'){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
-                  <?if($account_is_me==='f'){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
+                  <?if($answer_account_is_me==='f'){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
                 <?}?>
               </div>
               <div class="shrink">
-                <?if(($account_is_me==='f')&&(($answer_crew_flags==='0')||($my_community_is_post_flag_crew==='t'))){?>
-                  <?if($answer_active_flags<>"0"){?>
+                <?if(($answer_account_is_me==='f')&&(($answer_crew_flags==='0')||($communicant_is_post_flag_crew==='t'))){?>
+                  <?if($answer_other_flags==='t'){?>
                     <div class="element container shrink">
                       <span>flagged by:</span>
                       <div class="container shrink">
-                        <?foreach(db("select answer_flag_is_crew,answer_flag_direction
-                                           , account_id flag_account_id
-                                           , account_name flag_account_name
-                                      from answer_flag natural join account
-                                      where answer_id=$1 and answer_flag_direction<>0 and not account_is_me
-                                      order by answer_flag_is_crew, answer_flag_at",$answer_id) as $i=>$r){ extract($r);?>
+                        <?foreach(db("select answer_flag_is_crew,answer_flag_direction,answer_flag_account_id,answer_flag_account_name
+                                      from answer_flag
+                                      where answer_id=$1 and answer_flag_account_id<>$2
+                                      order by answer_flag_is_crew, answer_flag_at",$answer_id,$account_id) as $i=>$r){ extract($r);?>
                           <img class="icon pingable"
                                title="<?=$flag_account_name?><?=($answer_flag_is_crew==='t')?(($answer_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
                                data-id="<?=$flag_account_id?>"
@@ -982,7 +966,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <?}?>
                   <div class="element fa fw fa-flag" title="unflag this answer"></div>
                   <div class="element fa fw fa-flag-o" title="flag this answer (n.b. flags are public)"></div>
-                  <?if(($my_community_is_post_flag_crew==='t')&&(intval($answer_active_flags)>0)){?>
+                  <?if(($communicant_is_post_flag_crew==='t')&&($answer_other_flags==='t')){?>
                     <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
                   <?}?>
                 <?}?>
@@ -1002,11 +986,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <a class="frame"<?=$dev?' href="/room?id='.$room.'" ':''?>><img class="icon" src="/roomicon?id=<?=$room?>"></a>
         <?if(!$question){?>
           <select id="room" class="element">
-            <?foreach(db("select room_id, coalesce(room_name,initcap(community_name)||' Chat') room_name
+            <?foreach(db("select room_id,room_name
                           from room natural join community
-                          where community_name=$1 and (not room_is_for_question or room_id=$2)
-                          order by room_name desc",$community,$room) as $r){ extract($r);?>
-              <option<?=($room_id===$room)?' selected':''?> value="<?=$room_id?>"><?=$room_name?></option>
+                          where community_name=$1 and room_id<>$2
+                          order by room_name desc",$community_name,$room) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
+              <option<?=($r_room_id===$room)?' selected':''?> value="<?=$r_room_id?>"><?=$r_room_name?></option>
             <?}?>
           </select>
         <?}?>
@@ -1014,7 +998,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       </div>
       <div>
         <input class="panecontrol element" type="button" value="questions" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');">
-        <?if($uuid) if(intval(ccdb("select account_id from login"))<3){?><input id="poll" class="element" type="button" value="poll"><?}?>
+        <?if($auth) if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
       </div>
     </header>
     <?if($canchat){?>
@@ -1031,10 +1015,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div id="notification-wrapper"></div>
         <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
           <div style="flex: 1 0 0.5em;">
-            <?if($question&&(ccdb("select count(*) from (select * from chat where room_id=$1 limit 1) z",$room)==='0')){?>
+            <?if($question&&($room_has_chat!=='t')){?>
               <div style="padding: 10vh 20%;">
-                <?if($uuid){?>
-                  <?if(ccdb("select question_se_question_id is null from question where question_id=$1",$question)==='t'){?>
+                <?if($auth){?>
+                  <?if($question_se_question_id){?>
                     <p>This is a dedicated room for discussion about this question.</p>
                     <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
                   <?}else{?>
@@ -1059,7 +1043,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         <?}?>
       </div>
-      <?if($uuid){?>
+      <?if($auth){?>
         <div id="active">
           <div id="active-rooms"></div>
           <div id="active-spacer"><div></div></div>

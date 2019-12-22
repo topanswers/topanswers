@@ -55,7 +55,7 @@ from (select answer_flag_history_id,answer_flag_notification_at from db.answer_f
      natural join db.community;
 --
 --
-create function login(uuid) returns boolean language sql security definer as $$select * from api.login2($1);$$;
+create function login(uuid) returns boolean language sql security definer as $$select * from api.login($1);$$;
 --
 --
 revoke all on all functions in schema notification from public;

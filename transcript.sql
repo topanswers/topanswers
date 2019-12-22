@@ -24,7 +24,7 @@ from db.login natural join db.account natural join db.room natural join db.commu
 where login_uuid=get_login_uuid() and room_id=get_room_id();
 --
 --
-create function login_room(uuid,integer) returns boolean language sql security definer as $$select * from api.login_room2($1,$2);$$;
+create function login_room(uuid,integer) returns boolean language sql security definer as $$select * from api.login_room($1,$2);$$;
 --
 create function search(text) 
                      returns table (chat_id bigint

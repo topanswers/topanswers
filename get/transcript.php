@@ -1,6 +1,6 @@
 <?    
 include '../db.php';
-include '../nocache.php';
+include '../locache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
