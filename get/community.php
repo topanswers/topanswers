@@ -194,8 +194,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
 
     .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
-    .simple-pagination ul { display: flex; }
-    .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; padding: 0; margin: 0; outline-left: 1px solid #<?=$colour_dark?>; }
+    .simple-pagination ul { display: flex; padding: 0; }
+    .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; outline-left: 1px solid #<?=$colour_dark?>; }
     .simple-pagination li>span { user-select: none; }
     .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: black; text-align: center; background-color: #<?=$colour_light?>; outline: 1px solid #<?=$colour_dark?>; }
     .simple-pagination li:not(.disabled):not(.active):hover>* { background-color: #<?=$colour_mid?>; }
