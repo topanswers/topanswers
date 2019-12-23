@@ -114,8 +114,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                           , count(distinct account_id) answer_flag_count
                                      from answer_flag_notification
                                      group by answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade) n)
-                    --select * from c union all select * from q union all select * from qf union all select * from a union all select * from af
-                    select * from c
+                    select * from c union all select * from q union all select * from qf union all select * from a union all select * from af
                     order by notification_at limit 20") as $r){ extract($r);?>
         <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
           <?if($notification_type==='chat'){?>

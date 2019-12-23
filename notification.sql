@@ -51,7 +51,8 @@ create view answer_flag_notification with (security_barrier) as
 select answer_id,answer_flag_history_id,answer_flag_notification_at,question_id,question_title,account_id,community_name,community_mid_shade,community_dark_shade
 from (select answer_flag_history_id,answer_flag_notification_at from db.answer_flag_notification where account_id=get_account_id()) f
      natural join db.answer_flag_history
-     natural left join (select community_id,question_id,question_title from db.question) q
+     natural join (select answer_id,question_id from db.answer) a
+     natural join (select community_id,question_id,question_title from db.question) q
      natural join db.community;
 --
 create view one with (security_barrier) as
