@@ -77,11 +77,11 @@ select account_id,community_id,community_name,community_code_language,room_id
      , encode(community_warning_color,'hex') colour_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-     , (room_type='public' or x.account_id is not null) room_can_chat
+     , a.account_id is not null and (room_type='public' or x.account_id is not null) room_can_chat
      , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
      , sesite_url
 from db.room r natural join db.community
-     natural join (select login_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
+     natural left join (select login_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
      natural left join db.account_room_x x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s

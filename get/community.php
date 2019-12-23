@@ -242,17 +242,19 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
       }
       function setChatPollTimeout(){
-        var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
-        if(chatLastChange<10) chatPollInterval = 1000;
-        else if(chatLastChange<30) chatPollInterval = 3000;
-        else if(chatLastChange<120) chatPollInterval = 5000;
-        else if(chatLastChange<600) chatPollInterval = 10000;
-        else if(chatLastChange<3600) chatPollInterval = 30000;
-        else chatPollInterval = 60000;
-        <?if($dev){?>console.log('set poll interval to '+chatPollInterval);<?}?>
-        clearTimeout(chatTimer);
-        setFinalSpacer();
-        chatTimer = setTimeout(checkChat,chatPollInterval);
+        <?if($auth){?>
+          var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
+          if(chatLastChange<10) chatPollInterval = 1000;
+          else if(chatLastChange<30) chatPollInterval = 3000;
+          else if(chatLastChange<120) chatPollInterval = 5000;
+          else if(chatLastChange<600) chatPollInterval = 10000;
+          else if(chatLastChange<3600) chatPollInterval = 30000;
+          else chatPollInterval = 60000;
+          <?if($dev){?>console.log('set poll interval to '+chatPollInterval);<?}?>
+          clearTimeout(chatTimer);
+          setFinalSpacer();
+          chatTimer = setTimeout(checkChat,chatPollInterval);
+        <?}?>
       }
       function renderQuestion(){
         $(this).find('.summary span[data-markdown]').renderMarkdownSummary();
@@ -273,7 +275,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             });
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
-          <?if($auth){?>setChatPollTimeout();<?}?>
+          setChatPollTimeout();
           if($('#qa').children('.question').length>=20) $('#more').show().find('i').hide();;
         },'html').fail(setChatPollTimeout);
       }
@@ -363,7 +365,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               });
             <?}?>
           }
-          <?if($auth){?>setChatPollTimeout();<?}?>
+          setChatPollTimeout();
         },'html').fail(setChatPollTimeout);
       }
       function updateChatChangeIDs(){
@@ -809,7 +811,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="title"><?=(($question_is_meta&&($community_name!=='meta'))?'Meta Question: ':'').($question_is_blog?'Blog Post: ':'').htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=$question_account_is_me?'':' pingable'?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
+              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
               <span class="element">
                 <?if($question_account_is_imported){?>
                   <span><?if($question_communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_communicant_se_user_id?>"><?=htmlspecialchars($question_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
@@ -862,35 +864,37 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <?if(!$question_account_is_me){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
-            <div class="shrink">
-              <?if(!$question_account_is_me&&(($question_crew_flags===0)||$communicant_is_post_flag_crew)){?>
-                <?if($question_active_flags<>0){?>
-                  <div class="element container shrink">
-                    <span>flagged by:</span>
-                    <div class="container shrink">
-                      <?foreach(db("select question_flag_account_id,question_flag_account_name,question_flag_is_crew,question_flag_direction
-                                    from question_flag
-                                    where question_flag_account_id<>$1
-                                    order by question_flag_is_crew, question_flag_at",$account_id) as $i=>$r){ extract($r);?>
-                        <img class="icon pingable"
-                             title="<?=$question_flag_account_name?><?=$question_flag_is_crew?(($question_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
-                             data-id="<?=$question_flag_account_id?>"
-                             data-name="<?=explode(' ',$question_flag_account_name)[0]?>"
-                             data-fullname="<?=$question_flag_account_name?>"
-                             src="/identicon?id=<?=$question_flag_account_id?>">
-                      <?}?>
+            <?if($auth){?>
+              <div class="shrink">
+                <?if(!$question_account_is_me&&(($question_crew_flags===0)||$communicant_is_post_flag_crew)){?>
+                  <?if($question_active_flags<>0){?>
+                    <div class="element container shrink">
+                      <span>flagged by:</span>
+                      <div class="container shrink">
+                        <?foreach(db("select question_flag_account_id,question_flag_account_name,question_flag_is_crew,question_flag_direction
+                                      from question_flag
+                                      where question_flag_account_id<>$1
+                                      order by question_flag_is_crew, question_flag_at",$account_id) as $i=>$r){ extract($r);?>
+                          <img class="icon pingable"
+                               title="<?=$question_flag_account_name?><?=$question_flag_is_crew?(($question_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
+                               data-id="<?=$question_flag_account_id?>"
+                               data-name="<?=explode(' ',$question_flag_account_name)[0]?>"
+                               data-fullname="<?=$question_flag_account_name?>"
+                               src="/identicon?id=<?=$question_flag_account_id?>">
+                        <?}?>
+                      </div>
                     </div>
-                  </div>
+                  <?}?>
+                  <div class="element fa fw fa-flag" title="unflag this question"></div>
+                  <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
+                  <?if($communicant_is_post_flag_crew&&($question_active_flags>0)){?>
+                    <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
+                  <?}?>
                 <?}?>
-                <div class="element fa fw fa-flag" title="unflag this question"></div>
-                <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
-                <?if($communicant_is_post_flag_crew&&($question_active_flags>0)){?>
-                  <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
-                <?}?>
-              <?}?>
-              <div class="element fa fw fa-bell" title="unsubscribe from this question"></div>
-              <div class="element fa fw fa-bell-o" title="subscribe to this question"></div>
-            </div>
+                <div class="element fa fw fa-bell" title="unsubscribe from this question"></div>
+                <div class="element fa fw fa-bell-o" title="subscribe to this question"></div>
+              </div>
+            <?}?>
           </div>
         </div>
         <?if(!$question_is_blog){?>
@@ -930,7 +934,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     <span><?=htmlspecialchars($answer_account_name)?></span>
                   <?}?>
                 </span>
-                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=$answer_account_is_me?'':' pingable'?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
+                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
               </div>
             </div>
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
@@ -946,33 +950,35 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <?if(!$answer_account_is_me){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
                 <?}?>
               </div>
-              <div class="shrink">
-                <?if(!$answer_account_is_me&&(($answer_crew_flags===0)||$communicant_is_post_flag_crew)){?>
-                  <?if($answer_other_flags){?>
-                    <div class="element container shrink">
-                      <span>flagged by:</span>
-                      <div class="container shrink">
-                        <?foreach(db("select answer_flag_is_crew,answer_flag_direction,answer_flag_account_id,answer_flag_account_name
-                                      from answer_flag
-                                      where answer_id=$1 and answer_flag_account_id<>$2
-                                      order by answer_flag_is_crew, answer_flag_at",$answer_id,$account_id) as $i=>$r){ extract($r);?>
-                          <img class="icon pingable"
-                               title="<?=$flag_account_name?><?=$answer_flag_is_crew?(($answer_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
-                               data-id="<?=$flag_account_id?>"
-                               data-name="<?=explode(' ',$flag_account_name)[0]?>"
-                               data-fullname="<?=$flag_account_name?>"
-                               src="/identicon?id=<?=$flag_account_id?>">
-                        <?}?>
+              <?if($auth){?>
+                <div class="shrink">
+                  <?if(!$answer_account_is_me&&(($answer_crew_flags===0)||$communicant_is_post_flag_crew)){?>
+                    <?if($answer_other_flags){?>
+                      <div class="element container shrink">
+                        <span>flagged by:</span>
+                        <div class="container shrink">
+                          <?foreach(db("select answer_flag_is_crew,answer_flag_direction,answer_flag_account_id,answer_flag_account_name
+                                        from answer_flag
+                                        where answer_id=$1 and answer_flag_account_id<>$2
+                                        order by answer_flag_is_crew, answer_flag_at",$answer_id,$account_id) as $i=>$r){ extract($r);?>
+                            <img class="icon pingable"
+                                 title="<?=$flag_account_name?><?=$answer_flag_is_crew?(($answer_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
+                                 data-id="<?=$flag_account_id?>"
+                                 data-name="<?=explode(' ',$flag_account_name)[0]?>"
+                                 data-fullname="<?=$flag_account_name?>"
+                                 src="/identicon?id=<?=$flag_account_id?>">
+                          <?}?>
+                        </div>
                       </div>
-                    </div>
+                    <?}?>
+                    <div class="element fa fw fa-flag" title="unflag this answer"></div>
+                    <div class="element fa fw fa-flag-o" title="flag this answer (n.b. flags are public)"></div>
+                    <?if($communicant_is_post_flag_crew&&$answer_other_flags){?>
+                      <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
+                    <?}?>
                   <?}?>
-                  <div class="element fa fw fa-flag" title="unflag this answer"></div>
-                  <div class="element fa fw fa-flag-o" title="flag this answer (n.b. flags are public)"></div>
-                  <?if($communicant_is_post_flag_crew&&$answer_other_flags){?>
-                    <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
-                  <?}?>
-                <?}?>
-              </div>
+                </div>
+              <?}?>
             </div>
           </div>
         <?}?>

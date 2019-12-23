@@ -1,8 +1,8 @@
 <?    
 include '../cors.php';
+include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
 isset($_COOKIE['uuid']) || fail(403,'only registered users can POST');
-include '../db.php';
 ccdb("select login($1)",$_COOKIE['uuid']) || fail(403,'invalid uuid');
 isset($_POST['id']) || fail(400,'room id not set');
 ccdb("select count(*) from get.room where room_id=$1",$_POST['id'])===1 || fail(400,'invalid room');

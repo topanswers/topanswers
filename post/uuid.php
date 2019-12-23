@@ -1,7 +1,7 @@
 <?    
 include '../cors.php';
-$_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
 include '../db.php';
+$_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
 
 $uuid = exec('uuidgen');
 if(isset($_POST['pin'])){
