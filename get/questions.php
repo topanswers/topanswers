@@ -6,7 +6,7 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to questions,pg_temp");
 $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 $search = $_GET['search']??'';
-extract(cdb("select account_id,account_is_dev,community_name,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight from one"));
+extract(cdb("select account_id,account_is_dev,community_name,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,community_my_power,colour_dark,colour_mid,colour_light,colour_highlight from one"));
 $_GET['community']===$community_name || fail(400,'invalid community');
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where question_poll_minor_id>$1",$_GET['fromid']));
 $id = $_GET['id']??ccdb("select recent()");
@@ -35,9 +35,8 @@ if($search){
         <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
         <span class="element"><?=htmlspecialchars($question_account_name)?></span>
         <?if($question_votes){?>
-          <span class="element<?=($question_votes_from_me!=='0')?' me':''?>">
-            <i class="fa fa-star<?=(!$account_is_me&&($question_votes_from_me!=='0')&&$question_votes)?'-o':''?>"></i>
-            <?=($question_votes>1)?$question_votes:''?>
+          <span class="element">
+            <i class="fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>" data-count="<?=$question_votes?>"></i>
           </span>
         <?}?>
         <span class="when element" data-seconds="<?=$question_when?>"><?=htmlspecialchars($question_account_name)?></span>
@@ -61,8 +60,7 @@ if($search){
             <span class="when element" data-seconds="<?=$a_gap?>"></span>
             <?if($a_votes){?>
               <span class="element">
-                <i class="fa fa-star<?=((($a_account_id===$account_id)&&($a_votes>0)) && (($a_votes_from_me!=='0') || (($a_votes_from_me>0)&&($community_my_power>$a_votes_from_me))))?'-o':''?><?
-                                  ?><?=($a_votes_from_me>0)?' highlight':''?>" data-count="<?=$a_votes?>"></i>
+                <i class="fa fa-star<?=(($a_account_id!==$account_id)&&($a_votes_from_me<$community_my_power))?'-o':''?><?=$a_votes_from_me?' highlight':''?>" data-count="<?=$a_votes?>"></i>
               </span>
             <?}?>
             <span class="element"><?=htmlspecialchars($a_account_name)?></span>
