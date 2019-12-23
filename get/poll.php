@@ -5,7 +5,7 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_COOKIE['uuid'])) fail(403,'not logged in');
 db("select login($1)",$_COOKIE['uuid']);
 if(!isset($_GET['room'])) fail(400,'missing room parameter');
-ccdb("select count(*) from room where room_id=$1",$_GET['room'])==='1' or die('invalid room');
+ccdb("select count(*) from room where room_id=$1",$_GET['room'])===1 or die('invalid room');
 $community_id = ccdb("select community_id from room natural join community where room_id=$1",$_GET['room']);
 exit(ccdb("select json_build_object('c',coalesce((select max(chat_id) from chat where room_id=$1),0)
                                    ,'cc',coalesce((select max(chat_change_id) from chat where room_id=$1),0)
