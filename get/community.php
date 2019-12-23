@@ -54,9 +54,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <style>
     *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
-    body { display: flex }
+    body { display: flex; background: #<?=$colour_dark?>; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    main { background: #<?=$colour_dark?>; flex-direction: column; flex: 1 1 <?=$auth?$login_resizer_percent:'70'?>%; overflow: hidden; }
+    main { flex-direction: column; flex: 1 1 <?=$auth?$login_resizer_percent:'70'?>%; overflow: hidden; }
 
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
@@ -132,22 +132,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #answer { margin: 2rem auto; display: block; }
     #more { margin-bottom: 1.2rem; display: none; text-align: center; }
 
-    #chat-wrapper { font-size: 14px; background: #<?=$colour_mid?>; flex: 1 1 <?=($auth)?100-$login_resizer_percent:'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
-    #chat-wrapper .label { font-size: 12px; padding: 2px 0; }
+    #chat-wrapper { font-size: 14px; flex: 1 1 <?=($auth)?100-$login_resizer_percent:'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
+    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 4px; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
-    #messages-wrapper { flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; }
-    #notifications { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; max-height: 30vh; border: 2px solid black; border-width: 2px 1px 2px 0; background: #<?=$colour_light?>; padding: 0.3rem; padding-top: 0; overflow-x: hidden; overflow-y: auto; }
+    #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px; }
+    #messages-wrapper { flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; border-radius: 5px; background: #<?=$colour_light?>; }
+    #notification-wrapper .label { background: #<?=$colour_light?>; border-radius: 5px 5px 0 0; }
+    #notifications { display: flex; flex-direction: column; min-height: 0; max-height: 30vh; background: #<?=$colour_light?>; overflow-x: hidden; overflow-y: auto; border-radius: 0 0 5px 5px; margin-bottom: 16px; }
     #ios-spacer { flex: 0 0 76px; }
 
-    #chat .message .who { top: -1.2em; }
-    #chat .markdown img { max-height: 7rem; }
-    #chat .message.thread .markdown { background: #<?=$colour_highlight?>40; }
+    #chat-panels .message .who { top: -1.2em; }
+    #chat-panels .markdown img { max-height: 7rem; }
+    #chat-panels .message.thread .markdown { background: #<?=$colour_highlight?>40; }
     #messages .message:not(:hover) .when { display: none; }
-    #notifications .message+.message { margin-top: 0.2em; }
-    #notifications .message { padding: 0.3em; border-radius: 0.2em; }
+    #notifications .message { padding: 0.3em; border-top: 1px solid #<?=$colour_dark?>; }
     #notifications .message[data-type='chat'] { padding-top: 1.3em; }
     #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
-    #notification-gradient { position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(#<?=$colour_dark?>80,transparent); }
 
     #canchat-wrapper { flex: 0 0 auto; }
     #chattext-wrapper { position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>; }
@@ -205,6 +205,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #ios-spacer { display: unset; }
       #poll { display: none; }
       #se { display: none; }
+      #chat-panels { margin: 0; }
     }
   </style>
   <script src="/lib/js.cookie.js"></script>
@@ -1002,47 +1003,48 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?if($auth) if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
       </div>
     </header>
-    <?if($canchat){?>
-      <div id="canchat-wrapper">
-        <div id="chattext-wrapper">
-          <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
-          <button id="chatupload" class="button" title="embed image"><div class="fa fa-picture-o"></div></button>
-          <textarea id="chattext" rows="1" placeholder="type message here" maxlength="5000"></textarea>
-        </div>
-      </div>
-    <?}?>
     <div id="chat">
-      <div id="messages-wrapper">
+      <div id="chat-panels">
         <div id="notification-wrapper"></div>
-        <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
-          <div style="flex: 1 0 0.5em;">
-            <?if($question&&!$room_has_chat){?>
-              <div style="padding: 10vh 20%;">
-                <?if($auth){?>
-                  <?if($question_se_question_id){?>
-                    <p>This is a dedicated room for discussion about this question.</p>
-                    <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
+        <div id="messages-wrapper">
+          <div class="label"><?=$question?'Comments':'Chat'?>:</div>
+          <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; padding: 0.5rem;">
+            <div style="flex: 1 0 0.5em;">
+              <?if($question&&!$room_has_chat){?>
+                <div style="padding: 10vh 20%;">
+                  <?if($auth){?>
+                    <?if($question_se_question_id){?>
+                      <p>This is a dedicated room for discussion about this question.</p>
+                      <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
+                    <?}else{?>
+                      <p>This is a dedicated room for discussion about this imported question.</p>
+                      <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+                    <?}?>
                   <?}else{?>
-                    <p>This is a dedicated room for discussion about this imported question.</p>
-                    <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+                    <p>This is a dedicated room for discussion about this question.</p>
+                    <p>Once logged in you can direct comments to the question poster (or any answer poster) here.</p>
                   <?}?>
-                <?}else{?>
-                  <p>This is a dedicated room for discussion about this question.</p>
-                  <p>Once logged in you can direct comments to the question poster (or any answer poster) here.</p>
-                <?}?>
-              </div>
-            <?}?>
-          </div>
-        </div>
-        <?if($canchat){?>
-          <div id="preview" class="message" style="display: block; width: 100%; background: #<?=$colour_light?>; margin-top: 0.1rem; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
-            <div id="replying" style="width: 100%; font-style: italic; font-size: 10px;" data-id="">
-              <span>Preview:</span>
-              <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
+                </div>
+              <?}?>
             </div>
-            <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
           </div>
-        <?}?>
+          <?if($canchat){?>
+            <div id="preview" class="message" style="display: block; width: 100%; background: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
+              <div id="replying" style="width: 100%; font-style: italic; font-size: 10px;" data-id="">
+                <span>Preview:</span>
+                <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
+              </div>
+              <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
+            </div>
+            <div id="canchat-wrapper">
+              <div id="chattext-wrapper">
+                <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
+                <button id="chatupload" class="button" title="embed image"><div class="fa fa-picture-o"></div></button>
+                <textarea id="chattext" rows="1" placeholder="type message here" maxlength="5000"></textarea>
+              </div>
+            </div>
+          <?}?>
+        </div>
       </div>
       <?if($auth){?>
         <div id="active">

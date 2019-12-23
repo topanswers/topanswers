@@ -13,8 +13,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
      ||ccdb("select count(*)>0 from answer_notification")
      ||ccdb("select count(*)>0 from question_flag_notification")
      ||ccdb("select count(*)>0 from answer_flag_notification")){?>
+    <div class="label">Notifications:</div>
     <div id="notifications">
-      <div class="label">Notifications:</div>
       <?foreach(db("with c as (select 'chat' notification_type
                                     , 1 notification_count
                                     , chat_id notification_id
@@ -189,7 +189,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </div>
       <?}?>
     </div>
-    <div style="position: relative;"><div id="notification-gradient"></div></div>
   <?}?>
 </div>
 <?ob_end_flush();
