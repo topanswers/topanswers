@@ -81,7 +81,8 @@ select account_id,community_id,community_name,community_code_language,room_id
      , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
      , sesite_url
 from db.room r natural join db.community
-     natural left join (select * from db.login natural join db.account natural join db.communicant where login_uuid=get_login_uuid()) a
+     natural join (select login_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
+     natural left join db.communicant
      natural left join db.account_room_x x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
      natural left join (select question_id,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
