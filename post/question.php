@@ -80,7 +80,7 @@ switch($_POST['action']) {
     }
    //error_log($seqid);
    //error_log($community_id);
-    if(ccdb("select count(*) from get.question where community_id=$1 and question_se_question_id=$2",$community_id,$seqid)==='0'){
+    if(ccdb("select count(*) from get.question where community_id=$1 and question_se_question_id=$2",$community_id,$seqid)===0){
       // get the markdown and tags for the question
       $doc = new DOMDocument();
       $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$seqid.'/edit'));
@@ -130,7 +130,7 @@ switch($_POST['action']) {
    //error_log('aids: '.print_r($aids,true));
     // import each selected answer
     foreach($aids as $aid){
-      if(ccdb("select count(*) from get.answer where question_id=$1 and answer_se_answer_id=$2",$id,$aid)==='0'){
+      if(ccdb("select count(*) from get.answer where question_id=$1 and answer_se_answer_id=$2",$id,$aid)===0){
         $doc = new DOMDocument();
         $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$aid.'/edit'));
         $xpath = new DOMXpath($doc);
