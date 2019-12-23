@@ -131,7 +131,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
 
     #answer { margin: 2rem auto; display: block; }
-    #more { margin-bottom: 1.2rem; display: none; text-align: center; }
+    #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=($auth)?100-$login_resizer_percent:'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
     #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 4px; }
@@ -194,6 +194,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message.merged .who, .message.merged .identicon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
 
+    .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
+    .simple-pagination ul { display: flex; }
+    .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; padding: 0; margin: 0; outline-left: 1px solid #<?=$colour_dark?>; }
+    .simple-pagination li>span { user-select: none; }
+    .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: black; text-align: center; background-color: #<?=$colour_light?>; outline: 1px solid #<?=$colour_dark?>; }
+    .simple-pagination li:not(.disabled):not(.active):hover>* { background-color: #<?=$colour_mid?>; }
+    .simple-pagination li>.current:not(.prev):not(.next) { position: relative; z-index: 1; outline: 2px solid #<?=$colour_highlight?>; }
+    .simple-pagination li>.ellipse { padding: 0 10px; user-select: none; }
+    .simple-pagination li>.prev { border-radius: 5px 0 0 5px; }
+    .simple-pagination li>.next { border-radius: 0 5px 5px 0; }
+
     .pane { display: flex; }
     .panecontrol { display: none; }
     #ios-spacer { display: none; }
@@ -207,6 +218,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #poll { display: none; }
       #se { display: none; }
       #chat-panels { margin: 0; }
+      .simple-pagination li>* { height: 22px; width: 22px; line-height: 22px; font-size: 12px; }
     }
   </style>
   <script src="/lib/js.cookie.js"></script>
@@ -222,13 +234,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/favico.js"></script>
   <script src="/lib/select2.js"></script>
   <script src="/lib/starrr.js"></script>
+  <script src="/lib/jquery.simplePagination.js"></script>
   <script>
     //moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
-      var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0;
+      var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
 
       <?if($clearlocal){?>
         localStorage.removeItem('<?=$clearlocal?>');
@@ -262,33 +275,36 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $(this).find('.when').each(function(){ var t = $(this); $(this).text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||'')); });
       }
       function updateQuestions(scroll){
-        var maxQuestion = $('#qa>:first-child').data('poll-major-id');
+        var maxQuestion = $('#qa>:first-child').data('poll-major-id'), full = $('#qa').children('.question').length===0;
         if($('#qa').scrollTop()<100) scroll = true;
-        $.get('/questions?community=<?=$community_name?>'+(($('#qa').children('.question').length===0)?'':'&id='+maxQuestion),function(data) {
+        $.get('/questions?community=<?=$community_name?>'+(full?'&page='+questionPage:'&id='+maxQuestion),function(data) {
           if($('#qa>:first-child').data('poll-major-id')===maxQuestion){
             var newquestions;
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
-            newquestions = $(data).filter('.question').prependTo($('#qa')).hide().slideDown(maxQuestionPollMajorID?400:0);
+            newquestions = $(data).filter('.question').prependTo($('#qa')).hide().slideDown(full?0:400);
             newquestions.each(renderQuestion);
             newquestions.each(function(){
               if($(this).data('poll-major-id')>maxQuestionPollMajorID) maxQuestionPollMajorID = $(this).data('poll-major-id');
               if($(this).data('poll-minor-id')>maxQuestionPollMinorID) maxQuestionPollMinorID = $(this).data('poll-minor-id');
             });
-            if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
+            if(scroll) setTimeout(function(){ $('#qa-wrapper').scrollTop(0); },0);
           }
           setChatPollTimeout();
-          if($('#qa').children('.question').length>=20) $('#more').show().find('i').hide();;
+          (function more(n){
+            var m = $('#qa').children('.question').data('of')
+              , p = Math.ceil(m/10)
+              , d = (n<7)?[8,8,8,8,7,6][n-1]:((n>(p-6))?[8,8,8,8,7,5][p-n]:5)
+              , o = { items: m
+                    , itemsOnPage: 10
+                    , currentPage: n
+                    , prevText: '«'
+                    , nextText: '»'
+                    , ellipsePageSet: false
+                    , displayedPages: d
+                    , onPageClick: function(n){ questionPage = n; $('#qa').children('.question').remove(); updateQuestions(true); return false; } };
+            $('#more').show().pagination(o);
+          })(questionPage);
         },'html').fail(setChatPollTimeout);
-      }
-      function moreQuestions(){
-        var last = $('#qa>.question').last(); minQuestion = last.data('poll-major-id');
-        $('#more>a').hide().next().show();
-        $.get('/questions?community=<?=$community_name?>&older&id='+minQuestion,function(data) {
-          var newquestions = $(data).filter('.question').insertAfter(last).hide().slideDown(400);
-          newquestions.each(renderQuestion);
-          $('#more>a').show().next().hide();
-          if(newquestions.length<20) $('#more').hide();
-        },'html');
       }
       function searchQuestions(){
         $.get('/questions?community=<?=$community_name?>&search='+$('#search').val(),function(data) {
@@ -427,7 +443,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             updateNotifications();
             maxNotificationID = j.n;
           <?if(!$question){?>
-            }else if((j.Q>maxQuestionPollMajorID)&&($('#search').val()==='')){
+            }else if((j.Q>maxQuestionPollMajorID)&&(questionPage===1)&&($('#search').val()==='')){
               <?if($dev){?>console.log('updating questions');<?}?>
               updateQuestions();
           <?}?>
@@ -738,7 +754,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
-      $('#more>a').click(function(){ moreQuestions(); return false; });
       function search(){
         if($('#search').val()===''){
           $('#qa>.question').remove();
@@ -779,6 +794,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <option value="<?=$s_community_room_id?>" data-name="<?=$s_community_name?>"<?=($community_name===$s_community_name)?' selected':''?>><?=$s_community_display_name?></option>
           <?}?>
         </select>
+      </div>
+      <div>
         <?if($dev){?>
           <select id="environment" class="element">
             <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
@@ -985,7 +1002,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             </div>
           <?}?>
         <?}else{?>
-          <div id='more'><a href=".">show more</a><i class="fa fa-spinner fa-pulse fa-fw"></i></div>
+          <div id='more'></div>
         <?}?>
       </div>
     </div>

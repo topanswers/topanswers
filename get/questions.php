@@ -6,12 +6,9 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to questions,pg_temp");
 $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 $search = $_GET['search']??'';
-extract(cdb("select account_id,account_is_dev,community_name,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,community_my_power,colour_dark,colour_mid,colour_light,colour_highlight from one"));
+extract(cdb("select account_id,account_is_dev,community_name,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,community_my_power,colour_dark,colour_mid,colour_light,colour_highlight,num_questions from one"));
 $_GET['community']===$community_name || fail(400,'invalid community');
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where question_poll_minor_id>$1",$_GET['fromid']));
-$id = $_GET['id']??ccdb("select recent()");
-
-
 if($search){
   db("select set_config('pg_trgm.strict_word_similarity_threshold','0.5',false)");
   $results = db("select question_id,question_at,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name,question_tags
@@ -20,15 +17,24 @@ if($search){
                       , question_account_id=$2 account_is_me
                  from search($1)",$_GET['search'],$account_id);
 }else{
+  if(isset($_GET['page'])){
+    extract(cdb("select startid,endid from recent($1)",$_GET['page']));
+  }elseif(isset($_GET['one'])){
+    $startid = $_GET['id'];
+    $endid = $_GET['id'];
+  }else{
+    $startid = intval($_GET['id'])+1;
+    $endid = '';
+  }
   $results = db("select question_id,question_at,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name,question_tags
                        ,question_is_deleted,question_communicant_votes,question_bump_when,question_bump_reason
                       , extract('epoch' from current_timestamp-question_at) question_when
                       , question_account_id=$3 account_is_me
-                 from range($1,nullif($2,'')::integer)",$id,isset($_GET['one'])?$id:'',$account_id);
+                 from range($1,nullif($2,'')::integer)",$startid,$endid,$account_id);
 }
 ?>
 <?foreach($results as $r){ extract($r);?>
-  <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
+  <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
     <a href="/<?=$community_name?>?q=<?=$question_id?>#question" title="<?=$question_title?>"><?=$question_title?></a>
     <div class="bar">
       <div>

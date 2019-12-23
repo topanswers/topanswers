@@ -3,7 +3,11 @@ grant usage on schema questions to get;
 set local search_path to questions,api,pg_temp;
 --
 --
-create view question with (security_barrier) as select question_id,question_poll_minor_id from db.question where community_id=get_community_id();
+create view question with (security_barrier) as
+select question_id,question_poll_major_id,question_poll_minor_id
+from db.question
+     natural left join (select account_id,community_id,communicant_is_post_flag_crew from db.login natural join db.account natural join db.communicant where login_uuid=get_login_uuid()) a
+where community_id=get_community_id() and (question_crew_flags<=0 or communicant_is_post_flag_crew);
 /*
 create view tag with (security_barrier) as select tag_id,tag_name,tag_implies_id,tag_question_count from db.tag where community_id=get_community_id();
 
@@ -27,6 +31,7 @@ select account_id,community_id,community_name,community_code_language
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
+     , (select count(*) from question) num_questions
 from db.community
      natural left join (select * from db.login natural join db.account natural join db.communicant where login_uuid=get_login_uuid()) a
 where community_id=get_community_id();
@@ -71,8 +76,9 @@ create function range(startid integer, endid integer)
          natural left join (select question_id, max(question_tag_x_at) tag_at from db.question_tag_x group by question_id) t
          natural left join (select question_id, max(greatest(question_tag_x_added_at,question_tag_x_removed_at)) tag_history_at from db.question_tag_x_history group by question_id) h
   where community_id=get_community_id() and question_poll_major_id>=startid and (endid is null or question_poll_major_id<=endid)
-  order by question_poll_major_id desc limit 20;
+  order by question_poll_major_id desc limit 10;
 $$;
+--
 --
 create function search(text) 
                      returns table (question_id integer
@@ -121,7 +127,7 @@ create function search(text)
          natural left join (select question_id, max(question_tag_x_at) tag_at from db.question_tag_x group by question_id) t
          natural left join (select question_id, max(greatest(question_tag_x_added_at,question_tag_x_removed_at)) tag_history_at from db.question_tag_x_history group by question_id) h
   where community_id=get_community_id() and $1 is not null
-  order by exact desc, similarity desc limit 20;
+  order by exact desc, similarity desc limit 50;
 $$;
 --
 create function answers(integer) 
@@ -152,7 +158,11 @@ create function answers(integer)
 $$;
 --
 create function recent() returns integer language sql security definer set search_path=db,api,questions,pg_temp as $$
-  select greatest(min(question_poll_major_id)-1,0)::integer from (select question_poll_major_id from question where community_id=get_community_id() order by question_poll_major_id desc limit 50) z;
+  select greatest(min(question_poll_major_id)-1,0)::integer from (select question_poll_major_id from question where community_id=get_community_id() order by question_poll_major_id desc limit 10) z;
+$$;
+--
+create function recent(page integer) returns table (startid integer, endid integer) language sql security definer set search_path=db,api,questions,pg_temp as $$
+  select coalesce(min(question_poll_major_id),0)::integer,coalesce(max(question_poll_major_id),0)::integer from (select question_poll_major_id from questions.question order by question_poll_major_id desc offset (page-1)*10 limit 10) z;
 $$;
 --
 revoke all on all functions in schema community from public;
