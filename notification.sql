@@ -54,8 +54,17 @@ from (select answer_flag_history_id,answer_flag_notification_at from db.answer_f
      natural left join (select community_id,question_id,question_title from db.question) q
      natural join db.community;
 --
+create view one with (security_barrier) as
+select room_id
+     , (room_type='public' or x.account_id is not null) room_can_chat
+     , encode(community_dark_shade,'hex') colour_dark
+from db.room r natural join db.community
+     natural left join db.account_room_x x
+where room_id=get_room_id();
 --
-create function login(uuid) returns boolean language sql security definer as $$select * from api.login($1);$$;
+--
+create function login(uuid) returns boolean language sql security definer as $$select api.login($1);$$;
+create function login_room(uuid,integer) returns boolean language sql security definer as $$select api.login_room($1,$2);$$;
 --
 --
 revoke all on all functions in schema notification from public;

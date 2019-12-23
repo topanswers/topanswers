@@ -5,7 +5,7 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id'];
-ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
+ccdb("select count(*) from question where question_id=$1",$id)===1 || die('invalid question id');
 extract(cdb("select my_community_regular_font_name,my_community_monospace_font_name,community_code_language,community_display_name,question_title
                   , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
                   , community_name community

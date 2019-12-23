@@ -3,15 +3,16 @@ include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to notification,pg_temp");
-ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'') || fail(403,'not logged in');
+$auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
+extract(cdb("select colour_dark,room_id,room_can_chat from one"));
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <div id="notification-wrapper">
-  <?if((ccdb("select count(*)>0 from chat_notification")==='t')
-     ||(ccdb("select count(*)>0 from question_notification")==='t')
-     ||(ccdb("select count(*)>0 from answer_notification")==='t')
-     ||(ccdb("select count(*)>0 from question_flag_notification")==='t')
-     ||(ccdb("select count(*)>0 from answer_flag_notification")==='t')){?>
+  <?if(ccdb("select count(*)>0 from chat_notification")
+     ||ccdb("select count(*)>0 from question_notification")
+     ||ccdb("select count(*)>0 from answer_notification")
+     ||ccdb("select count(*)>0 from question_flag_notification")
+     ||ccdb("select count(*)>0 from answer_flag_notification")){?>
     <div id="notifications">
       <div class="label">Notifications:</div>
       <?foreach(db("with c as (select 'chat' notification_type
@@ -118,14 +119,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     order by notification_at limit 20") as $r){ extract($r);?>
         <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
           <?if($notification_type==='chat'){?>
-            <span class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
+            <span class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.($chat_reply_account_is_me?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
               <?=$chat_from_account_name?>
-              <?if($notification_room_id!==$room){?>
-                <?=$chat_reply_id?' replying to '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
+              <?if($notification_room_id!==$room_id){?>
+                <?=$chat_reply_id?' replying to '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
                 <span style="color: #<?=$notification_dark_shade?>;"> in </span>
-                <a href="/<?=$notification_community_name?>?<?=($chat_is_question_room==='t')?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>" style="color: #<?=$notification_dark_shade?>;" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
+                <a href="/<?=$notification_community_name?>?<?=$chat_is_question_room?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>" style="color: #<?=$notification_dark_shade?>;" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
               <?}else{?>
-                <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$notification_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.(($chat_reply_account_is_me==='t')?'<em>Me</em>':$chat_reply_account_name):''?>
+                <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$notification_dark_shade.'; text-decoration: none;">&nbsp;replying to&nbsp;</a> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
               <?}?>
               <span class="when element" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
               — 
@@ -135,21 +136,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
             <span class="buttons">
               <span class="button-group show">
-                <i class="stars <?=($chat_i_starred==='t')?'me ':''?>fa fa-star<?=($chat_i_starred==='t')?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+                <i class="stars <?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
                 <i></i>
-                <i class="flags <?=($chat_i_flagged==='t')?'me ':''?>fa fa-flag<?=($chat_i_flagged==='t')?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
+                <i class="flags <?=$chat_i_flagged?'me ':''?>fa fa-flag<?=$chat_i_flagged?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
                 <i></i>
               </span>
               <span class="button-group show">
-                <i class="<?=($chat_i_starred==='t')?'me ':''?>fa fa-star<?=($chat_i_starred==='t')?'':'-o'?>" title="star"></i>
+                <i class="<?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" title="star"></i>
                 <i class="fa fa-ellipsis-h" title="more actions"></i>
-                <i class="<?=($chat_i_flagged==='t')?'me ':''?> fa fa-flag<?=($chat_i_flagged==='t')?'':'-o'?>" title="flag"></i>
-                <?if($canchat&&($notification_room_id===$room)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
+                <i class="<?=$chat_i_flagged?'me ':''?> fa fa-flag<?=$chat_i_flagged?'':'-o'?>" title="flag"></i>
+                <?if($room_can_chat&&($notification_room_id===$room_id)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
               </span>
               <span class="button-group">
                 <a href="/transcript?room=<?=$notification_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-link" title="permalink"></a>
                 <i class="fa fa-ellipsis-h" title="more actions"></i>
-                <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+                <?if($chat_has_history){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
                 <i></i>
               </span>
             </span>
@@ -172,7 +173,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <?}elseif($notification_type==='answer'){?>
             <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
               <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
-              <span style="flex: 0 0 auto;">, answer <?=($answer_notification_is_edit==='t')?'edit':'posted'?> on:&nbsp;</span>
+              <span style="flex: 0 0 auto;">, answer <?=$answer_notification_is_edit?'edit':'posted'?> on:&nbsp;</span>
               <a href="/answer-history?id=<?=$answer_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
               —
               <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
@@ -189,7 +190,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </div>
       <?}?>
     </div>
-    <div style="position: relative;"><div style="position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(#<?=$colour_dark?>80,transparent);"></div></div>
+    <div style="position: relative;"><div id="notification-gradient"></div></div>
   <?}?>
 </div>
 <?ob_end_flush();

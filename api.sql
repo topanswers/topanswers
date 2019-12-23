@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists questions cascade;
 drop schema if exists community cascade;
 drop schema if exists transcript cascade;
 drop schema if exists chat cascade;
@@ -89,5 +90,6 @@ end$$;
 \i ~/git/chat.sql
 \i ~/git/notification.sql
 \i ~/git/community.sql
+\i ~/git/questions.sql
 --
 commit;

@@ -2,91 +2,71 @@
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-$uuid = $_COOKIE['uuid'] ?? false;
-if($uuid) ccdb("select login($1)",$uuid);
+isset($_GET['community']) || fail(400,'community must be set');
+db("set search_path to questions,pg_temp");
+$auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 $search = $_GET['search']??'';
-if(!isset($_GET['community'])) die('Community not set');
-$community = $_GET['community'];
-ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
-extract(cdb("select community_id,community_my_power
-                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community natural join my_community
-             where community_name=$1",$community));
-if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where community_id=$1 and question_poll_minor_id>$2",$community_id,$_GET['fromid']));
-$id = $_GET['id']??ccdb("select greatest(min(question_poll_major_id)-1,0) from (select question_poll_major_id from question where community_id=$1 order by question_poll_major_id desc limit 50) z",$community_id);
+extract(cdb("select account_id,account_is_dev,community_name,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight from one"));
+$_GET['community']===$community_name || fail(400,'invalid community');
+if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]') from question where question_poll_minor_id>$1",$_GET['fromid']));
+$id = $_GET['id']??ccdb("select recent()");
+
+
 if($search){
-  db("select set_config('pg_trgm.strict_word_similarity_threshold','0.3',false)");
-  $results = db("with q as (select question_id, question_markdown txt, strict_word_similarity($2,question_markdown) word_similarity, similarity($2,question_markdown) similarity from question where community_id=$1 and $2<<%question_markdown)
-                   , qt as (select question_id, question_title txt, strict_word_similarity($2,question_title)*2 word_similarity, similarity($2,question_title)*2 similarity from question where community_id=$1 and $2<<%question_title)
-                    , a as (select question_id, answer_markdown txt, strict_word_similarity($2,answer_markdown) word_similarity, similarity($2,answer_markdown) similarity from answer natural join (select question_id,community_id from question) z where community_id=$1 and $2<<%answer_markdown)
-                    , s as (select question_id, bool_or(txt like '%'||$2||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
-                 select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
-                      , question_crew_flags>0 question_is_deleted
-                      , coalesce(communicant_votes,0) communicant_votes
-                      , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
+  db("select set_config('pg_trgm.strict_word_similarity_threshold','0.5',false)");
+  $results = db("select question_id,question_at,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name,question_tags
+                       ,question_is_deleted,question_communicant_votes,question_bump_when,question_bump_reason
                       , extract('epoch' from current_timestamp-question_at) question_when
-                      , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
-                      , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
-                             else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
-                 from s natural join question natural join account natural join community natural left join communicant
-                 where community_id=$1 and $2::text is not null
-                 order by exact desc, similarity desc limit 5",$community_id,$_GET['search']);
+                      , question_account_id=$2 account_is_me
+                 from search($1)",$_GET['search'],$account_id);
 }else{
-  $results = db("select question_id,question_at,question_title,question_votes,question_have_voted,question_poll_major_id,question_poll_minor_id,account_id,account_name,account_is_me
-                      , question_crew_flags>0 question_is_deleted
-                      , coalesce(communicant_votes,0) communicant_votes
-                      , case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end question_type
+  $results = db("select question_id,question_at,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name,question_tags
+                       ,question_is_deleted,question_communicant_votes,question_bump_when,question_bump_reason
                       , extract('epoch' from current_timestamp-question_at) question_when
-                      , extract('epoch' from current_timestamp-greatest(question_change_at,question_answer_change_at,question_retag_at)) bump_when
-                      , case when question_retag_at>greatest(question_change_at,question_answer_change_at) then 'tag edit'
-                             else (case when question_answer_change_at>question_change_at then 'answer'||(case when question_answer_change_at>question_answer_at then ' edit' else '' end) else (case when question_change_at>question_at then 'edit' end) end) end question_bump_reason
-                 from question natural join account natural join community natural left join communicant
-                 where community_id=$1 and ".(isset($_GET['one'])?'question_id=':'question_poll_major_id'.(isset($_GET['older'])?'<':'>'))."$2
-                 order by question_poll_major_id desc limit 20",$community_id,$id);
+                      , question_account_id=$3 account_is_me
+                 from range($1,nullif($2,'')::integer)",$id,isset($_GET['one'])?$id:'',$account_id);
 }
 ?>
 <?foreach($results as $r){ extract($r);?>
-  <div id="q<?=$question_id?>" class="question post<?=($question_is_deleted==='t')?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
-    <a href="/<?=$community?>?q=<?=$question_id?>#question" title="<?=$question_type.$question_title?>"><?=$question_type.$question_title?></a>
+  <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>">
+    <a href="/<?=$community_name?>?q=<?=$question_id?>#question" title="<?=$question_title?>"><?=$question_title?></a>
     <div class="bar">
       <div>
-        <img title="Stars: <?=$communicant_votes?>" class="icon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
-        <span class="element"><?=htmlspecialchars($account_name)?></span>
+        <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
+        <span class="element"><?=htmlspecialchars($question_account_name)?></span>
         <?if($question_votes){?>
-          <span class="element<?=($question_have_voted==='t')?' me':''?>">
-            <i class="fa fa-star<?=(($account_is_me==='f')&&($question_have_voted==='f')&&$question_votes)?'-o':''?>"></i>
+          <span class="element<?=($question_votes_from_me!=='0')?' me':''?>">
+            <i class="fa fa-star<?=(!$account_is_me&&($question_votes_from_me!=='0')&&$question_votes)?'-o':''?>"></i>
             <?=($question_votes>1)?$question_votes:''?>
           </span>
         <?}?>
-        <span class="when element" data-seconds="<?=$question_when?>"><?=htmlspecialchars($account_name)?></span>
-        <?if($question_bump_reason){?><span class="element when" data-prefix="(<?=$question_bump_reason?>, " data-postfix=")" data-seconds="<?=$bump_when?>"></span><?}?>
+        <span class="when element" data-seconds="<?=$question_when?>"><?=htmlspecialchars($question_account_name)?></span>
+        <?if($question_bump_reason){?><span class="element when" data-prefix="(<?=$question_bump_reason?>, " data-postfix=")" data-seconds="<?=$question_bump_when?>"></span><?}?>
       </div>
       <div class="element container">
-        <?foreach(db("select tag_id,tag_name from question_tag_x_not_implied natural join tag where question_id=$1",$question_id) as $r){ extract($r);?>
-          <span class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+        <?if($question_tags){?>
+          <?foreach(json_decode($question_tags,TRUE) as $r){ extract($r);?>
+            <span class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+          <?}?>
         <?}?>
       </div>
     </div>
     <div class="answers">
-      <?foreach(db("select answer_id,answer_markdown,account_id,answer_votes,answer_have_voted,answer_votes_from_me,account_name,account_is_me
-                         , answer_crew_flags>0 answer_is_deleted
-                         , coalesce(communicant_votes,0) communicant_votes
-                         , extract('epoch' from current_timestamp-answer_at) answer_when
-                    from answer natural join account natural join (select question_id,community_id from question) q natural left join communicant
-                    where question_id=$1
-                    order by answer_votes desc, communicant_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
-        <div class="bar<?=($answer_is_deleted==='t')?' deleted':''?>">
-          <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element summary shrink">Answer: <span data-markdown="<?=htmlspecialchars(strtok($answer_markdown,"\n\r"));?>"></span></a>
+      <?foreach(db("select id,markdown,account_id,votes,votes_from_me,account_name,is_deleted,communicant_votes
+                         , extract('epoch' from current_timestamp-at) gap
+                    from answers($1)",$question_id) as $r){ extract($r,EXTR_PREFIX_ALL,'a');?>
+        <div class="bar<?=$a_is_deleted?' deleted':''?>">
+          <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$a_id?>" class="element summary shrink">Answer: <span data-markdown="<?=htmlspecialchars(strtok($a_markdown,"\n\r"));?>"></span></a>
           <div>
-            <span class="when element" data-seconds="<?=$answer_when?>"></span>
-            <?if($answer_votes){?>
+            <span class="when element" data-seconds="<?=$a_gap?>"></span>
+            <?if($a_votes){?>
               <span class="element">
-                <i class="fa fa-star<?=((($account_is_me==='f')&&($answer_votes>0)) && (($answer_have_voted==='f') || (($answer_votes_from_me>0)&&($community_my_power>$answer_votes_from_me))))?'-o':''?><?
-                                  ?><?=($answer_votes_from_me>0)?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
+                <i class="fa fa-star<?=((($a_account_id===$account_id)&&($a_votes>0)) && (($a_votes_from_me!=='0') || (($a_votes_from_me>0)&&($community_my_power>$a_votes_from_me))))?'-o':''?><?
+                                  ?><?=($a_votes_from_me>0)?' highlight':''?>" data-count="<?=$a_votes?>"></i>
               </span>
             <?}?>
-            <span class="element"><?=htmlspecialchars($account_name)?></span>
-            <img title="Stars: <?=$communicant_votes?>" class="icon" data-name="<?=explode(' ',$account_name)[0]?>" src="/identicon?id=<?=$account_id?>">
+            <span class="element"><?=htmlspecialchars($a_account_name)?></span>
+            <img title="Stars: <?=$a_communicant_votes?>" class="icon" data-name="<?=explode(' ',$a_account_name)[0]?>" src="/identicon?id=<?=$a_account_id?>">
           </div>
         </div>
       <?}?>

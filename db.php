@@ -29,6 +29,12 @@ function db($query,...$params) {
     }
   }
   ($rows = pg_fetch_all($res)) || ($rows = []);
+  for($i = 0; $i<pg_num_fields($res); $i++){
+    for($j = 0; $j<pg_num_rows($res); $j++){
+      if(pg_field_type($res,$i)==='bool') $rows[$j][pg_field_name($res,$i)] = $rows[$j][pg_field_name($res,$i)]==='t';
+      if(in_array(pg_field_type($res,$i),['int4','int8'],TRUE)) $rows[$j][pg_field_name($res,$i)] = intval($rows[$j][pg_field_name($res,$i)]);
+    }
+  }
   return $rows;
 }
 function cdb($query,...$params){ $c = db($query,...$params); if(!$c) error_log($query); return current($c); }

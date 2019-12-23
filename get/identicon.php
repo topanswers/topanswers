@@ -9,7 +9,7 @@ $id>0 or die('id not positive integer');
 header('X-Powered-By: ');
 header('Last-Modified: '.ccdb("select to_char(account_change_at,'fmDy, dd Mon YYYY HH24:MI:SS') from account where account_id=$1",$id)." GMT");
 
-if(ccdb("select account_image is null from account where account_id=$1",$id)==='f'){
+if(ccdb("select account_image is not null from account where account_id=$1",$id)){
   header("Content-Type: image/jpeg");
   echo pg_unescape_bytea(ccdb("select account_image from account where account_id=$1",$id));
   exit;

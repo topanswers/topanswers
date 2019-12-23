@@ -4,12 +4,12 @@ include '../locache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
-$authenticated = (ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room'])==='t');
+$authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 extract(cdb("select account_id,community_name,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight from one"));
 $max = 500;
 $search = $_GET['search']??'';
 $id = $_GET['id']??0;
-if($id){ ccdb("select count(*) from chat where chat_id=$1",$id)==='1' or die('invalid id'); }
+if($id){ ccdb("select count(*) from chat where chat_id=$1",$id)===1 or die('invalid id'); }
 if(!$search){
   if(!isset($_GET['year'])){
     if(ccdb("select sum(chat_year_count) from chat_year")>=$max){
@@ -155,10 +155,10 @@ if(isset($_GET['month'])){
                       from search($1)",$search) as $r){ extract($r);?>
           <small class="who">
             <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
-            <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
+            <?=$account_is_me?'<em>Me</em>':$account_name?>
             <?if($chat_reply_id){?>
               <a href="#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
-              <?=($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name?>
+              <?=$reply_account_is_me?'<em>Me</em>':$reply_account_name?>
             <?}?>
           </small>
           <div id="c<?=$chat_id?>" class="message" data-id="<?=$chat_id?>" data-name="<?=$account_name?>">
@@ -168,15 +168,15 @@ if(isset($_GET['month'])){
             </div>
             <span class="buttons">
               <span class="button-group show">
-                <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
+                <i class="stars <?=$i_starred?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
                 <i></i>
-                <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag" data-count="<?=$chat_flag_count?>"></i>
+                <i class="flags <?=$i_flagged?'me ':''?>fa fa-flag" data-count="<?=$chat_flag_count?>"></i>
                 <i></i>
               </span>
               <span class="button-group show">
                 <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
                 <i></i>
-                <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+                <?if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
                 <i></i>
               </span>
             </span>
@@ -242,18 +242,18 @@ if(isset($_GET['month'])){
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
                       from range(make_timestamp($1,$2,$3,$4,0,0),make_timestamp($5,$6,$7,$8,0,0)+'1h'::interval)
                      ",$_GET['year']??1,$_GET['month']??1,$_GET['day']??1,$_GET['hour']??0,$_GET['year']??9999,$_GET['month']??12,$_GET['day']??$maxday,$_GET['hour']??23) as $r){ extract($r);?>
-          <?if($chat_account_is_repeat==='f'){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
-          <div id="c<?=$chat_id?>" class="message<?=($chat_account_is_repeat==='t')?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
+          <?if(!$chat_account_is_repeat){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
+          <div id="c<?=$chat_id?>" class="message<?=$chat_account_is_repeat?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small class="who">
               <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
-              <?=($account_is_me==='t')?'<em>Me</em>':$account_name?>
+              <?=$account_is_me?'<em>Me</em>':$account_name?>
               <?if($chat_reply_id){?>
-                <?if($reply_is_different_segment==='t'){?>
+                <?if($reply_is_different_segment){?>
                   <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_reply_id?>#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
                 <?}else{?>
                   <a href="#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
                 <?}?>
-                <?=($reply_account_is_me==='t')?'<em>Me</em>':$reply_account_name?>
+                <?=$reply_account_is_me?'<em>Me</em>':$reply_account_name?>
               <?}?>
             </small>
             <img class="identicon" src="/identicon?id=<?=$account_id?>">
@@ -262,15 +262,15 @@ if(isset($_GET['month'])){
             </div>
             <span class="buttons">
               <span class="button-group show">
-                <i class="stars <?=($i_starred==='t')?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
+                <i class="stars <?=$i_starred?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
                 <i></i>
-                <i class="flags <?=($i_flagged==='t')?'me ':''?>fa fa-flag" data-count="<?=$chat_flag_count?>"></i>
+                <i class="flags <?=$i_flagged?'me ':''?>fa fa-flag" data-count="<?=$chat_flag_count?>"></i>
                 <i></i>
               </span>
               <span class="button-group show">
                 <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
                 <i></i>
-                <?if($chat_has_history==='t'){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+                <?if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
                 <i></i>
               </span>
             </span>

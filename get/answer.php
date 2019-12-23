@@ -6,7 +6,7 @@ $uuid = $_COOKIE['uuid']??'';
 ccdb("select login($1)",$uuid);
 $id = $_GET['id']??'0';
 if($id) {
-  ccdb("select count(*) from answer where answer_id=$1",$id)==='1' || die('invalid answer id');
+  ccdb("select count(*) from answer where answer_id=$1",$id)===1 || die('invalid answer id');
   extract(cdb("select community_name community, question_id question, question_title, question_markdown, answer_markdown
                     , license_name||(case when codelicense_id<>1 then ' + '||codelicense_name else '' end) license
                from answer natural join (select question_id,community_id,question_title,question_markdown from question natural join license natural join codelicense) z natural join community natural join license natural join codelicense
@@ -14,7 +14,7 @@ if($id) {
 }else{
   if(!isset($_GET['question'])) die('question not set');
   $question = $_GET['question'];
-  ccdb("select count(*) from question where question_id=$1",$question)==='1' or die('invalid question');
+  ccdb("select count(*) from question where question_id=$1",$question)===1 or die('invalid question');
   extract(cdb("select community_name community, question_title, question_markdown from question natural join community where question_id=$1",$question));
 }
 extract(cdb("select community_code_language,my_community_regular_font_name,my_community_monospace_font_name

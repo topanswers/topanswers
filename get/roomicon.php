@@ -12,7 +12,7 @@ $id>0 or die('id not positive integer');
 header('X-Powered-By: ');
 header('Cache-Control: max-age=8600');
 
-if(ccdb("select room_image is null from room where room_id=$1",$id)==='f'){
+if(ccdb("select room_image is not null from room where room_id=$1",$id)){
   header("Content-Type: image/jpeg");
   echo pg_unescape_bytea(ccdb("select room_image from room where room_id=$1",$id));
   exit;

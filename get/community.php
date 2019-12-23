@@ -8,11 +8,11 @@ $clearlocal = $_COOKIE['clearlocal']??'';
 $environment = $_COOKIE['environment']??'prod';
 setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
 if(!isset($_GET['room'])&&!isset($_GET['q'])){
-  $auth = (ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community'])==='t');
+  $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 }elseif(isset($_GET['room'])&&!isset($_GET['q'])){
-  $auth = (ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room'])==='t');
+  $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 }elseif(isset($_GET['q'])&&!isset($_GET['room'])){
-  $auth = (ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['q'])==='t');
+  $auth = ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['q']);
 }else{
   fail(400,"exactly one of 'q' or 'room' must be set");
 }
@@ -31,11 +31,11 @@ extract(cdb("select login_resizer_percent
                    ,question_communicant_se_user_id,question_communicant_votes
                    ,question_license_href,question_has_codelicense,question_codelicense_name
              from one"));
-$dev = ($account_is_dev==='t');
+$dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
 $question = $_GET['q']??'0';
 $room = $room_id;
-$canchat = ($room_can_chat==='t');
+$canchat = $room_can_chat;
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
@@ -147,6 +147,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #notifications .message { padding: 0.3em; border-radius: 0.2em; }
     #notifications .message[data-type='chat'] { padding-top: 1.3em; }
     #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
+    #notification-gradient { position: absolute; z-index: 1; pointer-events: none; height: 2em; width: 100%; background: linear-gradient(#<?=$colour_dark?>80,transparent); }
 
     #canchat-wrapper { flex: 0 0 auto; }
     #chattext-wrapper { position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>; }
@@ -395,7 +396,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }).fail(setChatPollTimeout);
       }
       function updateNotifications(){
-        $.get('/notification',function(r){
+        $.get('/notification?room=<?=$room_id?>',function(r){
           var scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
           $('#notification-wrapper').replaceWith(r);
           $('#notification-wrapper .markdown').renderMarkdown();
@@ -786,7 +787,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?if(!$question){?><div><input class="element" type="search" id="search" placeholder="search"></div><?}?>
       <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
-        <?if(($communicant_can_import==='t')&&$sesite_url&&!$question){?>
+        <?if($communicant_can_import&&$sesite_url&&!$question){?>
           <form method="post" action="//post.topanswers.xyz/question">
             <input type="hidden" name="action" value="new-se">
             <input type="hidden" name="community" value="<?=$community_name?>">
@@ -800,16 +801,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </header>
     <div id="qa">
       <?if($question){?>
-        <div id="question" data-id="<?=$question?>" class="post<?=($question_i_subscribed==='t')?' subscribed':''?><?
-                                                             ?><?=($question_i_flagged==='t')?' flagged':''?><?
-                                                             ?><?=($question_i_counterflagged==='t')?' counterflagged':''?><?
-                                                             ?><?=($question_is_deleted==='t')?' deleted':''?>">
-          <div class="title"><?=((($question_is_meta==='t')&&($community_name!=='meta'))?'Meta Question: ':'').(($question_is_blog==='t')?'Blog Post: ':'').htmlspecialchars($question_title)?></div>
+        <div id="question" data-id="<?=$question?>" class="post<?=$question_i_subscribed?' subscribed':''?><?
+                                                             ?><?=$question_i_flagged?' flagged':''?><?
+                                                             ?><?=$question_i_counterflagged?' counterflagged':''?><?
+                                                             ?><?=$question_is_deleted?' deleted':''?>">
+          <div class="title"><?=(($question_is_meta&&($community_name!=='meta'))?'Meta Question: ':'').($question_is_blog?'Blog Post: ':'').htmlspecialchars($question_title)?></div>
           <div class="bar">
             <div>
-              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($question_account_is_me==='f')?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
+              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=$question_account_is_me?'':' pingable'?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
               <span class="element">
-                <?if($question_account_is_imported==='t'){?>
+                <?if($question_account_is_imported){?>
                   <span><?if($question_communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_communicant_se_user_id?>"><?=htmlspecialchars($question_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
                 <?}else{?>
                   <span><?=htmlspecialchars($question_account_name)?></span>
@@ -817,7 +818,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               </span>
               <span class="element">
                 <a href="<?=$question_license_href?>"><?=$question_license_name?></a>
-                <?if($question_has_codelicense==='t'){?>
+                <?if($question_has_codelicense){?>
                   <span> + </span>
                   <a href="/meta?q=24"><?=$question_codelicense_name?> for original code</a>
                 <?}?>
@@ -848,21 +849,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"><?=htmlspecialchars($question_markdown)?></div>
           <div class="bar">
             <div>
-              <?if($question_is_votable==='t'){?>
-                <?if($question_account_is_me==='f'){?>
+              <?if($question_is_votable){?>
+                <?if(!$question_account_is_me){?>
                   <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
                 <?}?>
                 <span class="element"><?=$question_votes?> star<?=($question_votes==='1')?'':'s'?></span>
               <?}?>
               <?if($auth){?>
-                <?if(($question_account_is_me==='t')||($question_is_blog==='f')){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
-                <?if($question_has_history==='t'){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
-                <?if($question_account_is_me==='f'){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
+                <?if($question_account_is_me||!$question_is_blog){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
+                <?if($question_has_history){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
+                <?if(!$question_account_is_me){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
               <?}?>
             </div>
             <div class="shrink">
-              <?if(($question_account_is_me==='f')&&(($question_crew_flags==='0')||($communicant_is_post_flag_crew==='t'))){?>
-                <?if($question_active_flags<>"0"){?>
+              <?if(!$question_account_is_me&&(($question_crew_flags===0)||$communicant_is_post_flag_crew)){?>
+                <?if($question_active_flags<>0){?>
                   <div class="element container shrink">
                     <span>flagged by:</span>
                     <div class="container shrink">
@@ -871,7 +872,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     where question_flag_account_id<>$1
                                     order by question_flag_is_crew, question_flag_at",$account_id) as $i=>$r){ extract($r);?>
                         <img class="icon pingable"
-                             title="<?=$question_flag_account_name?><?=($question_flag_is_crew==='t')?(($question_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
+                             title="<?=$question_flag_account_name?><?=$question_flag_is_crew?(($question_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
                              data-id="<?=$question_flag_account_id?>"
                              data-name="<?=explode(' ',$question_flag_account_name)[0]?>"
                              data-fullname="<?=$question_flag_account_name?>"
@@ -882,7 +883,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <?}?>
                 <div class="element fa fw fa-flag" title="unflag this question"></div>
                 <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
-                <?if(($communicant_is_post_flag_crew==='t')&&(intval($question_active_flags)>0)){?>
+                <?if($communicant_is_post_flag_crew&&($question_active_flags>0)){?>
                   <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
                 <?}?>
               <?}?>
@@ -891,10 +892,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             </div>
           </div>
         </div>
-        <?if($question_is_blog==='f'){?>
+        <?if(!$question_is_blog){?>
           <form method="GET" action="/answer">
             <input type="hidden" name="question" value="<?=$question?>">
-            <input id="answer" type="submit" value="answer this question<?=($question_answered_by_me==='t')?' again':''?>"<?=$auth?'':' disabled'?>>
+            <input id="answer" type="submit" value="answer this question<?=$question_answered_by_me?' again':''?>"<?=$auth?'':' disabled'?>>
           </form>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
@@ -907,46 +908,46 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                            , answer_active_flags>(answer_i_flagged::integer) answer_other_flags
                       from answer
                       order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$account_id) as $i=>$r){ extract($r);?>
-          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post answer<?=($answer_i_flagged==='t')?' flagged':''?><?
-                                                                               ?><?=($answer_i_counterflagged==='t')?' counterflagged':''?><?
-                                                                               ?><?=($answer_is_deleted==='t')?' deleted':''?>">
+          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post answer<?=$answer_i_flagged?' flagged':''?><?
+                                                                               ?><?=$answer_i_counterflagged?' counterflagged':''?><?
+                                                                               ?><?=$answer_is_deleted?' deleted':''?>">
             <div class="bar">
               <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
               <div>
                 <span class="when element" data-seconds="<?=$answer_when?>"></span>
                 <span class="element">
                   <a href="<?=$answer_license_href?>"><?=$answer_license_name?></a>
-                  <?if($answer_has_codelicense==='t'){?>
+                  <?if($answer_has_codelicense){?>
                     <span> + </span>
                     <a href="/meta?q=24"><?=$answer_codelicense_name?> for original code</a></span>
                   <?}?>
                 </span>
                 <span class="element">
-                  <?if($answer_account_is_imported==='t'){?>
+                  <?if($answer_account_is_imported){?>
                     <span><?if($answer_communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_communicant_se_user_id?>"><?=htmlspecialchars($answer_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
                   <?}else{?>
                     <span><?=htmlspecialchars($answer_account_name)?></span>
                   <?}?>
                 </span>
-                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($answer_account_is_me==='f')?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
+                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=$answer_account_is_me?'':' pingable'?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
               </div>
             </div>
             <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
             <div class="bar">
               <div>
-                <?if($answer_account_is_me==='f'){?>
+                <?if(!$answer_account_is_me){?>
                   <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
                 <?}?>
                 <span class="element"><?=$answer_votes?> star<?=($answer_votes==='1')?'':'s'?></span>
                 <?if($auth){?>
                   <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
-                  <?if($answer_has_history==='t'){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
-                  <?if($answer_account_is_me==='f'){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
+                  <?if($answer_has_history){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
+                  <?if(!$answer_account_is_me){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
                 <?}?>
               </div>
               <div class="shrink">
-                <?if(($answer_account_is_me==='f')&&(($answer_crew_flags==='0')||($communicant_is_post_flag_crew==='t'))){?>
-                  <?if($answer_other_flags==='t'){?>
+                <?if(!$answer_account_is_me&&(($answer_crew_flags===0)||$communicant_is_post_flag_crew)){?>
+                  <?if($answer_other_flags){?>
                     <div class="element container shrink">
                       <span>flagged by:</span>
                       <div class="container shrink">
@@ -955,7 +956,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                       where answer_id=$1 and answer_flag_account_id<>$2
                                       order by answer_flag_is_crew, answer_flag_at",$answer_id,$account_id) as $i=>$r){ extract($r);?>
                           <img class="icon pingable"
-                               title="<?=$flag_account_name?><?=($answer_flag_is_crew==='t')?(($answer_flag_direction==='1')?' (crew)':' (crew, counter-flagged)'):''?>"
+                               title="<?=$flag_account_name?><?=$answer_flag_is_crew?(($answer_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
                                data-id="<?=$flag_account_id?>"
                                data-name="<?=explode(' ',$flag_account_name)[0]?>"
                                data-fullname="<?=$flag_account_name?>"
@@ -966,7 +967,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <?}?>
                   <div class="element fa fw fa-flag" title="unflag this answer"></div>
                   <div class="element fa fw fa-flag-o" title="flag this answer (n.b. flags are public)"></div>
-                  <?if(($communicant_is_post_flag_crew==='t')&&($answer_other_flags==='t')){?>
+                  <?if($communicant_is_post_flag_crew&&$answer_other_flags){?>
                     <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
                   <?}?>
                 <?}?>
@@ -988,8 +989,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <select id="room" class="element">
             <?foreach(db("select room_id,room_name
                           from room natural join community
-                          where community_name=$1 and room_id<>$2
-                          order by room_name desc",$community_name,$room) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
+                          where community_name=$1
+                          order by room_name desc",$community_name) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
               <option<?=($r_room_id===$room)?' selected':''?> value="<?=$r_room_id?>"><?=$r_room_name?></option>
             <?}?>
           </select>
@@ -1015,7 +1016,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div id="notification-wrapper"></div>
         <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 0.5em; overflow: auto;">
           <div style="flex: 1 0 0.5em;">
-            <?if($question&&($room_has_chat!=='t')){?>
+            <?if($question&&!$room_has_chat){?>
               <div style="padding: 10vh 20%;">
                 <?if($auth){?>
                   <?if($question_se_question_id){?>

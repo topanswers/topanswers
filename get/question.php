@@ -6,7 +6,7 @@ $uuid = $_COOKIE['uuid']??'';
 if($uuid) ccdb("select login($1)",$uuid);
 $id = $_GET['id']??'0';
 if($id) {
-  ccdb("select count(*) from question where question_id=$1",$id)==='1' || die('invalid question id');
+  ccdb("select count(*) from question where question_id=$1",$id)===1 || die('invalid question id');
   extract(cdb("select question_type,question_title,question_markdown,community_code_language
                     , community_name community
                     , license_name||(case when codelicense_id<>1 then ' + '||codelicense_name else '' end) license
@@ -15,7 +15,7 @@ if($id) {
 }else{
   if(!isset($_GET['community'])) die('Community not set');
   $community = $_GET['community'];
-  ccdb("select count(*) from community where community_name=$1",$community)==='1' or die('invalid community');
+  ccdb("select count(*) from community where community_name=$1",$community)===1 or die('invalid community');
   if(!$uuid&&(($community!=='databases')||!isset($_GET['rdbms'])||!isset($_GET['fiddle']))) fail(403,'need to be logged in to visit this page unless from a fiddle');
   extract(cdb("select community_code_language from community where community_name=$1",$community));
 }
