@@ -91,8 +91,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .newtag:hover .tag { opacity: 1; }
     .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
 
-    #qa-wrapper { overflow: auto; scroll-behavior: smooth; direction: rtl; }
-    #qa { direction: ltr; }
+    #qa { overflow: auto; scroll-behavior: smooth; }
 
     #qa .answers { border-top: 1px solid #<?=$colour_dark?>; }
     #qa .answers .bar { background-color: white; }
@@ -287,7 +286,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               if($(this).data('poll-major-id')>maxQuestionPollMajorID) maxQuestionPollMajorID = $(this).data('poll-major-id');
               if($(this).data('poll-minor-id')>maxQuestionPollMinorID) maxQuestionPollMinorID = $(this).data('poll-minor-id');
             });
-            if(scroll) setTimeout(function(){ $('#qa-wrapper').scrollTop(0); },0);
+            if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
           setChatPollTimeout();
           (function more(n){
@@ -820,191 +819,189 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?if($auth){?><a class="frame" href="/profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
       </div>
     </header>
-    <div id="qa-wrapper">
-      <div id="qa">
-        <?if($question){?>
-          <div id="question" data-id="<?=$question?>" class="post<?=$question_i_subscribed?' subscribed':''?><?
-                                                               ?><?=$question_i_flagged?' flagged':''?><?
-                                                               ?><?=$question_i_counterflagged?' counterflagged':''?><?
-                                                               ?><?=$question_is_deleted?' deleted':''?>">
-            <div class="title"><?=(($question_is_meta&&($community_name!=='meta'))?'Meta Question: ':'').($question_is_blog?'Blog Post: ':'').htmlspecialchars($question_title)?></div>
-            <div class="bar">
-              <div>
-                <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
-                <span class="element">
-                  <?if($question_account_is_imported){?>
-                    <span><?if($question_communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_communicant_se_user_id?>"><?=htmlspecialchars($question_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
-                  <?}else{?>
-                    <span><?=htmlspecialchars($question_account_name)?></span>
-                  <?}?>
-                </span>
-                <span class="element">
-                  <a href="<?=$question_license_href?>"><?=$question_license_name?></a>
-                  <?if($question_has_codelicense){?>
-                    <span> + </span>
-                    <a href="/meta?q=24"><?=$question_codelicense_name?> for original code</a>
-                  <?}?>
-                </span>
-                <span class="when element" data-seconds="<?=$question_when?>"></span>
-              </div>
-              <div>
-                <div class="element container">
-                  <?if($auth){?>
-                    <span class="newtag">
-                      <div>
-                        <select id="tags" data-question-id="<?=$question?>">
-                          <option></option>
-                          <?foreach(db("select tag_id,tag_name from tag where not tag_is order by tag_question_count desc,tag_name") as $r){ extract($r);?>
-                            <option value="<?=$tag_id?>"><?=$tag_name?></option>
-                          <?}?>
-                        </select>
-                      </div>
-                      <span class="tag element">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    </span>
-                  <?}?>
-                  <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
-                    <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
-                  <?}?>
-                </div>
+    <div id="qa">
+      <?if($question){?>
+        <div id="question" data-id="<?=$question?>" class="post<?=$question_i_subscribed?' subscribed':''?><?
+                                                             ?><?=$question_i_flagged?' flagged':''?><?
+                                                             ?><?=$question_i_counterflagged?' counterflagged':''?><?
+                                                             ?><?=$question_is_deleted?' deleted':''?>">
+          <div class="title"><?=(($question_is_meta&&($community_name!=='meta'))?'Meta Question: ':'').($question_is_blog?'Blog Post: ':'').htmlspecialchars($question_title)?></div>
+          <div class="bar">
+            <div>
+              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
+              <span class="element">
+                <?if($question_account_is_imported){?>
+                  <span><?if($question_communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_communicant_se_user_id?>"><?=htmlspecialchars($question_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                <?}else{?>
+                  <span><?=htmlspecialchars($question_account_name)?></span>
+                <?}?>
+              </span>
+              <span class="element">
+                <a href="<?=$question_license_href?>"><?=$question_license_name?></a>
+                <?if($question_has_codelicense){?>
+                  <span> + </span>
+                  <a href="/meta?q=24"><?=$question_codelicense_name?> for original code</a>
+                <?}?>
+              </span>
+              <span class="when element" data-seconds="<?=$question_when?>"></span>
+            </div>
+            <div>
+              <div class="element container">
+                <?if($auth){?>
+                  <span class="newtag">
+                    <div>
+                      <select id="tags" data-question-id="<?=$question?>">
+                        <option></option>
+                        <?foreach(db("select tag_id,tag_name from tag where not tag_is order by tag_question_count desc,tag_name") as $r){ extract($r);?>
+                          <option value="<?=$tag_id?>"><?=$tag_name?></option>
+                        <?}?>
+                      </select>
+                    </div>
+                    <span class="tag element">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                  </span>
+                <?}?>
+                <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
+                  <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+                <?}?>
               </div>
             </div>
-            <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"><?=htmlspecialchars($question_markdown)?></div>
+          </div>
+          <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"><?=htmlspecialchars($question_markdown)?></div>
+          <div class="bar">
+            <div>
+              <?if($question_is_votable){?>
+                <?if(!$question_account_is_me){?>
+                  <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
+                <?}?>
+                <span class="element"><?=$question_votes?> star<?=($question_votes==='1')?'':'s'?></span>
+              <?}?>
+              <?if($auth){?>
+                <?if($question_account_is_me||!$question_is_blog){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
+                <?if($question_has_history){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
+                <?if(!$question_account_is_me){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
+              <?}?>
+            </div>
+            <?if($auth){?>
+              <div class="shrink">
+                <?if(!$question_account_is_me&&(($question_crew_flags===0)||$communicant_is_post_flag_crew)){?>
+                  <?if($question_active_flags<>0){?>
+                    <div class="element container shrink">
+                      <span>flagged by:</span>
+                      <div class="container shrink">
+                        <?foreach(db("select question_flag_account_id,question_flag_account_name,question_flag_is_crew,question_flag_direction
+                                      from question_flag
+                                      where question_flag_account_id<>$1
+                                      order by question_flag_is_crew, question_flag_at",$account_id) as $i=>$r){ extract($r);?>
+                          <img class="icon pingable"
+                               title="<?=$question_flag_account_name?><?=$question_flag_is_crew?(($question_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
+                               data-id="<?=$question_flag_account_id?>"
+                               data-name="<?=explode(' ',$question_flag_account_name)[0]?>"
+                               data-fullname="<?=$question_flag_account_name?>"
+                               src="/identicon?id=<?=$question_flag_account_id?>">
+                        <?}?>
+                      </div>
+                    </div>
+                  <?}?>
+                  <div class="element fa fw fa-flag" title="unflag this question"></div>
+                  <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
+                  <?if($communicant_is_post_flag_crew&&($question_active_flags>0)){?>
+                    <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
+                  <?}?>
+                <?}?>
+                <div class="element fa fw fa-bell" title="unsubscribe from this question"></div>
+                <div class="element fa fw fa-bell-o" title="subscribe to this question"></div>
+              </div>
+            <?}?>
+          </div>
+        </div>
+        <?if(!$question_is_blog){?>
+          <form method="GET" action="/answer">
+            <input type="hidden" name="question" value="<?=$question?>">
+            <input id="answer" type="submit" value="answer this question<?=$question_answered_by_me?' again':''?>"<?=$auth?'':' disabled'?>>
+          </form>
+        <?}?>
+        <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
+                            ,answer_license_href,answer_license_name,answer_codelicense_name,answer_account_name,answer_account_is_imported
+                            ,answer_communicant_votes,answer_communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
+                           , answer_account_id=$1 answer_account_is_me
+                           , answer_crew_flags>0 answer_is_deleted
+                           , extract('epoch' from current_timestamp-answer_at) answer_when
+                           , answer_codelicense_name is not null and answer_codelicense_name<>answer_license_name answer_has_codelicense
+                           , answer_active_flags>(answer_i_flagged::integer) answer_other_flags
+                      from answer
+                      order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$account_id) as $i=>$r){ extract($r);?>
+          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post answer<?=$answer_i_flagged?' flagged':''?><?
+                                                                               ?><?=$answer_i_counterflagged?' counterflagged':''?><?
+                                                                               ?><?=$answer_is_deleted?' deleted':''?>">
+            <div class="bar">
+              <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
+              <div>
+                <span class="when element" data-seconds="<?=$answer_when?>"></span>
+                <span class="element">
+                  <a href="<?=$answer_license_href?>"><?=$answer_license_name?></a>
+                  <?if($answer_has_codelicense){?>
+                    <span> + </span>
+                    <a href="/meta?q=24"><?=$answer_codelicense_name?> for original code</a></span>
+                  <?}?>
+                </span>
+                <span class="element">
+                  <?if($answer_account_is_imported){?>
+                    <span><?if($answer_communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_communicant_se_user_id?>"><?=htmlspecialchars($answer_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                  <?}else{?>
+                    <span><?=htmlspecialchars($answer_account_name)?></span>
+                  <?}?>
+                </span>
+                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
+              </div>
+            </div>
+            <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
             <div class="bar">
               <div>
-                <?if($question_is_votable){?>
-                  <?if(!$question_account_is_me){?>
-                    <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
-                  <?}?>
-                  <span class="element"><?=$question_votes?> star<?=($question_votes==='1')?'':'s'?></span>
+                <?if(!$answer_account_is_me){?>
+                  <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
                 <?}?>
+                <span class="element"><?=$answer_votes?> star<?=($answer_votes==='1')?'':'s'?></span>
                 <?if($auth){?>
-                  <?if($question_account_is_me||!$question_is_blog){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
-                  <?if($question_has_history){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
-                  <?if(!$question_account_is_me){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
+                  <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
+                  <?if($answer_has_history){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
+                  <?if(!$answer_account_is_me){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
                 <?}?>
               </div>
               <?if($auth){?>
                 <div class="shrink">
-                  <?if(!$question_account_is_me&&(($question_crew_flags===0)||$communicant_is_post_flag_crew)){?>
-                    <?if($question_active_flags<>0){?>
+                  <?if(!$answer_account_is_me&&(($answer_crew_flags===0)||$communicant_is_post_flag_crew)){?>
+                    <?if($answer_other_flags){?>
                       <div class="element container shrink">
                         <span>flagged by:</span>
                         <div class="container shrink">
-                          <?foreach(db("select question_flag_account_id,question_flag_account_name,question_flag_is_crew,question_flag_direction
-                                        from question_flag
-                                        where question_flag_account_id<>$1
-                                        order by question_flag_is_crew, question_flag_at",$account_id) as $i=>$r){ extract($r);?>
+                          <?foreach(db("select answer_flag_is_crew,answer_flag_direction,answer_flag_account_id,answer_flag_account_name
+                                        from answer_flag
+                                        where answer_id=$1 and answer_flag_account_id<>$2
+                                        order by answer_flag_is_crew, answer_flag_at",$answer_id,$account_id) as $i=>$r){ extract($r);?>
                             <img class="icon pingable"
-                                 title="<?=$question_flag_account_name?><?=$question_flag_is_crew?(($question_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
-                                 data-id="<?=$question_flag_account_id?>"
-                                 data-name="<?=explode(' ',$question_flag_account_name)[0]?>"
-                                 data-fullname="<?=$question_flag_account_name?>"
-                                 src="/identicon?id=<?=$question_flag_account_id?>">
+                                 title="<?=$flag_account_name?><?=$answer_flag_is_crew?(($answer_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
+                                 data-id="<?=$flag_account_id?>"
+                                 data-name="<?=explode(' ',$flag_account_name)[0]?>"
+                                 data-fullname="<?=$flag_account_name?>"
+                                 src="/identicon?id=<?=$flag_account_id?>">
                           <?}?>
                         </div>
                       </div>
                     <?}?>
-                    <div class="element fa fw fa-flag" title="unflag this question"></div>
-                    <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
-                    <?if($communicant_is_post_flag_crew&&($question_active_flags>0)){?>
+                    <div class="element fa fw fa-flag" title="unflag this answer"></div>
+                    <div class="element fa fw fa-flag-o" title="flag this answer (n.b. flags are public)"></div>
+                    <?if($communicant_is_post_flag_crew&&$answer_other_flags){?>
                       <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
                     <?}?>
                   <?}?>
-                  <div class="element fa fw fa-bell" title="unsubscribe from this question"></div>
-                  <div class="element fa fw fa-bell-o" title="subscribe to this question"></div>
                 </div>
               <?}?>
             </div>
           </div>
-          <?if(!$question_is_blog){?>
-            <form method="GET" action="/answer">
-              <input type="hidden" name="question" value="<?=$question?>">
-              <input id="answer" type="submit" value="answer this question<?=$question_answered_by_me?' again':''?>"<?=$auth?'':' disabled'?>>
-            </form>
-          <?}?>
-          <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
-                              ,answer_license_href,answer_license_name,answer_codelicense_name,answer_account_name,answer_account_is_imported
-                              ,answer_communicant_votes,answer_communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
-                             , answer_account_id=$1 answer_account_is_me
-                             , answer_crew_flags>0 answer_is_deleted
-                             , extract('epoch' from current_timestamp-answer_at) answer_when
-                             , answer_codelicense_name is not null and answer_codelicense_name<>answer_license_name answer_has_codelicense
-                             , answer_active_flags>(answer_i_flagged::integer) answer_other_flags
-                        from answer
-                        order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$account_id) as $i=>$r){ extract($r);?>
-            <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post answer<?=$answer_i_flagged?' flagged':''?><?
-                                                                                 ?><?=$answer_i_counterflagged?' counterflagged':''?><?
-                                                                                 ?><?=$answer_is_deleted?' deleted':''?>">
-              <div class="bar">
-                <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
-                <div>
-                  <span class="when element" data-seconds="<?=$answer_when?>"></span>
-                  <span class="element">
-                    <a href="<?=$answer_license_href?>"><?=$answer_license_name?></a>
-                    <?if($answer_has_codelicense){?>
-                      <span> + </span>
-                      <a href="/meta?q=24"><?=$answer_codelicense_name?> for original code</a></span>
-                    <?}?>
-                  </span>
-                  <span class="element">
-                    <?if($answer_account_is_imported){?>
-                      <span><?if($answer_communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_communicant_se_user_id?>"><?=htmlspecialchars($answer_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
-                    <?}else{?>
-                      <span><?=htmlspecialchars($answer_account_name)?></span>
-                    <?}?>
-                  </span>
-                  <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
-                </div>
-              </div>
-              <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
-              <div class="bar">
-                <div>
-                  <?if(!$answer_account_is_me){?>
-                    <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
-                  <?}?>
-                  <span class="element"><?=$answer_votes?> star<?=($answer_votes==='1')?'':'s'?></span>
-                  <?if($auth){?>
-                    <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
-                    <?if($answer_has_history){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
-                    <?if(!$answer_account_is_me){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
-                  <?}?>
-                </div>
-                <?if($auth){?>
-                  <div class="shrink">
-                    <?if(!$answer_account_is_me&&(($answer_crew_flags===0)||$communicant_is_post_flag_crew)){?>
-                      <?if($answer_other_flags){?>
-                        <div class="element container shrink">
-                          <span>flagged by:</span>
-                          <div class="container shrink">
-                            <?foreach(db("select answer_flag_is_crew,answer_flag_direction,answer_flag_account_id,answer_flag_account_name
-                                          from answer_flag
-                                          where answer_id=$1 and answer_flag_account_id<>$2
-                                          order by answer_flag_is_crew, answer_flag_at",$answer_id,$account_id) as $i=>$r){ extract($r);?>
-                              <img class="icon pingable"
-                                   title="<?=$flag_account_name?><?=$answer_flag_is_crew?(($answer_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
-                                   data-id="<?=$flag_account_id?>"
-                                   data-name="<?=explode(' ',$flag_account_name)[0]?>"
-                                   data-fullname="<?=$flag_account_name?>"
-                                   src="/identicon?id=<?=$flag_account_id?>">
-                            <?}?>
-                          </div>
-                        </div>
-                      <?}?>
-                      <div class="element fa fw fa-flag" title="unflag this answer"></div>
-                      <div class="element fa fw fa-flag-o" title="flag this answer (n.b. flags are public)"></div>
-                      <?if($communicant_is_post_flag_crew&&$answer_other_flags){?>
-                        <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
-                      <?}?>
-                    <?}?>
-                  </div>
-                <?}?>
-              </div>
-            </div>
-          <?}?>
-        <?}else{?>
-          <div id='more'></div>
         <?}?>
-      </div>
+      <?}else{?>
+        <div id='more'></div>
+      <?}?>
     </div>
   </main>
   <div id="chat-wrapper" class="pane hidepane">
