@@ -10,8 +10,8 @@ if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_arr
 if(isset($_GET['quote'])) exit(ccdb("select quote($1)",$_GET['id']));
 if(isset($_GET['activerooms'])){
   foreach(db("select room_id,room_name,community_colour,room_account_unread_messages from activerooms()") as $r){ extract($r);?>
-    <a<?if($room_id!==$_GET['room']){?> href="."<?}?> data-room="<?=$room_id?>"<?if($room_account_unread_messages>0){?> data-unread="<?=$room_account_unread_messages?>"<?}?>>
-      <img title="<?=($room_name)?$room_name:''?>" class="icon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>">
+    <a<?if($room_id!==intval($_GET['room'])){?> href="."<?}?> data-room="<?=$room_id?>"<?if($room_account_unread_messages>0){?> data-unread="<?=$room_account_unread_messages?>"<?}?>>
+      <img title="<?=($room_name)?$room_name:''?>" class="icon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>;">
     </a><?
   }
   exit;

@@ -73,7 +73,7 @@ $$;
 create function activerooms() returns table (room_id integer, room_name text, community_colour text, room_account_unread_messages bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
   select room_id
        , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
-       , encode(community_light_shade,'hex') community_colour
+       , encode(community_light_shade,'hex')
        , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.room_account_x_latest_read_chat_id) room_account_unread_messages
   from (select room_id,room_account_x_latest_chat_at,room_account_x_latest_read_chat_id
         from room_account_x

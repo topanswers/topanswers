@@ -170,7 +170,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #active-rooms a[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: #<?=$colour_highlight?>; color: black;
                                                width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
     #active-rooms>a:not([href])>.icon { outline: 1px solid #<?=$colour_highlight?>; }
-    #active-rooms>a[href]:hover>.icon { outline: 1px solid #<?=$colour_dark?>; }
+    #active-rooms>a[href]:hover>.icon { outline: 1px solid #<?=$colour_highlight?>80; }
     #active-spacer { flex: 0 0 auto; padding: 1rem 0; cursor: pointer; }
     #active-spacer>div { background: #<?=$colour_dark?>; height: 1px; }
     #active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
