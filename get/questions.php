@@ -20,8 +20,8 @@ if($search){
   if(isset($_GET['page'])){
     extract(cdb("select startid,endid from recent($1)",$_GET['page']));
   }elseif(isset($_GET['one'])){
-    $startid = $_GET['id'];
-    $endid = $_GET['id'];
+    $startid = ccdb("select question_poll_major_id from question where question_id=$1",$_GET['id']);
+    $endid = $startid;
   }else{
     $startid = intval($_GET['id'])+1;
     $endid = '';
