@@ -41,7 +41,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <!doctype html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
@@ -139,7 +139,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages-wrapper { flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; border-radius: 5px; background: #<?=$colour_light?>; }
     #notification-wrapper .label { background: #<?=$colour_light?>; border-radius: 5px 5px 0 0; }
     #notifications { display: flex; flex-direction: column; min-height: 0; max-height: 30vh; background: #<?=$colour_light?>; overflow-x: hidden; overflow-y: auto; border-radius: 0 0 5px 5px; margin-bottom: 16px; }
-    #ios-spacer { flex: 0 0 76px; }
 
     #chat-panels .message .who { top: -1.2em; }
     #chat-panels .markdown img { max-height: 7rem; }
@@ -206,14 +205,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     .pane { display: flex; }
     .panecontrol { display: none; }
-    #ios-spacer { display: none; }
+    @media (max-width: 1024px){
+      html, body { height: calc(100vh - 24px); }
+    }
     @media (max-width: 576px){
+      html, body { height: calc(100vh - 76px); }
       .hidepane { display: none; }
       .panecontrol { display: unset; }
       textarea,select,input { font-size: 16px; }
       #chattext-wrapper:not(:hover) button { display: unset; }
       header { flex-direction: unset; white-space: unset; }
-      #ios-spacer { display: unset; }
       #poll { display: none; }
       #se { display: none; }
       #chat-panels { margin: 0; }
@@ -1005,7 +1006,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </div>
   </main>
   <div id="chat-wrapper" class="pane hidepane">
-    <div id="ios-spacer"></div>
     <header>
       <div>
         <a class="frame"<?=$dev?' href="/room?id='.$room.'" ':''?>><img class="icon" src="/roomicon?id=<?=$room?>"></a>
