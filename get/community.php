@@ -206,7 +206,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .pane { display: flex; }
     .panecontrol { display: none; }
     @media (max-width: 1024px){
-      html, body { height: calc(100vh - 24px); }
+      html, body { height: calc(100vh - 58px); }
     }
     @media (max-width: 576px){
       html, body { height: calc(100vh - 76px); }
