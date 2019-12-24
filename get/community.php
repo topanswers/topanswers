@@ -979,11 +979,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                         where answer_id=$1 and answer_flag_account_id<>$2
                                         order by answer_flag_is_crew, answer_flag_at",$answer_id,$account_id) as $i=>$r){ extract($r);?>
                             <img class="icon pingable"
-                                 title="<?=$flag_account_name?><?=$answer_flag_is_crew?(($answer_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
-                                 data-id="<?=$flag_account_id?>"
-                                 data-name="<?=explode(' ',$flag_account_name)[0]?>"
-                                 data-fullname="<?=$flag_account_name?>"
-                                 src="/identicon?id=<?=$flag_account_id?>">
+                                 title="<?=$answer_flag_account_name?><?=$answer_flag_is_crew?(($answer_flag_direction===1)?' (crew)':' (crew, counter-flagged)'):''?>"
+                                 data-id="<?=$answer_flag_account_id?>"
+                                 data-name="<?=explode(' ',$answer_flag_account_name)[0]?>"
+                                 data-fullname="<?=$answer_flag_account_name?>"
+                                 src="/identicon?id=<?=$answer_flag_account_id?>">
                           <?}?>
                         </div>
                       </div>

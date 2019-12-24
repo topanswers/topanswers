@@ -102,6 +102,7 @@ create table login(
   login_uuid uuid primary key
 , account_id integer not null references account
 , login_resizer_percent integer default 70 not null check (login_resizer_percent between 0 and 100)
+, login_chat_resizer_percent integer default 30 not null check (login_chat_resizer_percent between 0 and 100)
 );
 
 create table pin(

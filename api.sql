@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists room cascade;
 drop schema if exists questions cascade;
 drop schema if exists community cascade;
 drop schema if exists transcript cascade;
@@ -10,8 +11,7 @@ drop schema if exists chat cascade;
 drop schema if exists notification cascade;
 drop schema if exists api cascade;
 create schema api;
-grant usage on schema api to get;
-grant usage on schema api to post;
+grant usage on schema api to get,post;
 set local search_path to api,pg_temp;
 --
 --
@@ -81,7 +81,7 @@ $$;
 revoke all on all functions in schema api from public;
 do $$
 begin
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,post;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='api' and proname!~'^_' );
 end$$;
@@ -91,5 +91,6 @@ end$$;
 \i ~/git/notification.sql
 \i ~/git/community.sql
 \i ~/git/questions.sql
+\i ~/git/room.sql
 --
 commit;

@@ -64,6 +64,7 @@ select account_id,community_id,community_name,community_code_language,room_id
       ,question_license_href,question_has_codelicense,question_codelicense_name
      , question_account_id is not distinct from account_id question_account_is_me
      , coalesce(login_resizer_percent,70) login_resizer_percent
+     , coalesce(login_chat_resizer_percent,30) login_chat_resizer_percent
      , coalesce(account_is_dev,false) account_is_dev
      , coalesce(account_notification_id,0) account_notification_id
      , coalesce(question_title,room_name,community_display_name||' Chat') room_name
@@ -81,7 +82,7 @@ select account_id,community_id,community_name,community_code_language,room_id
      , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
      , sesite_url
 from db.room r natural join db.community
-     natural left join (select login_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
+     natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
      natural left join db.account_room_x x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s

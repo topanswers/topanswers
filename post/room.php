@@ -2,30 +2,28 @@
 include '../cors.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
-isset($_COOKIE['uuid']) || fail(403,'only registered users can POST');
-ccdb("select login($1)",$_COOKIE['uuid']) || fail(403,'invalid uuid');
-isset($_POST['id']) || fail(400,'room id not set');
-ccdb("select count(*) from get.room where room_id=$1",$_POST['id'])===1 || fail(400,'invalid room');
-
+db("set search_path to room,pg_temp");
+ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_POST['id']??'') || fail(403,'access denied');
+extract(cdb("select room_id,room_name,room_has_image,community_name,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight,question_id from one"));
 if(isset($_POST['action'])){
   switch($_POST['action']) {
     case 'switch':
-      db("select read_room($1), read_room($2)",$_POST['from-id'],$_POST['id']);
-      header('Location: //topanswers.xyz/'.ccdb("select community_name||'?'||(case when question_id is null then 'room='||room_id else 'q='||question_id end)
-                                                 from get.room natural join get.community natural left join (select question_id, question_room_id room_id from get.question) q
-                                                 where room_id=$1",$_POST['id']));
+      db("select read()");
+      ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_POST['from-id']??'') || fail(403,'access denied');
+      db("select read()");
+      header('Location: //topanswers.xyz/'.$community_name.'?'.($question_id?'q='.$question_id:'room='.$room_id));
       exit;
     default: fail(400,'unrecognized action');
   }
 }
 if(isset($_POST['name'])){
-  db("select change_room_name($1,nullif($2,''))",$_POST['id'],$_POST['name']);
-  header('Location: //topanswers.xyz/room?id='.$_POST['id']);
+  db("select change_name(nullif($1,''))",$_POST['name']);
+  header('Location: //topanswers.xyz/room?id='.$room_id);
   exit;
 }
 if(isset($_POST['image'])){
-  db("select change_room_image($1,null)",$_POST['id']);
-  header('Location: //topanswers.xyz/room?id='.$_POST['id']);
+  db("select change_image(null)");
+  header('Location: //topanswers.xyz/room?id='.$room_id);
   exit;
 }
 if(isset($_FILES['image'])){
@@ -44,8 +42,8 @@ if(isset($_FILES['image'])){
   }
   ob_start();
   imagepng(imagescale($image,64,64,IMG_BICUBIC));
-  db("select change_room_image($1,$2)",$_POST['id'],pg_escape_bytea(ob_get_contents()));
+  db("select change_image($1)",pg_escape_bytea(ob_get_contents()));
   ob_end_clean();
-  header('Location: //topanswers.xyz/room?id='.$_POST['id']);
+  header('Location: //topanswers.xyz/room?id='.$room_id);
   exit;
 }

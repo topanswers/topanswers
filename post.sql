@@ -179,6 +179,11 @@ create function change_resizer(perc integer) returns void language sql security 
   update login set login_resizer_percent = perc where login_uuid=current_setting('custom.uuid',true)::uuid;
 $$;
 --
+create function change_chat_resizer(perc integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
+  select _error('invalid percent') where perc<0 or perc>100;
+  update login set login_chat_resizer_percent = perc where login_uuid=current_setting('custom.uuid',true)::uuid;
+$$;
+--
 create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,post,pg_temp as $$
   delete from pin where pin_number=num;
   insert into pin(pin_number,account_id) select num,account_id from account where account_id=current_setting('custom.account_id',true)::integer;
