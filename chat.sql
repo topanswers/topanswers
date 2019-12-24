@@ -71,17 +71,16 @@ create function range(startid bigint, endid bigint)
 $$;
 --
 create function activerooms() returns table (room_id integer, room_name text, community_colour text, room_account_unread_messages bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select room_id,room_name,community_colour,room_account_unread_messages
-  from (select room_id,room_account_x_latest_chat_at
-             , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
-             , encode(community_light_shade,'hex') community_colour
-             , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.room_account_x_latest_read_chat_id) room_account_unread_messages
-        from (select room_id,room_account_x_latest_chat_at,room_account_x_latest_read_chat_id
-              from room_account_x
-              where account_id=get_account_id() and room_account_x_latest_chat_at>(current_timestamp-'7d'::interval)) x
-             natural join room r
-             natural join community
-             natural left join (select question_room_id room_id, question_title from question) q) z
+  select room_id
+       , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
+       , encode(community_light_shade,'hex') community_colour
+       , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.room_account_x_latest_read_chat_id) room_account_unread_messages
+  from (select room_id,room_account_x_latest_chat_at,room_account_x_latest_read_chat_id
+        from room_account_x
+        where account_id=get_account_id() and room_account_x_latest_chat_at>(current_timestamp-'7d'::interval)) x
+       natural join room r
+       natural join community
+       natural left join (select question_room_id room_id, question_title from question) q
   order by room_account_x_latest_chat_at desc;
 $$;
 --
@@ -90,7 +89,7 @@ create function activeusers() returns table (account_id integer, account_name te
        , account_id=get_account_id() account_is_me
        , coalesce(communicant_votes,0) communicant_votes
   from room natural join room_account_x natural join account natural join communicant
-  where room_id=get_room_id()
+  where room_id=get_room_id() and room_account_x_latest_chat_at>(current_timestamp-'7d'::interval)
   order by room_account_x_latest_chat_at desc;
 $$;
 --
