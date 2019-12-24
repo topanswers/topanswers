@@ -17,7 +17,7 @@ if(!isset($_GET['room'])&&!isset($_GET['q'])){
   fail(400,"exactly one of 'q' or 'room' must be set");
 }
 if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
-extract(cdb("select login_resizer_percent
+extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,account_id,account_is_dev,account_notification_id
                    ,community_id,community_name,community_my_power,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
                    ,communicant_is_post_flag_crew,communicant_can_import
@@ -56,12 +56,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
     body { display: flex; background: #<?=$colour_dark?>; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    main { flex-direction: column; flex: 1 1 <?=$auth?$login_resizer_percent:'70'?>%; overflow: hidden; }
+    main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
-    [data-rz-handle] { flex: 0 0 2px; background: black; }
-    [data-rz-handle] div { width: 2px; background: black; }
+    [data-rz-handle='horizontal'] { margin: 7px 0; }
+    [data-rz-handle='horizontal']:not(:hover):not(:active) { background: transparent !important; }
 
     header, header>div, #qa .bar, #qa .bar>div, .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
     header, #qa .bar>div:not(.shrink), .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
@@ -132,19 +132,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #answer { margin: 2rem auto; display: block; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
-    #chat-wrapper { font-size: 14px; flex: 1 1 <?=($auth)?100-$login_resizer_percent:'30'?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
+    #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
     #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 4px; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
-    #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px; }
-    #messages-wrapper { flex: 1 1 auto; display: flex; flex-direction: column; overflow: hidden; border-radius: 5px; background: #<?=$colour_light?>; }
-    #notification-wrapper .label { background: #<?=$colour_light?>; border-radius: 5px 5px 0 0; }
-    #notifications { display: flex; flex-direction: column; min-height: 0; max-height: 30vh; background: #<?=$colour_light?>; overflow-x: hidden; overflow-y: auto; border-radius: 0 0 5px 5px; margin-bottom: 16px; }
+    #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px 0; }
+    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; margin: 0 16px; border-radius: 5px; background: #<?=$colour_light?>; }
+    #notification-wrapper:empty, #notification-wrapper:empty + [data-rz-handle] { display: none; }
+    #notification-wrapper .label { border-bottom: 1px solid #<?=$colour_dark?>; flex: 0 0 auto; }
+    #notifications { overflow-x: hidden; overflow-y: auto; }
+    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 5px; background: #<?=$colour_light?>; margin: 0 16px; }
 
     #chat-panels .message .who { top: -1.2em; }
     #chat-panels .markdown img { max-height: 7rem; }
     #chat-panels .message.thread .markdown { background: #<?=$colour_highlight?>40; }
     #messages .message:not(:hover) .when { display: none; }
-    #notifications .message { padding: 0.3em; border-top: 1px solid #<?=$colour_dark?>; }
+    #notifications .message { padding: 0.3em; border-bottom: 1px solid #<?=$colour_dark?>; }
     #notifications .message[data-type='chat'] { padding-top: 1.3em; }
     #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
 
@@ -661,7 +663,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
-      const myResizer = new Resizer('body', { callback: function(w) { $.post({ url: '//post.topanswers.xyz/community', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); } });
+      const qaAndChat = new Resizer('body', { width: 2, colour: 'black', full_length: true, callback: function(w) { $.post({ url: '//post.topanswers.xyz/community', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); } });
+      const notificationsAndChat = new Resizer('#chat-panels', { width: 2, colour: 'black', full_length: true, callback: function(y) { $.post({ url: '//post.topanswers.xyz/community', data: { action: 'chat_resizer', position: Math.round(y) }, xhrFields: { withCredentials: true } }); } });
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
       $('#chatuploadfile').change(function() {
         if(this.files[0].size > 2097152){
