@@ -1,5 +1,5 @@
 create schema chat;
-grant usage on schema chat to get;
+grant usage on schema chat to get,post;
 set local search_path to chat,api,pg_temp;
 --
 --
@@ -120,6 +120,104 @@ do $$
 begin
   execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='chat' and viewname!~'^_');
   execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+            from pg_proc p join pg_namespace n on p.pronamespace=n.oid
+            where n.nspname='chat' and proname!~'^_' );
+end$$;
+--
+--
+create function new(msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  select _error(413,'message too long') where length(msg)>5000;
+  select ensure_communicant(get_account_id(),community_id) from room where room_id=get_room_id();
+  --
+  with d as (delete from chat_notification where chat_id=replyid and account_id=get_account_id() returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+  --
+  insert into chat_year(room_id,chat_year,chat_year_count)
+  select get_room_id(),extract('year' from current_timestamp),1 from room where room_id=get_room_id() on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
+  --
+  insert into chat_month(room_id,chat_year,chat_month,chat_month_count)
+  select get_room_id(),extract('year' from current_timestamp),extract('month' from current_timestamp),1 from room where room_id=get_room_id()
+  on conflict on constraint chat_month_pkey do update set chat_month_count = chat_month.chat_month_count+1;
+  --
+  insert into chat_day(room_id,chat_year,chat_month,chat_day,chat_day_count)
+  select get_room_id(),extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),1 from room where room_id=get_room_id()
+  on conflict on constraint chat_day_pkey do update set chat_day_count = chat_day.chat_day_count+1;
+  --
+  insert into chat_hour(room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count)
+  select get_room_id(),extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),extract('hour' from current_timestamp),1 from room where room_id=get_room_id()
+  on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
+  --
+  with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
+             select community_id,get_room_id(),get_account_id(),msg,replyid from room where room_id=get_room_id() returning community_id,room_id,chat_id)
+     , h as (insert into chat_history(chat_id,chat_history_markdown) select chat_id,msg from i)
+     , n as (insert into chat_notification(chat_id,account_id)
+             select chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and (select account_id from chat where chat_id=replyid)<>get_account_id()
+             returning *)
+     , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
+     , p as (insert into chat_notification(chat_id,account_id)
+             select chat_id,account_id
+             from i cross join (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z)
+     , r as (insert into room_account_x(room_id,account_id,room_account_x_latest_read_chat_id)
+             select room_id,get_account_id(),chat_id from i
+             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default, room_account_x_latest_read_chat_id=excluded.room_account_x_latest_read_chat_id)
+  select chat_id from i;
+$$;
+--
+create function change(id integer, msg text) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
+  select _error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
+  select _error('too late') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>300;
+  select _error(413,'message too long') where length(msg)>5000;
+  insert into chat_history(chat_id,chat_history_markdown) values(id,msg);
+  --
+  with w as (select chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
+  update account set account_notification_id = default where account_id in(select account_id from w);
+  --
+  update chat set chat_markdown = msg, chat_change_id = default, chat_change_at = default where chat_id=id;
+$$;
+--
+create function dismiss_notification(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  with d as (delete from chat_notification where chat_id=id and account_id=get_account_id() returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+$$;
+--
+create function set_flag(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('cant flag own message') where exists(select 1 from chat where chat_id=cid and account_id=get_account_id());
+  select _error('already flagged') where exists(select 1 from chat_flag where chat_id=cid and account_id=get_account_id());
+  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  insert into chat_flag(chat_id,account_id) select chat_id,get_account_id() from chat where chat_id=cid;
+  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
+$$;
+--
+create function remove_flag(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('not already flagged') where not exists(select 1 from chat_flag where chat_id=cid and account_id=get_account_id());
+  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  delete from chat_flag where chat_id=cid and account_id=get_account_id();
+  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
+$$;
+--
+create function set_star(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('cant star own message') where exists(select 1 from chat where chat_id=cid and account_id=get_account_id());
+  select _error('already starred') where exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
+  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  insert into chat_star(chat_id,account_id) select chat_id,get_account_id() from chat where chat_id=cid;
+  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
+$$;
+--
+create function remove_star(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('not already starred') where not exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
+  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  delete from chat_star where chat_id=cid and account_id=get_account_id();
+  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
+$$;
+--
+--
+revoke all on all functions in schema chat from public;
+do $$
+begin
+  execute (select string_agg('grant select on '||viewname||' to post;', E'\n') from pg_views where schemaname='chat' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to post;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='chat' and proname!~'^_' );
 end$$;

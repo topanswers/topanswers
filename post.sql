@@ -50,6 +50,7 @@ create function _ensure_communicant(aid integer, cid integer) returns void langu
   on conflict on constraint communicant_pkey do nothing;
 $$;
 --
+/*
 create function new_chat(roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,post,pg_temp as $$
   select _error('room does not exist') where not exists(select 1 from room where room_id=roomid);
   select _error('access denied') where not exists(select 1 from shared.room where room_id=roomid and room_can_chat);
@@ -110,6 +111,7 @@ create function dismiss_chat_notification(id integer) returns void language sql 
   with d as (delete from chat_notification where chat_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
+*/
 --
 create function dismiss_question_notification(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   with d as (delete from question_notification where question_history_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
@@ -189,6 +191,7 @@ create function authenticate_pin(num bigint) returns void language sql security 
   insert into pin(pin_number,account_id) select num,account_id from account where account_id=current_setting('custom.account_id',true)::integer;
 $$;
 --
+/*
 create function set_chat_flag(cid bigint) returns bigint language sql security definer set search_path=db,post,pg_temp as $$
   select _error('cant flag own message') where exists(select 1 from chat where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
   select _error('already flagged') where exists(select 1 from chat_flag where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer);
@@ -218,6 +221,7 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
   delete from chat_star where chat_id=cid and account_id=current_setting('custom.account_id',true)::integer;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
+*/
 --
 create function _new_question_tag(aid integer, qid integer, tid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
@@ -429,6 +433,7 @@ create function vote_answer(aid integer, votes integer) returns integer language
   update answer set answer_votes = answer_votes+answer_vote_votes from i where answer.answer_id=aid returning answer_votes;
 $$;
 --
+/*
 create function change_room_name(id integer, nname text) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('not authorised') from account where account_id=current_setting('custom.account_id',true)::integer and not account_is_dev;
@@ -443,6 +448,7 @@ create function change_room_image(id integer, image bytea) returns void language
   select _error('invalid room') where not exists (select 1 from shared.room where room_id=id);
   update room set room_image = image where room_id=id;
 $$;
+*/
 --
 create function change_fonts(cid integer, regid integer, monoid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
@@ -450,11 +456,13 @@ create function change_fonts(cid integer, regid integer, monoid integer) returns
   update communicant set communicant_regular_font_id=regid, communicant_monospace_font_id=monoid where account_id=current_setting('custom.account_id',true)::integer and community_id=cid;
 $$;
 --
+/*
 create function read_room(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid room') where not exists (select 1 from shared.room where room_id=id);
   update room_account_x set room_account_x_latest_read_chat_id = (select max(chat_id) from chat where room_id=id) where room_id=id and account_id=current_setting('custom.account_id',true)::integer;
 $$;
+*/
 --
 create function subscribe_question(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('already subscribed') where exists(select 1 from subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=id);

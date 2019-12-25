@@ -508,7 +508,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function starflag(t,action,direction){
         var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
         m.css({'opacity':'0.3','pointer-events':'none'});
-        $.post({ url: '//post.topanswers.xyz/chat', data: { action: ((direction===-1)?'un':'')+action, id: id }, xhrFields: { withCredentials: true } }).done(function(r){
+        $.post({ url: '//post.topanswers.xyz/chat', data: { action: ((direction===-1)?'un':'')+action, room: <?=$room?>, id: id }, xhrFields: { withCredentials: true } }).done(function(r){
           m.css({ 'opacity':'1','pointer-events':'auto' }).toggleClass('me fa-'+action+' fa-'+action+'-o').closest('.buttons').find('.button-group:first-child .'+action+'s[data-count]').toggleClass('me fa-'+action+' fa-'+action+'-o')
            .each(function changecount(){ $(this).attr('data-count',(+$(this).attr('data-count'))+direction); });
         });
@@ -622,7 +622,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               clearTimeout(chatTimer);
               renderPreview(true);
               if(edit){
-                post = { msg: $('#preview .markdown').attr('data-markdown'), editid: replyid, action: 'edit' };
+                post = { msg: $('#preview .markdown').attr('data-markdown'), room: <?=$room?>, editid: replyid, action: 'edit' };
                 c.css('opacity',0.5);
               }else{
                 arr = [];
@@ -733,27 +733,27 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
       $('#chat-wrapper').on('click','.message[data-type="chat"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="question"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/question', data: { action: 'dismiss', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $.post({ url: '//post.topanswers.xyz/question', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="question flag"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/question', data: { action: 'dismiss-flag', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $.post({ url: '//post.topanswers.xyz/question', data: { action: 'dismiss-flag', room: <?=$room?>, id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="answer"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/answer', data: { action: 'dismiss', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $.post({ url: '//post.topanswers.xyz/answer', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="answer flag"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/answer', data: { action: 'dismiss-flag', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $.post({ url: '//post.topanswers.xyz/answer', data: { action: 'dismiss-flag', room: <?=$room?>, id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
         return false;
       });

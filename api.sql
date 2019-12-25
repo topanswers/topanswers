@@ -77,6 +77,12 @@ create function login_question(uuid uuid, qid integer) returns boolean language 
   select login(uuid);
 $$;
 --
+create function ensure_communicant(aid integer, cid integer) returns void language sql security definer set search_path=db,pg_temp as $$
+  insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
+  select aid,cid,community_regular_font_id,community_monospace_font_id from community where community_id=cid
+  on conflict on constraint communicant_pkey do nothing;
+$$;
+--
 --
 revoke all on all functions in schema api from public;
 do $$
