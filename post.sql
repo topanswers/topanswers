@@ -129,6 +129,7 @@ create function dismiss_question_flag_notification(id integer) returns void lang
 $$;
 */
 --
+/*
 create function dismiss_answer_notification(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   with d as (delete from answer_notification where answer_history_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
@@ -140,6 +141,7 @@ create function dismiss_answer_flag_notification(id integer) returns void langua
                    and account_id=current_setting('custom.account_id',true)::integer returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
+*/
 --
 /*
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,post,pg_temp as $$
@@ -325,6 +327,7 @@ create function change_question(id integer, title text, markdown text) returns v
 $$;
 */
 --
+/*
 create function _new_answer(qid integer, aid integer, markdown text, lic integer, codelic integer, seaid integer) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from question natural join shared.community where question_id=qid);
@@ -345,6 +348,7 @@ create function new_answer(qid integer, markdown text, lic integer, codelic inte
   update question set question_poll_major_id = default where question_id=qid;
   select _new_answer(qid,current_setting('custom.account_id',true)::integer,markdown,lic,codelic,null);
 $$;
+*/
 --
 /*
 create function new_seanswer(qid integer, markdown text, seaid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,post,pg_temp as $$
@@ -356,8 +360,9 @@ create function new_seansweranon(qid integer, markdown text, seaid integer) retu
   select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
   select _new_answer(qid,(select account_id from communicant where community_id=question.community_id and communicant_se_user_id=0),markdown,4,1,seaid) from question where question_id=qid;
 $$;
-/*
+*/
 --
+/*
 create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error(429,'rate limit') where (select count(*)
@@ -376,6 +381,7 @@ create function change_answer(id integer, markdown text) returns void language s
   --
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
 $$;
+*/
 --
 /*
 create function remove_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
@@ -431,6 +437,7 @@ create function vote_question(qid integer, votes integer) returns integer langua
 $$;
 */
 --
+/*
 create function vote_answer(aid integer, votes integer) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid number of votes cast') where votes<0 or votes>(select community_my_power from answer natural join (select question_id,community_id from question) q natural join shared.community where answer_id=aid);
@@ -454,6 +461,7 @@ create function vote_answer(aid integer, votes integer) returns integer language
      , c as (update communicant set communicant_votes = communicant_votes+answer_vote_votes from r where communicant.account_id=r.account_id and communicant.community_id=r.community_id)
   update answer set answer_votes = answer_votes+answer_vote_votes from i where answer.answer_id=aid returning answer_votes;
 $$;
+*/
 --
 /*
 create function change_room_name(id integer, nname text) returns void language sql security definer set search_path=db,post,pg_temp as $$
@@ -539,6 +547,7 @@ create function flag_question(id integer, direction integer) returns void langua
 $$;
 */
 --
+/*
 create function flag_answer(id integer, direction integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid flag direction') where direction not in(-1,0,1);
@@ -579,6 +588,7 @@ create function flag_answer(id integer, direction integer) returns void language
              returning account_id)
   update account set account_notification_id = default where account_id in (select account_id from qfn);
 $$;
+*/
 --
 /*
 create function new_import(cid integer, qid text, aids text) returns void language sql security definer set search_path=db,post,pg_temp as $$

@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists answer cascade;
 drop schema if exists profile cascade;
 drop schema if exists question cascade;
 drop schema if exists room cascade;
@@ -33,6 +34,7 @@ $$;
 create function get_room_id() returns integer stable language sql security definer as $$select api._get_id('room'::text);$$;
 create function get_community_id() returns integer stable language sql security definer as $$select api._get_id('community'::text);$$;
 create function get_question_id() returns integer stable language sql security definer as $$select api._get_id('question'::text);$$;
+create function get_answer_id() returns integer stable language sql security definer as $$select api._get_id('answer'::text);$$;
 --
 create function _set_id(text,integer) returns void stable language sql security definer set search_path=db,api,pg_temp as $$
   with w as (select account_encryption_key from login natural join account where login_uuid=nullif(current_setting('custom.uuid',true),'')::uuid
@@ -76,6 +78,17 @@ create function login_question(uuid uuid, qid integer) returns boolean language 
   --
   select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
   select _set_id('question',question_id),_set_id('room',question_room_id),_set_id('community',community_id) from question where question_id=qid;
+  select login(uuid);
+$$;
+--
+create function login_answer(uuid uuid, aid integer) returns boolean language sql security definer set search_path=db,api,chat,pg_temp as $$
+  --
+  select _error('invalid answer') where not exists (select 1
+                                                    from answer natural join (select question_id,community_id from question) r natural join (select community_id,community_type from community) c 
+                                                    where answer_id=aid and (community_type='public' or exists (select 1 from member m natural join login where m.community_id=r.community_id and login_uuid=uuid)));
+  --
+  select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
+  select _set_id('answer',answer_id),_set_id('question',question_id),_set_id('community',community_id) from answer natural join (select question_id,community_id from question) q where answer_id=aid;
   select login(uuid);
 $$;
 --
@@ -124,5 +137,6 @@ end$$;
 \i ~/git/room.sql
 \i ~/git/question.sql
 \i ~/git/profile.sql
+\i ~/git/answer.sql
 --
 commit;

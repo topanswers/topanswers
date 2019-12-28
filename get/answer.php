@@ -2,26 +2,18 @@
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-$uuid = $_COOKIE['uuid']??'';
-ccdb("select login($1)",$uuid);
-$id = $_GET['id']??'0';
-if($id) {
-  ccdb("select count(*) from answer where answer_id=$1",$id)===1 || die('invalid answer id');
-  extract(cdb("select community_name community, question_id question, question_title, question_markdown, answer_markdown
-                    , license_name||(case when codelicense_id<>1 then ' + '||codelicense_name else '' end) license
-               from answer natural join (select question_id,community_id,question_title,question_markdown from question natural join license natural join codelicense) z natural join community natural join license natural join codelicense
-               where answer_id=$1",$id));
+db("set search_path to answer,pg_temp");
+if(isset($_GET['id'])){
+  ccdb("select login_answer(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']) || fail(403,'access denied');
 }else{
-  if(!isset($_GET['question'])) die('question not set');
-  $question = $_GET['question'];
-  ccdb("select count(*) from question where question_id=$1",$question)===1 or die('invalid question');
-  extract(cdb("select community_name community, question_title, question_markdown from question natural join community where question_id=$1",$question));
+  ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['question']??'') || fail(403,'access denied');
 }
-extract(cdb("select community_code_language,my_community_regular_font_name,my_community_monospace_font_name
-                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community natural join my_community
-             where community_name=$1",$community));
-extract(cdb("select account_license_id,account_codelicense_id from my_account"));
+extract(cdb("select account_id,account_license_id,account_codelicense_id
+                   ,answer_id,answer_markdown,answer_license
+                   ,question_id,question_title,question_markdown
+                   ,community_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight
+                   ,my_community_regular_font_name,my_community_monospace_font_name
+             from one"));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
@@ -36,7 +28,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <style>
     *:not(hr) { box-sizing: inherit; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    textarea, pre, code, .CodeMirror { font-family: '<?=$monospace_font_name?>', monospace; }
+    textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
     header select { margin-right: 0.5rem; }
 
@@ -82,7 +74,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         $('#answer').attr('data-markdown',cm.getValue()).renderMarkdown();
         map = [];
         $('#answer [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
-        <?if(!$id){?>localStorage.setItem('<?=$community?>.answer.<?=$question?>',cm.getValue());<?}?>
+        <?if(!$answer_id){?>localStorage.setItem('<?=$community_name?>.answer.<?=$question_id?>',cm.getValue());<?}?>
       }
 
       $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');
@@ -98,8 +90,8 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#answer').animate({ scrollTop: $('#answer').prop("scrollHeight")-$('#answer').height() });
         else $('#answer [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
       },200));
-      <?if(!$id){?>
-        if(localStorage.getItem('<?=$community?>.answer.<?=$question?>')) cm.setValue(localStorage.getItem('<?=$community?>.answer.<?=$question?>'));
+      <?if(!$answer_id){?>
+        if(localStorage.getItem('<?=$community_name?>.answer.<?=$question_id?>')) cm.setValue(localStorage.getItem('<?=$community_name?>.answer.<?=$question_id?>'));
       <?}?>
       $('#uploadfile').change(function() { if(this.files[0].size > 2097152){ alert("File is too big — maximum 2MB"); $(this).val(''); }else{ $('#imageupload').submit(); }; });
       $('#imageupload').submit(function(){
@@ -155,15 +147,15 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       $('#question .markdown').renderMarkdown();
     });
   </script>
-  <title><?=$id?'Edit Answer':'Answer Question'?> - TopAnswers</title>
+  <title><?=$answer_id?'Edit Answer':'Answer Question'?> - TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div style="margin: 0.5rem; margin-right: 0.1rem;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
+      <a href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community_name)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
-      <?if(!$id){?>
+      <?if(!$answer_id){?>
         <select name="license" form="form">
           <?foreach(db("select license_id,license_name from license") as $r){ extract($r);?>
             <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
@@ -175,18 +167,18 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
           <?}?>
         </select>
       <?}?>
-      <input id="submit" type="submit" form="form" value="<?=$id?'update answer under '.$license:'post answer'?>" style="margin: 0.5rem;">
-      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
+      <input id="submit" type="submit" form="form" value="<?=$answer_id?'update answer under '.$answer_license:'post answer'?>" style="margin: 0.5rem;">
+      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
   <form id="form" method="POST" action="//post.topanswers.xyz/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
-    <?if($id){?>
+    <?if($answer_id){?>
       <input type="hidden" name="action" value="change">
-      <input type="hidden" name="id" value="<?=$id?>">
+      <input type="hidden" name="id" value="<?=$answer_id?>">
     <?}else{?>
       <input type="hidden" name="action" value="new">
-      <input type="hidden" name="community" value="<?=$community?>">
-      <input type="hidden" name="question" value="<?=$question?>">
+      <input type="hidden" name="community" value="<?=$community_name?>">
+      <input type="hidden" name="question" value="<?=$question_id?>">
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden;">
@@ -211,7 +203,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
         </div>
       </div>
       <div style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); position: relative;">
-        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$id?htmlspecialchars($answer_markdown):''?></textarea>
+        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$answer_id?htmlspecialchars($answer_markdown):''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
       <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>

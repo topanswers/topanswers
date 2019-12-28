@@ -89,6 +89,18 @@ create function dismiss_question_flag(id integer) returns void language sql secu
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
+create function dismiss_answer(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  with d as (delete from answer_notification where answer_history_id=id and account_id=get_account_id() returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+$$;
+--
+create function dismiss_answer_flag(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  with d as (delete from answer_flag_notification
+             where answer_flag_history_id in(select answer_flag_history_id from answer_flag_history where answer_id=(select answer_id from answer_flag_history where answer_flag_history_id=id))
+                   and account_id=get_account_id() returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+$$;
+--
 --
 revoke all on all functions in schema notification from public;
 do $$
