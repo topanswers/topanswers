@@ -28,6 +28,7 @@ begin
   return cid;
 end$$;
 --
+/*
 create function _create_seuser(cid integer, seuid integer, seuname text) returns integer language plpgsql security definer set search_path=db,post,pg_temp as $$
 declare
   id integer;
@@ -43,6 +44,7 @@ begin
   return id;
 end;
 $$;
+*/
 --
 create function _ensure_communicant(aid integer, cid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
@@ -113,6 +115,7 @@ create function dismiss_chat_notification(id integer) returns void language sql 
 $$;
 */
 --
+/*
 create function dismiss_question_notification(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   with d as (delete from question_notification where question_history_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
@@ -124,6 +127,7 @@ create function dismiss_question_flag_notification(id integer) returns void lang
                    and account_id=current_setting('custom.account_id',true)::integer returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
+*/
 --
 create function dismiss_answer_notification(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   with d as (delete from answer_notification where answer_history_id=id and account_id=current_setting('custom.account_id',true)::integer returning *)
@@ -137,13 +141,16 @@ create function dismiss_answer_flag_notification(id integer) returns void langua
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
+/*
 create function new_account(luuid uuid) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error(429,'rate limit') where (select count(*) from account where account_create_at>current_timestamp-'5m'::interval and account_is_imported=false)>5;
   --
   with a as (insert into account default values returning account_id)
   insert into login(account_id,login_uuid) select account_id,luuid from a returning account_id;
 $$;
+*/
 --
+/*
 create function link_account(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error('invalid pin') where not exists (select 1 from pin where pin_number=pn);
   insert into login(account_id,login_uuid) select account_id,luuid from pin where pin_number=pn and pin_at>current_timestamp-'1 min'::interval returning account_id;
@@ -153,12 +160,16 @@ create function recover_account(luuid uuid, auuid uuid) returns integer language
   select _error('invalid recovery key') where not exists (select 1 from account where account_uuid=auuid);
   insert into login(account_id,login_uuid) select account_id,luuid from account where account_uuid=auuid returning account_id;
 $$;
+*/
 --
+/*
 create function regenerate_account_uuid() returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('not logged in') where current_setting('custom.account_id',true)::integer is null;
   update account set account_uuid = default where account_id = current_setting('custom.account_id',true)::integer;
 $$;
+*/
 --
+/*
 create function change_account_name(nname text) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('invalid username') where nname is not null and not nname~'^[0-9[:alpha:]][-'' .0-9[:alpha:]]{1,25}[0-9[:alpha:]]$';
   update account set account_name = nname, account_change_id = default, account_change_at = default where account_id=current_setting('custom.account_id',true)::integer;
@@ -175,6 +186,7 @@ $$;
 create function change_account_codelicense_id(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   update account set account_codelicense_id = id where account_id=current_setting('custom.account_id',true)::integer;
 $$;
+*/
 --
 create function change_resizer(perc integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('invalid percent') where perc<0 or perc>100;
@@ -186,10 +198,12 @@ create function change_chat_resizer(perc integer) returns void language sql secu
   update login set login_chat_resizer_percent = perc where login_uuid=current_setting('custom.uuid',true)::uuid;
 $$;
 --
+/*
 create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,post,pg_temp as $$
   delete from pin where pin_number=num;
   insert into pin(pin_number,account_id) select num,account_id from account where account_id=current_setting('custom.account_id',true)::integer;
 $$;
+*/
 --
 /*
 create function set_chat_flag(cid bigint) returns bigint language sql security definer set search_path=db,post,pg_temp as $$
@@ -223,6 +237,7 @@ create function remove_chat_star(cid bigint) returns bigint language sql securit
 $$;
 */
 --
+/*
 create function _new_question_tag(aid integer, qid integer, tid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from question natural join shared.community where question_id=qid);
@@ -308,6 +323,7 @@ create function change_question(id integer, title text, markdown text) returns v
   --
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=id;
 $$;
+*/
 --
 create function _new_answer(qid integer, aid integer, markdown text, lic integer, codelic integer, seaid integer) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
@@ -330,6 +346,7 @@ create function new_answer(qid integer, markdown text, lic integer, codelic inte
   select _new_answer(qid,current_setting('custom.account_id',true)::integer,markdown,lic,codelic,null);
 $$;
 --
+/*
 create function new_seanswer(qid integer, markdown text, seaid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
   select _new_answer(qid,_create_seuser(community_id,seuid,seuname),markdown,4,1,seaid) from question where question_id=qid;
@@ -339,6 +356,7 @@ create function new_seansweranon(qid integer, markdown text, seaid integer) retu
   select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
   select _new_answer(qid,(select account_id from communicant where community_id=question.community_id and communicant_se_user_id=0),markdown,4,1,seaid) from question where question_id=qid;
 $$;
+/*
 --
 create function change_answer(id integer, markdown text) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
@@ -359,6 +377,7 @@ create function change_answer(id integer, markdown text) returns void language s
   update answer set answer_markdown = markdown, answer_change_at = default where answer_id=id;
 $$;
 --
+/*
 create function remove_question_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid question') where not exists (select 1 from question natural join shared.community where question_id=qid);
@@ -379,7 +398,9 @@ create function remove_question_tag(qid integer, tid integer) returns void langu
   delete from question_tag_x where question_id=qid and tag_id=tid;
   update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
 $$;
+*/
 --
+/*
 create function vote_question(qid integer, votes integer) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error('invalid number of votes cast') where votes<0 or votes>(select community_my_power from question natural join shared.community where question_id=qid);
@@ -408,6 +429,7 @@ create function vote_question(qid integer, votes integer) returns integer langua
              on conflict on constraint communicant_pkey do update set communicant_votes = communicant.communicant_votes+excluded.communicant_votes)
   update question set question_votes = question_votes+question_vote_votes from i where question.question_id=qid returning question_votes;
 $$;
+*/
 --
 create function vote_answer(aid integer, votes integer) returns integer language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
@@ -450,11 +472,13 @@ create function change_room_image(id integer, image bytea) returns void language
 $$;
 */
 --
+/*
 create function change_fonts(cid integer, regid integer, monoid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
   select _error(400,'invalid community') where not exists (select 1 from communicant where account_id=current_setting('custom.account_id',true)::integer and community_id=cid);
   update communicant set communicant_regular_font_id=regid, communicant_monospace_font_id=monoid where account_id=current_setting('custom.account_id',true)::integer and community_id=cid;
 $$;
+*/
 --
 /*
 create function read_room(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
@@ -464,6 +488,7 @@ create function read_room(id integer) returns void language sql security definer
 $$;
 */
 --
+/*
 create function subscribe_question(id integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('already subscribed') where exists(select 1 from subscription where account_id=current_setting('custom.account_id',true)::integer and question_id=id);
   insert into subscription(account_id,question_id) values(current_setting('custom.account_id',true)::integer,id);
@@ -512,6 +537,7 @@ create function flag_question(id integer, direction integer) returns void langua
              returning account_id)
   update account set account_notification_id = default where account_id in (select account_id from qfn);
 $$;
+*/
 --
 create function flag_answer(id integer, direction integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('access denied') where current_setting('custom.account_id',true)::integer is null;
@@ -554,9 +580,11 @@ create function flag_answer(id integer, direction integer) returns void language
   update account set account_notification_id = default where account_id in (select account_id from qfn);
 $$;
 --
+/*
 create function new_import(cid integer, qid text, aids text) returns void language sql security definer set search_path=db,post,pg_temp as $$
   insert into import(account_id,community_id,import_qid,import_aids) values(current_setting('custom.account_id',true)::integer,cid,coalesce(qid,''),coalesce(aids,''));
 $$;
+*/
 --
 --
 revoke all on all functions in schema post from public;

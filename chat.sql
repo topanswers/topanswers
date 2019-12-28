@@ -128,7 +128,7 @@ end$$;
 create function new(msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
   select _error(413,'message too long') where length(msg)>5000;
-  select ensure_communicant(get_account_id(),community_id) from room where room_id=get_room_id();
+  select _ensure_communicant(get_account_id(),community_id) from room where room_id=get_room_id();
   --
   with d as (delete from chat_notification where chat_id=replyid and account_id=get_account_id() returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;

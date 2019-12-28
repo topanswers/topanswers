@@ -16,12 +16,12 @@ extract(cdb("select account_id,room_id,room_name,room_has_image,community_name,m
   <style>
     *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
-    body { background: #<?=$colour_dark?>; }
-    html, body { margin: 0; padding: 0; }
+    body { display: flex; flex-direction: column; background: #<?=$colour_dark?>; }
+    html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header, header>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
     header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; border-bottom: 2px solid black; }
     header a { color: #<?=$colour_light?>; }
-    main { display: flex; flex-direction: column; align-items: flex-start; }
+    main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
     .frame { display: inline-block; border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
     .element { margin: 0 4px; }

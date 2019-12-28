@@ -1,0 +1,293 @@
+create schema question;
+grant usage on schema question to get,post;
+set local search_path to question,api,pg_temp;
+--
+--
+create view license with (security_barrier) as select license_id,license_name,license_href from db.license;
+create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
+--
+create view one with (security_barrier) as
+select account_id,account_license_id,account_codelicense_id,community_id,community_name,community_code_language
+      ,sesite_url
+      ,question_id,question_type,question_title,question_markdown,question_license_name,question_se_question_id,question_communicant_se_user_id
+      ,question_is_deleted,question_answered_by_me,question_is_blog,question_is_meta
+      ,question_when,question_account_id,question_account_name,question_account_is_imported
+      ,question_license_href,question_has_codelicense,question_codelicense_name
+     , question_account_id is not distinct from account_id question_account_is_me
+     , coalesce(account_is_dev,false) account_is_dev
+     , encode(community_dark_shade,'hex') colour_dark
+     , encode(community_mid_shade,'hex') colour_mid
+     , encode(community_light_shade,'hex') colour_light
+     , encode(community_highlight_color,'hex') colour_highlight
+     , encode(community_warning_color,'hex') colour_warning
+     , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
+     , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
+     , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
+from db.community
+     natural left join (select account_id,account_is_dev,account_license_id,account_codelicense_id from db.account where account_id=get_account_id()) a
+     natural left join db.communicant
+     natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
+     natural left join (select question_id,question_type,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
+                             , license_name question_license_name
+                             , license_href question_license_href
+                             , codelicense_name question_codelicense_name
+                             , account_id question_account_id
+                             , account_name question_account_name
+                             , account_is_imported question_account_is_imported
+                             , communicant_se_user_id question_communicant_se_user_id
+                             , exists(select 1 from db.answer a natural join db.login where login_uuid=get_login_uuid() and a.question_id=q.question_id) question_answered_by_me
+                             , question_crew_flags>0 question_is_deleted
+                             , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
+                             , question_type='blog' question_is_blog
+                             , question_type='meta' question_is_meta
+                             , extract('epoch' from current_timestamp-question_at) question_when
+                        from db.question q natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
+                        where question_id=get_question_id()) q
+where community_id=get_community_id();
+--
+--
+create function login_community(uuid,text) returns boolean language sql security definer as $$select api.login_community($1,(select community_id from db.community where community_name=$2));$$;
+create function login_question(uuid,integer) returns boolean language sql security definer as $$select api.login_question($1,$2);$$;
+--
+--
+revoke all on all functions in schema community from public;
+do $$
+begin
+  execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='question' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+            from pg_proc p join pg_namespace n on p.pronamespace=n.oid
+            where n.nspname='question' and proname!~'^_' );
+end$$;
+--
+--
+create function _new_question_tag(aid integer, qid integer, tid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where not exists (select 1 from question where question_id=qid and community_id=get_community_id());
+  select _error('invalid tag') where not exists (select 1 from tag where tag_id=tid and community_id=get_community_id());
+  --
+  select _ensure_communicant(get_account_id(),community_id) from question where question_id=qid;;
+  update question set question_poll_minor_id = default where question_id=qid;
+  --
+  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
+                                                  union all
+                                                  select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
+     , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id)
+             select qid,tag_id,community_id,aid
+             from w natural join tag
+             where tag_id not in (select tag_id from question_tag_x where question_id=qid)
+             returning tag_id)
+  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
+$$;
+--
+create function new_tag(id integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where get_question_id() is null;
+  select _error(429,'rate limit') where exists (select 1
+                                                from question_tag_x_history
+                                                where question_tag_x_history_added_by_account_id=get_account_id() and question_tag_x_added_at>current_timestamp-'1s'::interval);
+  select _new_question_tag(get_account_id(),get_question_id(),id);
+$$;
+--
+create function remove_tag(tid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where get_question_id() is null;
+  select _error('invalid tag') where not exists (select 1 from tag where tag_id=tid and community_id=get_community_id());
+  select _error(429,'rate limit') where exists (select 1
+                                                from question_tag_x_history
+                                                where question_tag_x_history_removed_by_account_id=get_account_id() and question_tag_x_removed_at>current_timestamp-'1s'::interval);
+  --
+  update question set question_poll_minor_id = default where question_id=get_question_id();
+  --
+  select question.remove_tag(tag_implies_id)
+  from question_tag_x natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
+  where question_id=get_question_id() and tag_id=tid and tag_name like parent_name||'%' and not exists(select 1 from question_tag_x natural join tag where question_id=get_question_id() and tag_id<>tid and tag_implies_id=t.tag_implies_id);
+  --
+  insert into question_tag_x_history(question_id,tag_id,community_id,question_tag_x_history_added_by_account_id,question_tag_x_history_removed_by_account_id,question_tag_x_added_at)
+  select question_id,tid,community_id,account_id,get_account_id(),question_tag_x_at from question_tag_x where question_id=get_question_id() and tag_id=tid;
+  --
+  delete from question_tag_x where question_id=get_question_id() and tag_id=tid;
+  update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
+$$;
+--
+create function new_sequestion_tag(qid integer, tid integer, uid integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _new_question_tag(uid,qid,tid);
+$$;
+--
+create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer)
+                returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid community') where not exists (select 1 from community where community_id=cid);
+  select _ensure_communicant(aid,cid);
+  --
+  with r as (insert into room(community_id) values(cid) returning room_id)
+     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id)
+             select cid,aid,typ,title,markdown,room_id,lic,codelic,seqid from r returning question_id)
+     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select question_id,aid,title,markdown from q)
+     , s as (insert into subscription(account_id,question_id) select aid,question_id from q)
+  select question_id from q;
+$$;
+--
+create function new(typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error(429,'rate limit') where exists (select 1 from question where account_id=get_account_id() and question_at>current_timestamp-'5m'::interval);
+  select _new_question(get_community_id(),get_account_id(),typ,title,markdown,lic,codelic,null);
+$$;
+--
+create function new_sequestion(title text, markdown text, tags text, seqid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error(400,'already imported') where exists (select 1 from question where community_id=get_community_id() and question_se_question_id=seqid);
+  --
+  with u as (select _create_seuser(get_community_id(),seuid,seuname) uid)
+     , q as (select uid, _new_question(get_community_id(),uid,'question',title,markdown,4,1,seqid) qid from u)
+     , t as (select new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=get_community_id())
+  select qid from q cross join (select count(1) cn from t) z;
+$$;
+--
+create function new_sequestionanon(title text, markdown text, tags text, seqid integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error(400,'already imported') where exists (select 1 from question where community_id=get_community_id() and question_se_question_id=seqid);
+  --
+  with u as (select account_id uid from communicant where community_id=get_community_id() and communicant_se_user_id=0)
+     , q as (select uid, _new_question(get_community_id(),uid,'question',title,markdown,4,1,seqid) qid from u)
+     , t as (select new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=get_community_id())
+  select qid from q cross join (select count(1) cn from t) z;
+$$;
+--
+create function change(title text, markdown text) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('only author can edit blog post') where exists (select 1 from question where question_id=get_question_id() and question_type='blog' and account_id<>get_account_id());
+  select _error(429,'rate limit') where (select count(*)
+                                         from question_history natural join (select question_id from question where account_id<>get_account_id()) z
+                                         where account_id=get_account_id() and question_history_at>current_timestamp-'5m'::interval)>10;
+  --
+  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown) values(get_question_id(),get_account_id(),title,markdown) returning question_id,question_history_id)
+     , n as (insert into question_notification(question_history_id,account_id)
+             select question_history_id,account_id from h natural join (select question_id,account_id from question) z where account_id<>get_account_id()
+             union
+             select question_history_id,account_id from h natural join subscription where account_id<>get_account_id()
+             returning account_id)
+  update account set account_notification_id = default where account_id in (select account_id from n);
+  --
+  update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
+$$;
+--
+create function vote(votes integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where get_question_id() is null;
+  select _error('invalid number of votes cast') from question.one where votes<0 or votes>community_my_power;
+  select _error('cant vote on own question') from question.one where account_id=question_account_id;
+  select _error('cant vote on this question type') from question.one where question_type='question';
+  select _error(429,'rate limit') where (select count(1) from question_vote where account_id=get_account_id() and question_vote_at>current_timestamp-'1m'::interval)>4;
+  select _error(429,'rate limit') where (select count(1) from question_vote_history where account_id=get_account_id() and question_vote_history_at>current_timestamp-'1m'::interval)>10;
+  --
+  select _ensure_communicant(get_account_id(),get_community_id());
+  update question set question_poll_minor_id = default where question_id=get_question_id();
+  --
+  with d as (delete from question_vote where question_id=get_question_id() and account_id=get_account_id() returning *)
+     , r as (select question_id,community_id,q.account_id,question_vote_votes from d join question q using(question_id))
+     , q as (update question set question_votes = question_votes-question_vote_votes from d where question.question_id=get_question_id())
+     , a as (insert into communicant(account_id,community_id,communicant_votes,communicant_regular_font_id,communicant_monospace_font_id)
+             select account_id,community_id,-question_vote_votes,community_regular_font_id,community_monospace_font_id from r natural join community
+             on conflict on constraint communicant_pkey do update set communicant_votes = communicant.communicant_votes+excluded.communicant_votes)
+  insert into question_vote_history(question_id,account_id,question_vote_history_at,question_vote_history_votes)
+  select question_id,account_id,question_vote_at,question_vote_votes from d;
+  --
+  with i as (insert into question_vote(question_id,account_id,question_vote_votes) values(get_question_id(),get_account_id(),votes) returning *)
+     , c as (insert into communicant(account_id,community_id,communicant_votes,communicant_regular_font_id,communicant_monospace_font_id)
+             select account_id,community_id,question_vote_votes,community_regular_font_id,community_monospace_font_id
+             from (select question_id,community_id,q.account_id,question_vote_votes from i join question q using(question_id)) z natural join community
+             on conflict on constraint communicant_pkey do update set communicant_votes = communicant.communicant_votes+excluded.communicant_votes)
+  update question set question_votes = question_votes+question_vote_votes from i where question.question_id=get_question_id() returning question_votes;
+$$;
+--
+create function subscribe() returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where get_question_id() is null;
+  select _error('already subscribed') where exists(select 1 from subscription where account_id=get_account_id() and question_id=get_question_id());
+  insert into subscription(account_id,question_id) values(get_account_id(),get_question_id());
+$$;
+--
+create function unsubscribe() returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where get_question_id() is null;
+  select _error('not subscribed') where not exists(select 1 from subscription where account_id=get_account_id() and question_id=get_question_id());
+  delete from subscription where account_id=get_account_id() and question_id=get_question_id();
+$$;
+--
+create function flag(direction integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where get_question_id() is null;
+  select _error('invalid flag direction') where direction not in(-1,0,1);
+  select _error('cant flag own question') from question.one where account_id=question_account_id;
+  select _error(429,'rate limit') where (select count(1) from question_flag_history where account_id=get_account_id() and question_flag_history_at>current_timestamp-'1m'::interval)>6;
+  --
+  select _ensure_communicant(get_account_id(),get_community_id());
+  --
+  with d as (delete from question_flag where question_id=get_question_id() and account_id=get_account_id() returning *)
+     , q as (update question set question_active_flags = question_active_flags-abs(d.question_flag_direction)
+                               , question_flags = question_flags-(case when d.question_flag_is_crew then 0 else d.question_flag_direction end)
+                               , question_crew_flags = question_crew_flags-(case when d.question_flag_is_crew then d.question_flag_direction else 0 end)
+             from d
+             where question.question_id=get_question_id())
+  select question_id,account_id,question_flag_at,question_flag_direction,question_flag_is_crew from d;
+  --
+  with i as (insert into question_flag(question_id,account_id,question_flag_direction,question_flag_is_crew)
+             select get_question_id(),account_id,direction,communicant_is_post_flag_crew
+             from db.communicant
+             where account_id=get_account_id() and community_id=get_community_id()
+             returning *)
+     , u as (update question set question_active_flags = question_active_flags+abs(i.question_flag_direction)
+                               , question_flags = question_flags+(case when i.question_flag_is_crew then 0 else i.question_flag_direction end)
+                               , question_crew_flags = question_crew_flags+(case when i.question_flag_is_crew then i.question_flag_direction else 0 end)
+             from i
+             where question.question_id=get_question_id())
+     , h as (insert into question_flag_history(question_id,account_id,question_flag_history_direction,question_flag_history_is_crew)
+             select question_id,account_id,question_flag_direction,question_flag_is_crew from i
+             returning question_flag_history_id,question_flag_history_direction)
+   , qfn as (insert into question_flag_notification(question_flag_history_id,account_id)
+             select question_flag_history_id,account_id
+             from h cross join (select account_id from communicant where community_id=get_community_id() and communicant_is_post_flag_crew and account_id<>get_account_id()) c
+             where question_flag_history_direction>0
+             returning account_id)
+  update account set account_notification_id = default where account_id in (select account_id from qfn);
+$$;
+--
+create function new_import(qid text, aids text) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  insert into import(account_id,community_id,import_qid,import_aids) values(get_account_id(),get_community_id(),coalesce(qid,''),coalesce(aids,''));
+$$;
+--
+create function get_sequestion(id integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select question_id from question where question_se_question_id=id;
+$$;
+--
+create function _new_answer(qid integer, aid integer, markdown text, lic integer, codelic integer, seaid integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where not exists (select 1 from question where question_id=qid and community_id=get_community_id());
+  select _ensure_communicant(aid,get_community_id());
+  --
+  with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_se_answer_id) values(qid,aid,markdown,lic,codelic,seaid) returning answer_id)
+     , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,aid,markdown from i returning answer_id,answer_history_id)
+     , n as (insert into answer_notification(answer_history_id,account_id)
+             select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=qid and account_id<>get_account_id()) z
+             returning account_id)
+     , a as (update account set account_notification_id = default where account_id in (select account_id from n))
+  select answer_id from i;
+$$;
+--
+create function new_seanswer(qid integer, markdown text, seaid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
+  select _new_answer(qid,_create_seuser(community_id,seuid,seuname),markdown,4,1,seaid) from question where question_id=qid;
+$$;
+--
+create function new_seansweranon(qid integer, markdown text, seaid integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
+  select _new_answer(qid,(select account_id from communicant where community_id=question.community_id and communicant_se_user_id=0),markdown,4,1,seaid) from question where question_id=qid;
+$$;
+--
+--
+revoke all on all functions in schema community from public;
+do $$
+begin
+  execute (select string_agg('grant select on '||viewname||' to post;', E'\n') from pg_views where schemaname='question' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to post;', E'\n')
+            from pg_proc p join pg_namespace n on p.pronamespace=n.oid
+            where n.nspname='question' and proname!~'^_' );
+end$$;

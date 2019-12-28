@@ -2,31 +2,29 @@
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-$uuid = $_COOKIE['uuid']??'';
-if($uuid) ccdb("select login($1)",$uuid);
-$id = $_GET['id']??'0';
-if($id) {
-  ccdb("select count(*) from question where question_id=$1",$id)===1 || die('invalid question id');
-  extract(cdb("select question_type,question_title,question_markdown,community_code_language
-                    , community_name community
-                    , license_name||(case when codelicense_id<>1 then ' + '||codelicense_name else '' end) license
-               from question natural join community natural join license natural join codelicense
-               where question_id=$1",$id));
+db("set search_path to question,pg_temp");
+if(isset($_GET['id'])){
+  $auth = ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']);
+  $auth || fail(403,'access denied');
 }else{
-  if(!isset($_GET['community'])) die('Community not set');
-  $community = $_GET['community'];
-  ccdb("select count(*) from community where community_name=$1",$community)===1 or die('invalid community');
-  if(!$uuid&&(($community!=='databases')||!isset($_GET['rdbms'])||!isset($_GET['fiddle']))) fail(403,'need to be logged in to visit this page unless from a fiddle');
-  extract(cdb("select community_code_language from community where community_name=$1",$community));
+  $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'');
+  $auth||(($_GET['community']==='databases')&&isset($_GET['rdbms'])&&isset($_GET['fiddle'])) || fail(403,'need to be logged in to visit this page unless from a fiddle');
 }
-extract(cdb("select my_community_regular_font_name,my_community_monospace_font_name
-                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from community natural join my_community
-             where community_name=$1",$community));
-extract(cdb("select account_license_id,account_codelicense_id from my_account"));
+extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id
+                   ,community_id,community_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,my_community_regular_font_name,my_community_monospace_font_name
+                   ,question_id,question_title,question_markdown,question_se_question_id
+                  , question_license_name||(case when question_has_codelicense then ' + '||question_codelicense_name else '' end) license
+                   ,question_is_deleted,question_answered_by_me
+                   ,question_is_blog,question_is_meta,question_when
+                   ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
+                   ,question_license_href,question_has_codelicense,question_codelicense_name
+             from one"));
+$community = $community_name;
+$id = $question_id;
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
+<html>
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
@@ -37,10 +35,20 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+    body { display: flex; flex-direction: column; background-color: #<?=$colour_light?>; }
+    #form { display: flex; justify-content: center; flex: 1 0 0; padding: 16px; overflow-y: hidden; }
+    main { display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
-    header select { margin-right: 0.5rem; }
+    header, header>div, .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
+    header, .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
+    header>div, .container.shrink, .element.shrink { flex: 0 1 auto; }
+    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; border-bottom: 2px solid black; }
+    header a { color: #<?=$colour_light?>; }
+    .element { margin: 0 4px; }
+    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; }
 
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .question { margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid darkgrey; }
@@ -162,55 +170,54 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       $('.button.fa-undo').click(function(){ cm.undo(); cm.focus(); });
       $('.button.fa-repeat').click(function(){ cm.redo(); cm.focus(); });
       render();
-      <?if(!$uuid){?>
-        $('#submit').click(function(){
-          if(!$('#form')[0].checkValidity()) return true;
-          if(confirm('This will set a cookie to identify your account, and will post your question under a CC BY-SA license.\nYou must be 16 or over to participate at TopAnswers.')) {
-            $.ajax({ type: "POST", url: '//post.topanswers.xyz/uuid', async: false }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':responseText); });
-            return true;
-          }else{
-            return false;
+      <?if(!$auth){?>
+        $('#join').click(function(){
+          if(confirm('This will set a cookie to identify your account.\nYou must be 16 or over to join TopAnswers and post your question.')){
+            $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'new' }, async: false, xhrFields: { withCredentials: true } }).fail(function(r){
+              alert((r.status)===429?'Rate limit hit, please try again later':responseText);
+            }).done(function(r){
+              alert('This login key should be kept confidential, just like a password.\nTo ensure continued access to your account, please record your key somewhere safe:\n\n'+r);
+              window.location = '/question?community=databases';
+            });
           }
-        });
+        }).click();
       <?}?>
     });
   </script>
   <title><?=$id?'Edit':'Ask'?> Question - TopAnswers</title>
 </head>
-<body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
-  <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
-    <div style="margin: 0.5rem; margin-right: 0.1rem;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
+<body>
+  <header>
+    <div>
+      <a class="element" href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
     </div>
-    <div style="display: flex; align-items: center; height: 100%;">
-      <?if(!$id){?>
-        <?if($uuid){?>
-          <select name="type" form="form">
+    <div>
+      <?if($auth){?>
+        <?if(!$id){?>
+          <select class="element" name="type" form="form">
             <?if($community!=='meta'){?><option selected value="question">question</option><?}?>
             <option value="meta"><?=(($community==='meta')?'':'meta ')?>question</option>
             <option value="blog">blog post</option>
           </select>
-          <select name="license" form="form">
+          <select class="element" name="license" form="form">
             <?foreach(db("select license_id,license_name from license order by license_name") as $r){ extract($r);?>
               <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
             <?}?>
           </select>
-          <select name="codelicense" form="form">
+          <select class="element" name="codelicense" form="form">
             <?foreach(db("select codelicense_id,codelicense_name from codelicense order by codelicense_id<>1, codelicense_name") as $r){ extract($r);?>
               <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
             <?}?>
           </select>
-        <?}else{?>
-          <input type="hidden" form="form" name="type" value="question">
-          <input type="hidden" form="form" name="license" value="6">
-          <input type="hidden" form="form" name="codelicense" value="1">
         <?}?>
+        <input class="element" id="submit" type="submit" form="form" value="<?=$id?'update post under '.$license:'submit'?>" style="margin: 0.5rem;">
+        <a class="frame" href="/profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+      <?}else{?>
+        <input class="element" id="join" type="button" value="join">
       <?}?>
-      <input id="submit" type="submit" form="form" value="<?=$id?('update '.$question_type.(($question_type==='meta')?' question':(($question_type==='blog')?' post':''))).' under '.$license:'submit'?>" style="margin: 0.5rem;">
-      <?if($uuid){?><a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a><?}?>
     </div>
   </header>
-  <form id="form" method="POST" action="//post.topanswers.xyz/question" style="display: flex; justify-content: center; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
+  <form id="form" method="POST" action="//post.topanswers.xyz/question">
     <?if($id){?>
       <input type="hidden" name="action" value="change">
       <input type="hidden" name="id" value="<?=$id?>">
@@ -218,7 +225,7 @@ extract(cdb("select account_license_id,account_codelicense_id from my_account"))
       <input type="hidden" name="action" value="new">
       <input type="hidden" name="community" value="<?=$community?>">
     <?}?>
-    <main style="display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column;">
+    <main>
       <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 0.2rem;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$id?' value="'.htmlspecialchars($question_title).'"':''?>>
       <div style="flex: 0 0 2vmin;"></div>
       <div style="display: flex; flex: 1 0 0; overflow: hidden;">

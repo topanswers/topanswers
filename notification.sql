@@ -1,5 +1,5 @@
 create schema notification;
-grant usage on schema notification to get;
+grant usage on schema notification to get,post;
 set local search_path to notification,api,pg_temp;
 --
 --
@@ -68,11 +68,33 @@ create function login(uuid) returns boolean language sql security definer as $$s
 create function login_room(uuid,integer) returns boolean language sql security definer as $$select api.login_room($1,$2);$$;
 --
 --
-revoke all on all functions in schema notification from public;
 do $$
 begin
   execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='notification' and viewname!~'^_');
   execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+            from pg_proc p join pg_namespace n on p.pronamespace=n.oid
+            where n.nspname='notification' and proname!~'^_' );
+end$$;
+--
+--
+create function dismiss_question(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  with d as (delete from question_notification where question_history_id=id and account_id=get_account_id() returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+$$;
+--
+create function dismiss_question_flag(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  with d as (delete from question_flag_notification
+             where question_flag_history_id in(select question_flag_history_id from question_flag_history where question_id=(select question_id from question_flag_history where question_flag_history_id=id))
+                   and account_id=get_account_id() returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+$$;
+--
+--
+revoke all on all functions in schema notification from public;
+do $$
+begin
+  execute (select string_agg('grant select on '||viewname||' to post;', E'\n') from pg_views where schemaname='notification' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to post;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='notification' and proname!~'^_' );
 end$$;

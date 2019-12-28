@@ -4,31 +4,35 @@ include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
 isset($_POST['action']) || fail(400,'must have an "action" parameter');
 isset($_COOKIE['uuid']) || fail(403,'only registered users can POST');
-ccdb("select login($1)",$_COOKIE['uuid']) || fail(403,'invalid uuid');
+db("set search_path to question,pg_temp");
+if(isset($_POST['id'])){
+  ccdb("select login_question(nullif($1,'')::uuid,$2::integer)",$_COOKIE['uuid']??'',$_POST['id']) || fail(403,'access denied');
+}else{
+  $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_POST['community']??'') || fail(403,'access denied');
+  $auth||(($_GET['community']==='databases')&&isset($_GET['rdbms'])&&isset($_GET['fiddle'])) || fail(403,'need to be logged in to visit this page unless from a fiddle');
+}
+extract(cdb("select community_id,community_name,sesite_url,question_communicant_se_user_id from one"));
 
 switch($_POST['action']) {
-  case 'new-tag': exit(ccdb("select new_question_tag($1,$2)",$_POST['id'],$_POST['tagid']));
-  case 'remove-tag': exit(ccdb("select remove_question_tag($1,$2)",$_POST['id'],$_POST['tagid']));
-  case 'vote': exit(ccdb("select vote_question($1,$2)",$_POST['id'],$_POST['votes']));
-  case 'dismiss': exit(ccdb("select dismiss_question_notification($1)",$_POST['id']));
-  case 'dismiss-flag': exit(ccdb("select dismiss_question_flag_notification($1)",$_POST['id']));
-  case 'subscribe': exit(ccdb("select subscribe_question($1)",$_POST['id']));
-  case 'unsubscribe': exit(ccdb("select unsubscribe_question($1)",$_POST['id']));
-  case 'flag': exit(ccdb("select flag_question($1,$2)",$_POST['id'],$_POST['direction']));
+  case 'new-tag': exit(ccdb("select new_tag($1)",$_POST['tagid']));
+  case 'remove-tag': exit(ccdb("select remove_tag($1)",$_POST['tagid']));
+  case 'vote': exit(ccdb("select vote($1)",$_POST['votes']));
+  case 'subscribe': exit(ccdb("select subscribe()"));
+  case 'unsubscribe': exit(ccdb("select unsubscribe()"));
+  case 'flag': exit(ccdb("select flag($1)",$_POST['direction']));
   case 'change':
-    db("select change_question($1,$2,$3)",$_POST['id'],$_POST['title'],$_POST['markdown']);
-    header('Location: //topanswers.xyz/'.ccdb("select community_name from get.question natural join get.community where question_id=$1",$_POST['id']).'?q='.$_POST['id']);
+    db("select change($1,$2)",$_POST['title'],$_POST['markdown']);
+    header('Location: //topanswers.xyz/'.$community_name.'?q='.$_POST['id']);
     exit;
   case 'new':
-    $id=ccdb("select new_question((select community_id from get.community where community_name=$1),(select question_type from get.question_type_enums where question_type=$2),$3,$4,$5,$6)",$_POST['community'],$_POST['type'],$_POST['title'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
+    $id=ccdb("select new((select question_type from get.question_type_enums where question_type=$1),$2,$3,$4,$5)",$_POST['type'],$_POST['title'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
     if($id){
-      setcookie('clearlocal',$_POST['community'].'.ask',0,'/','topanswers.xyz',true,true);
-      header('Location: //topanswers.xyz/'.$_POST['community'].'?q='.$id);
+      setcookie('clearlocal',$community_name.'.ask',0,'/','topanswers.xyz',true,true);
+      header('Location: //topanswers.xyz/'.$community_name.'?q='.$id);
     }
     exit;
   case 'new-se':
-    db("select new_import(community_id,$2,'') from get.community where community_name=$1",$_POST['community'],$_POST['seids']);
-    extract(cdb("select community_id,sesite_url,my_community_se_user_id from get.community join get.sesite on community_sesite_id=sesite_id natural join get.my_community where community_name=$1",$_POST['community']));
+    db("select new_import($1,'')",$_POST['seids']);
     libxml_use_internal_errors(true);
     // turn posted string into an array
     $seids = explode(' ',$_POST['seids']);
@@ -80,7 +84,8 @@ switch($_POST['action']) {
     }
    //error_log($seqid);
    //error_log($community_id);
-    if(ccdb("select count(*) from get.question where community_id=$1 and question_se_question_id=$2",$community_id,$seqid)===0){
+    $id = ccdb("select get_sequestion($1)",$seqid);
+    if(!$id){
       // get the markdown and tags for the question
       $doc = new DOMDocument();
       $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$seqid.'/edit'));
@@ -97,12 +102,10 @@ switch($_POST['action']) {
      //error_log('length: '.strlen($markdown));
       // add the question
       if($qanon){
-        $id=ccdb("select new_sequestionanon($1,$2,$3,$4,$5)",$community_id,$title,$markdown,$tags,$seqid);
+        $id=ccdb("select new_sequestionanon($1,$2,$3,$4)",$title,$markdown,$tags,$seqid);
       }else{
-        $id=ccdb("select new_sequestion($1,$2,$3,$4,$5,$6,$7)",$community_id,$title,$markdown,$tags,$seqid,$seuid,$seuname);
+        $id=ccdb("select new_sequestion($1,$2,$3,$4,$5,$6)",$title,$markdown,$tags,$seqid,$seuid,$seuname);
       }
-    }else{
-      $id=ccdb("select question_id from get.question where community_id=$1 and question_se_question_id=$2",$community_id,$seqid);
     }
     // generate an array of answers to import
     $aids = [];
@@ -114,13 +117,13 @@ switch($_POST['action']) {
       foreach($elements as $element) array_push($aids,explode('-',$element->getAttribute('id'))[1]);
     }else{
       if($seaids) $aids = $seaids;
-      if($my_community_se_user_id){
+      if($question_communicant_se_user_id){
         $doc = new DOMDocument();
         $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
         $xpath = new DOMXpath($doc);
         $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
                                  ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
-                                 ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$my_community_se_user_id."/')])]");
+                                 ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$question_communicant_se_user_id."/')])]");
         foreach($elements as $element){
           $aid = explode('-',$element->getAttribute('id'))[1];
           if(!in_array($aid,$aids,true)) array_push($aids,$aid);
