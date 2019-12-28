@@ -99,6 +99,16 @@ create function link(luuid uuid, auuid uuid) returns integer language sql securi
   insert into login(account_id,login_uuid) select account_id,luuid from account where account_uuid=auuid returning account_id;
 $$;
 --
+create function change_resizer(perc integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('invalid percent') where perc<0 or perc>100;
+  update login set login_resizer_percent = perc where login_uuid=get_login_uuid();
+$$;
+--
+create function change_chat_resizer(perc integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('invalid percent') where perc<0 or perc>100;
+  update login set login_chat_resizer_percent = perc where login_uuid=get_login_uuid();
+$$;
+--
 --
 revoke all on all functions in schema profile from public;
 do $$

@@ -666,8 +666,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
-      const qaAndChat = new Resizer('body', { width: 2, colour: 'black', full_length: true, callback: function(w) { $.post({ url: '//post.topanswers.xyz/community', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); } });
-      const notificationsAndChat = new Resizer('#chat-panels', { width: 2, colour: 'black', full_length: true, callback: function(y) { $.post({ url: '//post.topanswers.xyz/community', data: { action: 'chat_resizer', position: Math.round(y) }, xhrFields: { withCredentials: true } }); } });
+      const qaAndChat = new Resizer('body', { width: 2, colour: 'black', full_length: true, callback: function(w) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); } });
+      const notificationsAndChat = new Resizer('#chat-panels', { width: 2, colour: 'black', full_length: true, callback: function(y) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'chat_resizer', position: Math.round(y) }, xhrFields: { withCredentials: true } }); } });
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
       $('#chatuploadfile').change(function() {
         if(this.files[0].size > 2097152){

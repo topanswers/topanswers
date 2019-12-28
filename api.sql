@@ -92,13 +92,22 @@ create function login_answer(uuid uuid, aid integer) returns boolean language sq
   select login(uuid);
 $$;
 --
-create function _ensure_communicant(aid integer, cid integer) returns void language sql security definer set search_path=db,pg_temp as $$
-  insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
-  select aid,cid,community_regular_font_id,community_monospace_font_id from community where community_id=cid
-  on conflict on constraint communicant_pkey do nothing;
-$$;
+create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,post,pg_temp as $$
+declare
+  rid integer;
+  cid integer;
+begin
+  insert into room(community_id) values(0) returning room_id into rid;
+  insert into community(community_name,community_room_id,community_display_name) values(cname,rid,initcap(cname)) returning community_id into cid;
+  --
+  insert into communicant(account_id,community_id,communicant_se_user_id,communicant_regular_font_id,communicant_monospace_font_id)
+  select 208,cid,0,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
+  --
+  update room set community_id=cid where room_id=rid;
+  return cid;
+end$$;
 --
-create function ensure_communicant(aid integer, cid integer) returns void language sql security definer set search_path=db,pg_temp as $$
+create function _ensure_communicant(aid integer, cid integer) returns void language sql security definer set search_path=db,pg_temp as $$
   insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
   select aid,cid,community_regular_font_id,community_monospace_font_id from community where community_id=cid
   on conflict on constraint communicant_pkey do nothing;

@@ -46,11 +46,13 @@ end;
 $$;
 */
 --
+/*
 create function _ensure_communicant(aid integer, cid integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
   select aid,cid,community_regular_font_id,community_monospace_font_id from community where community_id=cid
   on conflict on constraint communicant_pkey do nothing;
 $$;
+*/
 --
 /*
 create function new_chat(roomid integer, msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,post,pg_temp as $$
@@ -190,6 +192,7 @@ create function change_account_codelicense_id(id integer) returns void language 
 $$;
 */
 --
+/*
 create function change_resizer(perc integer) returns void language sql security definer set search_path=db,post,pg_temp as $$
   select _error('invalid percent') where perc<0 or perc>100;
   update login set login_resizer_percent = perc where login_uuid=current_setting('custom.uuid',true)::uuid;
@@ -199,6 +202,7 @@ create function change_chat_resizer(perc integer) returns void language sql secu
   select _error('invalid percent') where perc<0 or perc>100;
   update login set login_chat_resizer_percent = perc where login_uuid=current_setting('custom.uuid',true)::uuid;
 $$;
+*/
 --
 /*
 create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,post,pg_temp as $$
