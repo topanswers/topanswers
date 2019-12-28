@@ -2,8 +2,7 @@
 include '../cors.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
-isset($_COOKIE['uuid']) || fail(403,'only registered users can POST');
-ccdb("select login($1)",$_COOKIE['uuid']) || fail(403,'invalid uuid');
+ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'') || fail(403,'access denied');
 
 isset($_FILES['image']) || exit('no file uploaded');
 $hash = hash_file('sha256',$_FILES['image']['tmp_name']);

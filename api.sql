@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists upload cascade;
 drop schema if exists answer cascade;
 drop schema if exists profile cascade;
 drop schema if exists question cascade;
@@ -147,5 +148,6 @@ end$$;
 \i ~/git/question.sql
 \i ~/git/profile.sql
 \i ~/git/answer.sql
+\i ~/git/upload.sql
 --
 commit;

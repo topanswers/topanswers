@@ -89,12 +89,12 @@ create function change_codelicense(id integer) returns void language sql securit
   update account set account_codelicense_id = id where account_id=get_account_id();
 $$;
 --
-create function link(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,post,pg_temp as $$
+create function link(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('invalid pin') where not exists (select 1 from pin where pin_number=pn);
   insert into login(account_id,login_uuid) select account_id,luuid from pin where pin_number=pn and pin_at>current_timestamp-'1 min'::interval returning account_id;
 $$;
 --
-create function link(luuid uuid, auuid uuid) returns integer language sql security definer set search_path=db,post,pg_temp as $$
+create function link(luuid uuid, auuid uuid) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('invalid recovery key') where not exists (select 1 from account where account_uuid=auuid);
   insert into login(account_id,login_uuid) select account_id,luuid from account where account_uuid=auuid returning account_id;
 $$;
