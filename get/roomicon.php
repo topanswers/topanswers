@@ -1,20 +1,16 @@
 <?php
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-
-$uuid = $_COOKIE['uuid'] ?? false;
-if($uuid) ccdb("select login($1)",$uuid);
-
-isset($_GET['id']) or die('id not set');
-$id = intval($_GET['id']);
-$id>0 or die('id not positive integer');
+db("set search_path to roomicon,pg_temp");
+$auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'');
+extract(cdb("select room_id,room_image, room_image is not null room_has_image from one"));
 
 header('X-Powered-By: ');
 header('Cache-Control: max-age=8600');
 
-if(ccdb("select room_image is not null from room where room_id=$1",$id)){
+if($room_has_image){
   header("Content-Type: image/jpeg");
-  echo pg_unescape_bytea(ccdb("select room_image from room where room_id=$1",$id));
+  echo pg_unescape_bytea($room_image);
   exit;
 }
 
@@ -36,7 +32,7 @@ $pixelCount = GRID_COUNT_H * ceil(GRID_COUNT_W/2);
 $max = pow(2, $pixelCount) - 1;
 
 // normalize (modulo) the passed id
-$id = (crc32($id) % $max) + 1;
+$id = (crc32($room_id) % $max) + 1;
 
 // create image canvas and fill with default background color
 $im = imagecreatetruecolor($sizeX, $sizeY);

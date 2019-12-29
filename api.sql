@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists roomicon cascade;
 drop schema if exists sitemap cascade;
 drop schema if exists upload cascade;
 drop schema if exists answer cascade;
@@ -44,6 +45,21 @@ create function _set_id(text,integer) returns void stable language sql security 
              select one_encryption_key from one where nullif(current_setting('custom.uuid',true),'')::uuid is null)
   select set_config('custom.'||$1||'_id',x_pgcrypto.pgp_sym_encrypt($2::text,(select account_encryption_key from w)::text||current_setting('custom.timestamp',true))::text,false)
 $$;
+--
+--
+create view _community with (security_barrier) as
+select c.*
+     , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
+from (select community_id from db.community natural left join (select community_id,account_id from db.member where account_id=get_account_id()) m where community_type='public' or account_id is not null) c
+     natural left join (select community_id,communicant_votes from db.communicant where account_id=get_account_id()) a;
+--
+create view _room with (security_barrier) as
+select r.*
+from (select room_id,community_id
+           , get_account_id() is not null and (room_type='public' or account_id is not null) room_can_chat
+      from db.room natural left join (select * from db.account_room_x where account_id=get_account_id()) a
+      where room_type<>'private' or account_id is not null) r
+     natural join (select community_id from api._community) c;
 --
 --
 create function login(uuid uuid) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
@@ -151,5 +167,6 @@ end$$;
 \i ~/git/answer.sql
 \i ~/git/upload.sql
 \i ~/git/sitemap.sql
+\i ~/git/roomicon.sql
 --
 commit;
