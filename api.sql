@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists sitemap cascade;
 drop schema if exists upload cascade;
 drop schema if exists answer cascade;
 drop schema if exists profile cascade;
@@ -149,5 +150,6 @@ end$$;
 \i ~/git/profile.sql
 \i ~/git/answer.sql
 \i ~/git/upload.sql
+\i ~/git/sitemap.sql
 --
 commit;
