@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists question_history cascade;
 drop schema if exists identicon cascade;
 drop schema if exists roomicon cascade;
 drop schema if exists sitemap cascade;
@@ -61,6 +62,13 @@ from (select room_id,community_id
       from db.room natural left join (select * from db.account_room_x where account_id=get_account_id()) a
       where room_type<>'private' or account_id is not null) r
      natural join (select community_id from api._community) c;
+--
+create view _question with (security_barrier) as
+select question_id,community_id
+     , question_crew_flags>0 or (question_crew_flags=0 and question_flags>0) question_is_deleted
+from db.question natural join _community
+     natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
+where communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id() is not null or question_flags=0) and question_crew_flags=0);
 --
 --
 create function login(uuid uuid) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
@@ -170,5 +178,6 @@ end$$;
 \i ~/git/sitemap.sql
 \i ~/git/roomicon.sql
 \i ~/git/identicon.sql
+\i ~/git/question-history.sql
 --
 commit;

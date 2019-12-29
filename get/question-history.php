@@ -2,15 +2,13 @@
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-$uuid = $_COOKIE['uuid']??'';
-ccdb("select login($1)",$uuid);
-$id = $_GET['id'];
-ccdb("select count(*) from question where question_id=$1",$id)===1 || die('invalid question id');
-extract(cdb("select my_community_regular_font_name,my_community_monospace_font_name,community_code_language,community_display_name,question_title
-                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-                  , community_name community
-             from question natural join (select question_id,community_id from question) q natural join community natural join my_community
-             where question_id=$1",$id));
+db("set search_path to question_history,pg_temp");
+ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
+extract(cdb("select account_id
+                   ,community_name,community_display_name,community_code_language
+                   ,my_community_regular_font_name,my_community_monospace_font_name
+                   ,colour_dark,colour_mid,colour_light,colour_highlight
+             from one"));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
@@ -75,22 +73,15 @@ extract(cdb("select my_community_regular_font_name,my_community_monospace_font_n
 <body style="font-size: larger; background-color: #<?=$colour_light?>;">
   <header style="border-bottom: 2px solid black;">
     <div style="margin: 0.2rem;">
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=$community_display_name?></a>
-      <span>Question History for: "<a href="/<?=$community?>?q=<?=$id?>" style="color: #<?=$colour_mid?>;"><?=$question_title?></a>"</span>
+      <a href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=$community_display_name?></a>
+      <span>Question History for: "<a href="/<?=$community_name?>?q=<?=$id?>" style="color: #<?=$colour_mid?>;"><?=$question_title?></a>"</span>
     </div>
     <div style="display: flex; align-items: center;">
-      <a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
+      <a href="/profile" class="icon"><img src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
   <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
-    <?foreach(db("select question_history_id,account_id,account_name,question_history_markdown,question_history_title
-                       , to_char(question_history_at,'YYYY-MM-DD HH24:MI:SS') question_history_at
-                       , lag(question_history_markdown) over (order by question_history_at) prev_markdown
-                       , lag(question_history_title) over (order by question_history_at) prev_title
-                       , row_number() over (order by question_history_at) rn
-                  from question_history natural join account
-                  where question_id=$1
-                  order by question_history_at desc",$id) as $i=>$r){ extract($r);?>
+    <?foreach(db("select question_history_id,account_id,account_name,question_history_markdown,question_history_title,question_history_at,prev_markdown,prev_title,rn from history order by rn desc") as $i=>$r){ extract($r);?>
       <?$rowspan = ($rn>1)?4:2;?>
       <?$rowoffset = 5*$i;?>
       <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
