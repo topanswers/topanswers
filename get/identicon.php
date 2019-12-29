@@ -1,17 +1,18 @@
 <?php
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-
-isset($_GET['id']) or die('id not set');
-$id = intval($_GET['id']);
-$id>0 or die('id not positive integer');
-
+db("set search_path to identicon,pg_temp");
+extract(cdb("select account_id,account_image
+                  , to_char(account_change_at,'fmDy, dd Mon YYYY HH24:MI:SS') account_change_at_text
+             from account
+             where account_id=$1",$_GET['id']));
+$account_id || fail(400,'invalid account id');
 header('X-Powered-By: ');
-header('Last-Modified: '.ccdb("select to_char(account_change_at,'fmDy, dd Mon YYYY HH24:MI:SS') from account where account_id=$1",$id)." GMT");
+header('Last-Modified: '.$account_change_at_text." GMT");
 
-if(ccdb("select account_image is not null from account where account_id=$1",$id)){
+if($account_image){
   header("Content-Type: image/jpeg");
-  echo pg_unescape_bytea(ccdb("select account_image from account where account_id=$1",$id));
+  echo pg_unescape_bytea($account_image);
   exit;
 }
 
@@ -33,7 +34,7 @@ $pixelCount = GRID_COUNT_H * ceil(GRID_COUNT_W/2);
 $max = pow(2, $pixelCount) - 1;
 
 // normalize (modulo) the passed id
-$id = (crc32($id) % $max) + 1;
+$id = (crc32($account_id) % $max) + 1;
 
 // create image canvas and fill with default background color
 $im = imagecreatetruecolor($sizeX, $sizeY);

@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists identicon cascade;
 drop schema if exists roomicon cascade;
 drop schema if exists sitemap cascade;
 drop schema if exists upload cascade;
@@ -168,5 +169,6 @@ end$$;
 \i ~/git/upload.sql
 \i ~/git/sitemap.sql
 \i ~/git/roomicon.sql
+\i ~/git/identicon.sql
 --
 commit;
