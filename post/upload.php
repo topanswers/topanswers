@@ -2,6 +2,7 @@
 include '../cors.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
+db("set search_path to upload,pg_temp");
 ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'') || fail(403,'access denied');
 
 isset($_FILES['image']) || exit('no file uploaded');

@@ -1,5 +1,5 @@
 create schema upload;
-grant usage on schema upload to get;
+grant usage on schema upload to get,post;
 set local search_path to upload,api,pg_temp;
 --
 --
