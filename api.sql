@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists answer_history cascade;
 drop schema if exists question_history cascade;
 drop schema if exists identicon cascade;
 drop schema if exists roomicon cascade;
@@ -68,7 +69,14 @@ select question_id,community_id
      , question_crew_flags>0 or (question_crew_flags=0 and question_flags>0) question_is_deleted
 from db.question natural join _community
      natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
-where communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id() is not null or question_flags=0) and question_crew_flags=0);
+where communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id() is not null or question_flags=0) and question_crew_flags=0) or account_id=get_account_id();
+--
+create view _answer with (security_barrier) as
+select answer_id,question_id,community_id
+     , answer_crew_flags>0 or (answer_crew_flags=0 and answer_flags>0) answer_is_deleted
+from db.answer natural join _question
+     natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
+where communicant_is_post_flag_crew or answer_crew_flags<0 or ((get_account_id() is not null or answer_flags=0) and answer_crew_flags=0) or account_id=get_account_id();
 --
 --
 create function login(uuid uuid) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
@@ -76,7 +84,7 @@ create function login(uuid uuid) returns boolean language sql security definer s
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
-create function login_community(uuid uuid, cid integer) returns boolean language sql security definer set search_path=db,api,chat,pg_temp as $$
+create function login_community(uuid uuid, cid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select _error('invalid community')
   where not exists (select 1 from community c where community_id=cid and (community_type='public' or exists (select 1 from member m natural join login where m.community_id=c.community_id and login_uuid=uuid)));
   --
@@ -85,7 +93,7 @@ create function login_community(uuid uuid, cid integer) returns boolean language
   select login(uuid);
 $$;
 --
-create function login_room(uuid uuid, rid integer) returns boolean language sql security definer set search_path=db,api,chat,pg_temp as $$
+create function login_room(uuid uuid, rid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   --
   select _error('invalid room') where not exists (select 1
                                                   from room r natural join (select community_id,community_type from community) c 
@@ -97,7 +105,7 @@ create function login_room(uuid uuid, rid integer) returns boolean language sql 
   select login(uuid);
 $$;
 --
-create function login_question(uuid uuid, qid integer) returns boolean language sql security definer set search_path=db,api,chat,pg_temp as $$
+create function login_question(uuid uuid, qid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   --
   select _error('invalid question') where not exists (select 1
                                                       from question r natural join (select community_id,community_type from community) c 
@@ -108,14 +116,10 @@ create function login_question(uuid uuid, qid integer) returns boolean language 
   select login(uuid);
 $$;
 --
-create function login_answer(uuid uuid, aid integer) returns boolean language sql security definer set search_path=db,api,chat,pg_temp as $$
-  --
-  select _error('invalid answer') where not exists (select 1
-                                                    from answer natural join (select question_id,community_id from question) r natural join (select community_id,community_type from community) c 
-                                                    where answer_id=aid and (community_type='public' or exists (select 1 from member m natural join login where m.community_id=r.community_id and login_uuid=uuid)));
-  --
+create function login_answer(uuid uuid, id integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
-  select _set_id('answer',answer_id),_set_id('question',question_id),_set_id('community',community_id) from answer natural join (select question_id,community_id from question) q where answer_id=aid;
+  select _error('invalid answer') where not exists (select 1 from _answer where answer_id=id);
+  select _set_id('answer',answer_id),_set_id('question',question_id),_set_id('community',community_id) from _answer where answer_id=id;
   select login(uuid);
 $$;
 --
@@ -179,5 +183,6 @@ end$$;
 \i ~/git/roomicon.sql
 \i ~/git/identicon.sql
 \i ~/git/question-history.sql
+\i ~/git/answer-history.sql
 --
 commit;

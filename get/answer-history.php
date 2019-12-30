@@ -2,15 +2,15 @@
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-$uuid = $_COOKIE['uuid']??'';
-if($uuid) if(!ccdb("select login($1)",$uuid)) $uuid = false;
-$id = $_GET['id'];
-ccdb("select count(*) from answer where answer_id=$1",$id)===1 || die('invalid answer id');
-extract(cdb("select my_community_regular_font_name,my_community_monospace_font_name,community_code_language,community_display_name,question_id,question_title
-                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-                  , community_name community
-             from answer natural join (select question_id,community_id,question_title from question) q natural join community natural join my_community
-             where answer_id=$1",$id));
+db("set search_path to answer_history,pg_temp");
+ccdb("select login_answer(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
+extract(cdb("select account_id
+                   ,answer_id
+                   ,question_id,question_title
+                   ,community_name,community_display_name,community_code_language
+                   ,my_community_regular_font_name,my_community_monospace_font_name
+                   ,colour_dark,colour_mid,colour_light,colour_highlight
+             from one"));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
@@ -74,20 +74,14 @@ extract(cdb("select my_community_regular_font_name,my_community_monospace_font_n
   <header style="border-bottom: 2px solid black;">
     <div style="display: flex; align-items: center; height: 100%;">
       <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=$community_display_name?></a>
-      <span>Answer History for <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$id?>" style="color: #<?=$colour_mid?>;">an answer</a> on: "<?=$question_title?>"</span>
+      <span>Answer History for <a href="/<?=$community?>?q=<?=$question_id?>#a<?=$answer_id?>" style="color: #<?=$colour_mid?>;">an answer</a> on: "<?=$question_title?>"</span>
     </div>
     <div style="display: flex; align-items: center;">
       <?if($uuid){?><a href="/profile" class="icon"><img src="/identicon?id=<?=ccdb("select account_id from login")?>"></a><?}?>
     </div>
   </header>
   <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
-    <?foreach(db("select answer_history_id,account_id,account_name,answer_history_markdown
-                       , to_char(answer_history_at,'YYYY-MM-DD HH24:MI:SS') answer_history_at
-                       , lag(answer_history_markdown) over (order by answer_history_at) prev_markdown
-                       , row_number() over (order by answer_history_at) rn
-                  from answer_history natural join account
-                  where answer_id=$1
-                  order by answer_history_at desc",$id) as $i=>$r){ extract($r);?>
+    <?foreach(db("select answer_history_id,account_id,account_name,answer_history_markdown,answer_history_at,prev_markdown,rn from history order by rn desc") as $i=>$r){ extract($r);?>
       <?$rowspan = ($rn>1)?2:1;?>
       <?$rowoffset = 3*$i;?>
       <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
