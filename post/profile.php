@@ -4,16 +4,19 @@ include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
 isset($_POST['action']) || fail(400,'must have an "action" parameter');
 db("set search_path to profile,pg_temp");
-if(isset($_COOKIE['uuid'])){
+if(isset($_POST['community'])){
+  $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid'],$_POST['community']);
+}else{
+  $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']);
+}
+if($auth){
   if(isset($_POST['community'])){
-    ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid'],$_POST['community']) || fail(403,'access denied');
     extract(cdb("select community_name from one"));
     switch($_POST['action']){
       case 'font': db("select change_fonts($1,$2)",$_POST['regular'],$_POST['mono']); header('Location: '.$_POST['location']); exit;
       default: fail(400,'unrecognized action for authenticated user with community set');
     }
   }else{
-    ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']) || fail(403,'access denied');
     switch($_POST['action']){
       case 'name': db("select change_name(nullif($1,''))",$_POST['name']); header('Location: '.$_POST['location']); exit;
       case 'remove-image': db("select change_image(null)"); header('Location: '.$_POST['location']); exit;
@@ -53,7 +56,6 @@ if(isset($_COOKIE['uuid'])){
     case 'link':
       if(is_numeric($_POST['link'])) db('select link($1,$2::bigint)',$uuid,$_POST['link']);
       else db('select link($1,$2::uuid)',$uuid,$_POST['link']);
-      db("select link($1,$2)",$uuid,$_POST['pin']); exit;
       exit;
     case 'new': exit(ccdb('select new($1)',$uuid));
     default: fail(400,'unrecognized action for unauthenticated user');

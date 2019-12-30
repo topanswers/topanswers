@@ -87,54 +87,49 @@ where get_account_id() is not null or not exists (select 1 from db.chat_flag whe
 --
 --
 create function login(uuid uuid) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
-  select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
+  select set_config('custom.timestamp',current_timestamp::text,false);
+  select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_community(uuid uuid, cid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('invalid community')
-  where not exists (select 1 from community c where community_id=cid and (community_type='public' or exists (select 1 from member m natural join login where m.community_id=c.community_id and login_uuid=uuid)));
-  --
-  select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
+  select set_config('custom.timestamp',current_timestamp::text,false);
+  select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
+  select _error('invalid community') where not exists (select 1 from _community c where community_id=cid);
   select _set_id('community',community_id) from community where community_id=cid;
-  select login(uuid);
+  select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_room(uuid uuid, rid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
-  --
-  select _error('invalid room') where not exists (select 1
-                                                  from room r natural join (select community_id,community_type from community) c 
-                                                  where room_id=rid and (community_type='public' or exists (select 1 from member m natural join login where m.community_id=r.community_id and login_uuid=uuid))
-                                                                    and (room_type<>'private' or exists (select 1 from account_room_x a natural join login where a.room_id=r.room_id and login_uuid=uuid)));
-  --
-  select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
+  select set_config('custom.timestamp',current_timestamp::text,false);
+  select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
+  select _error('invalid room') where not exists (select 1 from _room where room_id=rid);
   select _set_id('room',room_id),_set_id('community',community_id) from room where room_id=rid;
-  select login(uuid);
+  select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_question(uuid uuid, qid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
-  --
-  select _error('invalid question') where not exists (select 1
-                                                      from question r natural join (select community_id,community_type from community) c 
-                                                      where question_id=qid and (community_type='public' or exists (select 1 from member m natural join login where m.community_id=r.community_id and login_uuid=uuid)));
-  --
-  select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
+  select set_config('custom.timestamp',current_timestamp::text,false);
+  select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
+  select _error('invalid question') where not exists (select 1 from _question where question_id=qid);
   select _set_id('question',question_id),_set_id('room',question_room_id),_set_id('community',community_id) from question where question_id=qid;
-  select login(uuid);
+  select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_answer(uuid uuid, id integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
-  select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
+  select set_config('custom.timestamp',current_timestamp::text,false);
+  select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
   select _error('invalid answer') where not exists (select 1 from _answer where answer_id=id);
   select _set_id('answer',answer_id),_set_id('question',question_id),_set_id('community',community_id) from _answer where answer_id=id;
-  select login(uuid);
+  select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_chat(uuid uuid, id integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
-  select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
+  select set_config('custom.timestamp',current_timestamp::text,false);
+  select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
   select _error('invalid answer') where not exists (select 1 from _chat where chat_id=id);
   select _set_id('chat',chat_id),_set_id('room',room_id),_set_id('community',community_id) from _chat where chat_id=id;
-  select login(uuid);
+  select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,post,pg_temp as $$
