@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists chat_history cascade;
 drop schema if exists answer_history cascade;
 drop schema if exists question_history cascade;
 drop schema if exists identicon cascade;
@@ -30,19 +31,20 @@ create function _error(text) returns void language sql as $$select _error(403,$1
 create function get_login_uuid() returns uuid stable language sql security definer as $$select nullif(current_setting('custom.uuid',true),'')::uuid;$$;
 create function get_account_id() returns integer stable language sql security definer as $$select account_id from db.login where login_uuid=nullif(current_setting('custom.uuid',true),'')::uuid;$$;
 --
-create function _get_id(text) returns integer stable language sql security definer set search_path=db,api,pg_temp as $$
+create function _get_id(text) returns bigint stable language sql security definer set search_path=db,api,pg_temp as $$
   with w as (select account_encryption_key from login natural join account where login_uuid=nullif(current_setting('custom.uuid',true),'')::uuid
              union all
              select one_encryption_key from one where nullif(current_setting('custom.uuid',true),'')::uuid is null)
-  select x_pgcrypto.pgp_sym_decrypt(current_setting('custom.'||$1||'_id',true)::bytea,(select account_encryption_key from w)::text||current_setting('custom.timestamp',true))::integer
+  select x_pgcrypto.pgp_sym_decrypt(current_setting('custom.'||$1||'_id',true)::bytea,(select account_encryption_key from w)::text||current_setting('custom.timestamp',true))::bigint
 $$;
 --
-create function get_room_id() returns integer stable language sql security definer as $$select api._get_id('room'::text);$$;
-create function get_community_id() returns integer stable language sql security definer as $$select api._get_id('community'::text);$$;
-create function get_question_id() returns integer stable language sql security definer as $$select api._get_id('question'::text);$$;
-create function get_answer_id() returns integer stable language sql security definer as $$select api._get_id('answer'::text);$$;
+create function get_room_id() returns integer stable language sql security definer as $$select api._get_id('room'::text)::integer;$$;
+create function get_community_id() returns integer stable language sql security definer as $$select api._get_id('community'::text)::integer;$$;
+create function get_question_id() returns integer stable language sql security definer as $$select api._get_id('question'::text)::integer;$$;
+create function get_answer_id() returns integer stable language sql security definer as $$select api._get_id('answer'::text)::integer;$$;
+create function get_chat_id() returns bigint stable language sql security definer as $$select api._get_id('chat'::text);$$;
 --
-create function _set_id(text,integer) returns void stable language sql security definer set search_path=db,api,pg_temp as $$
+create function _set_id(text,bigint) returns void stable language sql security definer set search_path=db,api,pg_temp as $$
   with w as (select account_encryption_key from login natural join account where login_uuid=nullif(current_setting('custom.uuid',true),'')::uuid
              union all
              select one_encryption_key from one where nullif(current_setting('custom.uuid',true),'')::uuid is null)
@@ -77,6 +79,11 @@ select answer_id,question_id,community_id
 from db.answer natural join _question
      natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
 where communicant_is_post_flag_crew or answer_crew_flags<0 or ((get_account_id() is not null or answer_flags=0) and answer_crew_flags=0) or account_id=get_account_id();
+--
+create view _chat with (security_barrier) as
+select chat_id,room_id,community_id
+from db.chat natural join _room
+where get_account_id() is not null or not exists (select 1 from db.chat_flag where chat_flag.chat_id=chat.chat_id);
 --
 --
 create function login(uuid uuid) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
@@ -120,6 +127,13 @@ create function login_answer(uuid uuid, id integer) returns boolean language sql
   select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
   select _error('invalid answer') where not exists (select 1 from _answer where answer_id=id);
   select _set_id('answer',answer_id),_set_id('question',question_id),_set_id('community',community_id) from _answer where answer_id=id;
+  select login(uuid);
+$$;
+--
+create function login_chat(uuid uuid, id integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
+  select set_config('custom.timestamp',current_timestamp::text,false), set_config('custom.uuid',uuid::text,false);
+  select _error('invalid answer') where not exists (select 1 from _chat where chat_id=id);
+  select _set_id('chat',chat_id),_set_id('room',room_id),_set_id('community',community_id) from _chat where chat_id=id;
   select login(uuid);
 $$;
 --
@@ -184,5 +198,6 @@ end$$;
 \i ~/git/identicon.sql
 \i ~/git/question-history.sql
 \i ~/git/answer-history.sql
+\i ~/git/chat-history.sql
 --
 commit;

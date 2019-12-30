@@ -2,14 +2,15 @@
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-$uuid = $_COOKIE['uuid']??'';
-ccdb("select login($1)",$uuid);
-$id = $_GET['id'];
-ccdb("select count(*) from chat where chat_id=$1",$id)==='1' || die('invalid chat id');
-extract(cdb("select my_community_regular_font_name,my_community_monospace_font_name
-                  , encode(community_dark_shade,'hex') colour_dark, encode(community_mid_shade,'hex') colour_mid, encode(community_light_shade,'hex') colour_light, encode(community_highlight_color,'hex') colour_highlight
-             from chat natural join (select question_id,community_id from question) q natural join community natural join my_community
-             where chat_id=$1",$id));
+db("set search_path to chat_history,pg_temp");
+ccdb("select login_chat(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
+extract(cdb("select account_id
+                   ,chat_id
+                   ,room_id,room_name
+                   ,community_name,community_display_name,community_code_language
+                   ,my_community_regular_font_name,my_community_monospace_font_name
+                   ,colour_dark,colour_mid,colour_light,colour_highlight
+             from one"));
 ?>
 <!doctype html>
 <html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
@@ -71,17 +72,11 @@ extract(cdb("select my_community_regular_font_name,my_community_monospace_font_n
       <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
-      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=ccdb("select account_id from login")?>"></a>
+      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
   <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
-    <?foreach(db("select chat_history_markdown
-                       , to_char(chat_history_at,'YYYY-MM-DD HH24:MI:SS') chat_history_at
-                       , lag(chat_history_markdown) over (order by chat_history_at) prev_markdown
-                       , row_number() over (order by chat_history_at) rn
-                  from chat_history
-                  where chat_id=$1
-                  order by chat_history_at desc",$id) as $i=>$r){ extract($r);?>
+    <?foreach(db("select chat_history_markdown,chat_history_at,prev_markdown,rn from history order by rn desc") as $i=>$r){ extract($r);?>
       <?$rowspan = ($rn>1)?2:1;?>
       <?$rowoffset = 3*$i;?>
       <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
