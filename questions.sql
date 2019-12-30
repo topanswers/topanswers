@@ -3,11 +3,7 @@ grant usage on schema questions to get;
 set local search_path to questions,api,pg_temp;
 --
 --
-create view question with (security_barrier) as
-select question_id,question_poll_major_id,question_poll_minor_id
-from db.question
-     natural left join (select account_id,community_id,communicant_is_post_flag_crew from db.login natural join db.account natural join db.communicant where login_uuid=get_login_uuid()) a
-where community_id=get_community_id() and (question_crew_flags<=0 or communicant_is_post_flag_crew);
+create view question with (security_barrier) as select question_id,question_poll_major_id,question_poll_minor_id from api._question natural join db.question where community_id=get_community_id();
 /*
 create view tag with (security_barrier) as select tag_id,tag_name,tag_implies_id,tag_question_count from db.tag where community_id=get_community_id();
 
@@ -70,7 +66,7 @@ create function range(startid integer, endid integer)
        , (select json_agg(row_to_json(z)) from (with t as (select tag_id,tag_name,tag_implies_id,tag_question_count from db.question_tag_x x natural join db.tag t where t.community_id=q.community_id and x.question_id=q.question_id)
                                                 select tag_id,tag_name from t where not exists (select 1 from t tt where tt.tag_implies_id=t.tag_id and tt.tag_name like t.tag_name||'%' order by tag_question_count desc)) z)
            question_tags
-  from db.question q natural join db.account natural join db.community natural join db.communicant
+  from db.question q natural join api._question natural join db.account natural join db.community natural join db.communicant
          natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
          natural left join (select question_id, max(answer_at) question_answer_at, max(answer_change_at) question_answer_change_at from db.answer group by question_id) a
          natural left join (select question_id, max(question_tag_x_at) tag_at from db.question_tag_x group by question_id) t
@@ -121,7 +117,7 @@ create function search(text)
        , (select json_agg(row_to_json(z)) from (with t as (select tag_id,tag_name,tag_implies_id,tag_question_count from db.question_tag_x x natural join db.tag t where t.community_id=q.community_id and x.question_id=q.question_id)
                                                 select tag_id,tag_name from t where not exists (select 1 from t tt where tt.tag_implies_id=t.tag_id and tt.tag_name like t.tag_name||'%' order by tag_question_count desc)) z)
            question_tags
-  from s natural join db.question q natural join db.account natural join db.community natural join db.communicant
+  from s natural join db.question q natural join api._question natural join db.account natural join db.community natural join db.communicant
          natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
          natural left join (select question_id, max(answer_at) question_answer_at, max(answer_change_at) question_answer_change_at from db.answer group by question_id) a
          natural left join (select question_id, max(question_tag_x_at) tag_at from db.question_tag_x group by question_id) t
