@@ -78,7 +78,7 @@ if(isset($_GET['month'])){
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
-    .message .identicon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; }
+    .message .icon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; border-radius: 4px; }
     .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid darkgrey; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
 
@@ -94,7 +94,7 @@ if(isset($_GET['month'])){
 
     .message.merged { margin-top: -1px; }
     .message.merged .who,
-    .message.merged .identicon { visibility: hidden; }
+    .message.merged .icon { visibility: hidden; }
     .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
     .message:target .markdown-wrapper { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
 
@@ -162,7 +162,7 @@ if(isset($_GET['month'])){
             <?}?>
           </small>
           <div id="c<?=$chat_id?>" class="message" data-id="<?=$chat_id?>" data-name="<?=$account_name?>">
-            <img class="identicon" src="/identicon?id=<?=$account_id?>">
+            <img class="icon" src="/identicon?id=<?=$account_id?>">
             <div class="markdown-wrapper">
               <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
             </div>
@@ -256,7 +256,7 @@ if(isset($_GET['month'])){
                 <?=$reply_account_is_me?'<em>Me</em>':$reply_account_name?>
               <?}?>
             </small>
-            <img class="identicon" src="/identicon?id=<?=$account_id?>">
+            <img class="icon" src="/identicon?id=<?=$account_id?>">
             <div class="markdown-wrapper">
               <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
             </div>

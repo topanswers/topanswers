@@ -67,7 +67,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     header, #qa .bar>div:not(.shrink), .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
     header>div, #qa .bar.shrink, .container.shrink, .element.shrink { flex: 0 1 auto; }
 
-    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; direction: ltr; }
+    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
     main header { border-bottom: 2px solid black; }
     #chat-wrapper header { border-top: 2px solid black; }
     header a { color: #<?=$colour_light?>; }
@@ -77,7 +77,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
-    .icon.pingable:not(.ping):hover { outline: 1px solid #<?=$colour_dark?>; cursor: pointer; }
+    .icon:not(.roomicon) { border-radius: 4px; }
+    .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px #<?=$colour_dark?>; cursor: pointer; }
+    .icon.ping { box-shadow: 0 0 0 1px #<?=$colour_highlight?>; }
 
     .highlight { color: #<?=$colour_highlight?>; }
 
@@ -96,14 +98,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .answers { border-top: 1px solid #<?=$colour_dark?>; }
     #qa .answers .bar { background-color: white; }
     #qa .answers .bar:not(:last-child) { border-bottom: 1px solid #<?=$colour_dark?>80; height: 23px; }
-    #qa .answers .bar:last-child { border-bottom-right-radius: 0; }
     #qa .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px;font-family: '<?=$my_community_regular_font_name?>', serif; }
 
-    #qa .post { background-color: white; border-radius: 5px; margin: 16px; margin-bottom: 32px; }
+    #qa .post { background-color: white; border-radius: 5px; margin: 16px; margin-bottom: 32px; overflow: hidden; }
     #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background-color: #<?=$colour_warning?>20; }
     #qa .post:not(:hover) .when { display: none; }
-    #qa .post.answer { border-top-right-radius: 0; }
     #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
     #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
 
@@ -112,8 +112,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .bar { height: 22px; background: #<?=$colour_light?>; justify-content: space-between; font-size: 12px; }
     #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }
     #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
-    #qa .bar:last-child { border-radius: 0 0 5px 5px; }
-    #qa .bar:first-child { border-radius: 5px 0 0 0; }
 
     #qa .bar .element.fa-bell { color: #<?=$colour_highlight?>; }
     #qa .bar .element.fa-flag { color: #<?=$colour_warning?>; }
@@ -823,7 +821,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </form>
         <?}?>
         <?if($auth){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask question"></form><?}?>
-        <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
+        <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
       </div>
     </header>
     <div id="qa">
@@ -1014,7 +1012,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <div id="chat-wrapper" class="pane hidepane">
     <header>
       <div>
-        <a class="frame"<?=$dev?' href="/room?id='.$room.'" ':''?>><img class="icon" src="/roomicon?id=<?=$room?>"></a>
+        <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?>><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
         <?if(!$question){?>
           <select id="room" class="element">
             <?foreach(db("select room_id,room_name
