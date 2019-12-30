@@ -191,7 +191,7 @@ if(isset($_GET['month'])){
           </div>
           <?foreach(db("select chat_year,chat_year_count from chat_year order by chat_year") as $r){extract($r);?>
             <div>
-              <a<?if($chat_year!==$_GET['year']){?>  href="/transcript?room=<?=$_GET['room']?>&year=<?=$chat_year?>"<?}?>><?=$chat_year?></a>
+              <a<?if($chat_year!==(int)$_GET['year']){?> href="/transcript?room=<?=$_GET['room']?>&year=<?=$chat_year?>"<?}?>><?=$chat_year?></a>
               <span>(<?=$chat_year_count?>)</span>
             </div>
           <?}?>
@@ -204,7 +204,7 @@ if(isset($_GET['month'])){
           </div>
           <?foreach(db("select chat_month,chat_month_count,to_char(to_timestamp(chat_month::text,'MM'),'Month') month_text from chat_month where chat_year=$1 order by chat_month",$_GET['year']) as $r){extract($r);?>
             <div>
-              <a class="month"<?if($chat_month!==$_GET['month']){?>  href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$chat_month?>"<?}?>><?=$month_text?></a>
+              <a class="month"<?if($chat_month!==(int)$_GET['month']){?> href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$chat_month?>"<?}?>><?=$month_text?></a>
               <span>(<?=$chat_month_count?>)</span>
             </div>
           <?}?>
@@ -217,7 +217,7 @@ if(isset($_GET['month'])){
           </div>
           <?foreach(db("select chat_day,chat_day_count from chat_day where chat_year=$1 and chat_month=$2 order by chat_day",$_GET['year'],$_GET['month']) as $r){extract($r);?>
             <div>
-              <a<?if($chat_day!==$_GET['day']){?>  href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$_GET['month']?>&day=<?=$chat_day?>"<?}?>><?=$chat_day?></a>
+              <a<?if($chat_day!==(int)$_GET['day']){?> href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$_GET['month']?>&day=<?=$chat_day?>"<?}?>><?=$chat_day?></a>
               <span>(<?=$chat_day_count?>)</span>
             </div>
           <?}?>
@@ -230,7 +230,7 @@ if(isset($_GET['month'])){
           </div>
           <?foreach(db("select chat_hour,chat_hour_count from chat_hour where chat_year=$1 and chat_month=$2 and chat_day=$3 order by chat_hour",$_GET['year'],$_GET['month'],$_GET['day']) as $r){extract($r);?>
             <div>
-              <a<?if($chat_hour!==$_GET['hour']){?> href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$_GET['month']?>&day=<?=$_GET['day']?>&hour=<?=$chat_hour?>"<?}?>><?=$chat_hour?>:00-<?=$chat_hour+1?>:00</a>
+              <a<?if($chat_hour!==(int)$_GET['hour']){?> href="/transcript?room=<?=$_GET['room']?>&year=<?=$_GET['year']?>&month=<?=$_GET['month']?>&day=<?=$_GET['day']?>&hour=<?=$chat_hour?>"<?}?>><?=$chat_hour?>:00-<?=$chat_hour+1?>:00</a>
               <span>(<?=$chat_hour_count?>)</span>
             </div>
           <?}?>
