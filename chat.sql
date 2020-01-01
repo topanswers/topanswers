@@ -201,7 +201,7 @@ create function set_star(cid bigint) returns bigint language sql security define
   select _error('cant star own message') where exists(select 1 from chat where chat_id=cid and account_id=get_account_id());
   select _error('already starred') where exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
   select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
-  insert into chat_star(chat_id,account_id) select chat_id,get_account_id() from chat where chat_id=cid;
+  insert into chat_star(chat_id,account_id,room_id) select chat_id,get_account_id(),room_id from chat where chat_id=cid;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --

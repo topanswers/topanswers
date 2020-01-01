@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists starboard cascade;
 drop schema if exists chat_history cascade;
 drop schema if exists answer_history cascade;
 drop schema if exists question_history cascade;
@@ -194,5 +195,6 @@ end$$;
 \i ~/git/question-history.sql
 \i ~/git/answer-history.sql
 \i ~/git/chat-history.sql
+\i ~/git/starboard.sql
 --
 commit;

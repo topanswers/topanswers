@@ -161,11 +161,14 @@ create table chat_flag(
 );
 
 create table chat_star(
-  chat_id bigint references chat
+  chat_id bigint
 , account_id integer references account
+, room_id integer not null
 , chat_star_at timestamptz not null default current_timestamp
 , primary key (chat_id,account_id)
+, foreign key (room_id,chat_id) references chat(room_id,chat_id)
 );
+create index chat_star_latest on chat_star(room_id,chat_star_at);
 
 create table chat_year(
   room_id integer references room
