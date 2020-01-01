@@ -587,9 +587,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           if(direction===-1) p.addClass('counterflagged');
         });
       }
-      $('.fa-flag').click(function(){ flag.call(this,0); });
-      $('.fa-flag-o').click(function(){ flag.call(this,1); });
-      $('.fa-flag-checkered').click(function(){ flag.call(this,$('#question').is('.counterflagged')?0:-1); });
+      $('.post .fa-flag').click(function(){ flag.call(this,0); });
+      $('.post .fa-flag-o').click(function(){ flag.call(this,1); });
+      $('.post .fa-flag-checkered').click(function(){ flag.call(this,$('#question').is('.counterflagged')?0:-1); });
       $('body').on('click','.icon.pingable', function(){
         if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')+' '); }
         $(this).toggleClass('ping');
