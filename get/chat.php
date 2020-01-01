@@ -38,7 +38,7 @@ $id = $_GET['id']??ccdb("select recent()");
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
     <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="icon" src="/identicon?id=<?=$account_id?>">
-    <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+    <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"><pre><?=htmlspecialchars($chat_markdown)?></pre></div>
     <?if($authenticated){?>
       <span class="buttons">
         <span class="button-group show">

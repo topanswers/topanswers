@@ -132,7 +132,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <span style="color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
             </span>
             <img title="<?=($chat_from_account_name)?$chat_from_account_name:'Anonymous'?>" class="icon" src="/identicon?id=<?=$chat_from_account_id?>">
-            <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+            <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"><pre><?=htmlspecialchars($chat_markdown)?></pre></div>
             <span class="buttons">
               <span class="button-group show">
                 <i class="stars <?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>

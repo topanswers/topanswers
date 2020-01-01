@@ -12,6 +12,7 @@ function fail($code = 500,$msg = ''){
   exit($msg);
 }
 $user = '';
+if($_SERVER['SERVER_NAME']==='127.0.0.1') $user = 'get';
 if($_SERVER['SERVER_NAME']==='topanswers.xyz') $user = 'get';
 if($_SERVER['SERVER_NAME']==='post.topanswers.xyz') $user = 'post';
 $connection = pg_connect('dbname=postgres user='.$user) or fail(403);

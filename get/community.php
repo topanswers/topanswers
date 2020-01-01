@@ -36,6 +36,7 @@ $_GET['community']===$community_name || fail(400,'invalid community');
 $question = $_GET['q']??'0';
 $room = $room_id;
 $canchat = $room_can_chat;
+$cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
@@ -51,6 +52,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <noscript>
+    <style>
+      .message:not(.processed) { opacity: unset !important; }
+      #qa .post:not(.processed) { opacity: unset !important; }
+    </style>
+  </noscript>
   <style>
     *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
@@ -100,6 +107,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .answers .bar:not(:last-child) { border-bottom: 1px solid #<?=$colour_dark?>80; height: 23px; }
     #qa .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px;font-family: '<?=$my_community_regular_font_name?>', serif; }
+    #qa .post:not(.processed) { opacity: 0; }
 
     #qa .post { background-color: white; border-radius: 5px; margin: 16px; margin-bottom: 32px; overflow: hidden; }
     #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background-color: #<?=$colour_warning?>20; }
@@ -174,6 +182,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
+    .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
     .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
     .message .markdown { flex: 0 1 auto; max-height: 20vh; padding: 0.25rem; border: 1px solid darkgrey; border-radius: 0.3em; background: white; overflow: auto; }
@@ -202,6 +211,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li>.ellipse { padding: 0 10px; user-select: none; }
     .simple-pagination li>.prev { border-radius: 5px 0 0 5px; }
     .simple-pagination li>.next { border-radius: 0 5px 5px 0; }
+
+    #dummyresizerx { background-color: black; flex: 0 0 2px; }
+    #dummyresizery { flex: 0 0 2px; }
 
     .pane { display: flex; }
     .panecontrol { display: none; }
@@ -274,6 +286,19 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $(this).find('.summary span[data-markdown]').renderMarkdownSummary();
         $(this).find('.when').each(function(){ var t = $(this); $(this).text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||'')); });
       }
+      function processNewQuestions(scroll){
+        var newquestions = $('#qa>.question:not(.processed)');
+        <?if($dev){?>console.log('processing '+newquestions.length+' questions');<?}?>
+        if($('#qa').scrollTop()<100) scroll = true;
+        newquestions.each(renderQuestion);
+        newquestions.each(function(){
+          if($(this).data('poll-major-id')>maxQuestionPollMajorID) maxQuestionPollMajorID = $(this).data('poll-major-id');
+          if($(this).data('poll-minor-id')>maxQuestionPollMinorID) maxQuestionPollMinorID = $(this).data('poll-minor-id');
+        });
+        if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
+        newquestions.addClass('processed');
+        setChatPollTimeout();
+      }
       function updateQuestions(scroll){
         var maxQuestion = $('#qa>:first-child').data('poll-major-id'), full = $('#qa').children('.question').length===0;
         if($('#qa').scrollTop()<100) scroll = true;
@@ -281,12 +306,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           if($('#qa>:first-child').data('poll-major-id')===maxQuestion){
             var newquestions;
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
-            newquestions = $(data).filter('.question').prependTo($('#qa')).hide().slideDown(full?0:400);
-            newquestions.each(renderQuestion);
-            newquestions.each(function(){
-              if($(this).data('poll-major-id')>maxQuestionPollMajorID) maxQuestionPollMajorID = $(this).data('poll-major-id');
-              if($(this).data('poll-minor-id')>maxQuestionPollMinorID) maxQuestionPollMinorID = $(this).data('poll-minor-id');
-            });
+            newquestions = $(data).filter('.question').each(renderQuestion).prependTo($('#qa')).hide().slideDown(full?0:400);
+            processNewQuestions();
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
           setChatPollTimeout();
@@ -317,56 +338,56 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function renderChat(){
         $(this).find('.markdown').renderMarkdown();
       }
+      function processNewChat(scroll){
+        var newchat = $('#messages>*:not(.processed)');
+        if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
+        if(!maxChatChangeID) $('#messages').css('scroll-behavior','auto');
+        newchat.filter('.message').each(renderChat).find('.when').each(function(){
+          $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
+        });
+        if(newchat.find('img').length===0){
+          if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
+          else $('#messages').css('scroll-behavior','smooth');
+          newchat.addClass('processed');
+        }else{
+          newchat.find('img').waitForImages(true).done(function(){
+            if(scroll){
+              setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); newchat.addClass('processed'); },0);
+            }else{
+              $('#messages').css('scroll-behavior','smooth').css('border-bottom','3px solid #<?=$colour_highlight?>').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
+              newchat.addClass('processed');
+            }
+          });
+        }
+        $('.message').each(function(){
+          var id = $(this).data('id'), rid = id;
+          function foo(b){
+            if(arguments.length!==0) $(this).addClass('t'+id);
+            if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
+            if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
+          }
+          foo.call(this);
+        });
+        newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+        setFinalSpacer();
+        newchat.filter('.message').find('.who a').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
+          var id = $(this).attr('href').substring(2);
+          $(this).attr('href','/transcript?room=<?=$room?>&id='+id+'#c'+id);
+        });
+        if(!maxChatChangeID) $('#messages').children().first().next().filter('.spacer').remove();
+        if(!maxChatChangeID) $('#messages>.message').first().removeClass('merged');
+        if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
+      }
       function updateChat(scroll){
         var maxChat = $('#messages>.message').last().data('id');
-        if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
         $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message').last().data('id')===maxChat){
             var newchat;
             $('#messages>.spacer:last-child').remove();
-            if(!maxChatChangeID) $('#messages').css('scroll-behavior','auto');
-            newchat = $(data).appendTo($('#messages')).css('opacity','0');
-            newchat.filter('.message').each(renderChat).find('.when').each(function(){ $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+            newchat = $(data).appendTo($('#messages'));
             if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
             if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
-            if(newchat.find('img').length===0){
-              if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
-              else $('#messages').css('scroll-behavior','smooth');
-            }else{
-              newchat.find('img').waitForImages(true).done(function(){
-                newchat.css('opacity','1');
-                if(scroll){
-                  setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
-                }else{
-                  $('#messages').css('scroll-behavior','smooth').css('border-bottom','3px solid #<?=$colour_highlight?>').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
-                }
-              });
-            }
-            $('.message').each(function(){
-              var id = $(this).data('id'), rid = id;
-              function foo(b){
-                if(arguments.length!==0) $(this).addClass('t'+id);
-                if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
-                if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
-              }
-              foo.call(this);
-            });
-            newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-            setFinalSpacer();
-            newchat.filter('.message').find('.who a').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
-              var id = $(this).attr('href').substring(2);
-              $(this).attr('href','/transcript?room=<?=$room?>&id='+id+'#c'+id);
-            });
-            if(!maxChatChangeID) $('#messages').children().first().next().filter('.spacer').remove();
-            if(!maxChatChangeID) $('#messages>.message').first().removeClass('merged');
-            if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
-            if(scroll){
-              if(maxChatChangeID){
-                //setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
-              }else{
-                //setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
-              }
-            }
+            processNewChat(scroll);
             <?if($auth){?>
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
@@ -415,20 +436,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
+      function processNotifications(){
+        $('#notification-wrapper .markdown').renderMarkdown();
+        $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+        <?if($auth){?>
+          $('#notification-wrapper a[data-room]').click(function(){
+            $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
+            return false;
+          });
+        <?}?>
+        $('#notifications>.message').addClass('processed');
+      }
       function updateNotifications(){
         $.get('/notification?room=<?=$room_id?>',function(r){
-          var scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
           $('#notification-wrapper').replaceWith(r);
-          $('#notification-wrapper .markdown').renderMarkdown();
-          $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-          <?if($auth){?>
-            $('#notification-wrapper a[data-room]').click(function(){
-              $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
-              return false;
-            });
-          <?}?>
-          if(scroll){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); }
-          if(scroll) setTimeout(function(){ $('#messages').css('scroll-behavior','auto'); $('#messages').scrollTop($('#messages').prop("scrollHeight")); $('#messages').css('scroll-behavior','smooth'); },0);
+          processNotifications();
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
@@ -444,7 +466,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             maxNotificationID = j.n;
           <?if(!$question){?>
             }else if((j.Q>maxQuestionPollMajorID)&&(questionPage===1)&&($('#search').val()==='')){
-              <?if($dev){?>console.log('updating questions');<?}?>
+              <?if($dev){?>console.log('updating questions because poll ('+j.Q+') > max ('+maxQuestionPollMajorID+')');<?}?>
               updateQuestions();
           <?}?>
           }else if(j.cc>maxChatChangeID){
@@ -564,7 +586,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('.ping').removeClass('ping');
         $('#replying').attr('data-id','').attr('data-name','').data('update')();
       });
-      $('.markdown').renderMarkdown();
+      //$('.markdown').renderMarkdown();
       $('#community').change(function(){
         <?if($auth){?>
           $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
@@ -664,6 +686,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
+      $('#dummyresizerx').remove();
+      $('#dummyresizery').remove();
       const qaAndChat = new Resizer('body', { width: 2, colour: 'black', full_length: true, callback: function(w) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); } });
       const notificationsAndChat = new Resizer('#chat-panels', { width: 2, colour: 'black', full_length: true, callback: function(y) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'chat_resizer', position: Math.round(y) }, xhrFields: { withCredentials: true } }); } });
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
@@ -710,11 +734,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           t.find('a').removeAttr('href');
         });
       <?}?>
-      $('#qa .summary span[data-markdown]').renderMarkdownSummary();
-      $('#qa .summary span[data-markdown]').each(function(){ alert('called'); });
-      updateChat(true);
-      updateNotifications();
-      <?if(!$question){?>updateQuestions(true);<?}?>
+      processNewQuestions(true);
+      $('#qa .post').find('.markdown[data-markdown]').renderMarkdown().end().addClass('processed');
+      processNewChat(true);
+      processNotifications();
+                $('#active-rooms>a[href]').click(function(){
+                  $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
+                  return false;
+                });
+      setChatPollTimeout();
       $('#se').click(function(){
         var t = $(this), f = t.closest('form')
           , ids = prompt('Enter question or answer id or url (and optionally further answer ids/urls from the same question) from <?=$sesite_url?>.\nSeparate each id/url with a space. No need to list your own answers; they will be imported automatically.');
@@ -871,7 +899,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               </div>
             </div>
           </div>
-          <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"><?=htmlspecialchars($question_markdown)?></div>
+          <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"><pre><?=htmlspecialchars($question_markdown)?></pre></div>
           <div class="bar">
             <div>
               <?if($question_is_votable){?>
@@ -959,7 +987,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
               </div>
             </div>
-            <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><?=htmlspecialchars($answer_markdown)?></div>
+            <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><pre><?=htmlspecialchars($answer_markdown)?></pre></div>
             <div class="bar">
               <div>
                 <?if(!$answer_account_is_me){?>
@@ -1005,10 +1033,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         <?}?>
       <?}else{?>
+        <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&page=1'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
         <div id='more'></div>
       <?}?>
     </div>
   </main>
+  <div id="dummyresizerx"></div>
   <div id="chat-wrapper" class="pane hidepane">
     <header>
       <div>
@@ -1032,12 +1062,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </header>
     <div id="chat">
       <div id="chat-panels">
-        <div id="notification-wrapper"></div>
+        <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+        <div id="dummyresizery" data-rz-handle="horizontal"></div>
         <div id="messages-wrapper">
           <div class="label"><?=$question?'Comments':'Chat'?>:</div>
           <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; padding: 0.5rem;">
-            <div style="flex: 1 0 0.5em;">
-              <?if($question&&!$room_has_chat){?>
+            <?if($room_has_chat){?>
+              <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+            <?}elseif($question){?>
+              <div style="flex: 1 0 0.5em;">
                 <div style="padding: 10vh 20%;">
                   <?if($auth){?>
                     <?if($question_se_question_id){?>
@@ -1052,11 +1085,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     <p>Once logged in you can direct comments to the question poster (or any answer poster) here.</p>
                   <?}?>
                 </div>
-              <?}?>
-            </div>
+              </div>
+            <?}?>
           </div>
           <?if($canchat){?>
-            <div id="preview" class="message" style="display: block; width: 100%; background: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
+            <div id="preview" class="message processed" style="display: block; width: 100%; background: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
               <div id="replying" style="width: 100%; font-style: italic; font-size: 10px;" data-id="">
                 <span>Preview:</span>
                 <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
@@ -1075,9 +1108,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       </div>
       <?if($auth){?>
         <div id="active">
-          <div id="active-rooms"></div>
+          <div id="active-rooms">
+            <?$ch = curl_init('http://127.0.0.1/chat?activerooms&room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+          </div>
           <div id="active-spacer"><div></div></div>
-          <div id="active-users"></div>
+          <div id="active-users">
+            <?$ch = curl_init('http://127.0.0.1/chat?activeusers&room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+          </div>
         </div>
       <?}?>
     </div>

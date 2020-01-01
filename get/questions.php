@@ -61,7 +61,7 @@ if($search){
                          , extract('epoch' from current_timestamp-at) gap
                     from answers($1)",$question_id) as $r){ extract($r,EXTR_PREFIX_ALL,'a');?>
         <div class="bar<?=$a_is_deleted?' deleted':''?>">
-          <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$a_id?>" class="element summary shrink">Answer: <span data-markdown="<?=htmlspecialchars(strtok($a_markdown,"\n\r"));?>"></span></a>
+          <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$a_id?>" class="element summary shrink">Answer: <span data-markdown="<?=htmlspecialchars(strtok($a_markdown,"\n\r"));?>"><?=htmlspecialchars(strtok($a_markdown,"\n\r"));?></span></a>
           <div>
             <span class="when element" data-seconds="<?=$a_gap?>"></span>
             <?if($a_votes){?>
