@@ -5,7 +5,7 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to question_history,pg_temp");
 ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
 extract(cdb("select account_id
-                   ,question_title
+                   ,question_id,question_title
                    ,community_name,community_display_name,community_code_language
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,colour_dark,colour_mid,colour_light,colour_highlight
@@ -75,7 +75,7 @@ extract(cdb("select account_id
   <header style="border-bottom: 2px solid black;">
     <div style="margin: 0.2rem;">
       <a href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=$community_display_name?></a>
-      <span>Question History for: "<a href="/<?=$community_name?>?q=<?=$id?>" style="color: #<?=$colour_mid?>;"><?=$question_title?></a>"</span>
+      <span>Question History for: "<a href="/<?=$community_name?>?q=<?=$question_id?>" style="color: #<?=$colour_mid?>;"><?=$question_title?></a>"</span>
     </div>
     <div style="display: flex; align-items: center;">
       <a href="/profile" class="icon"><img src="/identicon?id=<?=$account_id?>"></a>
