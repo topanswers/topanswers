@@ -387,7 +387,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
         if(!maxChatChangeID) $('#messages').children().first().next().filter('.spacer').remove();
         if(!maxChatChangeID) $('#messages>.message').first().removeClass('merged');
-        if(!maxChatChangeID) $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
+        $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
       }
       function updateChat(scroll){
         var maxChat = $('#messages>.message').last().data('id');
@@ -435,7 +435,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           var merged = $('#c'+id).hasClass('merged');
           $('#c'+id).replaceWith(r);
           if(merged) $('#c'+id).addClass('merged');
-          $('#c'+id).each(renderChat);
+          processNewChat();
+          $('#c'+id).css('opacity',1);
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
