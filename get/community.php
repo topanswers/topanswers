@@ -70,11 +70,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     [data-rz-handle='horizontal'] { margin: 7px 0; }
     [data-rz-handle='horizontal']:not(:hover):not(:active) { background: transparent !important; }
 
-    header, header>div, #qa .bar, #qa .bar>div, .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
+    header, header>div, #qa .bar, #qa .bar>div, .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
     header, #qa .bar>div:not(.shrink), .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
     header>div, #qa .bar.shrink, .container.shrink, .element.shrink { flex: 0 1 auto; }
 
-    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
+    header { min-height: 30px; flex-wrap: wrap; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
     main header { border-bottom: 2px solid black; }
     #chat-wrapper header { border-top: 2px solid black; }
     header a { color: #<?=$colour_light?>; }
@@ -117,7 +117,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #qa .title { border-bottom: 1px solid #<?=$colour_dark?>; font-size: 19px; padding: 8px }
     #qa .question>a { display: block; padding: 8px; border-bottom: 1px solid #<?=$colour_dark?>; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #qa .bar { height: 22px; background: #<?=$colour_light?>; justify-content: space-between; font-size: 12px; }
+    #qa .bar { height: 22px; background: #<?=$colour_light?>; font-size: 12px; }
     #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }
     #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
 
@@ -142,26 +142,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 4px; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
     #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px 0; }
+
+    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; margin: 0 16px; border-radius: 5px; background: #<?=$colour_light?>; }
+    #notification-wrapper:empty, #notification-wrapper:empty + [data-rz-handle] { display: none; }
+    #notification-wrapper .label { border-bottom: 1px solid #<?=$colour_dark?>; flex: 0 0 auto; }
+    #notifications { overflow-x: hidden; overflow-y: auto; }
+    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 5px; background: #<?=$colour_light?>; margin: 0 16px; }
+
     #chat-panels .message .who { top: -1.2em; }
     #chat-panels .markdown img { max-height: 7rem; }
     #chat-panels .message.thread .markdown { background: #<?=$colour_highlight?>40; }
-    #chattop-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; margin: 0 16px; border-radius: 5px; }
-    #chattop-wrapper .label { border-bottom: 1px solid #<?=$colour_dark?>; flex: 0 0 auto; }
-    #notification-wrapper:empty { display: none; }
-    #notification-wrapper:empty + #starboard-wrapper { display: flex; }
-    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 5px; background: #<?=$colour_light?>; margin: 0 16px; }
-
-    #starboard-wrapper { display: none; overflow: hidden; flex-direction: column; height: 100%; background: #<?=$colour_light?>; }
-    #starboard { background: #<?=$colour_mid?>; overflow-x: hidden; overflow-y: auto; }
-    #starboard .message { padding: 0.3em; border-bottom: 1px solid #<?=$colour_dark?>; padding-top: 1.3em; }
-    #starboard .message .button-group:not(:first-child) .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
-    #starboard .message .button-group:first-child { display: none; }
-    #starboard .message:not(:hover) .button-group:not(:first-child) { display: grid; }
-    #starboard .message:not(:hover) .button-group:not(:first-child) .fa-link { display: none; }
-    #chat-panels #starboard .message .who { top: 0.2rem; font-size: 12px; }
-
-    #notification-wrapper { display: flex; flex-direction: column; height: 100%; background: #<?=$colour_light?>; }
-    #notifications { overflow-x: hidden; overflow-y: auto; }
     #messages .message:not(:hover) .when { display: none; }
     #notifications .message { padding: 0.3em; border-bottom: 1px solid #<?=$colour_dark?>; }
     #notifications .message[data-type='chat'] { padding-top: 1.3em; }
@@ -466,19 +456,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
-      function processStarboard(){
-        $('#starboard-wrapper .markdown').renderMarkdown();
-        $('#starboard-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-        $('#starboard>.message').addClass('processed');
-        if($('#starboard>.message').length===0){ $('#starboard-wrapper').hide(); }
-      }
-      function updateStarboard(){
-        $.get('/starboard?room=<?=$room_id?>',function(r){
-          $('#starboard-wrapper').replaceWith(r);
-          processStarboard();
-          setChatPollTimeout();
-        }).fail(setChatPollTimeout);
-      }
       function checkChat(){
         $.get('/poll?room=<?=$room?>').done(function(r){
           var j = JSON.parse(r);
@@ -554,13 +531,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#chattext').val(m.find('.markdown').attr('data-markdown')).focus().trigger('input');
       });
       function starflag(t,action,direction){
-        var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id+',#s'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
+        var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
         m.css({'opacity':'0.3','pointer-events':'none'});
         $.post({ url: '//post.topanswers.xyz/chat', data: { action: ((direction===-1)?'un':'')+action, room: <?=$room?>, id: id }, xhrFields: { withCredentials: true } }).done(function(r){
-          m.css({ 'opacity':'1','pointer-events':'auto' }).toggleClass('me fa-'+action+' fa-'+action+'-o')
-           .each(function changecount(){ $(this).attr('data-count',(+$(this).attr('data-count'))+direction); })
-           .closest('.buttons').find('.button-group:first-child .'+action+'s[data-count]').toggleClass('me fa-'+action+' fa-'+action+'-o')
-           .each(function changecount(){ $(this).attr('data-count',(+$(this).attr('data-count'))+direction); });
+          m.css({ 'opacity':'1','pointer-events':'auto' }).toggleClass('me fa-'+action+' fa-'+action+'-o').closest('.buttons').find('.button-group:first-child .'+action+'s[data-count]').toggleClass('me fa-'+action+' fa-'+action+'-o')
         });
       };
       $('#chat-wrapper').on('click','.fa-star-o', function(){ starflag($(this),'star',1); });
@@ -766,7 +740,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#qa .post').find('.markdown[data-markdown]').renderMarkdown().end().addClass('processed');
       processNewChat(true);
       processNotifications();
-      processStarboard();
                 $('#active-rooms>a[href]').click(function(){
                   $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
                   return false;
@@ -1082,7 +1055,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?}?>
           </select>
         <?}?>
-        <a class="element" href="/transcript?room=<?=$room?>">transcript</a>
       </div>
       <div>
         <input class="panecontrol element" type="button" value="questions" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');">
@@ -1091,13 +1063,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </header>
     <div id="chat">
       <div id="chat-panels">
-        <div id="chattop-wrapper">
-          <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-          <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-        </div>
+        <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>                                                                      
         <div id="dummyresizery" data-rz-handle="horizontal"></div>
         <div id="messages-wrapper">
-          <div class="label"><?=$question?'Comments':'Chat'?>:</div>
+          <div class="label container">
+            <div class="element"><?=$question?'Comments':'Chat'?>:</div>
+            <div class="element"><a class="element" href="/transcript?room=<?=$room?>">transcript</a></div>
+          </div>
           <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; padding: 0.5rem;">
             <?if($room_has_chat){?>
               <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
