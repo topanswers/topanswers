@@ -310,6 +310,20 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         newquestions.addClass('processed');
         setChatPollTimeout();
       }
+      function paginateQuestions(n){
+        var m = $('#qa').children('.question').data('of')
+          , p = Math.ceil(m/10)
+          , d = (n<7)?[8,8,8,8,7,6][n-1]:((n>(p-6))?[8,8,8,8,7,5][p-n]:5)
+          , o = { items: m
+                , itemsOnPage: 10
+                , currentPage: n
+                , prevText: '«'
+                , nextText: '»'
+                , ellipsePageSet: false
+                , displayedPages: d
+                , onPageClick: function(n){ questionPage = n; $('#qa').children('.question').remove(); updateQuestions(true); return false; } };
+        $('#more').show().pagination(o);
+      }
       function updateQuestions(scroll){
         var maxQuestion = $('#qa>:first-child').data('poll-major-id'), full = $('#qa').children('.question').length===0;
         if($('#qa').scrollTop()<100) scroll = true;
@@ -319,23 +333,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
             newquestions = $(data).filter('.question').each(renderQuestion).prependTo($('#qa')).hide().slideDown(full?0:400);
             processNewQuestions();
+            paginateQuestions(questionPage);
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
-          setChatPollTimeout();
-          (function more(n){
-            var m = $('#qa').children('.question').data('of')
-              , p = Math.ceil(m/10)
-              , d = (n<7)?[8,8,8,8,7,6][n-1]:((n>(p-6))?[8,8,8,8,7,5][p-n]:5)
-              , o = { items: m
-                    , itemsOnPage: 10
-                    , currentPage: n
-                    , prevText: '«'
-                    , nextText: '»'
-                    , ellipsePageSet: false
-                    , displayedPages: d
-                    , onPageClick: function(n){ questionPage = n; $('#qa').children('.question').remove(); updateQuestions(true); return false; } };
-            $('#more').show().pagination(o);
-          })(questionPage);
         },'html').fail(setChatPollTimeout);
       }
       function searchQuestions(){
@@ -762,6 +762,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
       <?}?>
       processNewQuestions(true);
+      paginateQuestions(questionPage);
       $('#qa .post').find('.markdown[data-markdown]').renderMarkdown().end().addClass('processed');
       processNewChat(true);
       processNotifications();
