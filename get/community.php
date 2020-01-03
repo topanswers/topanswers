@@ -381,6 +381,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function updateChat(scroll){
         var maxChat = $('#messages>.message').last().data('id');
+        if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
         $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message').last().data('id')===maxChat){
             var newchat;
