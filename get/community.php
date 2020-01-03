@@ -332,7 +332,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $.get('/questions?community=<?=$community_name?>&search='+$('#search').val(),function(data) {
           $('#qa>.question').remove();
           $(data).filter('.question').prependTo($('#qa'));
-          $('#qa>.question').each(renderQuestion);
+          processNewQuestions();
           $('#more').hide();
         },'html');
       }
