@@ -1072,6 +1072,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
           <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; padding: 0.5rem;">
             <?if($room_has_chat){?>
+              <div style="flex: 1 0 0;"></div>
               <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
             <?}elseif($question){?>
               <div style="flex: 1 0 0.5em;">
