@@ -434,7 +434,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#q'+id).css('opacity',0.5);
         $.get('/questions?one&community=<?=$community_name?>&id='+id,function(r){
           $('#q'+id).replaceWith(r);
-          $('#q'+id).each(renderQuestion);
+          processNewQuestions()
+          $('#q'+id).css('opacity',1);
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
