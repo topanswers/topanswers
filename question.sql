@@ -9,7 +9,7 @@ create view codelicense with (security_barrier) as select codelicense_id,codelic
 create view one with (security_barrier) as
 select account_id,account_license_id,account_codelicense_id,community_id,community_name,community_code_language
       ,sesite_url
-      ,question_id,question_type,question_title,question_markdown,question_license_name,question_se_question_id,question_communicant_se_user_id
+      ,question_id,question_type,question_title,question_markdown,question_license_name,question_se_question_id
       ,question_is_deleted,question_answered_by_me,question_is_blog,question_is_meta
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,question_license_href,question_has_codelicense,question_codelicense_name
@@ -34,7 +34,6 @@ from db.community
                              , account_id question_account_id
                              , account_name question_account_name
                              , account_is_imported question_account_is_imported
-                             , communicant_se_user_id question_communicant_se_user_id
                              , exists(select 1 from db.answer a natural join db.login where login_uuid=get_login_uuid() and a.question_id=q.question_id) question_answered_by_me
                              , question_crew_flags>0 question_is_deleted
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
@@ -109,10 +108,6 @@ create function remove_tag(tid integer) returns void language sql security defin
   update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
 $$;
 --
-create function new_sequestion_tag(qid integer, tid integer, uid integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
-  select _new_question_tag(uid,qid,tid);
-$$;
---
 create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer)
                 returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
@@ -131,24 +126,6 @@ $$;
 create function new(typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
   select _error(429,'rate limit') where exists (select 1 from question where account_id=get_account_id() and question_at>current_timestamp-'5m'::interval);
   select _new_question(get_community_id(),get_account_id(),typ,title,markdown,lic,codelic,null);
-$$;
---
-create function new_sequestion(title text, markdown text, tags text, seqid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
-  select _error(400,'already imported') where exists (select 1 from question where community_id=get_community_id() and question_se_question_id=seqid);
-  --
-  with u as (select _create_seuser(get_community_id(),seuid,seuname) uid)
-     , q as (select uid, _new_question(get_community_id(),uid,'question',title,markdown,4,1,seqid) qid from u)
-     , t as (select new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=get_community_id())
-  select qid from q cross join (select count(1) cn from t) z;
-$$;
---
-create function new_sequestionanon(title text, markdown text, tags text, seqid integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
-  select _error(400,'already imported') where exists (select 1 from question where community_id=get_community_id() and question_se_question_id=seqid);
-  --
-  with u as (select account_id uid from communicant where community_id=get_community_id() and communicant_se_user_id=0)
-     , q as (select uid, _new_question(get_community_id(),uid,'question',title,markdown,4,1,seqid) qid from u)
-     , t as (select new_sequestion_tag(qid,tag_id,uid) from q cross join tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=get_community_id())
-  select qid from q cross join (select count(1) cn from t) z;
 $$;
 --
 create function change(title text, markdown text) returns void language sql security definer set search_path=db,api,pg_temp as $$
@@ -250,14 +227,6 @@ create function flag(direction integer) returns void language sql security defin
   update account set account_notification_id = default where account_id in (select account_id from qfn);
 $$;
 --
-create function new_import(qid text, aids text) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  insert into import(account_id,community_id,import_qid,import_aids) values(get_account_id(),get_community_id(),coalesce(qid,''),coalesce(aids,''));
-$$;
---
-create function get_sequestion(id integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select question_id from question where question_se_question_id=id;
-$$;
---
 create function _new_answer(qid integer, aid integer, markdown text, lic integer, codelic integer, seaid integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid question') where not exists (select 1 from question where question_id=qid and community_id=get_community_id());
@@ -270,16 +239,6 @@ create function _new_answer(qid integer, aid integer, markdown text, lic integer
              returning account_id)
      , a as (update account set account_notification_id = default where account_id in (select account_id from n))
   select answer_id from i;
-$$;
---
-create function new_seanswer(qid integer, markdown text, seaid integer, seuid integer, seuname text) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
-  select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
-  select _new_answer(qid,_create_seuser(community_id,seuid,seuname),markdown,4,1,seaid) from question where question_id=qid;
-$$;
---
-create function new_seansweranon(qid integer, markdown text, seaid integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
-  select _error(400,'already imported') where exists (select 1 from answer natural join (select question_id,community_id from question) q where question_id=qid and answer_se_answer_id=seaid);
-  select _new_answer(qid,(select account_id from communicant where community_id=question.community_id and communicant_se_user_id=0),markdown,4,1,seaid) from question where question_id=qid;
 $$;
 --
 --

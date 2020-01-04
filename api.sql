@@ -155,22 +155,6 @@ create function _ensure_communicant(aid integer, cid integer) returns void langu
   on conflict on constraint communicant_pkey do nothing;
 $$;
 --
-create function _create_seuser(cid integer, seuid integer, seuname text) returns integer language plpgsql security definer set search_path=db,post,pg_temp as $$
-declare
-  id integer;
-begin
-  if exists(select 1 from communicant where community_id=cid and communicant_se_user_id=seuid) then
-    select account_id from communicant where community_id=cid and communicant_se_user_id=seuid into id;
-  else
-    insert into account(account_name,account_license_id,account_codelicense_id,account_is_imported) values(trim(regexp_replace(seuname,'-|\.',' ','g')),4,1,true) returning account_id into id;
-    --
-    insert into communicant(account_id,community_id,communicant_se_user_id,communicant_regular_font_id,communicant_monospace_font_id)
-    select id,cid,seuid,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
-  end if;
-  return id;
-end;
-$$;
---
 --
 revoke all on all functions in schema api from public;
 do $$

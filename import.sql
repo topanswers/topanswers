@@ -5,7 +5,7 @@ set local search_path to import,api,pg_temp;
 --
 create view one with (security_barrier) as
 select communicant_se_user_id,sesite_url
-from (select community_id from db.community where community_id=get_community_id()) c
+from (select community_id,community_sesite_id from db.community where community_id=get_community_id()) c
      natural join (select account_id from db.account where account_id=get_account_id()) a
      natural join (select account_id,community_id,communicant_se_user_id from db.communicant) co
      natural join (select sesite_id community_sesite_id, sesite_url from db.sesite) s;
@@ -87,6 +87,18 @@ $$;
 --
 create function get_answer(id integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select answer_id from answer where question_id=get_question_id() and answer_se_answer_id=id;
+$$;
+--
+create function get_sequestion_for_redate() returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select question_se_question_id from question where question_id=get_question_id();
+$$;
+--
+create function change_question_at_for_redate(nat timestamptz) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  update question set question_at = nat where question_id=get_question_id();
+$$;
+--
+create function change_answer_at_for_redate(id integer, nat timestamptz) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  update answer set answer_at = nat where answer_id=id;
 $$;
 --
 --

@@ -134,5 +134,36 @@ switch($_POST['action']) {
     }
     header('Location: //topanswers.xyz/'.$_POST['community'].'?q='.$id);
     exit;
+  case 'redate':
+    ccdb("select login_question($1::uuid,$2)",$_COOKIE['uuid'],$_POST['id']) || fail(403,'access denied');
+    $seqid = ccdb("select get_sequestion_for_redate()");
+    libxml_use_internal_errors(true);
+    // get the timestamp for the question
+    $doc = new DOMDocument();
+    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
+    $xpath = new DOMXpath($doc);
+    $elements = $xpath->query("//div[@id='question']//div[contains(concat(' ', @class, ' '), ' owner ')]//div[contains(concat(' ', @class, ' '), ' user-action-time ')]/span");
+    $at = $elements[0]->getAttribute('title');
+    // get every answer id with matching timestamp
+    $answers = [];
+    $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ')]/@id");
+    foreach($elements as $element){
+      $answers[explode('-',$element->textContent)[1]]['at'] = ($xpath->query("//div[@id='".$element->textContent."']//time[@itemprop='dateCreated']"))[0]->getAttribute('datetime');
+    }
+    db("select change_question_at_for_redate($1)",$at);
+    // generate an array of answers to import
+    $aids = [];
+    $doc = new DOMDocument();
+    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
+    $xpath = new DOMXpath($doc);
+    $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ')]");
+    foreach($elements as $element) array_push($aids,explode('-',$element->getAttribute('id'))[1]);
+    // redate each selected answer
+    foreach($aids as $aid){
+      $answer_id = ccdb("select get_answer($1)",$aid);
+      if($answer_id) db("select change_answer_at_for_redate($1,$2)",$answer_id,$answers[$aid]['at']);
+    }
+    echo 'done';
+    exit;
   default: fail(400,'unrecognized action');
 }
