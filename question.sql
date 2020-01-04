@@ -227,20 +227,6 @@ create function flag(direction integer) returns void language sql security defin
   update account set account_notification_id = default where account_id in (select account_id from qfn);
 $$;
 --
-create function _new_answer(qid integer, aid integer, markdown text, lic integer, codelic integer, seaid integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid question') where not exists (select 1 from question where question_id=qid and community_id=get_community_id());
-  select _ensure_communicant(aid,get_community_id());
-  --
-  with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_se_answer_id) values(qid,aid,markdown,lic,codelic,seaid) returning answer_id)
-     , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,aid,markdown from i returning answer_id,answer_history_id)
-     , n as (insert into answer_notification(answer_history_id,account_id)
-             select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=qid and account_id<>get_account_id()) z
-             returning account_id)
-     , a as (update account set account_notification_id = default where account_id in (select account_id from n))
-  select answer_id from i;
-$$;
---
 --
 revoke all on all functions in schema community from public;
 do $$

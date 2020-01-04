@@ -89,18 +89,6 @@ create function get_answer(id integer) returns integer language sql security def
   select answer_id from answer where question_id=get_question_id() and answer_se_answer_id=id;
 $$;
 --
-create function get_sequestion_for_redate() returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select question_se_question_id from question where question_id=get_question_id();
-$$;
---
-create function change_question_at_for_redate(nat timestamptz) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  update question set question_at = nat where question_id=get_question_id();
-$$;
---
-create function change_answer_at_for_redate(id integer, nat timestamptz) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  update answer set answer_at = nat where answer_id=id;
-$$;
---
 --
 revoke all on all functions in schema community from public;
 do $$
