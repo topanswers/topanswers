@@ -5,7 +5,7 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to answer_history,pg_temp");
 ccdb("select login_answer(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
 extract(cdb("select account_id
-                   ,answer_id
+                   ,answer_id,answer_is_imported
                    ,question_id,question_title
                    ,community_name,community_display_name,community_code_language
                    ,my_community_regular_font_name,my_community_monospace_font_name
@@ -86,6 +86,7 @@ extract(cdb("select account_id
       <?$rowoffset = 3*$i;?>
       <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
         <div class="who"><?=htmlspecialchars($account_name)?></div>
+        <div><?=($rn===1)?($answer_is_imported?'imported':'answered'):'edited'?></div>
         <div class="when"><?=$answer_history_at?></div>
       </div>
       <textarea data-grid-area="<?=(1+$rowoffset)?> / 2 / span 1 / 3"><?=htmlspecialchars($answer_history_markdown)?></textarea>

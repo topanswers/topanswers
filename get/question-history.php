@@ -5,7 +5,7 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to question_history,pg_temp");
 ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
 extract(cdb("select account_id
-                   ,question_id,question_title
+                   ,question_id,question_title,question_is_imported
                    ,community_name,community_display_name,community_code_language
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,colour_dark,colour_mid,colour_light,colour_highlight
@@ -87,6 +87,7 @@ extract(cdb("select account_id
       <?$rowoffset = 5*$i;?>
       <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
         <div class="who"><?=htmlspecialchars($account_name)?></div>
+        <div><?=($rn===1)?($question_is_imported?'imported':'asked'):'edited'?></div>
         <div class="when"><?=$question_history_at?></div>
       </div>
       <div style="grid-area: <?=(1+$rowoffset)?> / 2 / span 1 / 4;" class="title"><?=htmlspecialchars($question_history_title)?></div>

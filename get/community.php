@@ -845,8 +845,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($communicant_can_import&&$sesite_url&&!$question){?>
-          <form method="post" action="//post.topanswers.xyz/question">
-            <input type="hidden" name="action" value="new-se">
+          <form method="post" action="//post.topanswers.xyz/import">
+            <input type="hidden" name="action" value="new">
             <input type="hidden" name="community" value="<?=$community_name?>">
             <input type="hidden" name="seids" value="">
             <input id="se" class="element" type="submit" value="import from SE">
@@ -963,7 +963,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                            , answer_account_id=$1 answer_account_is_me
                            , answer_crew_flags>0 answer_is_deleted
                            , extract('epoch' from current_timestamp-answer_at) answer_when
-                           , answer_codelicense_name is not null and answer_codelicense_name<>answer_license_name answer_has_codelicense
+                           , answer_codelicense_id<>1 and answer_codelicense_name<>answer_license_name answer_has_codelicense
                            , answer_active_flags>(answer_i_flagged::integer) answer_other_flags
                       from answer
                       order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$account_id) as $i=>$r){ extract($r);?>

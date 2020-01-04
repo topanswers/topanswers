@@ -14,6 +14,7 @@ where question_id=get_question_id();
 --
 create view one with (security_barrier) as
 select question_id,question_title
+     , question_se_question_id is not null question_is_imported
       ,account_id
       ,community_id,community_name,community_display_name,community_code_language
      , encode(community_dark_shade,'hex') colour_dark
@@ -22,7 +23,7 @@ select question_id,question_title
      , encode(community_highlight_color,'hex') colour_highlight
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-from (select community_id,question_id,question_title from _question natural join db.question) q
+from (select community_id,question_id,question_title,question_se_question_id from _question natural join db.question) q
      natural join db.community
      natural join (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant

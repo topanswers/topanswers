@@ -13,6 +13,7 @@ where answer_id=get_answer_id();
 --
 create view one with (security_barrier) as
 select answer_id
+     , answer_se_answer_id is not null answer_is_imported
       ,question_id,question_title
       ,account_id
       ,community_id,community_name,community_display_name,community_code_language
@@ -22,7 +23,7 @@ select answer_id
      , encode(community_highlight_color,'hex') colour_highlight
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-from (select answer_id,question_id from db.answer where answer_id=get_answer_id()) a
+from (select answer_id,question_id,answer_se_answer_id from db.answer where answer_id=get_answer_id()) a
      natural join (select community_id,question_id,question_title from _question natural join db.question) q
      natural join db.community
      natural join (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) ac

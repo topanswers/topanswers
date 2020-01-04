@@ -229,6 +229,7 @@ create table question(
 , question_flags integer default 0 not null
 , question_crew_flags integer default 0 not null
 , question_active_flags integer default 0 not null
+, question_se_imported_at timestamptz
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
@@ -263,6 +264,7 @@ create table answer(
 , answer_active_flags integer default 0 not null
 , license_id integer references license not null
 , codelicense_id integer references codelicense not null
+, answer_se_imported_at timestamptz
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 

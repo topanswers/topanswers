@@ -36,6 +36,7 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , account_name answer_account_name
      , license_name answer_license_name
      , license_href answer_license_href
+     , codelicense_id answer_codelicense_id
      , codelicense_name answer_codelicense_name
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
