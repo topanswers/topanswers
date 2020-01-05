@@ -16,11 +16,10 @@ extract(cdb("select account_id from one"));
   <style>
     *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: source-sans-pro, serif; font-size: 16px; }
-    html, body { margin: 0; padding: 0; }
+    html, body { margin: 0; padding: 0; background: lightgrey; }
     header, header>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
-    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; border-bottom: 2px solid black; }
-    header a { color: #<?=$colour_light?>; }
-    main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; margin: 5vh 20vw; }
+    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: lightgrey; white-space: nowrap; border-bottom: 2px solid black; }
+    main { background: white; scroll-behavior: smooth; margin: 5vh 20vw; padding: 1px 24px; border-radius: 5px; }
     .frame { display: inline-block; border: 1px solid black; margin: 2px; outline: 1px solid #00000040; background-color: white; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
     .element { margin: 0 4px; }
@@ -78,7 +77,7 @@ extract(cdb("select account_id from one"));
     <p>We aren't a clone though; we diverge in important areas:</p>
     <ul>
       <li>We are not for-profit, so contributors will never be the 'product', and our core aims will not evolve over time.</li>
-      <li>As much as possible of our platform <a href="/meta?q=2">will be published as open source</a>.</li>
+      <li>As much as possible of our platform <a href="/meta?q=28">will be published as open source</a>.</li>
       <li>We've improved the focus on Q&A by moving comments to the side.</li>
       <li>You are <a href="/meta?q=18#a8">free to decide how to license your content<a>.</li>
     </ul>
