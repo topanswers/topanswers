@@ -25,7 +25,8 @@ extract(cdb("select account_id
     *:not(hr) { box-sizing: inherit; }
     html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; white-space: nowrap; }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; color: #<?=$colour_light?>; background: #<?=$colour_dark?>; white-space: nowrap; }
+    header a { color: #<?=$colour_light?>; }
     header>div>:not(.icon) { margin: 3px; }
     header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }
     header .icon>img { background: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
@@ -74,8 +75,8 @@ extract(cdb("select account_id
 <body style="font-size: larger; background-color: #<?=$colour_light?>;">
   <header style="border-bottom: 2px solid black;">
     <div style="margin: 0.2rem;">
-      <a href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=$community_display_name?></a>
-      <span>Question History for: "<a href="/<?=$community_name?>?q=<?=$question_id?>" style="color: #<?=$colour_mid?>;"><?=$question_title?></a>"</span>
+      <a href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>
+      <span>Question History for: "<a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a>"</span>
     </div>
     <div style="display: flex; align-items: center;">
       <a href="/profile" class="icon"><img src="/identicon?id=<?=$account_id?>"></a>
