@@ -85,14 +85,14 @@ extract(cdb("select account_id
       <?$rowspan = ($rn>1)?2:1;?>
       <?$rowoffset = 3*$i;?>
       <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
-        <div class="who"><?=htmlspecialchars($account_name)?></div>
+        <div class="who"><?=$account_name?></div>
         <div><?=($rn===1)?($answer_is_imported?'imported':'answered'):'edited'?></div>
         <div class="when"><?=$answer_history_at?></div>
       </div>
-      <textarea data-grid-area="<?=(1+$rowoffset)?> / 2 / span 1 / 3"><?=htmlspecialchars($answer_history_markdown)?></textarea>
+      <textarea data-grid-area="<?=(1+$rowoffset)?> / 2 / span 1 / 3"><?=$answer_history_markdown?></textarea>
       <div style="grid-area: <?=(1+$rowoffset)?> / 3 / span 1 / 4; overflow: hidden;" class="markdown"></div>
       <?if($rn>1){?>
-        <div id="h<?=$answer_history_id?>" style="grid-area: <?=(2+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($answer_history_markdown)?>"></div>
+        <div id="h<?=$answer_history_id?>" style="grid-area: <?=(2+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=$prev_markdown?>" data-to="<?=$answer_history_markdown?>"></div>
       <?}?>
       <div style="grid-area: <?=(1+$rowspan+$rowoffset)?> / 1 / span 1 / 4;" class="separator"></div>
     <?}?>

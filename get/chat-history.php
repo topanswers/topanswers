@@ -82,10 +82,10 @@ extract(cdb("select account_id
       <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
         <div class="when"><?=$chat_history_at?></div>
       </div>
-      <textarea data-grid-area="<?=(1+$rowoffset)?> / 2 / span 1 / 3"><?=htmlspecialchars($chat_history_markdown)?></textarea>
+      <textarea data-grid-area="<?=(1+$rowoffset)?> / 2 / span 1 / 3"><?=$chat_history_markdown?></textarea>
       <div style="grid-area: <?=(1+$rowoffset)?> / 3 / span 1 / 4; overflow: hidden;" class="markdown"></div>
       <?if($rn>1){?>
-        <div style="grid-area: <?=(2+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($chat_history_markdown)?>"></div>
+        <div style="grid-area: <?=(2+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=$prev_markdown?>" data-to="<?=$chat_history_markdown?>"></div>
       <?}?>
       <div style="grid-area: <?=(1+$rowspan+$rowoffset)?> / 1 / span 1 / 4;" class="separator"></div>
     <?}?>

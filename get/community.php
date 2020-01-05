@@ -862,15 +862,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                                              ?><?=$question_i_flagged?' flagged':''?><?
                                                              ?><?=$question_i_counterflagged?' counterflagged':''?><?
                                                              ?><?=$question_is_deleted?' deleted':''?>">
-          <div class="title"><?=(($question_is_meta&&($community_name!=='meta'))?'Meta Question: ':'').($question_is_blog?'Blog Post: ':'').htmlspecialchars($question_title)?></div>
+          <div class="title"><?=(($question_is_meta&&($community_name!=='meta'))?'Meta Question: ':'').($question_is_blog?'Blog Post: ':'').$question_title?></div>
           <div class="bar">
             <div>
               <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
               <span class="element">
                 <?if($question_account_is_imported){?>
-                  <span><?if($question_communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_communicant_se_user_id?>"><?=htmlspecialchars($question_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                  <span><?if($question_communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_communicant_se_user_id?>"><?=$question_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
                 <?}else{?>
-                  <span><?=htmlspecialchars($question_account_name)?></span>
+                  <span><?=$question_account_name?></span>
                 <?}?>
               </span>
               <span class="element">
@@ -903,7 +903,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               </div>
             </div>
           </div>
-          <div id="markdown" class="markdown" data-markdown="<?=htmlspecialchars($question_markdown)?>"><pre><?=htmlspecialchars($question_markdown)?></pre></div>
+          <div id="markdown" class="markdown" data-markdown="<?=$question_markdown?>"><pre><?=$question_markdown?></pre></div>
           <div class="bar">
             <div>
               <?if($question_is_votable){?>
@@ -983,15 +983,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 </span>
                 <span class="element">
                   <?if($answer_account_is_imported){?>
-                    <span><?if($answer_communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_communicant_se_user_id?>"><?=htmlspecialchars($answer_account_name)?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                    <span><?if($answer_communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_communicant_se_user_id?>"><?=$answer_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
                   <?}else{?>
-                    <span><?=htmlspecialchars($answer_account_name)?></span>
+                    <span><?=$answer_account_name?></span>
                   <?}?>
                 </span>
                 <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
               </div>
             </div>
-            <div class="markdown" data-markdown="<?=htmlspecialchars($answer_markdown)?>"><pre><?=htmlspecialchars($answer_markdown)?></pre></div>
+            <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre><?=$answer_markdown?></pre></div>
             <div class="bar">
               <div>
                 <?if(!$answer_account_is_me){?>

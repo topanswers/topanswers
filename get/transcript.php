@@ -165,7 +165,7 @@ if(isset($_GET['month'])){
           <div id="c<?=$chat_id?>" class="message" data-id="<?=$chat_id?>" data-name="<?=$account_name?>">
             <img class="icon" src="/identicon?id=<?=$account_id?>">
             <div class="markdown-wrapper">
-              <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+              <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
             </div>
             <span class="buttons">
               <span class="button-group show">
@@ -259,7 +259,7 @@ if(isset($_GET['month'])){
             </small>
             <img class="icon" src="/identicon?id=<?=$account_id?>">
             <div class="markdown-wrapper">
-              <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+              <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
             </div>
             <span class="buttons">
               <span class="button-group show">

@@ -6,7 +6,7 @@ if(!isset($_GET['room'])) die('room not set');
 db("set search_path to chat,pg_temp");
 $authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 extract(cdb("select account_is_dev,community_name,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight from one"));
-if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]') from chat where chat_change_id>$1",$_GET['fromid']));
+if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from chat where chat_change_id>$1",$_GET['fromid']));
 if(isset($_GET['quote'])) exit(ccdb("select quote($1)",$_GET['id']));
 if(isset($_GET['activerooms'])){
   foreach(db("select room_id,room_name,community_colour,room_account_unread_messages from activerooms()") as $r){ extract($r);?>
@@ -38,7 +38,7 @@ $id = $_GET['id']??ccdb("select recent()");
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
     <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="icon" src="/identicon?id=<?=$account_id?>">
-    <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=htmlspecialchars($chat_markdown)?>"><pre><?=htmlspecialchars($chat_markdown)?></pre></div>
+    <div class="markdown<?=($rn==="1")?'':' nofiddle'?>" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
     <?if($authenticated){?>
       <span class="buttons">
         <span class="button-group show">

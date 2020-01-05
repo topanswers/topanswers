@@ -19,7 +19,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <span class="when element" style="color: #<?=$colour_dark?>b0" data-at="<?=$chat_at_iso?>"></span>
           </span>
           <img title="<?=($account_name)?$account_name:'Anonymous'?>" class="icon" src="/identicon?id=<?=$account_id?>">
-          <div class="markdown" data-markdown="<?=htmlspecialchars($chat_markdown)?>"></div>
+          <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
           <span class="buttons">
             <span class="button-group show">
               <i></i>

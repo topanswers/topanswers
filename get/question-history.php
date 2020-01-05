@@ -86,16 +86,16 @@ extract(cdb("select account_id
       <?$rowspan = ($rn>1)?4:2;?>
       <?$rowoffset = 5*$i;?>
       <div style="grid-area: <?=(1+$rowoffset)?> / 1 / <?=(1+$rowspan+$rowoffset)?> / 2;">
-        <div class="who"><?=htmlspecialchars($account_name)?></div>
+        <div class="who"><?=$account_name?></div>
         <div><?=($rn===1)?($question_is_imported?'imported':'asked'):'edited'?></div>
         <div class="when"><?=$question_history_at?></div>
       </div>
-      <div style="grid-area: <?=(1+$rowoffset)?> / 2 / span 1 / 4;" class="title"><?=htmlspecialchars($question_history_title)?></div>
-      <textarea data-grid-area="<?=(2+$rowoffset)?> / 2 / span 1 / 3"><?=htmlspecialchars($question_history_markdown)?></textarea>
+      <div style="grid-area: <?=(1+$rowoffset)?> / 2 / span 1 / 4;" class="title"><?=$question_history_title?></div>
+      <textarea data-grid-area="<?=(2+$rowoffset)?> / 2 / span 1 / 3"><?=$question_history_markdown?></textarea>
       <div style="grid-area: <?=(2+$rowoffset)?> / 3 / span 1 / 4; overflow: hidden;" class="markdown"></div>
       <?if($rn>1){?>
-        <div id="h<?=$question_history_id?>" style="grid-area: <?=(3+$rowoffset)?> / 2 / span 1 / 4;" class="diff" data-from="<?=htmlspecialchars($prev_title)?>" data-to="<?=htmlspecialchars($question_history_title)?>"></div>
-        <div style="grid-area: <?=(4+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=htmlspecialchars($prev_markdown)?>" data-to="<?=htmlspecialchars($question_history_markdown)?>"></div>
+        <div id="h<?=$question_history_id?>" style="grid-area: <?=(3+$rowoffset)?> / 2 / span 1 / 4;" class="diff" data-from="<?=$prev_title?>" data-to="<?=$question_history_title?>"></div>
+        <div style="grid-area: <?=(4+$rowoffset)?> / 2 / span 1 / 4; overflow: hidden;" class="diff" data-from="<?=$prev_markdown?>" data-to="<?=$question_history_markdown?>"></div>
       <?}?>
       <div style="grid-area: <?=(1+$rowspan+$rowoffset)?> / 1 / span 1 / 4;" class="separator"></div>
     <?}?>
