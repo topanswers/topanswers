@@ -218,11 +218,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     .pane { display: flex; }
     .panecontrol { display: none; }
-    @media (max-width: 1024px){
-      html, body { height: calc(100vh - 58px); }
-    }
     @media (max-width: 576px){
-      html, body { height: calc(100vh - 76px); }
       .hidepane { display: none; }
       .panecontrol { display: unset; }
       textarea,select,input { font-size: 16px; }
@@ -255,6 +251,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
+
+      $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
 
       <?if($clearlocal){?>
         localStorage.removeItem('<?=$clearlocal?>');
