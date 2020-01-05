@@ -161,7 +161,7 @@ create function recent(page integer) returns table (startid integer, endid integ
   select coalesce(min(question_poll_major_id),0)::integer,coalesce(max(question_poll_major_id),0)::integer from (select question_poll_major_id from questions.question order by question_poll_major_id desc offset (page-1)*10 limit 10) z;
 $$;
 --
-revoke all on all functions in schema community from public;
+revoke all on all functions in schema questions from public;
 do $$
 begin
   execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='questions' and viewname!~'^_');

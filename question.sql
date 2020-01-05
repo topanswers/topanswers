@@ -49,7 +49,7 @@ create function login_community(uuid,text) returns boolean language sql security
 create function login_question(uuid,integer) returns boolean language sql security definer as $$select api.login_question($1,$2);$$;
 --
 --
-revoke all on all functions in schema community from public;
+revoke all on all functions in schema question from public;
 do $$
 begin
   execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='question' and viewname!~'^_');

@@ -31,6 +31,7 @@ where room_id=get_room_id();
 create function login_room(uuid,integer) returns boolean language sql security definer as $$select api.login_room($1,$2);$$;
 --
 --
+revoke all on all functions in schema starboard from public;
 do $$
 begin
   execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='starboard' and viewname!~'^_');

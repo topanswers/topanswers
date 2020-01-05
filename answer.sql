@@ -33,7 +33,7 @@ create function login_question(uuid,integer) returns boolean language sql securi
 create function login_answer(uuid,integer) returns boolean language sql security definer as $$select api.login_answer($1,$2);$$;
 --
 --
-revoke all on all functions in schema community from public;
+revoke all on all functions in schema answer from public;
 do $$
 begin
   execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='answer' and viewname!~'^_');
