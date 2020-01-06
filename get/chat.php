@@ -7,7 +7,7 @@ db("set search_path to chat,pg_temp");
 $authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 extract(cdb("select account_is_dev,community_name,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight from one"));
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from chat where chat_change_id>$1",$_GET['fromid']));
-if(isset($_GET['quote'])) exit(ccdb("select quote($1)",$_GET['id']));
+if(isset($_GET['quote'])) exit(ccdb("select quote($1)::varchar",$_GET['id']));
 if(isset($_GET['activerooms'])){
   foreach(db("select room_id,room_name,community_colour,room_account_unread_messages from activerooms()") as $r){ extract($r);?>
     <a<?if($room_id!==intval($_GET['room'])){?> href="."<?}?> data-room="<?=$room_id?>"<?if($room_account_unread_messages>0){?> data-unread="<?=$room_account_unread_messages?>"<?}?>>
