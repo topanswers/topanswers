@@ -49,7 +49,7 @@ create function range(startid integer, endid integer)
                                   , question_communicant_votes integer
                                   , question_bump_when integer
                                   , question_bump_reason text
-                                  , question_tags json
+                                  , question_tags jsonb
                                    ) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   select question_id,question_at,question_votes,question_poll_major_id,question_poll_minor_id,account_id,account_name
        , (case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end)||question_title question_title
@@ -63,7 +63,7 @@ create function range(startid integer, endid integer)
                          else (case when question_change_at>question_at then 'edit' end)
                          end)
               end question_bump_reason
-       , (select json_agg(row_to_json(z)) from (with t as (select tag_id,tag_name,tag_implies_id,tag_question_count from db.question_tag_x x natural join db.tag t where t.community_id=q.community_id and x.question_id=q.question_id)
+       , (select jsonb_agg(row_to_json(z)) from (with t as (select tag_id,tag_name,tag_implies_id,tag_question_count from db.question_tag_x x natural join db.tag t where t.community_id=q.community_id and x.question_id=q.question_id)
                                                 select tag_id,tag_name from t where not exists (select 1 from t tt where tt.tag_implies_id=t.tag_id and tt.tag_name like t.tag_name||'%' order by tag_question_count desc)) z)
            question_tags
   from db.question q natural join api._question natural join db.account natural join db.community natural join db.communicant
@@ -90,7 +90,7 @@ create function search(text)
                                   , question_communicant_votes integer
                                   , question_bump_when integer
                                   , question_bump_reason text
-                                  , question_tags json
+                                  , question_tags jsonb
                                    ) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   with q as (select question_id, question_markdown txt, strict_word_similarity($1,question_markdown) word_similarity, similarity($1,question_markdown) similarity
              from db.question
@@ -114,7 +114,7 @@ create function search(text)
                          else (case when question_change_at>question_at then 'edit' end)
                          end)
               end question_bump_reason
-       , (select json_agg(row_to_json(z)) from (with t as (select tag_id,tag_name,tag_implies_id,tag_question_count from db.question_tag_x x natural join db.tag t where t.community_id=q.community_id and x.question_id=q.question_id)
+       , (select jsonb_agg(row_to_json(z)) from (with t as (select tag_id,tag_name,tag_implies_id,tag_question_count from db.question_tag_x x natural join db.tag t where t.community_id=q.community_id and x.question_id=q.question_id)
                                                 select tag_id,tag_name from t where not exists (select 1 from t tt where tt.tag_implies_id=t.tag_id and tt.tag_name like t.tag_name||'%' order by tag_question_count desc)) z)
            question_tags
   from s natural join db.question q natural join api._question natural join db.account natural join db.community natural join db.communicant

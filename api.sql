@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists poll cascade;
 drop schema if exists indx cascade;
 drop schema if exists import cascade;
 drop schema if exists starboard cascade;
@@ -184,5 +185,6 @@ end$$;
 \i ~/git/starboard.sql
 \i ~/git/import.sql
 \i ~/git/index.sql
+\i ~/git/poll.sql
 --
 commit;
