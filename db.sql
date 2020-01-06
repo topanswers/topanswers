@@ -236,6 +236,7 @@ create table question(
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
 create unique index question_se_question_id_ind on question(community_id,question_se_question_id);
+create unique index question_poll_major_id_ind on question(community_id,question_poll_major_id);
 create index question_search_title_ind on question using gin (community_id, question_title gin_trgm_ops);
 create index question_search_markdown_ind on question using gin (community_id, question_markdown gin_trgm_ops);
 create index question_room_id_fk_ind on question(question_room_id);

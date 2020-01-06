@@ -3,16 +3,32 @@ grant usage on schema questions to get;
 set local search_path to questions,api,pg_temp;
 --
 --
-create view question with (security_barrier) as select question_id,question_poll_major_id,question_poll_minor_id from api._question natural join db.question where community_id=get_community_id();
-/*
-create view tag with (security_barrier) as select tag_id,tag_name,tag_implies_id,tag_question_count from db.tag where community_id=get_community_id();
-
-create view question_tag_x_not_implied with (security_barrier) as
-select question_id,tag_id
-from db.question_tag_x qt natural join db.tag t natural join community
+create view question with (security_barrier) as
+select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted
+     , (case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end)||question_title question_title
+     , account_id question_account_id
+     , account_name question_account_name
+     , coalesce(question_vote_votes,0) question_votes_from_me
+     , coalesce(communicant_votes,0) question_communicant_votes
+     , case when question_se_imported_at=question_change_at then 'imported' when question_change_at>question_at then 'edited' else 'asked' end question_change
+from api._question natural join db.question natural join db.account natural join db.community natural join db.communicant
+     natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
+where community_id=get_community_id();
+--
+create view tag with (security_barrier) as
+select question_id,tag_id,tag_name,tag_question_count
+from db.question_tag_x qt natural join (select * from db.tag where community_id=get_community_id()) t
 where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
-create view environment with (security_barrier) as select environment_name from db.environment;
-*/
+--
+create view answer with (security_barrier) as
+select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted
+     , coalesce(answer_vote_votes,0) answer_votes_from_me
+     , account_id answer_account_id
+     , account_name answer_account_name
+     , coalesce(communicant_votes,0) answer_communicant_votes
+     , case when answer_se_imported_at=answer_change_at then 'imported' when answer_change_at>answer_at then 'edited' else 'answered' end answer_change
+from api._answer natural join db.answer natural join db.account  natural left join db.communicant
+     natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v;
 --
 --
 create view one with (security_barrier) as
@@ -75,6 +91,23 @@ create function range(startid integer, endid integer)
   order by question_poll_major_id desc limit 10;
 $$;
 --
+--
+create function search2(text) returns table (question_id integer, rn bigint) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
+  with q as (select question_id, question_markdown txt, strict_word_similarity($1,question_markdown) word_similarity, similarity($1,question_markdown) similarity
+             from db.question
+             where community_id=get_community_id() and $1<<%question_markdown)
+    , qt as (select question_id, question_title txt, strict_word_similarity($1,question_title)*2 word_similarity, similarity($1,question_title)*2 similarity
+             from db.question
+             where community_id=get_community_id() and $1<<%question_title)
+     , a as (select question_id, answer_markdown txt, strict_word_similarity($1,answer_markdown) word_similarity, similarity($1,answer_markdown) similarity
+             from db.answer natural join (select question_id,community_id from db.question) z
+             where community_id=get_community_id() and $1<<%answer_markdown)
+     , s as (select question_id, bool_or(txt like '%'||$1||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
+  select question_id, row_number() over (order by exact desc, similarity desc) rn
+  from s natural join db.question q natural join api._question natural join db.account natural join db.community natural join db.communicant
+  where community_id=get_community_id() and $1 is not null
+  order by exact desc, similarity desc limit 50;
+$$;
 --
 create function search(text) 
                      returns table (question_id integer

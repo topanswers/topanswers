@@ -9,8 +9,7 @@ from db.community natural left join (select community_id, account_id from db.log
 where community_type='public' or account_id is not null;
 --
 create view one with (security_barrier) as
-select account_id
-from (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) a;
+select (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) account_id;
 --
 --
 create function login(uuid) returns boolean language sql security definer as $$select api.login($1);$$;
