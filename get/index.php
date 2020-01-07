@@ -88,9 +88,9 @@ extract(cdb("select account_id from one"));
     <p>We aren't a clone though; we diverge in important areas:</p>
     <ul>
       <li>We are not for-profit, so contributors will never be the 'product', and our core aims will not evolve over time.</li>
-      <li>As much as possible of our platform <a href="/meta?q=28">will be published as open source</a>.</li>
+      <li>As much as possible of our platform is published <a href="/meta?q=28">as open source</a> <a href="/meta?q=221#a580">on GitHub</a>.</li>
       <li>We've improved the focus on Q&A by moving comments to the side.</li>
-      <li>You are <a href="/meta?q=18#a8">free to decide how to license your content<a>.</li>
+      <li>You are <a href="/meta?q=18#a8">free to decide how to license your contributions<a>.</li>
     </ul>
     <p>We are small right now — we launched <a href="/databases">databases</a> in October 2019 and have a TeX community in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a> from there.</p>
     <p>There is a lot more detailed information on our <a href="/meta">meta</a> community (a place for questions and answers about TopAnswers itself), for example:</p>
