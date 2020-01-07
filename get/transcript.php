@@ -5,7 +5,9 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
 $authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
-extract(cdb("select account_id,community_name,room_id,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight from one"));
+extract(cdb("select account_id,community_name,room_id,room_derived_name,room_can_chat,room_question_id,community_code_language,my_community_regular_font_name,my_community_monospace_font_name
+                   ,colour_dark,colour_mid,colour_light,colour_highlight
+             from one"));
 $max = 500;
 $search = $_GET['search']??'';
 $id = $_GET['id']??0;
@@ -133,13 +135,13 @@ if(isset($_GET['month'])){
       setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
     });
   </script>
-  <title><?=$room_name?> Transcript - TopAnswers</title>
+  <title><?=$room_derived_name?> Transcript - TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column;">
   <header xstyle="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
     <div xstyle="margin: 0.5rem; margin-right: 0.1rem;">
       <a href="/<?=$community_name?>">TopAnswers <?=ucfirst($community_name)?></a>
-      <span>transcript for <a href="/<?=$community_name?>?room=<?=$room_id?>"><?=$room_name?></a></span>
+      <span>transcript for <a href="/<?=$community_name?>?<?=$room_question_id?'q='.$room_question_id:'room='.$room_id?>"><?=$room_derived_name?></a></span>
       <form action="/transcript" method="get" style="display: inline;"><input type="search" name="search" placeholder="search"><input type="hidden" name="room" value="<?=$_GET['room']?>"></form>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
