@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="/lib/qp/qp.css">
 <style>
   .markdown { overflow: auto; overflow-wrap: break-word; }
-  .markdown>pre { white-space: pre-wrap; }
+  .markdown>pre { white-space: pre; }
   .markdown>:first-child { margin-top: 0; }
   .markdown>:last-child { margin-bottom: 0; }
   .markdown ul { padding-left: 2em; }

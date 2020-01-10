@@ -56,6 +56,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <style>
       .message:not(.processed) { opacity: unset !important; }
       #qa .post:not(.processed) { opacity: unset !important; }
+      .markdown>pre.noscript { white-space: pre-wrap; }
     </style>
   </noscript>
   <style>
@@ -901,7 +902,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               </div>
             </div>
           </div>
-          <div id="markdown" class="markdown" data-markdown="<?=$question_markdown?>"><pre><?=$question_markdown?></pre></div>
+          <div id="markdown" class="markdown" data-markdown="<?=$question_markdown?>"><pre class='noscript'><?=$question_markdown?></pre></div>
           <div class="bar">
             <div>
               <?if($question_is_votable){?>
@@ -989,7 +990,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
               </div>
             </div>
-            <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre><?=$answer_markdown?></pre></div>
+            <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre class='noscript'><?=$answer_markdown?></pre></div>
             <div class="bar">
               <div>
                 <?if(!$answer_account_is_me){?>
