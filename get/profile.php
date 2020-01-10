@@ -3,11 +3,13 @@ include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to profile,pg_temp");
+
 if(isset($_GET['uuid'])){
   ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'') || fail(403,'access denied');
   exit(ccdb("select account_uuid from one"));
 }
-ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'') || fail(403,'access denied');
+
+ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'meta') || fail(403,'access denied');
 extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,community_id,community_name,community_display_name,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
                    ,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name
              from one"));

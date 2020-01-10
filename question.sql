@@ -7,7 +7,7 @@ create view license with (security_barrier) as select license_id,license_name,li
 create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
 --
 create view one with (security_barrier) as
-select account_id,account_license_id,account_codelicense_id,community_id,community_name,community_code_language
+select account_id,account_license_id,account_codelicense_id,community_id,community_name,community_display_name,community_code_language
       ,sesite_url
       ,question_id,question_type,question_title,question_markdown,question_license_name,question_se_question_id
       ,question_is_deleted,question_answered_by_me,question_is_blog,question_is_meta

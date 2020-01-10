@@ -11,7 +11,7 @@ if(isset($_GET['id'])){
   $auth||(($_GET['community']==='databases')&&isset($_GET['rdbms'])&&isset($_GET['fiddle'])) || fail(403,'need to be logged in to visit this page unless from a fiddle');
 }
 extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id
-                   ,community_id,community_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,community_id,community_name,community_display_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
                   , question_license_name||(case when question_has_codelicense then ' + '||question_codelicense_name else '' end) license
@@ -189,7 +189,7 @@ $id = $question_id;
 <body>
   <header>
     <div>
-      <a class="element" href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
+      <a class="element" href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=$community_display_name?></a>
     </div>
     <div>
       <?if($auth){?>
@@ -211,7 +211,7 @@ $id = $question_id;
           </select>
         <?}?>
         <input class="element" id="submit" type="submit" form="form" value="<?=$id?'update post under '.$license:'submit'?>" style="margin: 0.5rem;">
-        <a class="frame" href="/profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+        <a class="frame" href="/profile?community=<?=$community?>"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
       <?}else{?>
         <input class="element" id="join" type="button" value="join">
       <?}?>
