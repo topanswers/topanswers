@@ -132,11 +132,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #qa .bar .icon+.icon { margin-left: 0; }
 
-    #qa .bar .starrr { margin-left: 0.2rem; }
     #qa .bar .starrr a.fa-star { color: #<?=$colour_highlight?>; }
     #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
-    #qa .bar [data-total]:not([data-total="0"])::after { content: attr(data-total) ' stars'; }
-    #qa .bar [data-total][data-total="1"]::after { content: attr(data-total) ' star'; }
+    #qa .bar [data-total]::after { content: attr(data-total) ' stars'; }
+    #qa .bar [data-total="1"]::after { content: attr(data-total) ' star'; margin-right: 0.4em; }
 
     #answer { margin: 2rem auto; display: block; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
@@ -909,9 +908,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="bar">
             <div>
               <?if($question_is_votable){?>
-                <?if(!$question_account_is_me||$question_votes){?>
-                  <span class="element" data-total="<?=$question_votes?>"></span>
-                <?}?>
+                <span class="element" data-total="<?=$question_votes?>"></span>
                 <?if(!$question_account_is_me){?>
                   <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
                 <?}?>
@@ -998,9 +995,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre class='noscript'><?=$answer_markdown?></pre></div>
             <div class="bar">
               <div>
-                <?if(!$answer_account_is_me||$answer_votes){?>
-                  <span class="element" data-total="<?=$answer_votes?>"></span>
-                <?}?>
+                <span class="element" data-total="<?=$answer_votes?>"></span>
                 <?if(!$answer_account_is_me){?>
                   <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
                 <?}?>
