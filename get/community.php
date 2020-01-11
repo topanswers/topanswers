@@ -142,6 +142,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
     #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 4px; }
+    #chat-wrapper .label a[href="."] { text-decoration: none; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
     #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px 0; }
 
@@ -158,6 +159,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #notifications .message { padding: 0.3em; border-bottom: 1px solid #<?=$colour_dark?>; }
     #notifications .message[data-type='chat'] { padding-top: 1.3em; }
     #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
+
+    #starboard { background: #<?=$colour_mid?>; overflow-x: hidden; overflow-y: auto; }
+    #starboard .message { padding: 0.3em; border-bottom: 1px solid #<?=$colour_dark?>; padding-top: 1.3em; }
+    #starboard .message .button-group:not(:first-child) .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
+    #starboard .message .button-group:first-child { display: none; }
+    #starboard .message:not(:hover) .button-group:not(:first-child) { display: grid; }
+    #starboard .message:not(:hover) .button-group:not(:first-child) .fa-link { display: none; }
+    #chat-panels #starboard .message .who { top: 0.2rem; font-size: 12px; }
 
     #canchat-wrapper { flex: 0 0 auto; }
     #chattext-wrapper { position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>; }
@@ -229,6 +238,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #poll { display: none; }
       #se { display: none; }
       #chat-panels { margin: 0; }
+      #messages-wrapper { margin: 0; }
       .simple-pagination li>* { height: 22px; width: 22px; line-height: 22px; font-size: 12px; }
     }
   </style>
@@ -335,6 +345,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           processNewQuestions();
           $('#more').hide();
         },'html');
+      }
+      function processStarboard(){
+        $('#starboard .markdown').renderMarkdown();
+        $('#starboard .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+        $('#starboard>.message').addClass('processed');
+      }
+      function updateStarboard(){
+        $.get('/starboard?room=<?=$room_id?>',function(r){
+          $('#starboard').replaceWith(r);
+          processStarboard();
+          setChatPollTimeout();
+        }).fail(setChatPollTimeout);
       }
       function renderChat(){
         $(this).find('.markdown').renderMarkdown();
@@ -817,6 +839,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
         window.location.reload(true);
       });
+      $('#chatorstarred').click(function(){
+        $(this).children('a').each(function(){ $(this).attr('href',function(i,a){ return a===undefined?'.':null; }); });
+        $('#starboard,#messages').each(function(){ $(this).css('display',function(i,s){ return s==='none'?'flex':'none'; }); })
+        $('#preview,#canchat-wrapper').toggle();
+        processStarboard(true);
+        return false;
+      });
     });
   </script>
   <title><?=$room_name?> - TopAnswers</title>
@@ -1070,10 +1099,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div id="dummyresizery" data-rz-handle="horizontal"></div>
         <div id="messages-wrapper">
           <div class="label container">
-            <div class="element"><?=$question?'Comments':'Chat'?>:</div>
+            <div id="chatorstarred" class="element"><a><?=$question?'Comments':'Chat'?></a> / <a href=".">Starred</a></div>
             <div class="element"><a class="element" href="/transcript?room=<?=$room?>">transcript</a></div>
           </div>
-          <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; padding: 0.5rem;">
+          <div id="starboard" style="flex: 1 1 auto; display: none; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; xpadding: 0.5rem;">
+            <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+            <div style="flex: 1 0 0;"></div>
+          </div>
+          <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; padding: 0.5rem;">
             <?if($room_has_chat){?>
               <div style="flex: 1 0 0;"></div>
               <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
