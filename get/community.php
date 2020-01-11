@@ -135,6 +135,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .bar .starrr { margin-left: 0.2rem; }
     #qa .bar .starrr a.fa-star { color: #<?=$colour_highlight?>; }
     #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
+    #qa .bar [data-total]:not([data-total="0"])::after { content: attr(data-total) ' stars'; }
+    #qa .bar [data-total][data-total="1"]::after { content: attr(data-total) ' star'; }
 
     #answer { margin: 2rem auto; display: block; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
@@ -718,7 +720,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
       <?if($auth){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
-          var t = $(this), v = t.data('votes');
+          var t = $(this), v = t.data('votes'), vv = t.prev().data('total');
           t.starrr({
             rating: v,
             max: <?=$community_my_power?>,
@@ -727,8 +729,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               if(n!==v){
                 t.css({'opacity':'0.3','pointer-events':'none'});
                 $.post({ url: '//post.topanswers.xyz/'+t.data('type'), data: { action: 'vote', id: t.data('id'), votes: n }, xhrFields: { withCredentials: true } }).done(function(r){
-                  t.css({'opacity':'1','pointer-events':'auto'}).next().html(r+' star'+((r==='1')?'':'s'));
+                  vv = vv-v+n;
                   v = n;
+                  t.css({'opacity':'1','pointer-events':'auto'}).prev().attr('data-total',vv);
                 }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); });
               }
             }
@@ -906,10 +909,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="bar">
             <div>
               <?if($question_is_votable){?>
+                <?if(!$question_account_is_me||$question_votes){?>
+                  <span class="element" data-total="<?=$question_votes?>"></span>
+                <?}?>
                 <?if(!$question_account_is_me){?>
                   <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
                 <?}?>
-                <span class="element"><?=$question_votes?> star<?=($question_votes==='1')?'':'s'?></span>
               <?}?>
               <?if($auth){?>
                 <?if($question_account_is_me||!$question_is_blog){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
@@ -993,10 +998,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre class='noscript'><?=$answer_markdown?></pre></div>
             <div class="bar">
               <div>
+                <?if(!$answer_account_is_me||$answer_votes){?>
+                  <span class="element" data-total="<?=$answer_votes?>"></span>
+                <?}?>
                 <?if(!$answer_account_is_me){?>
                   <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
                 <?}?>
-                <span class="element"><?=$answer_votes?> star<?=($answer_votes==='1')?'':'s'?></span>
                 <?if($auth){?>
                   <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
                   <?if($answer_has_history){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
