@@ -30,6 +30,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_communicant_se_user_id,question_communicant_votes
                    ,question_license_href,question_has_codelicense,question_codelicense_name
+                  , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
@@ -742,7 +743,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
         return false;
       });
-      $('#qa .when').each(function(){ $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago'); });
+      $('#qa .when').each(function(){
+        $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
+        $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+      });
       $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
       <?if($auth){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
@@ -912,7 +916,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <a href="/meta?q=24"><?=$question_codelicense_name?> for original code</a>
                 <?}?>
               </span>
-              <span class="when element" data-seconds="<?=$question_when?>"></span>
+              <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"></span>
             </div>
             <div>
               <div class="element container">
@@ -995,6 +999,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                            , answer_account_id=$1 answer_account_is_me
                            , answer_crew_flags>0 answer_is_deleted
                            , extract('epoch' from current_timestamp-answer_at) answer_when
+                           , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                            , answer_codelicense_id<>1 and answer_codelicense_name<>answer_license_name answer_has_codelicense
                            , answer_active_flags>(answer_i_flagged::integer) answer_other_flags
                       from answer
@@ -1005,7 +1010,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="bar">
               <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
               <div>
-                <span class="when element" data-seconds="<?=$answer_when?>"></span>
+                <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
                 <span class="element">
                   <a href="<?=$answer_license_href?>"><?=$answer_license_name?></a>
                   <?if($answer_has_codelicense){?>
@@ -1097,7 +1102,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </header>
     <div id="chat">
       <div id="chat-panels">
-        <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>                                                                      
+        <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
         <div id="dummyresizery" data-rz-handle="horizontal"></div>
         <div id="messages-wrapper">
           <div class="label container">
@@ -1162,6 +1167,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
     </div>
   </div>
-</body>   
+</body>
 </html>
 <?ob_end_flush();

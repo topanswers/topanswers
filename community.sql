@@ -58,7 +58,7 @@ where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
 select account_id,community_id,community_name,community_code_language,room_id
-      ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
+      ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged,question_is_votable,question_is_blog,question_is_meta
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,question_communicant_se_user_id,question_communicant_votes
@@ -87,7 +87,7 @@ from db.room r natural join db.community
      natural left join db.communicant
      natural left join db.account_room_x x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
-     natural left join (select question_id,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
+     natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
                              , license_name question_license_name
                              , license_href question_license_href
                              , codelicense_name question_codelicense_name

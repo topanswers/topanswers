@@ -13,6 +13,8 @@ if($search){
   db("select set_config('pg_trgm.strict_word_similarity_threshold','0.5',false)");
   $results = db("select question_id,question_at,question_change_at,question_change,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name
                        ,question_is_deleted,question_communicant_votes
+                      , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
+                      , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
                       , extract('epoch' from current_timestamp-question_at) question_when
                       , extract('epoch' from current_timestamp-question_change_at) question_change_when
                       , question_account_id=$2 account_is_me
@@ -30,6 +32,8 @@ if($search){
   }
   $results = db("select question_id,question_change,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name
                        ,question_is_deleted,question_communicant_votes
+                      , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
+                      , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
                       , extract('epoch' from current_timestamp-question_at) question_when
                       , extract('epoch' from current_timestamp-question_change_at) question_change_when
                       , question_account_id=$3 account_is_me
@@ -49,11 +53,11 @@ if($search){
             <i class="fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>" data-count="<?=$question_votes?>"></i>
           </span>
         <?}?>
-        <span class="when element" data-seconds="<?=$question_when?>"><?=$question_account_name?></span>
+        <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"><?=$question_account_name?></span>
         <?if($question_change==='asked'){?>
           <span class="element hover">(asked)</span>
         <?}else{?>
-          <span class="element hover when" data-prefix="(<?=$question_change?>, " data-postfix=")" data-seconds="<?=$question_change_when?>"></span>
+          <span class="element hover when" data-prefix="(<?=$question_change?>, " data-postfix=")" data-seconds="<?=$question_change_when?>" data-at="<?=$question_change_at_iso?>"></span>
         <?}?>
       </div>
       <div class="element container">
@@ -64,6 +68,8 @@ if($search){
     </div>
     <div class="answers">
       <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes
+                         , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
+                         , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
                          , extract('epoch' from current_timestamp-answer_at) answer_when
                          , extract('epoch' from current_timestamp-answer_change_at) answer_change_when
                     from answer
@@ -75,9 +81,9 @@ if($search){
             <?if($answer_change==='answered'){?>
               <span class="element hover">(answered)</span>
             <?}else{?>
-              <span class="element hover when" data-prefix="(<?=$answer_change?>, " data-postfix=")" data-seconds="<?=$answer_change_when?>"></span>
+              <span class="element hover when" data-prefix="(<?=$answer_change?>, " data-postfix=")" data-seconds="<?=$answer_change_when?>" data-at="<?=$answer_change_at_iso?>"></span>
             <?}?>
-            <span class="when element" data-seconds="<?=$answer_when?>"></span>
+            <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
             <?if($answer_votes){?>
               <span class="element">
                 <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
