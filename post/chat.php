@@ -8,7 +8,9 @@ isset($_POST['room']) || fail(400,'room not set');
 db("set search_path to chat,pg_temp");
 ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_POST['room']) || fail(403,'access denied');
 switch($_POST['action']){
-  case 'new': exit(ccdb("select new($1,nullif($2,'')::integer,('{'||$3||'}')::integer[])",$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
+  case 'new':
+    if(isset($_POST['read'])) db("select read(('{'||$1||'}')::integer[])",implode(',',$_POST['read']));
+    exit(ccdb("select new($1,nullif($2,'')::integer,('{'||$3||'}')::integer[])",$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
   case 'edit': exit(ccdb("select change($1,$2)",$_POST['editid'],$_POST['msg']));
   case 'flag': exit(ccdb("select set_flag($1)",$_POST['id']));
   case 'unflag': exit(ccdb("select remove_flag($1)",$_POST['id']));

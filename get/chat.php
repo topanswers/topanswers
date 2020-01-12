@@ -9,8 +9,8 @@ extract(cdb("select account_is_dev,community_name,room_name,room_can_chat,commun
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from chat where chat_change_id>$1",$_GET['fromid']));
 if(isset($_GET['quote'])) exit(ccdb("select quote($1)::varchar",$_GET['id']));
 if(isset($_GET['activerooms'])){
-  foreach(db("select room_id,room_name,community_colour,room_account_unread_messages from activerooms()") as $r){ extract($r);?>
-    <a<?if($room_id!==intval($_GET['room'])){?> href="."<?}?> data-room="<?=$room_id?>"<?if($room_account_unread_messages>0){?> data-unread="<?=$room_account_unread_messages?>"<?}?>>
+  foreach(db("select room_id,room_name,community_colour,community_name,room_account_unread_messages,room_account_latest_read_chat_id from activerooms()") as $r){ extract($r);?>
+    <a<?if($room_id!==intval($_GET['room'])){?> href="https://topanswers.xyz/<?=$community_name?>?room=<?=$room_id?>"<?}?> data-room="<?=$room_id?>" data-latest="<?=$room_account_latest_read_chat_id?>" <?if($room_account_unread_messages>0){?> data-unread="<?=$room_account_unread_messages?>"<?}?>>
       <img title="<?=($room_name)?$room_name:''?>" class="icon roomicon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>" style="background-color: #<?=$community_colour?>;">
     </a><?
   }

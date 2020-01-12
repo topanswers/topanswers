@@ -185,8 +185,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #active { flex: 0 0 23px; display: flex; flex-direction: column; justify-content: space-between; background: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; overflow-y: hidden; }
     #active-rooms { flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden; }
     #active-rooms a { position: relative; }
-    #active-rooms a[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: #<?=$colour_highlight?>; color: black;
-                                               width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
+    #active-rooms a.processed[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: #<?=$colour_highlight?>; color: black;
+                                                         width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
     #active-rooms>a:not([href])>.icon { outline: 1px solid #<?=$colour_highlight?>; }
     #active-rooms>a[href]:hover>.icon { outline: 1px solid #<?=$colour_highlight?>80; }
     #active-spacer { flex: 0 0 auto; padding: 1rem 0; cursor: pointer; }
@@ -401,6 +401,24 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         if(!maxChatChangeID) $('#messages>.message').first().removeClass('merged');
         $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
       }
+      function updateRoomLatest(){
+        var read;
+        read = localStorage.getItem('read')?JSON.parse(localStorage.getItem('read')):{};
+        $('#active-rooms>a:not([data-unread])').each(function(){
+          delete read[$(this).attr('data-room')];
+        });
+        $('#active-rooms>a[data-unread]').each(function(){
+          var r = $(this).attr('data-room'), l = $(this).data('latest');
+          if(r==='<?=$room?>') read['<?=$room?>'] = _.union(read['<?=$room?>']||[],$('#messages>.message').map(function(){ var id = +this.id.substring(1); return (id>l)?id:null; }).get());
+          if(read[r]){
+            read[r] = $.map(read[r],function(v){ return (v>l)?v:null; });
+            $(this).attr('data-unread',$(this).attr('data-unread')-read[r].length);
+            if($(this).attr('data-unread')==='0') $(this).removeAttr('data-unread');
+          }
+          $(this).addClass('processed');
+        });
+        localStorage.setItem('read',JSON.stringify(read));
+      }
       function updateChat(scroll){
         var maxChat = $('#messages>.message').last().data('id');
         if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
@@ -420,10 +438,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               });
               $.get('/chat?activerooms&room=<?=$room?>').done(function(r){
                 $('#active-rooms').html(r);
-                $('#active-rooms>a[href]').click(function(){
-                  $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
-                  return false;
-                });
+                updateRoomLatest();
               });
             <?}?>
           }
@@ -465,12 +480,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function processNotifications(){
         $('#notification-wrapper .markdown').renderMarkdown();
         $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-        <?if($auth){?>
-          $('#notification-wrapper a[data-room]').click(function(){
-            $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
-            return false;
-          });
-        <?}?>
         $('#notifications>.message').addClass('processed');
       }
       function updateNotifications(){
@@ -613,11 +622,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       //$('.markdown').renderMarkdown();
       $('#community').change(function(){
-        <?if($auth){?>
-          $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
-        <?}else{?>
-          window.location = '/'+$(this).find(':selected').attr('data-name');
-        <?}?>
+        window.location = '/'+$(this).find(':selected').attr('data-name');
       });
       $('#tags').select2({ placeholder: "select a tag" });
       function tagdrop(){ $('#tags').select2('open'); };
@@ -626,11 +631,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('.newtag').one('click',tagdrop);
       $('.tag i').click(function(){ $.post({ url: '//post.topanswers.xyz/question', data: { id: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }, xhrFields: { withCredentials: true } }).done(function(){ window.location.reload(); }); });
       $('#room').change(function(){
-        <?if($auth){?>
-          $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).val()+'"></form>').appendTo($(this)).submit();
-        <?}else{?>
-          window.location = '/<?=$community_name?>?room='+$(this).val();
-        <?}?>
+        window.location = '/<?=$community_name?>?room='+$(this).val();
       });
       function renderPreview(sync){
         var m = $('#chattext').val(), s;
@@ -663,7 +664,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){
-        var t = $(this), msg = t.val(),  replyid = $('#replying').attr('data-id'), c = $('#c'+replyid), edit = c.hasClass('mine'), post;
+        var t = $(this), msg = t.val(),  replyid = $('#replying').attr('data-id'), c = $('#c'+replyid), edit = c.hasClass('mine'), post, arr = [];
         if(e.which===13) {
           if(!e.shiftKey) {
             if(msg.trim()){
@@ -673,9 +674,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 post = { msg: $('#preview .markdown').attr('data-markdown'), room: <?=$room?>, editid: replyid, action: 'edit' };
                 c.css('opacity',0.5);
               }else{
-                arr = [];
                 $('.ping').each(function(){ arr.push($(this).data('id')); });
-                post = { room: <?=$room?>, msg: $('#preview .markdown').attr('data-markdown'), replyid: replyid, pings: arr, action: 'new' };
+                post = { room: <?=$room?>
+                       , msg: $('#preview .markdown').attr('data-markdown')
+                       , replyid: replyid
+                       , pings: arr
+                       , action: 'new'
+                       , read: $.map(JSON.parse(localStorage.getItem('read')), function(v){ return _.last(v); }) };
               }
               $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).done(function(){
                 if(edit){
@@ -764,11 +769,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       paginateQuestions(questionPage);
       $('#qa .post').find('.markdown[data-markdown]').renderMarkdown().end().addClass('processed');
       processNewChat(true);
+      updateRoomLatest();
       processNotifications();
-                $('#active-rooms>a[href]').click(function(){
-                  $('<form action="//post.topanswers.xyz/room" method="post" style="display: none;"><input name="action" value="switch"><input name="from-id" value="<?=$room?>"><input name="id" value="'+$(this).attr('data-room')+'"></form>').appendTo($(this)).submit();
-                  return false;
-                });
       setChatPollTimeout();
       $('#se').click(function(){
         var t = $(this), f = t.closest('form')

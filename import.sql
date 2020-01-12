@@ -45,7 +45,7 @@ create function _new_question(aid integer, title text, markdown text, tags text,
                                                              union all
                                                              select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
              select (select question_id from q),tag_id,community_id,aid from w natural join tag where tag_id not in (select tag_id from question_tag_x where question_id=(select question_id from q)))
-     , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id) select question_id,tag_id,community_id,aid from t returning tag_id)
+     , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id) select distinct question_id,tag_id,community_id,aid from t returning tag_id)
      , u as (update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i))
   select question_id from q;
 $$;

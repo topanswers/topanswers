@@ -70,11 +70,14 @@ create function range(startid bigint, endid bigint)
   order by chat_at;
 $$;
 --
-create function activerooms() returns table (room_id integer, room_name text, community_colour text, room_account_unread_messages bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
+create function activerooms() returns table (room_id integer, room_name text, community_colour text, community_name text, room_account_unread_messages bigint, room_account_latest_read_chat_id bigint)
+                language sql security definer set search_path=db,api,chat,pg_temp as $$
   select room_id
        , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
        , encode(community_light_shade,'hex')
+       , community_name
        , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.room_account_x_latest_read_chat_id) room_account_unread_messages
+       , room_account_x_latest_read_chat_id
   from (select room_id,room_account_x_latest_chat_at,room_account_x_latest_read_chat_id
         from room_account_x
         where account_id=get_account_id() and room_account_x_latest_chat_at>(current_timestamp-'7d'::interval)) x
@@ -210,6 +213,19 @@ create function remove_star(cid bigint) returns bigint language sql security def
   select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
   delete from chat_star where chat_id=cid and account_id=get_account_id();
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
+$$;
+--
+create function read(ids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  --
+  with w as (select room_id, max(chat_id) chat_id
+             from chat natural join (select room_id,room_account_x_latest_read_chat_id from room_account_x where account_id=get_account_id()) x
+             where chat_id in (select * from unnest(ids)) and chat_id>room_account_x_latest_read_chat_id
+             group by room_id)
+  update room_account_x x
+  set room_account_x_latest_read_chat_id = w.chat_id
+  from w
+  where w.room_id=x.room_id and account_id=get_account_id();
 $$;
 --
 --
