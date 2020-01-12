@@ -998,7 +998,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                             ,answer_communicant_votes,answer_communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
                            , answer_account_id=$1 answer_account_is_me
                            , answer_crew_flags>0 answer_is_deleted
-                           , extract('epoch' from current_timestamp-answer_at) answer_when
+                           , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
                            , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                            , answer_codelicense_id<>1 and answer_codelicense_name<>answer_license_name answer_has_codelicense
                            , answer_active_flags>(answer_i_flagged::integer) answer_other_flags

@@ -107,7 +107,7 @@ from db.room r natural join db.community
                              , question_type<>'question' question_is_votable
                              , question_type='blog' question_is_blog
                              , question_type='meta' question_is_meta
-                             , extract('epoch' from current_timestamp-question_at) question_when
+                             , extract('epoch' from current_timestamp-question_at)::bigint question_when
                         from db.question q natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
                         where question_id=get_question_id()) q

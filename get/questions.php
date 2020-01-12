@@ -15,8 +15,8 @@ if($search){
                        ,question_is_deleted,question_communicant_votes
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                       , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
-                      , extract('epoch' from current_timestamp-question_at) question_when
-                      , extract('epoch' from current_timestamp-question_change_at) question_change_when
+                      , extract('epoch' from current_timestamp-question_at)::bigint question_when
+                      , extract('epoch' from current_timestamp-question_change_at)::bigint question_change_when
                       , question_account_id=$2 account_is_me
                  from search($1) natural join question
                  order by rn",$_GET['search'],$account_id);
@@ -34,8 +34,8 @@ if($search){
                        ,question_is_deleted,question_communicant_votes
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                       , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
-                      , extract('epoch' from current_timestamp-question_at) question_when
-                      , extract('epoch' from current_timestamp-question_change_at) question_change_when
+                      , extract('epoch' from current_timestamp-question_at)::bigint question_when
+                      , extract('epoch' from current_timestamp-question_change_at)::bigint question_change_when
                       , question_account_id=$3 account_is_me
                  from question where question_poll_major_id>=$1 and ($2='' or question_poll_major_id<=nullif($2,'')::integer)
                  order by question_poll_major_id desc",$startid,$endid,$account_id);
@@ -70,8 +70,8 @@ if($search){
       <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes
                          , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                          , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
-                         , extract('epoch' from current_timestamp-answer_at) answer_when
-                         , extract('epoch' from current_timestamp-answer_change_at) answer_change_when
+                         , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
+                         , extract('epoch' from current_timestamp-answer_change_at)::bigint answer_change_when
                     from answer
                     where question_id=$1
                     order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
