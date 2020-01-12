@@ -296,7 +296,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function renderQuestion(){
         $(this).find('.summary span[data-markdown]').renderMarkdownSummary();
-        $(this).find('.when').each(function(){ var t = $(this); $(this).text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||'')); });
+        $(this).find('.when').each(function(){
+          var t = $(this);
+          $(this).text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||''));
+          $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+        });
       }
       function processNewQuestions(scroll){
         var newquestions = $('#qa>.question:not(.processed)');
@@ -742,10 +746,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#chattext').prop('disabled',false).focus();
         });
         return false;
-      });
-      $('#qa .when').each(function(){
-        $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
-        $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
       });
       $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
       <?if($auth){?>
