@@ -173,7 +173,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
               <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
               <span style="flex: 0 0 auto;">, answer <?=$answer_notification_is_edit?'edit':'posted'?> on:&nbsp;</span>
-              <a href="/answer-history?id=<?=$answer_id?>#h<?=$notification_id?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+              <a href="/<?=$answer_notification_is_edit?('answer-history?id='.$answer_id.'#h'.$notification_id):($notification_community_name.'?q='.$question_id.'#a'.$answer_id)?>" style="flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; color: #<?=$notification_dark_shade?>;" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
               —
               <span style="flex: 0 0 auto; color: #<?=$notification_dark_shade?>;">&nbsp;(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
             </div>
