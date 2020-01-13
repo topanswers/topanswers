@@ -572,7 +572,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
         m.css({'opacity':'0.3','pointer-events':'none'});
         $.post({ url: '//post.topanswers.xyz/chat', data: { action: ((direction===-1)?'un':'')+action, room: <?=$room?>, id: id }, xhrFields: { withCredentials: true } }).done(function(r){
-          m.css({ 'opacity':'1','pointer-events':'auto' }).toggleClass('me fa-'+action+' fa-'+action+'-o').closest('.buttons').find('.button-group:first-child .'+action+'s[data-count]').toggleClass('me fa-'+action+' fa-'+action+'-o')
+          m.css({ 'opacity':'1','pointer-events':'auto' }).toggleClass('me fa-'+action+' fa-'+action+'-o')
+           .closest('.buttons').find('.button-group:first-child .'+action+'s[data-count]').toggleClass('me fa-'+action+' fa-'+action+'-o')
+           .each(function(){ $(this).attr('data-count',+$(this).attr('data-count')+direction); });
         });
       };
       $('#chat-wrapper').on('click','.fa-star-o', function(){ starflag($(this),'star',1); });
