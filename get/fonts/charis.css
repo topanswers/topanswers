@@ -5,11 +5,24 @@
     font-stretch: normal;
     src: url('/fonts/charis/CharisSIL-R.ttf') format('truetype');
 }
-
 @font-face{
     font-family: 'charis';
     font-weight: 700;
     font-style: normal;
     font-stretch: normal;
     src: url('/fonts/charis/CharisSIL-B.ttf') format('truetype');
+}
+@font-face{
+    font-family: 'charis';
+    font-weight: 400;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/charis/CharisSIL-I.ttf') format('truetype');
+}
+@font-face{
+    font-family: 'charis';
+    font-weight: 700;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/charis/CharisSIL-BI.ttf') format('truetype');
 }
