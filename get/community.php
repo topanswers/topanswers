@@ -92,7 +92,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     .highlight { color: #<?=$colour_highlight?>; }
 
-    .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 12px; border-radius: 0 8px 8px 0; position: relative; }
+    .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
     .tag i::before { border-radius: 50%; }
@@ -153,7 +153,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #notifications { overflow-x: hidden; overflow-y: auto; }
     #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 5px; background: #<?=$colour_light?>; margin: 0 16px; }
 
-    #chat-panels .message .who { top: -1.2em; }
+    #chat-panels .message .who { top: -1.2em; line-height: 1; }
     #chat-panels .markdown img { max-height: 7rem; }
     #chat-panels .message.thread .markdown { background: #<?=$colour_highlight?>40; }
     #messages .message:not(:hover) .when { display: none; }
