@@ -9,7 +9,6 @@
          url('/fonts/source-sans-pro/SourceSansPro-Regular.otf') format('opentype'),
          url('/fonts/source-sans-pro/SourceSansPro-Regular.ttf') format('truetype');
 }
-
 @font-face{
     font-family: 'source-sans-pro';
     font-weight: 700;
@@ -20,4 +19,26 @@
          url('/fonts/source-sans-pro/SourceSansPro-Bold.otf.woff') format('woff'),
          url('/fonts/source-sans-pro/SourceSansPro-Bold.otf') format('opentype'),
          url('/fonts/source-sans-pro/SourceSansPro-Bold.ttf') format('truetype');
+}
+@font-face{
+    font-family: 'source-sans-pro';
+    font-weight: 400;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/source-sans-pro/SourceSansPro-It.eot') format('embedded-opentype'),
+         url('/fonts/source-sans-pro/SourceSansPro-It.ttf.woff2') format('woff2'),
+         url('/fonts/source-sans-pro/SourceSansPro-It.otf.woff') format('woff'),
+         url('/fonts/source-sans-pro/SourceSansPro-It.otf') format('opentype'),
+         url('/fonts/source-sans-pro/SourceSansPro-It.ttf') format('truetype');
+}
+@font-face{
+    font-family: 'source-sans-pro';
+    font-weight: 700;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/source-sans-pro/SourceSansPro-BoldIt.eot') format('embedded-opentype'),
+         url('/fonts/source-sans-pro/SourceSansPro-BoldIt.ttf.woff2') format('woff2'),
+         url('/fonts/source-sans-pro/SourceSansPro-BoldIt.otf.woff') format('woff'),
+         url('/fonts/source-sans-pro/SourceSansPro-BoldIt.otf') format('opentype'),
+         url('/fonts/source-sans-pro/SourceSansPro-BoldIt.ttf') format('truetype');
 }

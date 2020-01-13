@@ -5,11 +5,24 @@
     font-stretch: normal;
     src: url('/fonts/hack/Hack-Regular.ttf') format('truetype');
 }
-
 @font-face{
     font-family: 'hack';
     font-weight: 700;
     font-style: normal;
     font-stretch: normal;
     src: url('/fonts/hack/Hack-Bold.ttf') format('truetype');
+}
+@font-face{
+    font-family: 'hack';
+    font-weight: 400;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/hack/Hack-Italic.ttf') format('truetype');
+}
+@font-face{
+    font-family: 'hack';
+    font-weight: 700;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/hack/Hack-BoldItalic.ttf') format('truetype');
 }

@@ -9,7 +9,6 @@
          url('/fonts/source-code-pro/SourceCodePro-Regular.otf') format('opentype'),
          url('/fonts/source-code-pro/SourceCodePro-Regular.ttf') format('truetype');
 }
-
 @font-face{
     font-family: 'source-code-pro';
     font-weight: 700;
@@ -20,4 +19,26 @@
          url('/fonts/source-code-pro/SourceCodePro-Bold.otf.woff') format('woff'),
          url('/fonts/source-code-pro/SourceCodePro-Bold.otf') format('opentype'),
          url('/fonts/source-code-pro/SourceCodePro-Bold.ttf') format('truetype');
+}
+@font-face{
+    font-family: 'source-code-pro';
+    font-weight: 400;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/source-code-pro/SourceCodePro-It.eot') format('embedded-opentype'),
+         url('/fonts/source-code-pro/SourceCodePro-It.ttf.woff2') format('woff2'),
+         url('/fonts/source-code-pro/SourceCodePro-It.otf.woff') format('woff'),
+         url('/fonts/source-code-pro/SourceCodePro-It.otf') format('opentype'),
+         url('/fonts/source-code-pro/SourceCodePro-It.ttf') format('truetype');
+}
+@font-face{
+    font-family: 'source-code-pro';
+    font-weight: 700;
+    font-style: italic;
+    font-stretch: normal;
+    src: url('/fonts/source-code-pro/SourceCodePro-BoldIt.eot') format('embedded-opentype'),
+         url('/fonts/source-code-pro/SourceCodePro-BoldIt.ttf.woff2') format('woff2'),
+         url('/fonts/source-code-pro/SourceCodePro-BoldIt.otf.woff') format('woff'),
+         url('/fonts/source-code-pro/SourceCodePro-BoldIt.otf') format('opentype'),
+         url('/fonts/source-code-pro/SourceCodePro-BoldIt.ttf') format('truetype');
 }
