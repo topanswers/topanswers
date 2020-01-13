@@ -70,9 +70,10 @@ create function range(startid bigint, endid bigint)
   order by chat_at;
 $$;
 --
-create function activerooms() returns table (room_id integer, room_name text, community_colour text, community_name text, room_account_unread_messages bigint, room_account_latest_read_chat_id bigint)
+create function activerooms() returns table (room_id integer, question_id integer, room_name text, community_colour text, community_name text, room_account_unread_messages bigint, room_account_latest_read_chat_id bigint)
                 language sql security definer set search_path=db,api,chat,pg_temp as $$
   select room_id
+       , question_id
        , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
        , encode(community_light_shade,'hex')
        , community_name
@@ -83,7 +84,7 @@ create function activerooms() returns table (room_id integer, room_name text, co
         where account_id=get_account_id() and room_account_x_latest_chat_at>(current_timestamp-'7d'::interval)) x
        natural join room r
        natural join community
-       natural left join (select question_room_id room_id, question_title from question) q
+       natural left join (select question_id, question_room_id room_id, question_title from question) q
   order by room_account_x_latest_chat_at desc;
 $$;
 --
