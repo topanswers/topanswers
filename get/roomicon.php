@@ -20,8 +20,8 @@ if($room_has_image){
 }
 
 // Settings
-define('MARGIN_X', 0);        // Margin on the left and right edge in px
-define('MARGIN_Y', 0);        // Margin on the upper and lower edge in px
+define('MARGIN_X', 10);        // Margin on the left and right edge in px
+define('MARGIN_Y', 10);        // Margin on the upper and lower edge in px
 define('BOX_SIZE_W', 14);      // Width of the individual "pixels" in px
 define('BOX_SIZE_H', 14);      // Height of the individual "pixels" in px
 define('GRID_COUNT_W', 5);     // Horizontal "pixel"-count
