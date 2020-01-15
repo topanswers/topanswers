@@ -749,6 +749,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
         return false;
       });
+      $('#qa .post .when').each(function(){
+        $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
+        $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+      });
       $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
       <?if($auth){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
