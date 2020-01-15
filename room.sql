@@ -48,7 +48,7 @@ $$;
 --
 create function read() returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
-  update room_account_x set room_account_x_latest_read_chat_id = (select max(chat_id) from chat where room_id=get_room_id()) where room_id=get_room_id() and account_id=get_account_id();
+  update participant set participant_latest_read_chat_id = (select max(chat_id) from chat where room_id=get_room_id()) where room_id=get_room_id() and account_id=get_account_id();
 $$;
 --
 --

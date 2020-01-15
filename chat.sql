@@ -76,24 +76,24 @@ create function activerooms() returns table (room_id integer, question_id intege
        , question_id
        , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
        , community_name
-       , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.room_account_x_latest_read_chat_id) room_account_unread_messages
-       , room_account_x_latest_read_chat_id
-  from (select room_id,room_account_x_latest_chat_at,room_account_x_latest_read_chat_id
-        from room_account_x
-        where account_id=get_account_id() and room_account_x_latest_chat_at>(current_timestamp-'7d'::interval)) x
+       , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.participant_latest_read_chat_id) room_account_unread_messages
+       , participant_latest_read_chat_id
+  from (select room_id,participant_latest_chat_at,participant_latest_read_chat_id
+        from participant
+        where account_id=get_account_id() and participant_latest_chat_at>(current_timestamp-'7d'::interval)) x
        natural join room r
        natural join community
        natural left join (select question_id, question_room_id room_id, question_title from question) q
-  order by room_account_x_latest_chat_at desc;
+  order by participant_latest_chat_at desc;
 $$;
 --
 create function activeusers() returns table (account_id integer, account_name text, account_is_me boolean, communicant_votes integer) language sql security definer set search_path=db,api,chat,pg_temp as $$
   select account_id,account_name
        , account_id=get_account_id() account_is_me
        , coalesce(communicant_votes,0) communicant_votes
-  from room natural join room_account_x natural join account natural join communicant
-  where room_id=get_room_id() and room_account_x_latest_chat_at>(current_timestamp-'7d'::interval)
-  order by room_account_x_latest_chat_at desc;
+  from room natural join participant natural join account natural join communicant
+  where room_id=get_room_id() and participant_latest_chat_at>(current_timestamp-'7d'::interval)
+  order by participant_latest_chat_at desc;
 $$;
 --
 create function quote(id bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
@@ -161,9 +161,9 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
      , p as (insert into chat_notification(chat_id,account_id)
              select chat_id,account_id
              from i cross join (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z)
-     , r as (insert into room_account_x(room_id,account_id,room_account_x_latest_read_chat_id)
+     , r as (insert into participant(room_id,account_id,participant_latest_read_chat_id)
              select room_id,get_account_id(),chat_id from i
-             on conflict on constraint room_account_x_pkey do update set room_account_x_latest_chat_at=default, room_account_x_latest_read_chat_id=excluded.room_account_x_latest_read_chat_id)
+             on conflict on constraint participant_pkey do update set participant_latest_chat_at=default, participant_latest_read_chat_id=excluded.participant_latest_read_chat_id)
   select chat_id from i;
 $$;
 --
@@ -219,11 +219,11 @@ create function read(ids integer[]) returns void language sql security definer s
   select _error('access denied') where get_account_id() is null;
   --
   with w as (select room_id, max(chat_id) chat_id
-             from chat natural join (select room_id,room_account_x_latest_read_chat_id from room_account_x where account_id=get_account_id()) x
-             where chat_id in (select * from unnest(ids)) and chat_id>room_account_x_latest_read_chat_id
+             from chat natural join (select room_id,participant_latest_read_chat_id from participant where account_id=get_account_id()) x
+             where chat_id in (select * from unnest(ids)) and chat_id>participant_latest_read_chat_id
              group by room_id)
-  update room_account_x x
-  set room_account_x_latest_read_chat_id = w.chat_id
+  update participant x
+  set participant_latest_read_chat_id = w.chat_id
   from w
   where w.room_id=x.room_id and account_id=get_account_id();
 $$;

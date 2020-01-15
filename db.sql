@@ -144,14 +144,14 @@ create table writer(
 , primary key (account_id,room_id)
 );
 
-create table room_account_x(
+create table participant(
 , room_id integer references room
 , account_id integer references account
-, room_account_x_latest_chat_at timestamptz not null default current_timestamp
-, room_account_x_latest_read_chat_id bigint not null
+, participant_latest_chat_at timestamptz not null default current_timestamp
+, participant_latest_read_chat_id bigint not null
 , primary key (room_id,account_id)
 );
-create index room_account_x_latest on room_account_x(room_id,room_account_x_latest_chat_at);
+create index participant_latest on participant(room_id,participant_latest_chat_at);
 
 create table chat_flag(
   chat_id bigint references chat
