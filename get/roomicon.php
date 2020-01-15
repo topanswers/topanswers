@@ -3,7 +3,12 @@ include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to roomicon,pg_temp");
 $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'');
-extract(cdb("select room_id,room_image, room_image is not null room_has_image from one"));
+extract(cdb("select room_id,room_image
+                  , room_image is not null room_has_image
+                  , get_byte(community_dark_shade,0) community_dark_shade_r
+                  , get_byte(community_dark_shade,1) community_dark_shade_g
+                  , get_byte(community_dark_shade,2) community_dark_shade_b
+             from one"));
 
 header('X-Powered-By: ');
 header('Cache-Control: max-age=8600');
@@ -43,7 +48,7 @@ $colBG = imagecolorallocate($im, $colBG_r, $colBG_g, $colBG_b);
 $colTransparentBG = imagecolortransparent($im, $colBG);
 //imagefill($im, 0, 0, $colBG);
 imagefill($im, 0, 0, $colTransparentBG);
-$col = imagecolorallocate($im, $id%128, intdiv($id,128)%128, intdiv($id,16384)%128);
+$col = imagecolorallocate($im, $community_dark_shade_r, $community_dark_shade_g, $community_dark_shade_b);
 
 // build pixels as long there are bits in
 for($i = 0; $i < $pixelCount; $i++) {
