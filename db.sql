@@ -138,7 +138,7 @@ create table chat_history(
 );
 create index chat_history_chat_id on chat_history (chat_id);
 
-create table account_room_x(
+create table writer(
   account_id integer references account
 , room_id integer references room
 , primary key (account_id,room_id)

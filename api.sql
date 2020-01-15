@@ -68,7 +68,7 @@ select room_id,community_id,room_can_chat
      , coalesce(question_title,room_name,community_display_name||' Chat') room_derived_name
 from (select room_id,community_id,room_name
            , get_account_id() is not null and (room_type='public' or account_id is not null) room_can_chat
-      from db.room natural left join (select * from db.account_room_x where account_id=get_account_id()) a
+      from db.room natural left join (select * from db.writer where account_id=get_account_id()) a
       where room_type<>'private' or account_id is not null) r
      natural join (select community_id,community_display_name from api._community natural join db.community) c
      natural left join (select question_id,question_title, question_room_id room_id from db.question) q;

@@ -21,7 +21,7 @@ select account_id,account_is_dev,community_id,community_name,community_code_lang
 from db.room natural join api._room natural join db.community
      natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
-     natural left join db.account_room_x x
+     natural left join db.writer x
 where room_id=get_room_id();
 --
 --

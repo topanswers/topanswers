@@ -24,7 +24,7 @@ select room_id
      , (room_type='public' or x.room_id is not null) room_can_chat
      , encode(community_dark_shade,'hex') colour_dark
 from db.room r natural join db.community
-     natural left join (select room_id from db.account_room_x where account_id=get_account_id()) x
+     natural left join (select room_id from db.writer where account_id=get_account_id()) x
 where room_id=get_room_id();
 --
 --

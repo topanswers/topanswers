@@ -17,7 +17,7 @@ select account_id,account_is_dev,community_id,community_name,community_code_lang
 from db.room natural join db.community
      natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
-     natural left join db.account_room_x x
+     natural left join db.writer x
 where room_id=get_room_id();
 --
 --
@@ -70,12 +70,11 @@ create function range(startid bigint, endid bigint)
   order by chat_at;
 $$;
 --
-create function activerooms() returns table (room_id integer, question_id integer, room_name text, community_colour text, community_name text, room_account_unread_messages bigint, room_account_latest_read_chat_id bigint)
+create function activerooms() returns table (room_id integer, question_id integer, room_name text, community_name text, room_account_unread_messages bigint, room_account_latest_read_chat_id bigint)
                 language sql security definer set search_path=db,api,chat,pg_temp as $$
   select room_id
        , question_id
        , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
-       , encode(community_mid_shade,'hex')
        , community_name
        , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.room_account_x_latest_read_chat_id) room_account_unread_messages
        , room_account_x_latest_read_chat_id
@@ -101,7 +100,7 @@ create function quote(id bigint) returns text language sql security definer set 
   select _error('invalid chat id') where not exists (select 1
                                                      from chat natural join (select room_id,community_id,room_type from room) r natural join (select community_id,community_type from community) c 
                                                      where chat_id=id and (community_type='public' or exists (select 1 from member m where m.community_id=r.community_id and m.account_id=get_account_id()))
-                                                                      and (room_type<>'private' or exists (select 1 from account_room_x a where a.room_id=r.room_id and a.account_id=get_account_id())));
+                                                                      and (room_type<>'private' or exists (select 1 from writer a where a.room_id=r.room_id and a.account_id=get_account_id())));
   --
   select account_name
          ||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)

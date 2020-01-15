@@ -13,7 +13,7 @@ where community_type='public' or account_id is not null;
 create view room with (security_barrier) as
 select community_id,room_id
      , coalesce(room_name,community_display_name||' Chat') room_name
-from db.room natural join community natural left join (select * from db.login natural join db.account_room_x where login_uuid=get_login_uuid()) a
+from db.room natural join community natural left join (select * from db.login natural join db.writer where login_uuid=get_login_uuid()) a
 where (room_type<>'private' or account_id is not null) and not exists(select 1 from db.question where question_room_id=room.room_id);
 --
 create view tag with (security_barrier) as
@@ -85,7 +85,7 @@ select account_id,community_id,community_name,community_code_language,room_id
 from db.room r natural join db.community
      natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
-     natural left join db.account_room_x x
+     natural left join db.writer x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
                              , license_name question_license_name
