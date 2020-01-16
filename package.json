@@ -1,0 +1,17 @@
+{
+  "name": "topanswers",
+  "version": "0.0.0",
+  "description": "A lasting library of knowledge for the internet.",
+  "main": "get/index.php",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/topanswers/topanswers.git"
+  },
+  "author": "Jack Douglas <jack@douglastechnology.co.uk>",
+  "license": "AGPL-3.0",
+  "dependencies": {},
+  "bugs": {
+    "url": "https://github.com/topanswers/topanswers/issues"
+  },
+  "homepage": "https://topanswers.xyz"
+}
