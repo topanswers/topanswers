@@ -78,13 +78,13 @@ create function activerooms() returns table (room_id integer, question_id intege
        , community_name
        , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.participant_latest_read_chat_id) room_account_unread_messages
        , participant_latest_read_chat_id
-  from (select room_id,participant_latest_chat_at,participant_latest_read_chat_id
+  from (select room_id,participant_latest_chat_at,participant_latest_read_chat_id,participant_chat_count
         from participant
-        where account_id=get_account_id() and participant_latest_chat_at>(current_timestamp-'7d'::interval)) x
+        where account_id=get_account_id() and participant_latest_chat_at+make_interval(hours=>60+least(participant_chat_count,182)*12)>current_timestamp) x
        natural join room r
        natural join community
        natural left join (select question_id, question_room_id room_id, question_title from question) q
-  order by participant_latest_chat_at desc;
+  order by participant_chat_count desc, participant_latest_chat_at desc;
 $$;
 --
 create function activeusers() returns table (account_id integer, account_name text, account_is_me boolean, communicant_votes integer) language sql security definer set search_path=db,api,chat,pg_temp as $$
@@ -163,7 +163,7 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
              from i cross join (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z)
      , r as (insert into participant(room_id,account_id,participant_latest_read_chat_id)
              select room_id,get_account_id(),chat_id from i
-             on conflict on constraint participant_pkey do update set participant_latest_chat_at=default, participant_latest_read_chat_id=excluded.participant_latest_read_chat_id)
+             on conflict on constraint participant_pkey do update set participant_latest_chat_at=default, participant_chat_count=participant.participant_chat_count+1, participant_latest_read_chat_id=excluded.participant_latest_read_chat_id)
   select chat_id from i;
 $$;
 --

@@ -149,6 +149,7 @@ create table participant(
 , account_id integer references account
 , participant_latest_chat_at timestamptz not null default current_timestamp
 , participant_latest_read_chat_id bigint not null
+, participant_chat_count integer default 0 not null
 , primary key (room_id,account_id)
 );
 create index participant_latest on participant(room_id,participant_latest_chat_at);
