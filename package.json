@@ -10,7 +10,8 @@
   "author": "Jack Douglas <jack@douglastechnology.co.uk>",
   "license": "AGPL-3.0",
   "dependencies": {
-    "codemirror": "^5.50.2"
+    "codemirror": "^5.50.2",
+    "fork-awesome": "^1.1.7"
   },
   "bugs": {
     "url": "https://github.com/topanswers/topanswers/issues"
