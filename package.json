@@ -9,7 +9,9 @@
   },
   "author": "Jack Douglas <jack@douglastechnology.co.uk>",
   "license": "AGPL-3.0",
-  "dependencies": {},
+  "dependencies": {
+    "codemirror": "^5.50.2"
+  },
   "bugs": {
     "url": "https://github.com/topanswers/topanswers/issues"
   },

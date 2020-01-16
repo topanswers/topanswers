@@ -43,4 +43,12 @@ clean:
 
 # Fetch and initialize dependencies
 .PHONY: install
-install: $(LAST_MANIFEST)
+install: $(LAST_MANIFEST) npm_lib_links
+
+NPM_LIBS = codemirror
+
+.PHONY: npm_lib_links
+npm_lib_links: $(foreach LIB,$(NPM_LIBS),get/lib/$(LIB))
+
+get/lib/%: | package-lock.json
+	ln -sfrT node_modules/$* $@
