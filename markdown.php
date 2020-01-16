@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/lib/highlightjs/default.css">
+<link rel="stylesheet" href="/lib/highlight.js/default.css">
 <link rel="stylesheet" href="/lib/qp/qp.css">
 <style>
   .markdown { overflow: auto; overflow-wrap: break-word; }
@@ -53,7 +53,7 @@
 <script src="/lib/markdown-it-for-inline.js"></script>
 <script src="/lib/markdownItAnchor.js"></script>
 <script src="/lib/markdownItTocDoneRight.js"></script>
-<script src="/lib/highlightjs/highlight.js"></script>
+<script src="/lib/highlight.js/lib/highlight.js"></script>
 <script src="/lib/qp/qp.js"></script>
 <script>
   // we have no idea why this works but without it cs highlighting doesn't happen
@@ -61,7 +61,7 @@
     var script = document.createElement( 'script' );
     script.type = 'text/javascript';
     script.async = false;
-    script.src = "/lib/highlightjs/highlight.js";
+    script.src = "/lib/highlight.js/lib/highlight.js";
     script.addEventListener("load", () => { hljs.initHighlighting(); })
     script.addEventListener("error", () => { console.log("error"); hljs.initHighlighting(); })
     document.querySelector("head").appendChild(script);
