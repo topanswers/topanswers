@@ -45,7 +45,7 @@ clean:
 .PHONY: install
 install: $(LAST_MANIFEST) npm_lib_links
 
-NPM_LIBS = codemirror fork-awesome highlight.js lightbox2 jquery
+NPM_LIBS = codemirror fork-awesome highlight.js lightbox2 jquery moment
 
 .PHONY: npm_lib_links
 npm_lib_links: $(foreach LIB,$(NPM_LIBS),get/lib/$(LIB))

@@ -111,7 +111,7 @@ if(isset($_GET['month'])){
   <script src="/lib/codemirror/mode/sql/sql.js"></script>
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
-  <script src="/lib/moment.js"></script>
+  <script src="/lib/moment/min/moment-with-locales.js"></script>
   <script src="/lib/mark.js"></script>
   <script>
     $(function(){

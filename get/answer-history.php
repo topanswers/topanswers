@@ -51,7 +51,7 @@ extract(cdb("select account_id
   <script src="/lib/codemirror/mode/markdown/markdown.js"></script>
   <script src="/lib/codemirror/mode/sql/sql.js"></script>
   <?require '../markdown.php';?>
-  <script src="/lib/moment.js"></script>
+  <script src="/lib/moment/min/moment-with-locales.js"></script>
   <script src="/lib/diff_match_patch.js"></script>
   <script>
     $(function(){

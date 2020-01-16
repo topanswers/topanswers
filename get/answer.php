@@ -52,7 +52,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
   <script src="/lib/codemirror/addon/display/placeholder.js"></script>
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/dist/js/lightbox.min.js"></script>
-  <script src="/lib/moment.js"></script>
+  <script src="/lib/moment/min/moment-with-locales.js"></script>
   <script src="/lib/favico.js"></script>
   <script>
     $(function(){

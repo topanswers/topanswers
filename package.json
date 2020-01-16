@@ -14,7 +14,8 @@
     "fork-awesome": "^1.1.7",
     "highlight.js": "^9.17.1",
     "jquery": "^3.4.1",
-    "lightbox2": "^2.11.1"
+    "lightbox2": "^2.11.1",
+    "moment": "^2.24.0"
   },
   "bugs": {
     "url": "https://github.com/topanswers/topanswers/issues"

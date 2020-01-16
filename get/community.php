@@ -251,7 +251,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/codemirror/mode/sql/sql.js"></script>
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/dist/js/lightbox.min.js"></script>
-  <script src="/lib/moment.js"></script>
+  <script src="/lib/moment/min/moment-with-locales.js"></script>
   <script src="/lib/resizer.js"></script>
   <script src="/lib/favico.js"></script>
   <script src="/lib/select2.js"></script>
