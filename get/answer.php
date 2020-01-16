@@ -21,7 +21,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
-  <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
+  <link rel="stylesheet" href="/lib/lightbox2/dist/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/lib/codemirror.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -51,7 +51,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
   <script src="/lib/codemirror/mode/sql/sql.js"></script>
   <script src="/lib/codemirror/addon/display/placeholder.js"></script>
   <?require '../markdown.php';?>
-  <script src="/lib/lightbox2/js/lightbox.min.js"></script>
+  <script src="/lib/lightbox2/dist/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
   <script src="/lib/favico.js"></script>
   <script>

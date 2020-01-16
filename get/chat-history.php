@@ -18,7 +18,7 @@ extract(cdb("select account_id
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
-  <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
+  <link rel="stylesheet" href="/lib/lightbox2/dist/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/lib/codemirror.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
