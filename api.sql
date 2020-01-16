@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists private cascade;
 drop schema if exists poll cascade;
 drop schema if exists indx cascade;
 drop schema if exists import cascade;
@@ -189,5 +190,6 @@ end$$;
 \i ~/git/import.sql
 \i ~/git/index.sql
 \i ~/git/poll.sql
+\i ~/git/private.sql
 --
 commit;

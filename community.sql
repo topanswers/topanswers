@@ -5,6 +5,11 @@ set local search_path to community,api,pg_temp;
 --
 create view environment with (security_barrier) as select environment_name from db.environment;
 --
+create view private with (security_barrier) as
+select community_name
+from db.community natural left join (select community_id, account_id from db.login natural join db.member where login_uuid=get_login_uuid()) m
+where community_type='private' and account_id is null;
+--
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_display_name
 from db.community natural left join (select community_id, account_id from db.login natural join db.member where login_uuid=get_login_uuid()) m
