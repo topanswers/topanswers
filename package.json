@@ -13,6 +13,7 @@
     "codemirror": "^5.50.2",
     "fork-awesome": "^1.1.7",
     "highlight.js": "^9.17.1",
+    "jquery": "^3.4.1",
     "lightbox2": "^2.11.1"
   },
   "bugs": {

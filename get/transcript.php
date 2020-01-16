@@ -106,7 +106,7 @@ if(isset($_GET['month'])){
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
   <script src="/lib/lodash.js"></script>
-  <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery/dist/jquery.min.js"></script>
   <script src="/lib/codemirror/lib/codemirror.js"></script>
   <script src="/lib/codemirror/mode/sql/sql.js"></script>
   <?require '../markdown.php';?>

@@ -36,7 +36,7 @@ extract(cdb("select account_id from one"));
     }
   </style>
   <script src="/lib/lodash.js"></script>
-  <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery/dist/jquery.min.js"></script>
   <script>
     $(function(){
       $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');

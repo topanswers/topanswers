@@ -245,7 +245,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
-  <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery/dist/jquery.min.js"></script>
   <script src="/lib/jquery.waitforimages.js"></script>
   <script src="/lib/codemirror/lib/codemirror.js"></script>
   <script src="/lib/codemirror/mode/sql/sql.js"></script>
