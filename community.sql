@@ -119,6 +119,7 @@ from db.room r natural join db.community
 where room_id=get_room_id();
 --
 --
+create function login(uuid) returns boolean language sql security definer as $$select api.login($1);$$;
 create function login_room(uuid,integer) returns boolean language sql security definer as $$select api.login_room($1,$2);$$;
 create function login_community(uuid,text) returns boolean language sql security definer as $$select api.login_room($1,(select community_room_id from db.community where community_name=$2));$$;
 create function login_question(uuid,integer) returns boolean language sql security definer as $$select api.login_question($1,$2);$$;

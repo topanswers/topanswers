@@ -4,8 +4,8 @@ include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to community,pg_temp");
-//if(ccdb("select exists(select 1 from private where community_name=$1)",$_GET['community'])) { header('Location: //topanswers.xyz/private?community='.$_GET['community']); exit; }
-//if(!ccdb("select exists(select 1 from community where community_name=$1)",$_GET['community'])) { header('Location: //topanswers.xyz'); exit; }
+if(isset($_COOKIE['uuid'])){ ccdb("select login($1::uuid)",$_COOKIE['uuid']) || fail(403,'access denied'); }
+if(ccdb("select exists(select 1 from private where community_name=$1)",$_GET['community'])) { header('Location: //topanswers.xyz/private?community='.$_GET['community']); exit; }
 $clearlocal = $_COOKIE['clearlocal']??'';
 $environment = $_COOKIE['environment']??'prod';
 setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
