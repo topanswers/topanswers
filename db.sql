@@ -267,6 +267,7 @@ create table answer(
 , license_id integer references license not null
 , codelicense_id integer references codelicense not null
 , answer_se_imported_at timestamptz
+, answer_proposed_answer_id integer
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 

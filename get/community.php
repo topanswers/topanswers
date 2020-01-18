@@ -305,7 +305,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
       }
       function processNewQuestions(scroll){
-        var newquestions = $('#qa>.question:not(.processed)');
+        var newquestions = $('#qa .question:not(.processed)');
         <?if($dev){?>console.log('processing '+newquestions.length+' questions');<?}?>
         if($('#qa').scrollTop()<100) scroll = true;
         newquestions.each(renderQuestion);
@@ -751,10 +751,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
         return false;
       });
-      $('#qa .post .when').each(function(){
-        $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
-        $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
-      });
       $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
       <?if($auth){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
@@ -779,7 +775,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
       processNewQuestions(true);
       paginateQuestions(questionPage);
-      $('#qa .post').find('.markdown[data-markdown]').renderMarkdown().end().addClass('processed');
+      $('#qa .post').find('.markdown[data-markdown]').renderMarkdown(function(){
+        $('#qa .post').addClass('processed');
+        $('#qa .post .when').each(function(){
+          $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
+          $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+        });
+      });
       processNewChat(true);
       updateRoomLatest();
       processNotifications();

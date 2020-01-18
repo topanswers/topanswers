@@ -56,6 +56,8 @@
 <script src="/lib/markdown-it-footnote.js"></script>
 <script src="/lib/markdown-it-deflist.js"></script>
 <script src="/lib/markdown-it-abbr.js"></script>
+<script src="/lib/markdown-it-container.js"></script>
+<script src="/lib/markdown-it-object.js"></script>
 <script src="/lib/markdown-it-for-inline.js"></script>
 <script src="/lib/markdown-it-container.js"></script>
 <script src="/lib/markdownItAnchor.js"></script>
@@ -130,6 +132,13 @@
                    }
                  } })
                .use(window.markdownitInjectLinenumbers)
+               .use(window.markdownitObject,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens,idx){
+                 var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/);
+                 if (tokens[idx].nesting===1) return '<div class="object-answer" data-id="'+m[1]+'">';
+                 else return '</div>';
+               } })
+               //.use(window.markdownitContainer,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens, idx) { var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/); if (tokens[idx].nesting===1){ return '<code>'+m[1]; }else{ return '</code>'; } } })
+               //.use(window.markdownitContainer,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens, idx) { return tokens[idx].nesting; } })
                .use(window.markdownItAnchor, { slugify: myslugify })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
                .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx)
@@ -158,7 +167,7 @@
     mdsummary.options.linkify =true;
     mdsummary.linkify.tlds('kiwi',true).tlds('xyz',true);
  
-    $.fn.renderMarkdown = function(){
+    $.fn.renderMarkdown = function(callback){
       this.filter('[data-markdown]').each(function(){
         var t = $(this), m = t.attr('data-markdown');
         prefix = t.closest('[data-id]').attr('id')||'';
@@ -167,6 +176,7 @@
         t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
         t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
+        t.find('.object-answer').each(function(){ var t = $(this); $.get('/duplicate?community=<?=$community_name?>&id='+t.attr('data-id')).done(function(r){ t.html(r); typeof callback==='function' && callback(); }); });
         if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
       });
       return this;

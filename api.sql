@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists duplicate cascade;
 drop schema if exists private cascade;
 drop schema if exists poll cascade;
 drop schema if exists indx cascade;
@@ -135,7 +136,7 @@ $$;
 create function login_chat(uuid uuid, id integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select set_config('custom.timestamp',current_timestamp::text,false);
   select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
-  select _error('invalid answer') where not exists (select 1 from _chat where chat_id=id);
+  select _error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
   select _set_id('chat',chat_id),_set_id('room',room_id),_set_id('community',community_id) from _chat where chat_id=id;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
@@ -191,5 +192,6 @@ end$$;
 \i ~/git/index.sql
 \i ~/git/poll.sql
 \i ~/git/private.sql
+\i ~/git/duplicate.sql
 --
 commit;
