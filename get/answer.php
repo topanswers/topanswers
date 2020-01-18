@@ -35,6 +35,8 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .answer { margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid darkgrey; }
     .spacer { flex: 0 0 auto; min-height: 1rem; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
+    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
 
     #markdown-editor-buttons i { padding: 0.2em; margin-bottom: 0.3em; text-align: center; }
     #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 0.2rem; }
@@ -150,7 +152,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
   <title><?=$answer_id?'Edit Answer':'Answer Question'?> - TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
-  <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
+  <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between;">
     <div style="margin: 0.5rem; margin-right: 0.1rem;">
       <a href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community_name)?></a>
     </div>
@@ -168,7 +170,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
         </select>
       <?}?>
       <input id="submit" type="submit" form="form" value="<?=$answer_id?'update answer under '.$answer_license:'post answer'?>" style="margin: 0.5rem;">
-      <a href="/profile"><img style="background-color: #<?=$colour_mid?>; padding: 0.2rem; display: block; height: 2.4rem;" src="/identicon?id=<?=$account_id?>"></a>
+      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
   <form id="form" method="POST" action="//post.topanswers.xyz/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
@@ -183,7 +185,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden;">
         <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow: hidden;">
-          <div style="flex: 0 0 auto; padding: 0.6rem; font-size: larger; text-shadow: 0.1em 0.1em 0.1em lightgrey; border-bottom: 1px solid #<?=$colour_dark?>;"><?=$question_title?></div>
+          <div style="flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid #<?=$colour_dark?>;"><?=$question_title?></div>
           <div class="markdown" data-markdown="<?=$question_markdown?>" style="flex: 1 0 auto; overflow-y: auto; padding: 0.6em;"></div>
         </div>
       </div>
