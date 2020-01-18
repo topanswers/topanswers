@@ -179,6 +179,7 @@
         t.find('.object-answer').each(function(){ var t = $(this); $.get('/duplicate?community=<?=$community_name?>&id='+t.attr('data-id')).done(function(r){ t.html(r); typeof callback==='function' && callback(); }); });
         if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
       });
+      typeof callback==='function' && callback();
       return this;
     };
 
