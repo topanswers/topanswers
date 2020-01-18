@@ -26,7 +26,7 @@ extract(cdb("select account_id from one"));
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 5px; }
     .frame { display: inline-block; border: 1px solid black; margin: 2px; outline: 1px solid #00000040; background-color: white; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
     .element { margin: 0 4px; }
     h3 { font-size: 20px; }
     h2 { font-size: 24px; }

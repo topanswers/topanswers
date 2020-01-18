@@ -4,7 +4,7 @@ include '../locache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
-$authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
+$auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 extract(cdb("select account_id,community_name,room_id,room_derived_name,room_can_chat,room_question_id,community_code_language,my_community_regular_font_name,my_community_monospace_font_name
                    ,colour_dark,colour_mid,colour_light,colour_highlight
              from one"));
@@ -64,17 +64,17 @@ if(isset($_GET['month'])){
     *:not(hr) { box-sizing: inherit; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
-    header select, header input, header a:not(.icon) { margin: 3px; }
-    header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }
-    header .icon>img { background: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
+    header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
+    header select, header input, header a:not(.frame) { margin: 0 4px; }
+    header .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
+    header .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
     header a { color: #<?=$colour_mid?>; }
     mark[data-markjs] { background-color: #<?=$colour_highlight?>80; }
-    .period>div { margin: 0.5em; white-space: nowrap; }
-    .period>div>span { font-size: smaller; font-style: italic; }
     a:not([href]) { color: #<?=$colour_highlight?>; }
 
     .period { border: 2px solid #<?=$colour_mid?>; border-right: none; }
+    .period>div { margin: 0.5em; white-space: nowrap; }
+    .period>div>span { font-size: smaller; font-style: italic; }
     .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
 
     a[data-lightbox] img { cursor: zoom-in; }
@@ -82,7 +82,7 @@ if(isset($_GET['month'])){
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
     .message .icon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; border-radius: 4px; }
-    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 8em; padding: 0.2em; border: 1px solid #<?=$colour_dark?>99; border-radius: 0.3em; background-color: white; overflow: hidden; }
+    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 50vh; padding: 0.2em; border: 1px solid #<?=$colour_dark?>99; border-radius: 0.3em; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
 
     .message .button-group { display: grid; grid-template: 0.8rem 0.8rem / 0.9rem 0.9rem; align-items: center; justify-items: start; font-size: 0.8rem; margin-left: 1px; }
@@ -138,17 +138,17 @@ if(isset($_GET['month'])){
   <title><?=$room_derived_name?> Transcript - TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column;">
-  <header xstyle="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
-    <div xstyle="margin: 0.5rem; margin-right: 0.1rem;">
+  <header>
+    <div>
       <a href="/<?=$community_name?>">TopAnswers <?=ucfirst($community_name)?></a>
       <span>transcript for <a href="/<?=$community_name?>?<?=$room_question_id?'q='.$room_question_id:'room='.$room_id?>"><?=$room_derived_name?></a></span>
       <form action="/transcript" method="get" style="display: inline;"><input type="search" name="search" placeholder="search"><input type="hidden" name="room" value="<?=$_GET['room']?>"></form>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
-      <a href="/profile" class="icon"><img src="/identicon?id=<?=$account_id?>"></a>
+      <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
     </div>
   </header>
-  <main style="display: flex; margin: 2px; background-color: #<?=$colour_light?>; overflow: hidden;">
+  <main style="display: flex; flex: 1 1 auto; background-color: #<?=$colour_light?>; overflow: hidden;">
     <?if($search){?>
       <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
         <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.55',false)");?>

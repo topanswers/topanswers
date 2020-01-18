@@ -16,7 +16,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
              from one"));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
+<html>
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
@@ -27,22 +27,25 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { font-size: 1rem; background-color: #<?=$colour_dark?>; white-space: nowrap; }
-    header select { margin-right: 0.5rem; }
+    header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
+    header select, header input, header a:not(.frame) { margin: 0 4px; }
+    header .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
+    header .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
+    header a { color: #<?=$colour_mid?>; }
 
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .answer { margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid darkgrey; }
-    .spacer { flex: 0 0 auto; min-height: 1rem; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
     .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
 
-    #markdown-editor-buttons i { padding: 0.2em; margin-bottom: 0.3em; text-align: center; }
-    #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 0.2rem; }
+    #markdown-editor-buttons { display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 5px 0 0 5px; border-right: none; padding: 5px; }
+    #markdown-editor-buttons i { padding: 4px; font-size: 15px; text-align: center; }
+    #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 4px; }
     #markdown-editor-buttons i:last-child { margin-bottom: 0; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 0 0.2rem 0.2rem 0.2rem; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 15px; border-radius: 0 5px 5px 5px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -153,7 +156,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
   <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between;">
-    <div style="margin: 0.5rem; margin-right: 0.1rem;">
+    <div>
       <a href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community_name)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
@@ -169,11 +172,11 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
           <?}?>
         </select>
       <?}?>
-      <input id="submit" type="submit" form="form" value="<?=$answer_id?'update answer under '.$answer_license:'post answer'?>" style="margin: 0.5rem;">
+      <input id="submit" type="submit" form="form" value="<?=$answer_id?'update answer under '.$answer_license:'post answer'?>">
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
-  <form id="form" method="POST" action="//post.topanswers.xyz/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 2vmin; overflow-y: hidden;">
+  <form id="form" method="POST" action="//post.topanswers.xyz/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 16px; overflow-y: hidden;">
     <?if($answer_id){?>
       <input type="hidden" name="action" value="change">
       <input type="hidden" name="id" value="<?=$answer_id?>">
@@ -191,15 +194,15 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
       </div>
       <div style="flex: 0 0 2vmin;"></div>
       <div style="flex: 0 0 1.6em;">
-        <div id="markdown-editor-buttons" style="display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem 0 0 0.2rem; border-right: none; padding: 0.3em;">
+        <div id="markdown-editor-buttons">
           <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
           <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
-          <br style="margin-bottom: 1em;">
+          <br style="margin-bottom: 15px;">
           <i title="Hyperlink (Ctrl + L)" class="button fa fw fa-link"></i>
           <i title="Blockquote (Ctrl + Q)" class="button fa fw fa-quote-left"></i>
           <i title="Code (Ctrl + K)" class="button fa fw fa-code"></i>
           <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
-          <br style="margin-bottom: 1em;">
+          <br style="margin-bottom: 15px;">
           <i title="Undo (Ctrl + Z)" class="button fa fw fa-undo"></i>
           <i title="Redo (Ctrl + Y)" class="button fa fw fa-repeat"></i>
         </div>
@@ -208,7 +211,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white; padding: 0.6rem; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
+      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
     </main>
   </form>
   <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>

@@ -23,7 +23,7 @@ extract(cdb("select account_id,room_id,room_name,room_has_image,community_name,m
     header a { color: #<?=$colour_light?>; }
     main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
     .frame { display: inline-block; border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
     .element { margin: 0 4px; }
     fieldset { display: inline-block; margin: 16px; border: none; background-color: white; border-radius: 5px; }
     legend { background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 5px; padding: 2px 4px; }
@@ -41,7 +41,7 @@ extract(cdb("select account_id,room_id,room_name,room_has_image,community_name,m
       <a class="element" href="/<?=$community_name?>">TopAnswers</a>
     </div>
     <div>
-      <a class="frame" href="/profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
   <main>

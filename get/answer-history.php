@@ -26,11 +26,11 @@ extract(cdb("select account_id
     *:not(hr) { box-sizing: inherit; }
     html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
     textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 1rem; color: #<?=$colour_light?>; background: #<?=$colour_dark?>; white-space: nowrap; }
-    header a { color: #<?=$colour_light?>; }
-    header>div>:not(.icon) { margin: 3px; }
-    header .icon { border: 1px solid #<?=$colour_light?>; margin: 1px; }
-    header .icon>img { background: #<?=$colour_mid?>; height: 24px; border: 1px solid #<?=$colour_dark?>; display: block; padding: 1px; }
+    header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
+    header select, header input, header a:not(.frame) { margin: 0 4px; }
+    header .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
+    header .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
+    header a { color: #<?=$colour_mid?>; }
 
     .markdown, .diff { border: 1px solid #<?=$colour_dark?>; padding: 0.5rem; border-radius: 4px; }
     .separator { border-bottom: 0.3rem solid #<?=$colour_dark?>; margin: 1rem -1rem; }
@@ -73,12 +73,12 @@ extract(cdb("select account_id
 </head>
 <body style="font-size: larger; background-color: #<?=$colour_light?>;">
   <header style="border-bottom: 2px solid black;">
-    <div style="display: flex; align-items: center; height: 100%;">
+    <div>
       <a href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>
       <span>Answer History for <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>">an answer</a> on: "<?=$question_title?>"</span>
     </div>
     <div style="display: flex; align-items: center;">
-      <a href="/profile" class="icon"><img src="/identicon?id=<?=$account_id?>"></a>
+      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
   <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
