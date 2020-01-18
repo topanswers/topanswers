@@ -213,7 +213,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message .button-group:first-child .fa[data-count][data-count="0"] { visibility: hidden; }
 
     .message.merged { margin-top: -1px; }
-    .message.merged .who, .message.merged .icon { visibility: hidden; }
+    .message.merged > .who, .message.merged > .icon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
 
     .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
