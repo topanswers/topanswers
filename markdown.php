@@ -29,6 +29,12 @@
   .markdown .footnote-item { font-size: smaller; }
   .markdown .footnote-ref { font-size: 70%; }
   .markdown .footnote-ref>a { text-decoration: none; }
+  .markdown .quoted-message { border-radius: 3px; padding: 5px; display: grid; grid-template-columns: 22px auto auto; grid-template-rows: auto auto; overflow: auto; }
+  .markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 2; grid-row: 1 / span 1; }
+  .markdown .quoted-message > p > em { white-space: nowrap; }
+  .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 1 / span 1; margin-left: 3px; }
+  .markdown .quoted-message > img { grid-row: 2 / span 1; }
+  .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 0.25rem; border: 1px solid white; border-radius: 0.3em; grid-column: 2 / span 2; grid-row: 2 / span 1; justify-self: start; }
   .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 4px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-family: '<?=$my_community_monospace_font_name?>', monospace; border-radius: 0.2rem; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
@@ -51,6 +57,7 @@
 <script src="/lib/markdown-it-deflist.js"></script>
 <script src="/lib/markdown-it-abbr.js"></script>
 <script src="/lib/markdown-it-for-inline.js"></script>
+<script src="/lib/markdown-it-container.js"></script>
 <script src="/lib/markdownItAnchor.js"></script>
 <script src="/lib/markdownItTocDoneRight.js"></script>
 <script src="/lib/highlightjs/highlight.js"></script>
@@ -110,6 +117,18 @@
                .use(window.markdownitDeflist)
                .use(window.markdownitFootnote)
                .use(window.markdownitAbbr)
+               .use(window.markdownitContainer, 'quote', {
+                 validate: function(params) {
+                   return params.trim().match(/^quote\s+(.*)$/);
+                 },
+                 render: function (tokens, idx) {
+                   var m = tokens[idx].info.trim().match(/^quote ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$/);
+                   if (tokens[idx].nesting === 1) {
+                     return '<div class="quoted-message" style="background: #'+m[4]+';">\n<img class="icon" src="/identicon?id='+m[3]+'">\n<a class="fa fa-link" style="color: #'+m[5]+';" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
+                   } else {
+                     return '</div>\n';
+                   }
+                 } })
                .use(window.markdownitInjectLinenumbers)
                .use(window.markdownItAnchor, { slugify: myslugify })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
@@ -146,7 +165,7 @@
         //if(m.length>10000) md.enable('anchor'); else md.disable('anchor');
         t.html(md.render(m,{ docId: prefix }));
         t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
-        t.find(':not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
+        t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
       });

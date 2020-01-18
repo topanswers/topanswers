@@ -132,27 +132,29 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <span style="color: #<?=$notification_dark_shade?>;">(<a href='.' class="dismiss" style="color: #<?=$notification_dark_shade?>;" title="dismiss notification">dismiss</a>)</span>
             </span>
             <img title="<?=($chat_from_account_name)?$chat_from_account_name:'Anonymous'?>" class="icon" src="/identicon?id=<?=$chat_from_account_id?>">
-            <div class="markdown" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
-            <span class="buttons">
-              <span class="button-group show">
-                <i class="stars <?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
-                <i></i>
-                <i class="flags <?=$chat_i_flagged?'me ':''?>fa fa-flag<?=$chat_i_flagged?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
-                <i></i>
+            <div class="markdown" data-markdown="<?=$chat_markdown?>" style="border-color: #<?=$notification_dark_shade?>99;"><pre><?=$chat_markdown?></pre></div>
+            <?if($room_can_chat&&($notification_room_id===$room_id)){?>
+              <span class="buttons">
+                <span class="button-group show">
+                  <i class="stars <?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+                  <i></i>
+                  <i class="flags <?=$chat_i_flagged?'me ':''?>fa fa-flag<?=$chat_i_flagged?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
+                  <i></i>
+                </span>
+                <span class="button-group show">
+                  <i class="<?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" title="star"></i>
+                  <i class="fa fa-ellipsis-h" title="more actions"></i>
+                  <i class="<?=$chat_i_flagged?'me ':''?> fa fa-flag<?=$chat_i_flagged?'':'-o'?>" title="flag"></i>
+                  <i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i>
+                </span>
+                <span class="button-group">
+                  <a href="/transcript?room=<?=$notification_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-link" title="permalink"></a>
+                  <i class="fa fa-ellipsis-h" title="more actions"></i>
+                  <?if($chat_has_history){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+                  <i></i>
+                </span>
               </span>
-              <span class="button-group show">
-                <i class="<?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" title="star"></i>
-                <i class="fa fa-ellipsis-h" title="more actions"></i>
-                <i class="<?=$chat_i_flagged?'me ':''?> fa fa-flag<?=$chat_i_flagged?'':'-o'?>" title="flag"></i>
-                <?if($room_can_chat&&($notification_room_id===$room_id)){?><i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i><?}else{?><i></i><?}?>
-              </span>
-              <span class="button-group">
-                <a href="/transcript?room=<?=$notification_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-link" title="permalink"></a>
-                <i class="fa fa-ellipsis-h" title="more actions"></i>
-                <?if($chat_has_history){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
-                <i></i>
-              </span>
-            </span>
+            <?}?>
           <?}elseif($notification_type==='question'){?>
             <div style="display: flex; overflow: hidden; font-size: 12px; white-space: nowrap;">
               <span class="when" style="color: #<?=$notification_dark_shade?>b0" data-at="<?=$notification_at_iso?>"></span>
