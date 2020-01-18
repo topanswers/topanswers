@@ -118,6 +118,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .post:not(:hover) .hover { display: none; }
     #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
     #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
+    #qa .markdown .post { border: 3px solid #<?=$colour_dark?>; margin: 0; }
+    #qa .markdown .post .tag:hover i { visibility: hidden; }
 
     #qa .title { border-bottom: 1px solid #<?=$colour_dark?>; font-size: 19px; padding: 8px }
     #qa .question>a { display: block; padding: 8px; border-bottom: 1px solid #<?=$colour_dark?>; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
