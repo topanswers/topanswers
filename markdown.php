@@ -31,6 +31,7 @@
   .markdown .footnote-ref>a { text-decoration: none; }
   .markdown .quoted-message { border-radius: 3px; padding: 5px; display: grid; grid-template-columns: 22px auto auto; grid-template-rows: auto auto; overflow: auto; }
   .markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 2; grid-row: 1 / span 1; }
+  .markdown .quoted-message > p > a { color: #<?=$colour_dark?>; text-decoration: none; }
   .markdown .quoted-message > p > em { white-space: nowrap; }
   .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 1 / span 1; margin-left: 3px; }
   .markdown .quoted-message > img { grid-row: 2 / span 1; }

@@ -96,29 +96,17 @@ create function activeusers() returns table (account_id integer, account_name te
   order by participant_latest_chat_at desc;
 $$;
 --
-create function quote(id bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select _error('invalid chat id') where not exists (select 1 from api._chat where chat_id=id);
-  --
-  select '::: quote '||room_id||' '||id||' '||account_id||' '||encode(community_mid_shade,'hex')||' '||encode(community_dark_shade,'hex')||chr(10)
-         ||account_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)||' — '||to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"')||'  '||chr(10)
-         ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
-         ||':::'
-  from (select chat_reply_id,room_id,room_derived_name,community_mid_shade,community_dark_shade,chat_at,chat_markdown,account_id,account_name
-        from chat natural join community natural join account natural join _room
-        where chat_id=id) c
-       natural left join (select chat_id chat_reply_id, account_name reply_account_name from chat natural join account) r
-$$;
---
 create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
   select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
   select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
   --
   select '::: quote '||room_id||' '||cid||' '||account_id||' '||encode(community_mid_shade,'hex')||' '||encode(community_dark_shade,'hex')||chr(10)
-         ||account_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)||' — '||to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"')
-           ||(case when room_id<>rid then ' *in ['||room_derived_name||'](/'||community_name||'?room='||room_id||'#c'||cid||')*' else '' end)||'  '||chr(10)
+         ||account_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)||' — '
+           ||(case when room_id<>rid then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?room='||room_id||'#c'||cid||')*' else '['||chat_iso||'](#c'||cid||')' end)||'  '||chr(10)
          ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
          ||':::'
   from (select chat_reply_id,room_id,room_derived_name,community_name,community_mid_shade,community_dark_shade,chat_at,chat_markdown,account_id,account_name
+             , to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"') chat_iso
         from chat natural join community natural join account natural join _room
         where chat_id=cid) c
        natural left join (select chat_id chat_reply_id, account_name reply_account_name from chat natural join account) r
