@@ -7,7 +7,7 @@ db("set search_path to chat,pg_temp");
 $authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 extract(cdb("select account_is_dev,community_name,room_name,room_can_chat,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight from one"));
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from chat where chat_change_id>$1",$_GET['fromid']));
-if(isset($_GET['quote'])) exit(ccdb("select quote($1)::varchar",$_GET['id']));
+if(isset($_GET['quote'])) exit(ccdb("select quote($1,$2)::varchar",$_GET['room'],$_GET['id']));
 if(isset($_GET['activerooms'])){
   foreach(db("select room_id,room_name,question_id,community_name,room_account_unread_messages,room_account_latest_read_chat_id from activerooms()") as $r){ extract($r);?>
     <a<?if($room_id!==intval($_GET['room'])){?> href="https://topanswers.xyz/<?=$community_name?>?<?=$question_id?'q='.$question_id:'room='.$room_id?>"<?}?> data-room="<?=$room_id?>" data-latest="<?=$room_account_latest_read_chat_id?>" <?if($room_account_unread_messages>0){?> data-unread="<?=$room_account_unread_messages?>"<?}?>>
@@ -34,7 +34,7 @@ $id = $_GET['id']??ccdb("select recent()");
   <div id="c<?=$chat_id?>" class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>" data-change-id="<?=$chat_change_id?>" data-at="<?=$chat_at_iso?>">
     <span class="who" title="<?=$account_is_me?'Me':$account_name?> <?=$chat_reply_id?'replying to '.($reply_account_is_me?'Me':$reply_account_name):''?>">
       <?=$account_is_me?'<em>Me</em>':$account_name?>
-      <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: #'.$colour_dark.'; text-decoration: none;">replying to</a> '.($reply_account_is_me?'<em>Me</em>':$reply_account_name):''?>
+      <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'">replying to</a> '.($reply_account_is_me?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
     <img title="<?=($account_name)?$account_name:'Anonymous'?> (Stars: <?=$communicant_votes?>)" class="icon" src="/identicon?id=<?=$account_id?>">

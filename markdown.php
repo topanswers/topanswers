@@ -137,8 +137,6 @@
                  if (tokens[idx].nesting===1) return '<div class="object-answer" data-id="'+m[1]+'">';
                  else return '</div>';
                } })
-               //.use(window.markdownitContainer,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens, idx) { var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/); if (tokens[idx].nesting===1){ return '<code>'+m[1]; }else{ return '</code>'; } } })
-               //.use(window.markdownitContainer,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens, idx) { return tokens[idx].nesting; } })
                .use(window.markdownItAnchor, { slugify: myslugify })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
                .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx)

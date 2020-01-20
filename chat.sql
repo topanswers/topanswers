@@ -97,21 +97,30 @@ create function activeusers() returns table (account_id integer, account_name te
 $$;
 --
 create function quote(id bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select _error('invalid chat id') where not exists (select 1
-                                                     from chat natural join (select room_id,community_id,room_type from room) r natural join (select community_id,community_type from community) c
-                                                     where chat_id=id and (community_type='public' or exists (select 1 from member m where m.community_id=r.community_id and m.account_id=get_account_id()))
-                                                                      and (room_type<>'private' or exists (select 1 from writer a where a.room_id=r.room_id and a.account_id=get_account_id())));
+  select _error('invalid chat id') where not exists (select 1 from api._chat where chat_id=id);
   --
   select '::: quote '||room_id||' '||id||' '||account_id||' '||encode(community_mid_shade,'hex')||' '||encode(community_dark_shade,'hex')||chr(10)
-         ||account_name
-         ||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)
-         ||' — '
-         ||to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"')
-         ||'  '
-         ||chr(10)
-         ||regexp_replace(chat_markdown,'^','>','mg')
-         ||chr(10)||':::'
-  from (select chat_reply_id, room_id, community_mid_shade, community_dark_shade, chat_at, chat_markdown, account_id, account_name from chat natural join community natural join account where chat_id=id) c
+         ||account_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)||' — '||to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"')||'  '||chr(10)
+         ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
+         ||':::'
+  from (select chat_reply_id,room_id,room_derived_name,community_mid_shade,community_dark_shade,chat_at,chat_markdown,account_id,account_name
+        from chat natural join community natural join account natural join _room
+        where chat_id=id) c
+       natural left join (select chat_id chat_reply_id, account_name reply_account_name from chat natural join account) r
+$$;
+--
+create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
+  select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
+  select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
+  --
+  select '::: quote '||room_id||' '||cid||' '||account_id||' '||encode(community_mid_shade,'hex')||' '||encode(community_dark_shade,'hex')||chr(10)
+         ||account_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)||' — '||to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+           ||(case when room_id<>rid then ' *in ['||room_derived_name||'](/'||community_name||'?room='||room_id||'#c'||cid||')*' else '' end)||'  '||chr(10)
+         ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
+         ||':::'
+  from (select chat_reply_id,room_id,room_derived_name,community_name,community_mid_shade,community_dark_shade,chat_at,chat_markdown,account_id,account_name
+        from chat natural join community natural join account natural join _room
+        where chat_id=cid) c
        natural left join (select chat_id chat_reply_id, account_name reply_account_name from chat natural join account) r
 $$;
 --

@@ -161,6 +161,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chat-panels .markdown img { max-height: 7rem; }
     #chat-panels .message.thread .markdown { background: #<?=$colour_highlight?>40; }
     #messages .message:not(:hover) .when { display: none; }
+    #messages .message .who>a { color: #<?=$colour_dark?>; }
+    #messages .message .who>a[href^='#'] { text-decoration: none; }
     #notifications .message { padding: 0.3em; border-bottom: 1px solid #<?=$colour_dark?>; }
     #notifications .message[data-type='chat'] { padding-top: 1.3em; }
     #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
@@ -202,7 +204,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
     .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
-    .message .markdown { flex: 0 1 auto; max-height: 20vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 0.3em; background: white; overflow: auto; }
+    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 0.3em; background: white; overflow: auto; }
 
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
@@ -649,7 +651,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         sync = typeof sync !== 'undefined' ? sync : false;
         s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
         if(s&&(s[2]===s[4])){
-          $.get({ url: '/chat?quote&room='+s[1]+'&id='+s[2], async: !sync }).done(function(r){
+          $.get({ url: '/chat?quote&room=<?=$room?>&id='+s[2], async: !sync }).done(function(r){
             if($('#chattext').val()===m){
               $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return '*'+(moment(match).fromNow())+'*'; })).renderMarkdown();
               setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
