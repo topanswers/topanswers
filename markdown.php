@@ -143,8 +143,16 @@
                .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx)
     {
       if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
-      if(tokens[idx].attrGet('href')==='http://dba.se') tokens[idx].attrSet('href','https://dba.stackexchange.com');
-      if(tokens[idx].attrGet('href')==='http://tex.se') tokens[idx].attrSet('href','https://tex.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DBA.SE') tokens[idx].attrSet('href','https://dba.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://TEX.SE') tokens[idx].attrSet('href','https://tex.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://M.SE') tokens[idx].attrSet('href','https://meta.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://UNIX.SE') tokens[idx].attrSet('href','https://unit.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DBA.TA') tokens[idx].attrSet('href','/databases');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DATABASES.TA') tokens[idx].attrSet('href','/databases');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://TEX.TA') tokens[idx].attrSet('href','/tex');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://UNIX.TA') tokens[idx].attrSet('href','/nix');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://NIX.TA') tokens[idx].attrSet('href','/nix');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://META.TA') tokens[idx].attrSet('href','/meta');
     });
 
     md.renderer.rules.code_block = function(tokens, idx, options, env, slf){
@@ -160,7 +168,7 @@
       return '<pre><code' + slf.renderAttrs(token) + '>' + highlighted + '</code></pre>\n';
     };
 
-    md.linkify.tlds('kiwi',true).tlds('xyz',true);
+    md.linkify.tlds('kiwi',true).tlds('xyz',true).tlds('ta',true);
     mdsummary = window.markdownIt('zero').enable(['replacements','smartquotes','autolink','backticks','entity','escape','linkify','reference','emphasis','link','strikethrough','backticks'])
                       .use(window.markdownitSup).use(window.markdownitSub);
     mdsummary.options.linkify =true;
