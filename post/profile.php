@@ -1,4 +1,4 @@
-<?    
+<?
 include '../cors.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
@@ -11,9 +11,18 @@ if(isset($_POST['community'])){
 }
 if($auth){
   if(isset($_POST['community'])){
-    extract(cdb("select community_name from one"));
+    extract(cdb("select community_name,sesite_url from one"));
     switch($_POST['action']){
       case 'font': db("select change_fonts($1,$2)",$_POST['regular'],$_POST['mono']); header('Location: '.$_POST['location']); exit;
+      case 'se':
+        $ch = curl_init('https://api.stackexchange.com/2.2/me?key=fQPamdsPO4Okt9r*OKEp)g((&site='.explode('.',substr($sesite_url,8))[0].'&access_token='.$_POST['token']);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+        curl_setopt($ch,CURLOPT_ENCODING,'');
+        $id = json_decode(curl_exec($ch),true)['items'][0]["user_id"];
+        curl_close($ch);
+        if($id) db("select set_se_user_id($1)",$id);
+        header('Location: '.$_POST['location']);
+        exit;
       default: fail(400,'unrecognized action for authenticated user with community set');
     }
   }else{

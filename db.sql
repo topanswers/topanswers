@@ -1,5 +1,6 @@
 create table one(
   one_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
+  one_stackapps_secret text default '' not null
 );
 create unique index one_only_ind on one((1));
 

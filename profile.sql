@@ -21,12 +21,16 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
      , encode(community_light_shade,'hex') colour_light
      , encode(community_highlight_color,'hex') colour_highlight
      , encode(community_warning_color,'hex') colour_warning
+      ,sesite_url
      , (select font_id from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_id
      , (select font_id from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_id
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
+      ,communicant_se_user_id
+      ,one_stackapps_secret
 from (select account_id,account_name,account_image,account_license_id,account_codelicense_id,account_uuid from db.account where account_id=get_account_id()) a
-     natural left join (select * from db.community where community_id=get_community_id()) c
+     cross join db.one
+     natural left join (select * from db.community left join db.sesite on community_sesite_id=sesite_id where community_id=get_community_id()) c
      natural left join db.communicant;
 --
 --
@@ -87,6 +91,14 @@ $$;
 create function change_codelicense(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   update account set account_codelicense_id = id where account_id=get_account_id();
+$$;
+--
+create function set_se_user_id(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null or get_community_id() is null;
+  select _error('SE user id is already linked to an account') where exists(select 1 from communicant where community_id=get_community_id() and communicant_se_user_id=id);
+  select _error('SE user id is already set for this account') where exists(select 1 from communicant where community_id=get_community_id() and account_id=get_account_id() and communicant_se_user_id is not null);
+  select _ensure_communicant(get_account_id(),get_community_id());
+  update communicant set communicant_se_user_id = id where account_id=get_account_id() and community_id=get_community_id();
 $$;
 --
 create function link(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,api,pg_temp as $$

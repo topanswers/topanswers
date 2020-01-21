@@ -1,4 +1,4 @@
-<?    
+<?
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
@@ -11,8 +11,44 @@ if(isset($_GET['uuid'])){
 
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'meta') || fail(403,'access denied');
 extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,community_id,community_name,community_display_name,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
-                   ,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name
+                   ,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name,sesite_url,communicant_se_user_id,one_stackapps_secret
              from one"));
+
+if(isset($_GET['action'])){
+  switch($_GET['action']){
+    case 'se':
+      if(isset($_GET['code'])){
+        $ch = curl_init('https://stackoverflow.com/oauth/access_token?client_id=17064&redirect_uri='.urlencode('https://topanswers.xyz/profile?community='.$_GET['community'].'&action=se'));
+        curl_setopt($ch,CURLOPT_POST,true);
+        curl_setopt($ch,CURLOPT_POSTFIELDS,http_build_query(['client_id'=>'17064'
+                                                            ,'client_secret'=>$one_stackapps_secret
+                                                            ,'code'=>$_GET['code']
+                                                            ,'redirect_uri'=>'https://topanswers.xyz/profile?community='.$_GET['community'].'&action=se'
+                                                            ]));
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+        $token = preg_split('/=|&/',curl_exec($ch))[1];
+        curl_close($ch);
+        if($token){?>
+          <form id="form" action="//post.topanswers.xyz/profile" method="post">
+            <input type="hidden" name="action" value="se">
+            <input type="hidden" name="community" value="<?=$community_name?>">
+            <input type="hidden" name="token" value="<?=$token?>">
+            <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
+            <noscript><input type="submit" value="Click here if you are not redirected automatically."/></noscript>
+          </form>
+          <script>
+            document.getElementById('form').submit();
+          </script><?
+          exit;
+        }
+        exit;
+      }else{
+        header('Location: https://stackoverflow.com/oauth?client_id=17064&redirect_uri='.urlencode('https://topanswers.xyz/profile?community='.$_GET['community'].'&action=se')); exit;
+      }
+    default: fail(400,'unrecognized action');
+  }
+}
+
 $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
 ?>
 <!doctype html>
@@ -179,7 +215,21 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
           <input type="submit" value="save">
         </form>
       </fieldset>
+      <?if($sesite_url){?>
+        <fieldset>
+          <legend>linked account on <a href="<?=$sesite_url?>"><?=substr($sesite_url,8)?></a></legend>
+          <form action="//topanswers.xyz/profile" method="get">
+            <?if($communicant_se_user_id){?>
+              <a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>?>"><?=substr($sesite_url,8).'/users/'.$communicant_se_user_id?></a>
+            <?}else{?>
+              <input type="hidden" name="action" value="se">
+              <input type="hidden" name="community" value="<?=$community_name?>">
+              <input type="submit" value="authenticate with SE to link account">
+            <?}?>
+          </form>
+        </fieldset>
+      <?}?>
     </fieldset>
   </main>
-</body>   
-</html>   
+</body>
+</html>
