@@ -117,7 +117,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #qa .post { background-color: white; border-radius: 3px; margin: 16px; overflow: hidden; }
     #qa .post:not(#question) { margin-bottom: 32px; }
-    #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background-color: #<?=$colour_warning?>20; }
+    #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background: repeating-linear-gradient( 135deg, #<?=$colour_warning?>20, #<?=$colour_warning?>40 8px); }
     #qa .post:not(:hover) .hover { display: none; }
     #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
     #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
