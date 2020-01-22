@@ -81,13 +81,13 @@ if(isset($_GET['month'])){
     a[data-lightbox] img { cursor: zoom-in; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
-    .message .who { white-space: nowrap; font-size: 0.6em;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
-    .message .icon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; border-radius: 2px; }
+    .message .who { white-space: nowrap; font-size: 10px;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
+    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background: white; overflow: auto; }
     .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 50vh; padding: 0.2em; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
 
-    .message .button-group { display: grid; grid-template: 0.8rem 0.8rem / 0.9rem 0.9rem; align-items: center; justify-items: start; font-size: 0.8rem; margin-left: 1px; }
-    .message .button-group:first-child { grid-template: 0.8rem 0.8rem / 1.7rem 0.1rem; }
+    .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
+    .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
     .message .button-group .fa { color: #<?=$colour_dark?>; cursor: pointer; text-decoration: none; }
     .message .button-group .fa.me { color: #<?=$colour_highlight?>; }
     .message:hover .button-group:first-child { display: none; }
@@ -99,8 +99,8 @@ if(isset($_GET['month'])){
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .icon { visibility: hidden; }
-    .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
-    .message:target .markdown-wrapper { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
+    .message.thread .markdown { background: #<?=$colour_highlight?>40; }
+    .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
 
     .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
@@ -166,9 +166,7 @@ if(isset($_GET['month'])){
           </small>
           <div id="c<?=$chat_id?>" class="message" data-id="<?=$chat_id?>" data-name="<?=$account_name?>">
             <img class="icon" src="/identicon?id=<?=$account_id?>">
-            <div class="markdown-wrapper">
-              <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
-            </div>
+            <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
             <span class="buttons">
               <span class="button-group show">
                 <i class="stars <?=$i_starred?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
@@ -260,9 +258,7 @@ if(isset($_GET['month'])){
               <?}?>
             </small>
             <img class="icon" src="/identicon?id=<?=$account_id?>">
-            <div class="markdown-wrapper">
-              <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
-            </div>
+            <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
             <span class="buttons">
               <span class="button-group show">
                 <i class="stars <?=$i_starred?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
