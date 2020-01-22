@@ -26,7 +26,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,room_id,room_name,room_can_chat,room_has_chat
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
-                   ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
+                   ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags,question_type_derived
                    ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged,question_is_votable
                    ,question_is_blog,question_is_meta,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
@@ -104,6 +104,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
 
     #qa { overflow: auto; scroll-behavior: smooth; }
+    #qa .banner { display: flex; margin: 10px 16px 0 16px; align-items: center; }
+    #qa .banner h1 { font-size: 28px; color: #<?=$colour_light?>; font-weight: normal; margin: 0; }
 
     #qa .answers { border-top: 1px solid #<?=$colour_dark?>; }
     #qa .answers .bar { background-color: white; }
@@ -112,7 +114,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px;font-family: '<?=$my_community_regular_font_name?>', serif; }
     #qa .post:not(.processed) { opacity: 0; }
 
-    #qa .post { background-color: white; border-radius: 3px; margin: 16px; margin-bottom: 32px; overflow: hidden; }
+    #qa .post { background-color: white; border-radius: 3px; margin: 16px; overflow: hidden; }
+    #qa .post:not(#question) { margin-bottom: 32px; }
     #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background-color: #<?=$colour_warning?>20; }
     #qa .post:not(:hover) .hover { display: none; }
     #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
@@ -141,7 +144,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .bar [data-total]::after { content: attr(data-total) ' stars'; }
     #qa .bar [data-total="1"]::after { content: attr(data-total) ' star'; margin-right: 0.4em; }
 
-    #answer { margin: 2rem auto; display: block; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
@@ -159,6 +161,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chat-panels .message .who { top: -1.2em; line-height: 1; }
     #chat-panels .markdown img { max-height: 7rem; }
     #chat-panels .message.thread .markdown { background: #<?=$colour_highlight?>40; }
+    #messages .message .when { font-style: italic; }
     #messages .message:not(:hover) .when { display: none; }
     #messages .message .who>a { color: #<?=$colour_dark?>; }
     #messages .message .who>a[href^='#'] { text-decoration: none; }
@@ -321,7 +324,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         setChatPollTimeout();
       }
       function paginateQuestions(n){
-        var m = $('#qa').children('.question').data('of')
+        var m = $('#questions').children('.question').data('of')
           , p = Math.ceil(m/10)
           , d = (n<7)?[8,8,8,8,7,6][n-1]:((n>(p-6))?[8,8,8,8,7,5][p-n]:5)
           , o = { items: m
@@ -331,17 +334,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 , nextText: '»'
                 , ellipsePageSet: false
                 , displayedPages: d
-                , onPageClick: function(n){ questionPage = n; $('#qa').children('.question').remove(); updateQuestions(true); return false; } };
+                , onPageClick: function(n){ questionPage = n; $('#questions').children('.question').remove(); updateQuestions(true); return false; } };
         $('#more').show().pagination(o);
       }
       function updateQuestions(scroll){
-        var maxQuestion = $('#qa>:first-child').data('poll-major-id'), full = $('#qa').children('.question').length===0;
+        var maxQuestion = $('#questions>:first-child').data('poll-major-id'), full = $('#questions').children('.question').length===0;
         if($('#qa').scrollTop()<100) scroll = true;
         $.get('/questions?community=<?=$community_name?>'+(full?'&page='+questionPage:'&id='+maxQuestion),function(data) {
-          if($('#qa>:first-child').data('poll-major-id')===maxQuestion){
+          if($('#questions>:first-child').data('poll-major-id')===maxQuestion){
             var newquestions;
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
-            newquestions = $(data).filter('.question').each(renderQuestion).prependTo($('#qa')).hide().slideDown(full?0:400);
+            newquestions = $(data).filter('.question').each(renderQuestion).prependTo($('#questions')).hide().slideDown(full?0:400);
             processNewQuestions();
             paginateQuestions(questionPage);
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
@@ -350,8 +353,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function searchQuestions(){
         $.get('/questions?community=<?=$community_name?>&search='+$('#search').val(),function(data) {
-          $('#qa>.question').remove();
-          $(data).filter('.question').prependTo($('#qa'));
+          $('#questions>.question').remove();
+          $(data).filter('.question').prependTo($('#questions'));
           processNewQuestions();
           $('#more').hide();
         },'html');
@@ -632,7 +635,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('.ping').removeClass('ping');
         $('#replying').attr('data-id','').attr('data-name','').data('update')();
       });
-      //$('.markdown').renderMarkdown();
       $('#community').change(function(){
         window.location = '/'+$(this).find(':selected').attr('data-name');
       });
@@ -799,7 +801,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
         return false;
       });
-      setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
+      <?if($question){?>
+        setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
+      <?}?>
       $('#active-spacer').click(function(){
         var t = $(this);
         if((t.prev().css('flex-shrink')==='1')&&(t.next().css('flex-shrink')==='1')) t.next().animate({ 'flex-shrink': 100 });
@@ -834,7 +838,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       function search(){
         if($('#search').val()===''){
-          $('#qa>.question').remove();
+          $('#questions>.question').remove();
           maxQuestionPollMajorID = 0;
           maxQuestionPollMinorID = 0;
           updateQuestions();
@@ -893,25 +897,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?if(!$question){?><div><input class="element" type="search" id="search" placeholder="search"></div><?}?>
       <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
-        <?if($communicant_can_import&&$sesite_url&&!$question){?>
-          <form method="post" action="//post.topanswers.xyz/import">
-            <input type="hidden" name="action" value="new">
-            <input type="hidden" name="community" value="<?=$community_name?>">
-            <input type="hidden" name="seids" value="">
-            <input id="se" class="element" type="submit" value="import from SE">
-          </form>
-        <?}?>
-        <?if($auth){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask question"></form><?}?>
         <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
       </div>
     </header>
     <div id="qa">
       <?if($question){?>
+        <div class="banner">
+          <h1><?=$question_type_derived?></h1>
+          <div style="flex: 1 1 0;"></div>
+          <?if($auth&&!$question_is_blog){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask your own question"></form><?}?>
+        </div>
         <div id="question" data-id="<?=$question?>" class="post<?=$question_i_subscribed?' subscribed':''?><?
                                                              ?><?=$question_i_flagged?' flagged':''?><?
                                                              ?><?=$question_i_counterflagged?' counterflagged':''?><?
                                                              ?><?=$question_is_deleted?' deleted':''?>">
-          <div class="title"><?=(($question_is_meta&&($community_name!=='meta'))?'Meta Question: ':'').($question_is_blog?'Blog Post: ':'').$question_title?></div>
+          <div class="title"><?=$question_title?></div>
           <div class="bar">
             <div>
               <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
@@ -1001,10 +1001,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         </div>
         <?if(!$question_is_blog){?>
-          <form method="GET" action="/answer">
-            <input type="hidden" name="question" value="<?=$question?>">
-            <input id="answer" type="submit" value="answer this question<?=$question_answered_by_me?' again':''?>"<?=$auth?'':' disabled'?>>
-          </form>
+          <div class="banner">
+            <?$answer_count = ccdb("select count(1) from answer");?>
+            <h1><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h1>
+            <div style="flex: 1 1 0;"></div>
+            <form method="GET" action="/answer"> <input type="hidden" name="question" value="<?=$question?>"> <input type="submit" value="answer this question<?=$question_answered_by_me?' again':''?>"<?=$auth?'':' disabled'?>> </form>
+          </div>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
                             ,answer_license_href,answer_license_name,answer_codelicense_name,answer_account_name,answer_account_is_imported
@@ -1087,7 +1089,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         <?}?>
       <?}else{?>
-        <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&page=1'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+        <div class="banner">
+          <h1>Questions</h1>
+          <div style="flex: 1 1 0;"></div>
+          <?if($auth&&$communicant_can_import&&$sesite_url&&!$question){?>
+            <form method="post" action="//post.topanswers.xyz/import">
+              <input type="hidden" name="action" value="new">
+              <input type="hidden" name="community" value="<?=$community_name?>">
+              <input type="hidden" name="seids" value="">
+              <input id="se" class="element" type="submit" value="import from SE">
+            </form>
+          <?}?>
+          <?if($auth){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask question"></form><?}?>
+        </div>
+        <div id="questions">
+          <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&page=1'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+        </div>
         <div id='more'></div>
       <?}?>
     </div>

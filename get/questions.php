@@ -43,7 +43,7 @@ if($search){
 ?>
 <?foreach($results as $r){ extract($r);?>
   <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
-    <a href="/<?=$community_name?>?q=<?=$question_id?>#question" title="<?=$question_title?>"><?=$question_title?></a>
+    <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
     <div class="bar">
       <div>
         <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
