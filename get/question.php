@@ -41,22 +41,19 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
     header select, header input, header a:not(.frame) { margin: 0 4px; }
-    header .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    header .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
     header a { color: #<?=$colour_mid?>; }
 
-    .element { margin: 0 4px; }
     .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; }
-
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
+    .element { margin: 0 4px; }
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
 
-    #markdown-editor-buttons { display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 5px 0 0 5px; border-right: none; padding: 5px; }
+    #markdown-editor-buttons { display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
     #markdown-editor-buttons i { padding: 4px; font-size: 15px; text-align: center; }
     #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 4px; }
     #markdown-editor-buttons i:last-child { margin-bottom: 0; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 15px; border-radius: 0 5px 5px 5px; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 15px; border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -224,7 +221,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
       <input type="hidden" name="community" value="<?=$community_name?>">
     <?}?>
     <main>
-      <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 3px;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
+      <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 2px;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
       <div style="flex: 0 0 2vmin;"></div>
       <div style="display: flex; flex: 1 0 0; overflow: hidden;">
         <div style="flex: 0 0 1.6em;">
@@ -248,7 +245,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
           <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
         </div>
         <div style="flex: 0 0 2vmin;"></div>
-        <div id="markdown" class="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 5px; overflow-y: auto;"></div>
+        <div id="markdown" class="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; overflow-y: auto;"></div>
       </div>
     </main>
   </form>

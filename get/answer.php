@@ -32,20 +32,18 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
     header select, header input, header a:not(.frame) { margin: 0 4px; }
-    header .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    header .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
     header a { color: #<?=$colour_mid?>; }
 
-    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
+    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
 
-    #markdown-editor-buttons { display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 5px 0 0 5px; border-right: none; padding: 5px; }
+    #markdown-editor-buttons { display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
     #markdown-editor-buttons i { padding: 4px; font-size: 15px; text-align: center; }
     #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 4px; }
     #markdown-editor-buttons i:last-child { margin-bottom: 0; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 15px; border-radius: 0 5px 5px 5px; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 15px; border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -187,7 +185,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden;">
-        <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow: hidden;">
+        <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; overflow: hidden;">
           <div style="flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid #<?=$colour_dark?>;"><?=$question_title?></div>
           <div class="markdown" data-markdown="<?=$question_markdown?>" style="flex: 1 0 auto; overflow-y: auto; padding: 0.6em;"></div>
         </div>
@@ -211,7 +209,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 0.2rem; overflow-y: auto;"></div>
+      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; overflow-y: auto;"></div>
     </main>
   </form>
   <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>

@@ -68,12 +68,14 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
     header a { color: #<?=$colour_light?>; }
     main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
     main>fieldset { display: flex; flex-direction: column; align-items: flex-start; }
+
     .frame { display: inline-block; border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
     .element { margin: 0 4px; }
-    fieldset { display: inline-block; margin: 16px; border-radius: 5px; }
+
+    fieldset { display: inline-block; margin: 16px; border-radius: 3px; }
     :not(main)>fieldset { background-color: white; border: none; }
-    legend { background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 5px; padding: 2px 4px; }
+    legend { background-color: white; box-shadow: 0 0 1px 1px #<?=$colour_dark?>; border-radius: 3px; padding: 2px 4px; }
     input[type='file'] { color: transparent; }
     <?if(isset($_GET['highlight-recovery'])){?>.highlight { background-color: yellow; }<?}?>
   </style>

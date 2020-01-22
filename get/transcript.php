@@ -66,11 +66,12 @@ if(isset($_GET['month'])){
     textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
     header select, header input, header a:not(.frame) { margin: 0 4px; }
-    header .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    header .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
     header a { color: #<?=$colour_mid?>; }
     mark[data-markjs] { background-color: #<?=$colour_highlight?>80; }
     a:not([href]) { color: #<?=$colour_highlight?>; }
+
+    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
     .period { border: 2px solid #<?=$colour_mid?>; border-right: none; }
     .period>div { margin: 0.5em; white-space: nowrap; }
@@ -81,8 +82,8 @@ if(isset($_GET['month'])){
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 0.6em;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
-    .message .icon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; border-radius: 4px; }
-    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 50vh; padding: 0.2em; border: 1px solid #<?=$colour_dark?>99; border-radius: 0.3em; background-color: white; overflow: hidden; }
+    .message .icon { flex: 0 0 1.2em; height: 1.2em; margin-right: 0.2em; margin-top: 0.1em; border-radius: 2px; }
+    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 50vh; padding: 0.2em; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background-color: white; overflow: hidden; }
     .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
 
     .message .button-group { display: grid; grid-template: 0.8rem 0.8rem / 0.9rem 0.9rem; align-items: center; justify-items: start; font-size: 0.8rem; margin-left: 1px; }
@@ -101,7 +102,7 @@ if(isset($_GET['month'])){
     .message.thread .markdown-wrapper { background: #<?=$colour_highlight?>40; }
     .message:target .markdown-wrapper { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 4px; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>

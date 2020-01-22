@@ -83,18 +83,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chat-wrapper header { border-top: 2px solid black; }
     header a { color: #<?=$colour_light?>; }
 
-    .element { margin: 0 4px; }
-
     .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
-    .icon:not(.roomicon) { border-radius: 4px; }
+    .icon:not(.roomicon) { border-radius: 2px; }
     .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px #<?=$colour_dark?>; cursor: pointer; }
     .icon.ping { box-shadow: 0 0 0 1px #<?=$colour_highlight?>; }
 
+    .element { margin: 0 4px; }
+
     .highlight { color: #<?=$colour_highlight?>; }
 
-    .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; }
+    .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 4px; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
     .tag i::before { border-radius: 50%; }
@@ -113,7 +112,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px;font-family: '<?=$my_community_regular_font_name?>', serif; }
     #qa .post:not(.processed) { opacity: 0; }
 
-    #qa .post { background-color: white; border-radius: 5px; margin: 16px; margin-bottom: 32px; overflow: hidden; }
+    #qa .post { background-color: white; border-radius: 3px; margin: 16px; margin-bottom: 32px; overflow: hidden; }
     #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background-color: #<?=$colour_warning?>20; }
     #qa .post:not(:hover) .hover { display: none; }
     #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
@@ -151,11 +150,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
     #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px 0; }
 
-    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; margin: 0 16px; border-radius: 5px; background: #<?=$colour_light?>; }
+    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; margin: 0 16px; border-radius: 3px; background: #<?=$colour_light?>; }
     #notification-wrapper:empty, #notification-wrapper:empty + [data-rz-handle] { display: none; }
     #notification-wrapper .label { border-bottom: 1px solid #<?=$colour_dark?>; flex: 0 0 auto; }
     #notifications { overflow-x: hidden; overflow-y: auto; }
-    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 5px; background: #<?=$colour_light?>; margin: 0 16px; }
+    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: #<?=$colour_light?>; margin: 0 16px; }
 
     #chat-panels .message .who { top: -1.2em; line-height: 1; }
     #chat-panels .markdown img { max-height: 7rem; }
@@ -204,7 +203,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
     .message .identicon { flex: 0 0 1.2rem; height: 1.2rem; margin-right: 0.2rem; margin-top: 0.1rem; }
-    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 0.3em; background: white; overflow: auto; }
+    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background: white; overflow: auto; }
 
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
@@ -228,8 +227,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li:not(.disabled):not(.active):hover>* { background-color: #<?=$colour_mid?>; }
     .simple-pagination li>.current:not(.prev):not(.next) { position: relative; z-index: 1; outline: 2px solid #<?=$colour_highlight?>; }
     .simple-pagination li>.ellipse { padding: 0 10px; user-select: none; }
-    .simple-pagination li>.prev { border-radius: 5px 0 0 5px; }
-    .simple-pagination li>.next { border-radius: 0 5px 5px 0; }
+    .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
+    .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
 
     #dummyresizerx { background-color: black; flex: 0 0 2px; }
     #dummyresizery { flex: 0 0 2px; }
@@ -948,7 +947,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   </span>
                 <?}?>
                 <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
-                  <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+                  <span class="tag" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
                 <?}?>
               </div>
             </div>

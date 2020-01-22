@@ -22,11 +22,13 @@ extract(cdb("select account_id,room_id,room_name,room_has_image,community_name,m
     header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; border-bottom: 2px solid black; }
     header a { color: #<?=$colour_light?>; }
     main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
+
     .frame { display: inline-block; border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 4px; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
     .element { margin: 0 4px; }
-    fieldset { display: inline-block; margin: 16px; border: none; background-color: white; border-radius: 5px; }
-    legend { background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 5px; padding: 2px 4px; }
+
+    fieldset { display: inline-block; margin: 16px; border: none; background-color: white; border-radius: 3px; }
+    legend { background-color: white; box-shadow: 0 0 1px 1px #<?=$colour_dark?>; border-radius: 3px; padding: 2px 4px; }
   </style>
   <script src="/lib/jquery.js"></script>
   <script>
