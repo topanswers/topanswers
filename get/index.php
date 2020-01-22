@@ -80,7 +80,7 @@ extract(cdb("select account_id from one"));
   </header>
   <main>
     <div>
-    <h1>Join TopAnswers, and help build a lasting library of knowledge for the internet.</h1>
+    <h1>Join TopAnswers, and help build a library of knowledge that lasts.</h1>
     <p>TopAnswers is what Stack Overflow should be: focused on communities and knowledge sharing, not profit. We share some of the same aims:</p>
     <ul>
       <li>Focus on questions and answers. Everything else we do is to <em>help</em> us produce useful questions and answers.</li>
@@ -89,12 +89,13 @@ extract(cdb("select account_id from one"));
     </ul>
     <p>We aren't a clone though; we diverge in important areas:</p>
     <ul>
+      <li>We have invested more in the community aspects of the platform, that encourage like-minded people to coalesce around the production and curation of the library of Q&A, but…</li>
+      <li>…conversely, we've improved the focus on Q&A by moving comments to the side.</li>
       <li>We are not for-profit, so contributors will never be the 'product', and our core aims will not evolve over time.</li>
       <li>As much as possible of our platform is published <a href="/meta?q=28">as open source</a> <a href="/meta?q=221#a580">on GitHub</a>.</li>
-      <li>We've improved the focus on Q&A by moving comments to the side.</li>
       <li>You are <a href="/meta?q=18#a8">free to decide how to license your contributions</a>.</li>
     </ul>
-    <p>We are still small but starting to get momentum — we launched <a href="/databases">databases</a> in October 2019, and have <a href="/meta?q=211#a284">TeX</a> and <a href="/meta?q=530">*nix</a> communites in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a> from there.</p>
+    <p>We are still small but starting to get momentum, and register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">databases</a> in October 2019, and have <a href="/meta?q=211#a284">TeX</a> and <a href="/meta?q=530">*nix</a> communites in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a> from there.</p>
     <p>There is a lot more detailed information on our <a href="/meta">meta</a> community (a place for questions and answers about TopAnswers itself), for example:</p>
     <ul>
       <li><a href="/meta?q=1">Why we are building TopAnswers</a></li>

@@ -227,6 +227,7 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
               <input type="hidden" name="action" value="se">
               <input type="hidden" name="community" value="<?=$community_name?>">
               <input type="submit" value="authenticate with SE to link account">
+              <a href="/meta?q=409#a647">info</a>
             <?}?>
           </form>
         </fieldset>
