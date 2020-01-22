@@ -29,13 +29,13 @@
   .markdown .footnote-item { font-size: smaller; }
   .markdown .footnote-ref { font-size: 70%; }
   .markdown .footnote-ref>a { text-decoration: none; }
-  .markdown .quoted-message { border-radius: 3px; padding: 5px; display: grid; grid-template-columns: 22px auto auto; grid-template-rows: auto auto; overflow: auto; }
-  .markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 2; grid-row: 1 / span 1; }
+  .markdown .quoted-message { border-radius: 3px; padding: 5px; display: grid; grid-template-columns: 22px auto 11px auto; grid-template-rows: auto auto; overflow: auto; }
+  .markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 4; grid-row: 1 / span 1; }
   .markdown .quoted-message > p > a { color: #<?=$colour_dark?>; text-decoration: none; }
   .markdown .quoted-message > p > em { white-space: nowrap; }
-  .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 1 / span 1; margin-left: 3px; }
+  .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 2 / span 1; margin: 2px 0 0 1px; }
   .markdown .quoted-message > img { grid-row: 2 / span 1; }
-  .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 0.25rem; border: 1px solid white; border-radius: 0.3em; grid-column: 2 / span 2; grid-row: 2 / span 1; justify-self: start; }
+  .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 0.25rem; border: 1px solid var(--dark-colour); border-radius: 0.3em; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
   .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 4px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-family: '<?=$my_community_monospace_font_name?>', monospace; border-radius: 0.2rem; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
@@ -127,7 +127,7 @@
                  render: function (tokens, idx) {
                    var m = tokens[idx].info.trim().match(/^quote ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$/);
                    if (tokens[idx].nesting === 1) {
-                     return '<div class="quoted-message" style="background: #'+m[4]+';">\n<img class="icon" src="/identicon?id='+m[3]+'">\n<a class="fa fa-link" style="color: #'+m[5]+';" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
+                     return '<div class="quoted-message" style="--dark-colour: #'+m[5]+'99; background: #'+m[4]+';">\n<img class="icon" src="/identicon?id='+m[3]+'">\n<a class="fa fa-link" style="color: #'+m[5]+';" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
                    } else {
                      return '</div>\n';
                    }
