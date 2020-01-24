@@ -30,7 +30,7 @@ if($search){
     $startid = intval($_GET['id'])+1;
     $endid = '';
   }
-  $results = db("select question_id,question_change,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name
+  $results = db("select question_id,question_change,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name,question_title_short,question_type_derived
                        ,question_is_deleted,question_communicant_votes
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                       , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
@@ -43,7 +43,10 @@ if($search){
 ?>
 <?foreach($results as $r){ extract($r);?>
   <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
-    <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
+    <div class="title">
+      <?if($question_type_derived!=='Question'){?><div title="<?=$question_type_derived?>"><?=$question_type_derived?></div><?}?>
+      <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title_short?>"><?=$question_title_short?></a>
+    </div>
     <div class="bar">
       <div>
         <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">

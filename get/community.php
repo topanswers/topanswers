@@ -89,63 +89,63 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .icon:not(.roomicon) { border-radius: 2px; }
     .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px #<?=$colour_dark?>; cursor: pointer; }
     .icon.ping { box-shadow: 0 0 0 1px #<?=$colour_highlight?>; }
-
     .element { margin: 0 4px; }
-
     .highlight { color: #<?=$colour_highlight?>; }
 
     .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 4px; }
     .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
     .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
     .tag i::before { border-radius: 50%; }
-    <?if($auth&&$question){?>.tag:hover i { visibility: visible; }<?}?>
-    .newtag { position: relative; cursor: pointer; }
-    .newtag .tag { opacity: 0.4; margin: 0; }
-    .newtag:hover .tag { opacity: 1; }
-    .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
 
     #qa { overflow: auto; scroll-behavior: smooth; }
-    #qa .banner { display: flex; margin: 10px 16px 0 16px; align-items: center; }
+    #qa .post { background-color: white; border-radius: 3px; margin: 16px 16px 32px 16px; overflow: hidden; }
+    #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; }
+    #qa .post:not(.processed) { opacity: 0; }
+    #qa .post:not(:hover) .hover { display: none; }
+    #qa .banner { display: flex; margin: 16px 16px 0 16px; align-items: center; }
     #qa .banner h1 { font-size: 28px; color: #<?=$colour_light?>; font-weight: normal; margin: 0; }
-
-    #qa .answers { border-top: 1px solid #<?=$colour_dark?>; }
+    #qa .title { display: flex; border-bottom: 1px solid #<?=$colour_dark?>; font-size: 18px; }
+    #qa .bar { height: 22px; background: #<?=$colour_light?>; font-size: 12px; }
+    #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }
+    #qa .bar .icon+.icon { margin-left: 0; }
+    #qa .answers:not(:empty) { border-top: 1px solid #<?=$colour_dark?>; }
     #qa .answers .bar { background-color: white; }
     #qa .answers .bar:not(:last-child) { border-bottom: 1px solid #<?=$colour_dark?>80; height: 23px; }
     #qa .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px;font-family: '<?=$my_community_regular_font_name?>', serif; }
-    #qa .post:not(.processed) { opacity: 0; }
-
-    #qa .post { background-color: white; border-radius: 3px; margin: 16px; overflow: hidden; }
-    #qa .post:not(#question) { margin-bottom: 32px; }
     #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background: repeating-linear-gradient( 135deg, #<?=$colour_warning?>20, #<?=$colour_warning?>40 8px); }
-    #qa .post:not(:hover) .hover { display: none; }
-    #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
-    #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
-    #qa .markdown .post { border: 3px solid #<?=$colour_dark?>; margin: 0; }
-    #qa .markdown .post .tag:hover i { visibility: hidden; }
-
-    #qa .title { border-bottom: 1px solid #<?=$colour_dark?>; font-size: 19px; padding: 8px }
-    #qa .question>a { display: block; padding: 8px; border-bottom: 1px solid #<?=$colour_dark?>; text-decoration: none; font-size: larger; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #qa .bar { height: 22px; background: #<?=$colour_light?>; font-size: 12px; }
-    #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }
-    #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
-
-    #qa .bar .element.fa-bell { color: #<?=$colour_highlight?>; }
-    #qa .bar .element.fa-flag { color: #<?=$colour_warning?>; }
-    #qa .post:not(.subscribed) .bar .element.fa-bell { display: none; }
-    #qa .post.subscribed .bar .element.fa-bell-o { display: none; }
-    #qa .post:not(.flagged) .bar .element.fa-flag { display: none; }
-    #qa .post.flagged .bar .element.fa-flag-o { display: none; }
-    #qa .post.counterflagged .bar .element.fa-flag-checkered { color: #<?=$colour_highlight?>; }
-
-    #qa .bar .icon+.icon { margin-left: 0; }
-
-    #qa .bar .starrr a.fa-star { color: #<?=$colour_highlight?>; }
-    #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
-    #qa .bar [data-total]::after { content: attr(data-total) ' stars'; }
-    #qa .bar [data-total="1"]::after { content: attr(data-total) ' star'; margin-right: 0.4em; }
+    #qa .question>a { display: block; padding: 8px; border-bottom: 1px solid #<?=$colour_dark?>; text-decoration: none; font-size: 18px; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
+
+    <?if($question){?>
+      <?if($auth){?>.tag:hover i { visibility: visible; }<?}?>
+      .newtag { position: relative; cursor: pointer; }
+      .newtag .tag { opacity: 0.4; margin: 0; }
+      .newtag:hover .tag { opacity: 1; }
+      .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
+
+      #qa #question { margin-bottom: 16px; }
+      #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
+      #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
+      #qa .markdown .post { border: 3px solid #<?=$colour_dark?>; margin: 0; }
+      #qa .markdown .post .tag:hover i { visibility: hidden; }
+      #qa .title { display: block; overflow: hidden; text-overflow: ellipsis; padding: 8px; white-space: nowrap; }
+      #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
+      #qa .bar .element.fa-bell { color: #<?=$colour_highlight?>; }
+      #qa .bar .element.fa-flag { color: #<?=$colour_warning?>; }
+      #qa .bar .starrr a.fa-star { color: #<?=$colour_highlight?>; }
+      #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
+      #qa .bar [data-total]::after { content: attr(data-total) ' stars'; }
+      #qa .bar [data-total="1"]::after { content: attr(data-total) ' star'; margin-right: 0.4em; }
+      #qa .post:not(.subscribed) .bar .element.fa-bell { display: none; }
+      #qa .post.subscribed .bar .element.fa-bell-o { display: none; }
+      #qa .post:not(.flagged) .bar .element.fa-flag { display: none; }
+      #qa .post.flagged .bar .element.fa-flag-o { display: none; }
+      #qa .post.counterflagged .bar .element.fa-flag-checkered { color: #<?=$colour_highlight?>; }
+    <?}else{?>
+      #qa .title > div { flex: 0 0 auto; padding: 8px; background: #<?=$colour_mid?>; border-right: 1px solid #<?=$colour_dark?>; box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
+      #qa .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
+    <?}?>
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
     #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 4px; }
