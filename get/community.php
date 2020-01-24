@@ -1152,11 +1152,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <div style="padding: 10vh 20%;">
                   <?if($auth){?>
                     <?if($question_se_question_id){?>
-                      <p>This is a dedicated room for discussion about this question.</p>
-                      <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
-                    <?}else{?>
                       <p>This is a dedicated room for discussion about this imported question.</p>
                       <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+                    <?}else{?>
+                      <p>This is a dedicated room for discussion about this question.</p>
+                      <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
                     <?}?>
                   <?}else{?>
                     <p>This is a dedicated room for discussion about this question.</p>
