@@ -95,7 +95,7 @@ extract(cdb("select account_id from one"));
       <li>As much as possible of our platform is published <a href="/meta?q=28">as open source</a> <a href="/meta?q=221#a580">on GitHub</a>.</li>
       <li>You are <a href="/meta?q=18#a8">free to decide how to license your contributions</a>.</li>
     </ul>
-    <p>We are still small but starting to get momentum, and register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">databases</a> in October 2019, and have <a href="/meta?q=211#a284">TeX</a> and <a href="/meta?q=530">*nix</a> communites in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a> from there.</p>
+    <p>We are still small but starting to get momentum, and register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">databases</a> in October 2019, <a href="/tex">TeX</a> in January 2020, and have a <a href="/meta?q=530">*nix</a> community in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a>.</p>
     <p>There is a lot more detailed information on our <a href="/meta">meta</a> community (a place for questions and answers about TopAnswers itself), for example:</p>
     <ul>
       <li><a href="/meta?q=1">Why we are building TopAnswers</a></li>

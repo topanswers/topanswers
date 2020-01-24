@@ -49,11 +49,13 @@ create table license(
   license_id integer generated always as identity primary key
 , license_name text unique not null
 , license_href text
+, license_is_versioned boolean default false not null
 );
 
 create table codelicense(
   codelicense_id integer generated always as identity primary key
 , codelicense_name text unique not null
+, codelicense_is_versioned boolean default false not null
 );
 
 create table account(
@@ -70,6 +72,8 @@ create table account(
 , account_notification_id integer generated always as identity unique
 , account_is_imported boolean default false not null
 , account_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
+, account_permit_later_license boolean default false not null
+, account_permit_later_codelicense boolean default false not null
 );
 create unique index account_rate_limit_ind on account(account_create_at);
 
@@ -232,6 +236,8 @@ create table question(
 , question_crew_flags integer default 0 not null
 , question_active_flags integer default 0 not null
 , question_se_imported_at timestamptz
+, question_permit_later_license boolean default false not null
+, question_permit_later_codelicense boolean default false not null
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
