@@ -185,6 +185,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chatupload:active>div { color: #<?=$colour_mid?>; }
     #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; }
 
+    #chatorstarred { pointer-events: none; }
+    #chatorstarred a[href] { pointer-events: auto; }
+
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
