@@ -45,7 +45,7 @@ if($search){
   <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
     <div class="title">
       <?if($question_type_derived!=='Question'){?><div title="<?=$question_type_derived?>"><?=$question_type_derived?></div><?}?>
-      <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title_short?>"><?=$question_title_short?></a>
+      <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
     </div>
     <div class="bar">
       <div>

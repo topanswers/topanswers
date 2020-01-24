@@ -4,9 +4,7 @@ set local search_path to questions,api,pg_temp;
 --
 --
 create view question with (security_barrier) as
-select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted
-     , (case question_type when 'question' then '' when 'meta' then (case community_name when 'meta' then '' else 'Meta Question: ' end) when 'blog' then 'Blog Post: ' end)||question_title question_title
-     , question_type_derived
+select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title,question_type_derived
      , question_title question_title_short
      , account_id question_account_id
      , account_name question_account_name
