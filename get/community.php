@@ -6,7 +6,7 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to community,pg_temp");
 if(isset($_COOKIE['uuid'])){ ccdb("select login($1::uuid)",$_COOKIE['uuid']) || fail(403,'access denied'); }
 if(ccdb("select exists(select 1 from private where community_name=$1)",$_GET['community'])) { header('Location: //topanswers.xyz/private?community='.$_GET['community']); exit; }
-$clearlocal = $_COOKIE['clearlocal']??'';
+$hclearlocal = $_COOKIE['clearlocal']??'';
 $environment = $_COOKIE['environment']??'prod';
 setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
 if(!isset($_GET['room'])&&!isset($_GET['q'])){
