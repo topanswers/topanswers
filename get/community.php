@@ -26,13 +26,14 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,room_id,room_name,room_can_chat,room_has_chat
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
-                   ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags,question_type_derived
-                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged,question_is_votable
-                   ,question_is_blog,question_is_meta,question_when
+                   ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
+                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
+                   ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_communicant_se_user_id,question_communicant_votes
                    ,question_license_href,question_has_codelicense,question_codelicense_name
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
+                   ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
@@ -900,15 +901,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?if(!$question){?><div><input class="element" type="search" id="search" placeholder="search"></div><?}?>
       <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
-        <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
+        <?if($auth){?>
+          <form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask"></form>
+          <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+        <?}?>
       </div>
     </header>
     <div id="qa">
       <?if($question){?>
         <div class="banner">
-          <h1><?=$question_type_derived?></h1>
+          <h1><?=$kind_description?></h1>
           <div style="flex: 1 1 0;"></div>
-          <?if($auth&&!$question_is_blog){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask your own question"></form><?}?>
         </div>
         <div id="question" data-id="<?=$question?>" class="post<?=$question_i_subscribed?' subscribed':''?><?
                                                              ?><?=$question_i_flagged?' flagged':''?><?
@@ -958,14 +961,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div id="markdown" class="markdown" data-markdown="<?=$question_markdown?>"><pre class='noscript'><?=$question_markdown?></pre></div>
           <div class="bar">
             <div>
-              <?if($question_is_votable){?>
+              <?if($kind_has_question_votes){?>
                 <span class="element" data-total="<?=$question_votes?>"></span>
                 <?if(!$question_account_is_me){?>
                   <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
                 <?}?>
               <?}?>
               <?if($auth){?>
-                <?if($question_account_is_me||!$question_is_blog){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
+                <?if($question_account_is_me||$kind_can_all_edit){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
                 <?if($question_has_history){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
                 <?if(!$question_account_is_me){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
               <?}?>
@@ -1003,7 +1006,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?}?>
           </div>
         </div>
-        <?if(!$question_is_blog){?>
+        <?if($kind_has_answers){?>
           <div class="banner">
             <?$answer_count = ccdb("select count(1) from answer");?>
             <h1><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h1>
@@ -1050,7 +1053,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="bar">
               <div>
                 <span class="element" data-total="<?=$answer_votes?>"></span>
-                <?if(!$answer_account_is_me){?>
+                <?if(!$answer_account_is_me&&$kind_has_answer_votes){?>
                   <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
                 <?}?>
                 <?if($auth){?>
@@ -1103,7 +1106,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <input id="se" class="element" type="submit" value="import from SE">
             </form>
           <?}?>
-          <?if($auth){?><form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask question"></form><?}?>
         </div>
         <div id="questions">
           <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&page=1'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>

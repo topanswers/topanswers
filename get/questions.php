@@ -13,6 +13,7 @@ if($search){
   db("select set_config('pg_trgm.strict_word_similarity_threshold','0.5',false)");
   $results = db("select question_id,question_at,question_change_at,question_change,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name
                        ,question_is_deleted,question_communicant_votes
+                       ,kind_short_description
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                       , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
                       , extract('epoch' from current_timestamp-question_at)::bigint question_when
@@ -30,8 +31,9 @@ if($search){
     $startid = intval($_GET['id'])+1;
     $endid = '';
   }
-  $results = db("select question_id,question_change,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name,question_type_derived
+  $results = db("select question_id,question_change,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name
                        ,question_is_deleted,question_communicant_votes
+                       ,kind_short_description
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                       , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
                       , extract('epoch' from current_timestamp-question_at)::bigint question_when
@@ -44,7 +46,7 @@ if($search){
 <?foreach($results as $r){ extract($r);?>
   <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
     <div class="title">
-      <?if($question_type_derived!=='Question'){?><div title="<?=$question_type_derived?>"><?=$question_type_derived?></div><?}?>
+      <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
       <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
     </div>
     <div class="bar">

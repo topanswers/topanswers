@@ -5,11 +5,12 @@ set local search_path to question,api,pg_temp;
 --
 create view license with (security_barrier) as select license_id,license_name,license_href from db.license;
 create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
+create view kind with (security_barrier) as select kind_id,kind_description,sanction_ordinal from db.kind natural join db.sanction where community_id=get_community_id();
 --
 create view one with (security_barrier) as
 select account_id,account_license_id,account_codelicense_id,community_id,community_name,community_display_name,community_code_language
       ,sesite_url
-      ,question_id,question_type,question_title,question_markdown,question_license_name,question_se_question_id
+      ,question_id,question_title,question_markdown,question_license_name,question_se_question_id
       ,question_is_deleted,question_answered_by_me,question_is_blog,question_is_meta
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,question_license_href,question_has_codelicense,question_codelicense_name
@@ -27,7 +28,7 @@ from db.community
      natural left join (select account_id,account_is_dev,account_license_id,account_codelicense_id from db.account where account_id=get_account_id()) a
      natural left join db.communicant
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
-     natural left join (select question_id,question_type,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
+     natural left join (select question_id,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
                              , license_name question_license_name
                              , license_href question_license_href
                              , codelicense_name question_codelicense_name
@@ -122,15 +123,33 @@ create function _new_question(cid integer, aid integer, typ db.question_type_enu
      , s as (insert into subscription(account_id,question_id) select aid,question_id from q)
   select question_id from q;
 $$;
+create function _new_question(cid integer, aid integer, knd integer, title text, markdown text, lic integer, codelic integer, seqid integer)
+                returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid community') where not exists (select 1 from community where community_id=cid);
+  select _ensure_communicant(aid,cid);
+  --
+  with r as (insert into room(community_id) values(cid) returning room_id)
+     , q as (insert into question(community_id,account_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id)
+             select cid,aid,knd,title,markdown,room_id,lic,codelic,seqid from r returning question_id)
+     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select question_id,aid,title,markdown from q)
+     , s as (insert into subscription(account_id,question_id) select aid,question_id from q)
+  select question_id from q;
+$$;
 --
 create function new(typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
   select _error(429,'rate limit') where exists (select 1 from question where account_id=get_account_id() and question_at>current_timestamp-'5m'::interval);
   select _new_question(get_community_id(),get_account_id(),typ,title,markdown,lic,codelic,null);
 $$;
+create function new(knd integer, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error(429,'rate limit') where exists (select 1 from question where account_id=get_account_id() and question_at>current_timestamp-'5m'::interval);
+  select _new_question(get_community_id(),get_account_id(),knd,title,markdown,lic,codelic,null);
+$$;
 --
 create function change(title text, markdown text) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
-  select _error('only author can edit blog post') where exists (select 1 from question where question_id=get_question_id() and question_type='blog' and account_id<>get_account_id());
+  select _error('only author can edit this post kind') where exists (select 1 from question natural join kind where question_id=get_question_id() and not kind_can_all_edit and account_id<>get_account_id());
   select _error(429,'rate limit') where (select count(*)
                                          from question_history natural join (select question_id from question where account_id<>get_account_id()) z
                                          where account_id=get_account_id() and question_history_at>current_timestamp-'5m'::interval)>10;
@@ -151,7 +170,7 @@ create function vote(votes integer) returns integer language sql security define
   select _error('invalid question') where get_question_id() is null;
   select _error('invalid number of votes cast') from question.one where votes<0 or votes>community_my_power;
   select _error('cant vote on own question') from question.one where account_id=question_account_id;
-  select _error('cant vote on this question type') from question.one where question_type='question';
+  select _error('cant vote on this question type') from question natural join kind where question_id = get_question_id() and not kind_has_question_votes;
   select _error(429,'rate limit') where (select count(1) from question_vote where account_id=get_account_id() and question_vote_at>current_timestamp-'1m'::interval)>4;
   select _error(429,'rate limit') where (select count(1) from question_vote_history where account_id=get_account_id() and question_vote_history_at>current_timestamp-'1m'::interval)>10;
   --

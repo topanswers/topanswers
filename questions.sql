@@ -5,12 +5,13 @@ set local search_path to questions,api,pg_temp;
 --
 create view question with (security_barrier) as
 select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title,question_type_derived
+     , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
      , account_id question_account_id
      , account_name question_account_name
      , coalesce(question_vote_votes,0) question_votes_from_me
      , coalesce(communicant_votes,0) question_communicant_votes
      , case when question_se_imported_at=question_change_at then 'imported' when question_change_at>question_at then 'edited' else 'asked' end question_change
-from api._question natural join db.question natural join db.account natural join db.community natural join db.communicant
+from api._question natural join db.question natural join db.account natural join db.community natural join db.communicant natural join db.kind
      natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
 where community_id=get_community_id();
 --

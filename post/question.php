@@ -25,7 +25,7 @@ switch($_POST['action']) {
     header('Location: //topanswers.xyz/'.$community_name.'?q='.$_POST['id']);
     exit;
   case 'new':
-    $id=ccdb("select new($1,$2,$3,$4,$5)",$_POST['type'],$_POST['title'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
+    $id=ccdb("select new($1::integer,$2,$3,$4,$5)",$_POST['kind'],$_POST['title'],$_POST['markdown'],$_POST['license'],$_POST['codelicense']);
     if($id){
       setcookie('clearlocal',$community_name.'.ask',0,'/','topanswers.xyz',true,true);
       header('Location: //topanswers.xyz/'.$community_name.'?q='.$id);

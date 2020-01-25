@@ -228,8 +228,10 @@ create table kind(
 create table sanction(
   kind_id integer references kind not null
 , community_id integer not null references community
+, sanction_ordinal integer not null
 , primary key (kind_id,community_id)
 );
+create unique index sanction_ind on sanction(community_id,sanction_ordinal);
 
 create table question(
   question_id integer generated always as identity primary key

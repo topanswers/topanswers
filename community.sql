@@ -66,6 +66,7 @@ select account_id,community_id,community_name,community_code_language,room_id
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags,question_type_derived
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged,question_is_votable,question_is_blog,question_is_meta
       ,question_when,question_account_id,question_account_name,question_account_is_imported
+      ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes
       ,question_communicant_se_user_id,question_communicant_votes
       ,question_license_href,question_has_codelicense,question_codelicense_name
      , question_account_id is not distinct from account_id question_account_is_me
@@ -93,6 +94,7 @@ from db.room r natural join db.community
      natural left join db.writer x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,question_type_derived
+                              ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes
                              , license_name question_license_name
                              , license_href question_license_href
                              , codelicense_name question_codelicense_name
@@ -113,7 +115,7 @@ from db.room r natural join db.community
                              , question_type='blog' question_is_blog
                              , question_type='meta' question_is_meta
                              , extract('epoch' from current_timestamp-question_at)::bigint question_when
-                        from api._question natural join db.question q natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
+                        from api._question natural join db.question q natural join db.kind natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
                         where question_id=get_question_id()) q
 where room_id=get_room_id();

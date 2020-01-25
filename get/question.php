@@ -16,7 +16,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                    ,question_id,question_title,question_markdown,question_se_question_id
                   , question_license_name||(case when question_has_codelicense then ' + '||question_codelicense_name else '' end) license
                    ,question_is_deleted,question_answered_by_me
-                   ,question_is_blog,question_is_meta,question_when
+                   ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_license_href,question_has_codelicense,question_codelicense_name
              from one"));
@@ -189,10 +189,10 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
     <div style="display: flex; align-items: center; height: 100%;">
       <?if($auth){?>
         <?if(!$question_id){?>
-          <select class="element" name="type" form="form">
-            <?if($community_name!=='meta'){?><option selected value="question">question</option><?}?>
-            <option value="meta"><?=(($community_name==='meta')?'':'meta ')?>question</option>
-            <option value="blog">blog post</option>
+          <select class="element" name="kind" form="form">
+            <?foreach(db("select kind_id,kind_description from kind order by sanction_ordinal") as $i=>$r){ extract($r);?>
+              <option value="<?=$kind_id?>"<?=($i===0)?' selected':''?>><?=$kind_description?></option>
+            <?}?>
           </select>
           <select class="element" name="license" form="form">
             <?foreach(db("select license_id,license_name from license order by license_name") as $r){ extract($r);?>
