@@ -11,7 +11,7 @@ create view one with (security_barrier) as
 select account_id,account_license_id,account_codelicense_id,community_id,community_name,community_display_name,community_code_language
       ,sesite_url
       ,question_id,question_title,question_markdown,question_license_name,question_se_question_id
-      ,question_is_deleted,question_answered_by_me,question_is_blog,question_is_meta
+      ,question_is_deleted,question_answered_by_me
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,question_license_href,question_has_codelicense,question_codelicense_name
      , question_account_id is not distinct from account_id question_account_is_me
@@ -38,8 +38,6 @@ from db.community
                              , exists(select 1 from db.answer a natural join db.login where login_uuid=get_login_uuid() and a.question_id=q.question_id) question_answered_by_me
                              , question_crew_flags>0 question_is_deleted
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
-                             , question_type='blog' question_is_blog
-                             , question_type='meta' question_is_meta
                              , extract('epoch' from current_timestamp-question_at) question_when
                         from db.question q natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
                         where question_id=get_question_id()) q
@@ -109,20 +107,6 @@ create function remove_tag(tid integer) returns void language sql security defin
   update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
 $$;
 --
-create function _new_question(cid integer, aid integer, typ db.question_type_enum, title text, markdown text, lic integer, codelic integer, seqid integer)
-                returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid community') where not exists (select 1 from community where community_id=cid);
-  select _ensure_communicant(aid,cid);
-  --
-  with r as (insert into room(community_id) values(cid) returning room_id)
-     , q as (insert into question(community_id,account_id,kind_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id)
-             select cid,aid,case typ when 'question' then 1 when 'meta' then 2 when 'blog' then 3 end,typ,title,markdown,room_id,lic,codelic,seqid from r returning question_id)
-     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
-             select question_id,aid,title,markdown from q)
-     , s as (insert into subscription(account_id,question_id) select aid,question_id from q)
-  select question_id from q;
-$$;
 create function _new_question(cid integer, aid integer, knd integer, title text, markdown text, lic integer, codelic integer, seqid integer)
                 returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
@@ -138,10 +122,6 @@ create function _new_question(cid integer, aid integer, knd integer, title text,
   select question_id from q;
 $$;
 --
-create function new(typ db.question_type_enum, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
-  select _error(429,'rate limit') where exists (select 1 from question where account_id=get_account_id() and question_at>current_timestamp-'5m'::interval);
-  select _new_question(get_community_id(),get_account_id(),typ,title,markdown,lic,codelic,null);
-$$;
 create function new(knd integer, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
   select _error(429,'rate limit') where exists (select 1 from question where account_id=get_account_id() and question_at>current_timestamp-'5m'::interval);
   select _new_question(get_community_id(),get_account_id(),knd,title,markdown,lic,codelic,null);

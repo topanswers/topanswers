@@ -78,7 +78,6 @@ from (select room_id,community_id,room_name
 create view _question with (security_barrier) as
 select question_id,community_id
      , question_crew_flags>0 or (question_crew_flags=0 and question_flags>0) question_is_deleted
-     , case question_type when 'question' then 'Question' when 'meta' then (case community_id when 1 then 'Question' else 'Meta Question' end) when 'blog' then 'Blog Post' end question_type_derived
 from db.question natural join _community
      natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
 where communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id() is not null or question_flags=0) and question_crew_flags=0) or account_id=get_account_id();

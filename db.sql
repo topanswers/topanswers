@@ -213,8 +213,6 @@ create table chat_hour(
 , foreign key (room_id,chat_year,chat_month,chat_day) references chat_day
 );
 
-create type question_type_enum as enum ('question','meta','blog');
-
 create table kind(
   kind_id integer generated always as identity primary key
 , kind_description text not null
@@ -237,7 +235,6 @@ create table question(
   question_id integer generated always as identity primary key
 , community_id integer not null references community
 , account_id integer not null references account
-, question_type question_type_enum not null default 'question'
 , question_at timestamptz not null default current_timestamp
 , question_title text not null check (length(question_title) between 5 and 200)
 , question_markdown text not null check (length(question_markdown) between 1 and 50000)

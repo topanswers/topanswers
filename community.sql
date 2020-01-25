@@ -63,8 +63,8 @@ where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
 select account_id,community_id,community_name,community_code_language,room_id
-      ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags,question_type_derived
-      ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged,question_is_votable,question_is_blog,question_is_meta
+      ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
+      ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes
       ,question_communicant_se_user_id,question_communicant_votes
@@ -93,7 +93,7 @@ from db.room r natural join db.community
      natural left join db.communicant
      natural left join db.writer x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
-     natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,question_type_derived
+     natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
                               ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes
                              , license_name question_license_name
                              , license_href question_license_href
@@ -111,9 +111,6 @@ from db.room r natural join db.community
                              , question_crew_flags>0 question_is_deleted
                              , coalesce(communicant_votes,0) question_communicant_votes
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
-                             , question_type<>'question' question_is_votable
-                             , question_type='blog' question_is_blog
-                             , question_type='meta' question_is_meta
                              , extract('epoch' from current_timestamp-question_at)::bigint question_when
                         from api._question natural join db.question q natural join db.kind natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v

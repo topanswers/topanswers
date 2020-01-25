@@ -4,7 +4,7 @@ set local search_path to questions,api,pg_temp;
 --
 --
 create view question with (security_barrier) as
-select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title,question_type_derived
+select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title
      , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
      , account_id question_account_id
      , account_name question_account_name
