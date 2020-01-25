@@ -115,8 +115,8 @@ create function _new_question(cid integer, aid integer, typ db.question_type_enu
   select _ensure_communicant(aid,cid);
   --
   with r as (insert into room(community_id) values(cid) returning room_id)
-     , q as (insert into question(community_id,account_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id)
-             select cid,aid,typ,title,markdown,room_id,lic,codelic,seqid from r returning question_id)
+     , q as (insert into question(community_id,account_id,kind_id,question_type,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id)
+             select cid,aid,case typ when 'question' then 1 when 'meta' then 2 when 'blog' then 3 end,typ,title,markdown,room_id,lic,codelic,seqid from r returning question_id)
      , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
              select question_id,aid,title,markdown from q)
      , s as (insert into subscription(account_id,question_id) select aid,question_id from q)

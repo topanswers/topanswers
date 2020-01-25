@@ -215,6 +215,22 @@ create table chat_hour(
 
 create type question_type_enum as enum ('question','meta','blog');
 
+create table kind(
+  kind_id integer generated always as identity primary key
+, kind_description text not null
+, kind_short_description text default '' not null
+, kind_can_all_edit boolean default true not null
+, kind_has_answers boolean default true not null
+, kind_has_question_votes boolean default false not null
+, kind_has_answer_votes boolean default true not null
+);
+
+create table sanction(
+  kind_id integer references kind not null
+, community_id integer not null references community
+, primary key (kind_id,community_id)
+);
+
 create table question(
   question_id integer generated always as identity primary key
 , community_id integer not null references community
@@ -238,6 +254,7 @@ create table question(
 , question_se_imported_at timestamptz
 , question_permit_later_license boolean default false not null
 , question_permit_later_codelicense boolean default false not null
+, kind_id integer references kind not null
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)

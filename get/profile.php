@@ -179,7 +179,7 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
         </form>
       </fieldset>
       <fieldset>
-        <legend>default additional license for code in new posts</legend>
+        <legend>default dual license for code in new posts</legend>
         <form action="//post.topanswers.xyz/profile" method="post">
           <input type="hidden" name="action" value="codelicense">
           <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
