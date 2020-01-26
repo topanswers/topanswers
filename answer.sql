@@ -126,6 +126,7 @@ $$;
 create function new(markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid question') where get_question_id() is null;
+  select _error('question needs more votes before answers are permitted') from question natural join kind where question_id=get_question_id() and question_votes<kind_minimum_votes_to_answer;
   select _error(429,'rate limit') where exists (select 1 from answer where account_id=get_account_id() and answer_at>current_timestamp-'1m'::interval);
   --
   select _ensure_communicant(get_account_id(),get_community_id());
