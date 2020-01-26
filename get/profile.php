@@ -10,7 +10,9 @@ if(isset($_GET['uuid'])){
 }
 
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'meta') || fail(403,'access denied');
-extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,community_id,community_name,community_display_name,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id
+                   ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
+                   ,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
                    ,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name,sesite_url,communicant_se_user_id,one_stackapps_secret
              from one"));
 
@@ -200,20 +202,24 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
           <input type="hidden" name="action" value="font">
           <input type="hidden" name="community" value="<?=$community_name?>">
           <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
-          <label>regular
-            <select name="regular">
-              <?foreach(db("select font_id,font_name from font where not font_is_monospace") as $r){ extract($r);?>
-                <option value="<?=$font_id?>"<?=($font_id===$my_community_regular_font_id)?' selected':''?>><?=$font_name?></option>
-              <?}?>
-            </select>
-          </label>
-          <label>monospace
-            <select name="mono">
-              <?foreach(db("select font_id,font_name from font where font_is_monospace") as $r){ extract($r);?>
-                <option value="<?=$font_id?>"<?=($font_id===$my_community_monospace_font_id)?' selected':''?>><?=$font_name?></option>
-              <?}?>
-            </select>
-          </label>
+          <?if(!$community_regular_font_is_locked){?>
+            <label>regular
+              <select name="regular">
+                <?foreach(db("select font_id,font_name from font where not font_is_monospace") as $r){ extract($r);?>
+                  <option value="<?=$font_id?>"<?=($font_id===$my_community_regular_font_id)?' selected':''?>><?=$font_name?></option>
+                <?}?>
+              </select>
+            </label>
+          <?}?>
+          <?if(!$community_monospace_font_is_locked){?>
+            <label>monospace
+              <select name="mono">
+                <?foreach(db("select font_id,font_name from font where font_is_monospace") as $r){ extract($r);?>
+                  <option value="<?=$font_id?>"<?=($font_id===$my_community_monospace_font_id)?' selected':''?>><?=$font_name?></option>
+                <?}?>
+              </select>
+            </label>
+          <?}?>
           <input type="submit" value="save">
         </form>
       </fieldset>

@@ -1056,9 +1056,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre class='noscript'><?=$answer_markdown?></pre></div>
             <div class="bar">
               <div>
-                <span class="element" data-total="<?=$answer_votes?>"></span>
-                <?if(!$answer_account_is_me&&$kind_has_answer_votes){?>
-                  <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
+                <?if($kind_has_answer_votes){?>
+                  <span class="element" data-total="<?=$answer_votes?>"></span>
+                  <?if(!$answer_account_is_me){?>
+                    <div class="element starrr" data-id="<?=$answer_id?>" data-type="answer" data-votes="<?=$answer_votes_from_me?>" title="rate this answer"></div>
+                  <?}?>
                 <?}?>
                 <?if($auth){?>
                   <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>

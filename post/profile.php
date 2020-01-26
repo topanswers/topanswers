@@ -13,7 +13,11 @@ if($auth){
   if(isset($_POST['community'])){
     extract(cdb("select community_name,sesite_url from one"));
     switch($_POST['action']){
-      case 'font': db("select change_fonts($1,$2)",$_POST['regular'],$_POST['mono']); header('Location: '.$_POST['location']); exit;
+      case 'font':
+        if(isset($_POST['regular'])) db("select change_regular_font($1)",$_POST['regular']);
+        if(isset($_POST['mono'])) db("select change_monospace_font($1)",$_POST['mono']);
+        header('Location: '.$_POST['location']);
+        exit;
       case 'se':
         $ch = curl_init('https://api.stackexchange.com/2.2/me?key=fQPamdsPO4Okt9r*OKEp)g((&site='.explode('.',substr($sesite_url,8))[0].'&access_token='.$_POST['token']);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);

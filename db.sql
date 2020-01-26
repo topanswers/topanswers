@@ -32,6 +32,8 @@ create table community(
 , community_display_name text not null
 , community_type community_type_enum not null default 'private'
 , community_warning_color bytea not null default decode('990000','hex') check(length(community_warning_color)=3)
+, community_regular_font_is_locked boolean default false not null
+, community_monospace_font_is_locked boolean default false not null
 );
 
 create type room_type_enum as enum ('public','gallery','private');

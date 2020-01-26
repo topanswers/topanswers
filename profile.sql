@@ -15,7 +15,7 @@ where community_type='public' or account_id is not null;
 create view one with (security_barrier) as
 select account_id,account_name,account_license_id,account_codelicense_id,account_uuid
      , account_image is not null account_has_image
-      ,community_id,community_name,community_display_name
+      ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
      , encode(community_dark_shade,'hex') colour_dark
      , encode(community_mid_shade,'hex') colour_mid
      , encode(community_light_shade,'hex') colour_light
@@ -70,6 +70,18 @@ $$;
 create function change_fonts(regid integer, monoid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   update communicant set communicant_regular_font_id=regid, communicant_monospace_font_id=monoid where account_id=get_account_id() and community_id=get_community_id();
+$$;
+--
+create function change_regular_font(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('regular font is locked for this community') from community where community_id=get_community_id() and community_regular_font_is_locked;
+  update communicant set communicant_regular_font_id=id where account_id=get_account_id() and community_id=get_community_id();
+$$;
+--
+create function change_monospace_font(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('monospace font is locked for this community') from community where community_id=get_community_id() and community_monospace_font_is_locked;
+  update communicant set communicant_monospace_font_id=id where account_id=get_account_id() and community_id=get_community_id();
 $$;
 --
 create function change_name(nname text) returns void language sql security definer set search_path=db,api,pg_temp as $$
