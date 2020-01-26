@@ -37,8 +37,8 @@ create function _new_question(aid integer, title text, markdown text, tags text,
   select _ensure_communicant(aid,get_community_id());
   --
   with r as (insert into room(community_id) values(get_community_id()) returning community_id,room_id)
-     , q as (insert into question(community_id,account_id,kind_id,question_at,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id,question_se_imported_at)
-             select community_id,aid,1,seat,title,markdown,room_id,4,1,seqid,current_timestamp from r returning question_id)
+     , q as (insert into question(community_id,account_id,kind_id,question_at,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id,question_se_imported_at,question_sesite_id)
+             select community_id,aid,1,seat,title,markdown,room_id,4,1,seqid,current_timestamp,community_sesite_id from r natural join community returning question_id)
      , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
              select question_id,get_account_id(),title,markdown from q)
      , t as (with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=get_community_id()

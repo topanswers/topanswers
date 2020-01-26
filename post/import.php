@@ -8,6 +8,16 @@ db("set search_path to import,pg_temp");
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_POST['community']??'') || fail(403,'access denied');
 extract(cdb("select sesite_url,communicant_se_user_id from one"));
 
+function file_get_contents_retry($url,$attempts=3) {
+  $content = file_get_contents($url);
+  $attempts--;
+  if( empty($content) && ($attempts>0) ){
+    usleep(10);
+    return file_get_contents_retry($url,$attempts);
+  }
+  return $content;
+}
+
 switch($_POST['action']) {
   case 'new':
     db("select new_import($1,'')",$_POST['seids']);
@@ -29,7 +39,7 @@ switch($_POST['action']) {
     },$seids);
     // check if first id is a question or an answer (in the latter case find the question id)
     $doc = new DOMDocument();
-    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$seids[0].'/edit'));
+    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents_retry($sesite_url.'/posts/'.$seids[0].'/edit'));
     $xpath = new DOMXpath($doc);
     $elements = $xpath->query("//a[contains(concat(' ', @class, ' '), ' question-hyperlink ')]");
     if(count($elements)){
@@ -41,7 +51,7 @@ switch($_POST['action']) {
     }
     // get the SE user-id and user-name for the question asker
     $doc = new DOMDocument();
-    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
+    $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents_retry($sesite_url.'/questions/'.$seqid));
     $xpath = new DOMXpath($doc);
     $elements = $xpath->query("//div[@id='question-header']/h1/a");
     $title = $elements[0]->childNodes[0]->nodeValue;
@@ -68,7 +78,7 @@ switch($_POST['action']) {
     if(!$id){
       // get the markdown and tags for the question
       $doc = new DOMDocument();
-      $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$seqid.'/edit'));
+      $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents_retry($sesite_url.'/posts/'.$seqid.'/edit'));
       $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//input[@id='tagnames']/@value");
       $tags = $elements[0]->textContent;
@@ -93,7 +103,7 @@ switch($_POST['action']) {
     $aids = [];
     if($all){
       $doc = new DOMDocument();
-      $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
+      $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents_retry($sesite_url.'/questions/'.$seqid));
       $xpath = new DOMXpath($doc);
       $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ')]");
       foreach($elements as $element) array_push($aids,explode('-',$element->getAttribute('id'))[1]);
@@ -101,7 +111,7 @@ switch($_POST['action']) {
       if($seaids) $aids = $seaids;
       if($communicant_se_user_id){
         $doc = new DOMDocument();
-        $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/questions/'.$seqid));
+        $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents_retry($sesite_url.'/questions/'.$seqid));
         $xpath = new DOMXpath($doc);
         $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
                                  ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
@@ -117,7 +127,7 @@ switch($_POST['action']) {
     foreach($aids as $aid){
       if(!ccdb("select get_answer($1)",$aid)){
         $doc = new DOMDocument();
-        $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents($sesite_url.'/posts/'.$aid.'/edit'));
+        $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents_retry($sesite_url.'/posts/'.$aid.'/edit'));
         $xpath = new DOMXpath($doc);
         $elements = $xpath->query("//textarea[@id='wmd-input-".$aid."']");
         $markdown = $elements[0]->textContent;

@@ -254,12 +254,13 @@ create table question(
 , question_permit_later_license boolean default false not null
 , question_permit_later_codelicense boolean default false not null
 , kind_id integer references kind not null
+, question_sesite_id integer references sesite
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
-create unique index question_se_question_id_ind on question(community_id,question_se_question_id);
+create unique index question_se_question_id_ind on question(community_id,question_sesite_id,question_se_question_id);
 create unique index question_poll_major_id_ind on question(community_id,question_poll_major_id);
 create index question_search_title_ind on question using gin (community_id, question_title gin_trgm_ops);
 create index question_search_markdown_ind on question using gin (community_id, question_markdown gin_trgm_ops);
