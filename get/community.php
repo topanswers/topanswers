@@ -1015,9 +1015,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?$answer_count = ccdb("select count(1) from answer");?>
             <h1><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h1>
             <div style="flex: 1 1 0;"></div>
-            <?if($question_votes>=$kind_minimum_votes_to_answer){?>
-              <form method="GET" action="/answer"> <input type="hidden" name="question" value="<?=$question?>"> <input type="submit" value="answer this question<?=$question_answered_by_me?' again':''?>"<?=$auth?'':' disabled'?>> </form>
-            <?}?>
+            <form method="GET" action="/answer"> <input type="hidden" name="question" value="<?=$question?>"> <input type="submit" value="provide <?=$question_answered_by_me?'another':'an'?> answer"<?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'':' disabled'?>> </form>
           </div>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
