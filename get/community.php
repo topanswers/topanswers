@@ -963,13 +963,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="bar">
             <div>
               <?if($kind_has_question_votes){?>
-                <span class="element">
-                  <span data-total="<?=$question_votes?>"></span>
-                  <?if($question_votes<$kind_minimum_votes_to_answer){?><span>(<?=$kind_minimum_votes_to_answer-$question_votes?> more required)</span><?}?>
-                </span>
-                <?if(!$question_account_is_me){?>
-                  <div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div>
-                <?}?>
+                <span class="element" data-total="<?=$question_votes?>"></span>
+                <?if(!$question_account_is_me){?><div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div><?}?>
+                <?if($question_votes<$kind_minimum_votes_to_answer){?><span>(<?=$kind_minimum_votes_to_answer-$question_votes?> more required)</span><?}?>
               <?}?>
               <?if($auth){?>
                 <?if($question_account_is_me||$kind_can_all_edit){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
