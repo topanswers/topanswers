@@ -63,20 +63,21 @@
 <script src="/lib/markdown-it-container.js"></script>
 <?if($community_name==='codegolf'||$community_name==='test'){?>
   <script src="/lib/markdown-it-mathjax.js"></script>
-  <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"], linebreaks: { automatic:true }, EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) },
-      tex2jax: { inlineMath: [ ["\\$", "\\$"] ], displayMath: [ ["$$","$$"], ["\\[", "\\]"] ], processEscapes: true, ignoreClass: "tex2jax_ignore|dno" },
-      TeX: {
-        extensions: ["begingroup.js"],
-        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
-        Macros: { href: "{}" }
+  <script>
+    window.MathJax = {
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true,
+        processClass: 'markdown',
+        ignoreClass: 'no-mathjax'
       },
-      messageStyle: "none",
-      styles: { ".MathJax_Display, .MathJax_Preview, .MathJax_Preview > *": { "background": "inherit" } },
-      SEEditor: "mathjaxEditing"
-    });
+      asciimath2jax: {
+        processClass: 'markdown',
+        ignoreClass: 'no-mathjax'
+      }
+    };
   </script>
-  <script src="/lib/mathjax/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+  <script src="/lib/mathjax/MathJax.js?config=TeX-AMS_HTML,Safe"></script>
 <?}?>
 <script src="/lib/markdownItAnchor.js"></script>
 <script src="/lib/markdownItTocDoneRight.js"></script>

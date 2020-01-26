@@ -877,7 +877,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </script>
   <title><?=$room_name?> - TopAnswers</title>
 </head>
-<body>
+<body class="no-mathjax">
   <main class="pane">
     <header>
       <div>
