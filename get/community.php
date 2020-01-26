@@ -139,6 +139,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
       #qa .bar [data-total]::after { content: attr(data-total) ' stars'; }
       #qa .bar [data-total="1"]::after { content: attr(data-total) ' star'; margin-right: 0.4em; }
+      #qa .bar [data-total][data-required]:not([data-required="0"]):not([data-required^="-"])::after { content: attr(data-total) ' stars (' attr(data-required) ' more required)'; }
+      #qa .bar [data-total="1"][data-required]:not([data-required="0"]):not([data-required^="-"])::after { content: attr(data-total) ' star (' attr(data-required) ' more required)'; margin-right: 0.4em; }
       #qa .post:not(.subscribed) .bar .element.fa-bell { display: none; }
       #qa .post.subscribed .bar .element.fa-bell-o { display: none; }
       #qa .post:not(.flagged) .bar .element.fa-flag { display: none; }
@@ -773,9 +775,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               if(n!==v){
                 t.css({'opacity':'0.3','pointer-events':'none'});
                 $.post({ url: '//post.topanswers.xyz/'+t.data('type'), data: { action: 'vote', id: t.data('id'), votes: n }, xhrFields: { withCredentials: true } }).done(function(r){
+                  var req;
                   vv = vv-v+n;
                   v = n;
-                  t.css({'opacity':'1','pointer-events':'auto'}).prev().attr('data-total',vv);
+                  req = <?=$kind_minimum_votes_to_answer?>-vv;
+                  t.css({'opacity':'1','pointer-events':'auto'}).prev().attr('data-total',vv).attr('data-required',req);
+                  $('#provide').prop('disabled',req>0)
                 }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); });
               }
             }
@@ -963,9 +968,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="bar">
             <div>
               <?if($kind_has_question_votes){?>
-                <span class="element" data-total="<?=$question_votes?>"></span>
+                <span class="element" data-total="<?=$question_votes?>"<?=$kind_minimum_votes_to_answer?' data-required="'.($kind_minimum_votes_to_answer-$question_votes).'"':''?>></span>
                 <?if(!$question_account_is_me){?><div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div><?}?>
-                <?if($question_votes<$kind_minimum_votes_to_answer){?><span>(<?=$kind_minimum_votes_to_answer-$question_votes?> more required)</span><?}?>
               <?}?>
               <?if($auth){?>
                 <?if($question_account_is_me||$kind_can_all_edit){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
@@ -1011,7 +1015,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?$answer_count = ccdb("select count(1) from answer");?>
             <h1><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h1>
             <div style="flex: 1 1 0;"></div>
-            <form method="GET" action="/answer"> <input type="hidden" name="question" value="<?=$question?>"> <input type="submit" value="provide <?=$question_answered_by_me?'another':'an'?> answer"<?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'':' disabled'?>> </form>
+            <form method="GET" action="/answer"> <input type="hidden" name="question" value="<?=$question?>"> <input id="provide" type="submit" value="provide <?=$question_answered_by_me?'another':'an'?> answer"<?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'':' disabled'?>> </form>
           </div>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
