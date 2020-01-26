@@ -1,5 +1,8 @@
 <link rel="stylesheet" href="/lib/highlightjs/default.css">
 <link rel="stylesheet" href="/lib/qp/qp.css">
+<?if($community_name==='codegolf'||$community_name==='test'){?>
+  <link rel="stylesheet" href="/lib/katex/katex.min.css">
+<?}?>
 <style>
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>pre { white-space: pre; }
@@ -62,22 +65,8 @@
 <script src="/lib/markdown-it-for-inline.js"></script>
 <script src="/lib/markdown-it-container.js"></script>
 <?if($community_name==='codegolf'||$community_name==='test'){?>
-  <script src="/lib/markdown-it-mathjax.js"></script>
-  <script>
-    window.MathJax = {
-      tex2jax: {
-        inlineMath: [['$','$'], ['\\(','\\)']],
-        processEscapes: true,
-        processClass: 'markdown',
-        ignoreClass: 'no-mathjax'
-      },
-      asciimath2jax: {
-        processClass: 'markdown',
-        ignoreClass: 'no-mathjax'
-      }
-    };
-  </script>
-  <script src="/lib/mathjax/MathJax.js?config=TeX-AMS_HTML,Safe"></script>
+  <script src="/lib/katex/katex.min.js"></script>
+  <script src="/lib/markdown-it-katex.js"></script>
 <?}?>
 <script src="/lib/markdownItAnchor.js"></script>
 <script src="/lib/markdownItTocDoneRight.js"></script>
@@ -157,7 +146,7 @@
                  else return '</div>';
                } })
                <?if($community_name==='codegolf'||$community_name==='test'){?>
-                 .use(window.markdownitMathjax())
+                 .use(window.markdownitKatex)
                <?}?>
                .use(window.markdownItAnchor, { slugify: myslugify })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
@@ -207,7 +196,6 @@
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         t.find('.object-answer').each(function(){ var t = $(this); $.get('/duplicate?community=<?=$community_name?>&id='+t.attr('data-id')).done(function(r){ t.html(r); typeof callback==='function' && callback(); }); });
         if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
-        <?if($community_name==='codegolf'||$community_name==='test'){?>MathJax.Hub.Queue(["Typeset",MathJax.Hub]);<?}?>
       });
       typeof callback==='function' && callback();
       return this;
