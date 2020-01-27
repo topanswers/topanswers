@@ -88,10 +88,11 @@ create function activerooms() returns table (room_id integer, question_id intege
 $$;
 --
 create function activeusers() returns table (account_id integer, account_name text, account_is_me boolean, communicant_votes integer) language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select account_id,account_name
+  select account_id
+       , account_derived_name account_name
        , account_id=get_account_id() account_is_me
        , coalesce(communicant_votes,0) communicant_votes
-  from room natural join participant natural join account natural join communicant
+  from room natural join participant natural join api._account natural join communicant
   where room_id=get_room_id() and participant_latest_chat_at>(current_timestamp-'7d'::interval)
   order by participant_latest_chat_at desc;
 $$;
@@ -101,15 +102,15 @@ create function quote(rid integer, cid bigint) returns text language sql securit
   select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
   --
   select '::: quote '||room_id||' '||cid||' '||account_id||' '||encode(community_mid_shade,'hex')||' '||encode(community_dark_shade,'hex')||chr(10)
-         ||account_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)||' — '
+         ||account_derived_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)||' — '
            ||(case when room_id<>rid then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?room='||room_id||'#c'||cid||')*' else '['||chat_iso||'](#c'||cid||')' end)||'  '||chr(10)
          ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
          ||':::'
-  from (select chat_reply_id,room_id,room_derived_name,community_name,community_mid_shade,community_dark_shade,chat_at,chat_markdown,account_id,account_name
+  from (select chat_reply_id,room_id,room_derived_name,community_name,community_mid_shade,community_dark_shade,chat_at,chat_markdown,account_id,account_derived_name
              , to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"') chat_iso
-        from chat natural join community natural join account natural join _room
+        from chat natural join community natural join api._account natural join _room
         where chat_id=cid) c
-       natural left join (select chat_id chat_reply_id, account_name reply_account_name from chat natural join account) r
+       natural left join (select chat_id chat_reply_id, account_derived_name reply_account_name from chat natural join api._account) r
 $$;
 --
 create function recent() returns bigint language sql security definer set search_path=db,api,chat,pg_temp as $$

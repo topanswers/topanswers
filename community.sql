@@ -30,15 +30,15 @@ where community_id=get_community_id();
 create view question_flag with (security_barrier) as
 select question_flag_at,question_flag_direction,question_flag_is_crew
      , account_id question_flag_account_id
-     , account_name question_flag_account_name
-from db.question_flag natural join db.account
+     , account_derived_name question_flag_account_name
+from db.question_flag natural join api._account
 where question_id=get_question_id() and question_flag_direction<>0;
 --
 create view answer with (security_barrier) as
 select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answer_crew_flags,answer_active_flags
      , account_is_imported answer_account_is_imported
      , account_id answer_account_id
-     , account_name answer_account_name
+     , account_derived_name answer_account_name
      , license_name answer_license_name
      , license_href answer_license_href
      , codelicense_id answer_codelicense_id
@@ -49,7 +49,7 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , coalesce(communicant_votes,0) answer_communicant_votes
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=1) answer_i_flagged
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=-1) answer_i_counterflagged
-from api._answer natural join db.answer a natural join db.account natural join (select question_id,community_id from db.question) q natural join db.license natural join db.codelicense natural join db.communicant
+from api._answer natural join db.answer a natural join api._account natural join db.account natural join (select question_id,community_id from db.question) q natural join db.license natural join db.codelicense natural join db.communicant
      natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v
 where question_id=get_question_id()
 order by answer_votes desc, communicant_votes desc, answer_id desc;
@@ -57,8 +57,8 @@ order by answer_votes desc, communicant_votes desc, answer_id desc;
 create view answer_flag with (security_barrier) as
 select answer_id,answer_flag_at,answer_flag_direction,answer_flag_is_crew
      , account_id answer_flag_account_id
-     , account_name answer_flag_account_name
-from db.answer_flag natural join (select answer_id from db.answer where question_id=get_question_id()) a natural join db.account
+     , account_derived_name answer_flag_account_name
+from db.answer_flag natural join (select answer_id from db.answer where question_id=get_question_id()) a natural join api._account
 where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
@@ -100,7 +100,7 @@ from db.room r natural join db.community
                              , license_href question_license_href
                              , codelicense_name question_codelicense_name
                              , account_id question_account_id
-                             , account_name question_account_name
+                             , account_derived_name question_account_name
                              , account_is_imported question_account_is_imported
                              , communicant_se_user_id question_communicant_se_user_id
                              , coalesce(question_vote_votes,0) question_votes_from_me
@@ -112,7 +112,7 @@ from db.room r natural join db.community
                              , coalesce(communicant_votes,0) question_communicant_votes
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at)::bigint question_when
-                        from api._question natural join db.question q natural join db.kind natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
+                        from api._question natural join db.question q natural join db.kind natural join api._account natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
                         where question_id=get_question_id()) q
 where room_id=get_room_id();

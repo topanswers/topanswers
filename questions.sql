@@ -7,11 +7,11 @@ create view question with (security_barrier) as
 select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title
      , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
      , account_id question_account_id
-     , account_name question_account_name
+     , account_derived_name question_account_name
      , coalesce(question_vote_votes,0) question_votes_from_me
      , coalesce(communicant_votes,0) question_communicant_votes
      , case when question_se_imported_at=question_change_at then 'imported' when question_change_at>question_at then 'edited' else 'asked' end question_change
-from api._question natural join db.question natural join db.account natural join db.community natural join db.communicant natural join db.kind
+from api._question natural join db.question natural join api._account natural join db.community natural join db.communicant natural join db.kind
      natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
 where community_id=get_community_id();
 --
@@ -24,10 +24,10 @@ create view answer with (security_barrier) as
 select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , account_id answer_account_id
-     , account_name answer_account_name
+     , account_derived_name answer_account_name
      , coalesce(communicant_votes,0) answer_communicant_votes
      , case when answer_se_imported_at=answer_change_at then 'imported' when answer_change_at>answer_at then 'edited' else 'answered' end answer_change
-from api._answer natural join db.answer natural join db.account  natural left join db.communicant
+from api._answer natural join db.answer natural join api._account natural left join db.communicant
      natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v;
 --
 create view one with (security_barrier) as
