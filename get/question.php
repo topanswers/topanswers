@@ -22,13 +22,15 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
              from one"));
 ?>
 <!doctype html>
-<html>
+<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99;">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/post.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
@@ -39,13 +41,8 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
     #form { display: flex; justify-content: center; flex: 1 0 0; padding: 16px; overflow-y: hidden; }
     main { display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
-    header select, header input, header a:not(.frame) { margin: 0 4px; }
-    header a { color: #<?=$colour_mid?>; }
 
-    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .element { margin: 0 4px; }
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
 
     #markdown-editor-buttons { display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
@@ -84,7 +81,13 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
       var map;
 
       function render(){
-        $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown();
+        $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown(function(){
+          $('.post:not(.processed) .when').each(function(){
+            $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
+            $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+          });
+          $('.post').addClass('processed');
+        });
         map = [];
         $('#markdown [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$question_id){?>localStorage.setItem('<?=$community_name?>.ask',cm.getValue());<?}?>
@@ -184,7 +187,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
 <body>
   <header>
     <div>
-      <a class="element" href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=$community_display_name?></a>
+      <a class="element" href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <?if($auth){?>

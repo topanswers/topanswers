@@ -8,42 +8,40 @@ extract(cdb("select account_id
                    ,question_id,question_title,question_is_imported
                    ,community_name,community_display_name,community_code_language
                    ,my_community_regular_font_name,my_community_monospace_font_name
-                   ,colour_dark,colour_mid,colour_light,colour_highlight
+                   ,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
              from one"));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
+<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99;">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/post.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
-    header select, header input, header a:not(.frame) { margin: 0 4px; }
-    header a { color: #<?=$colour_mid?>; }
     [data-rz-handle] { flex: 0 0 2px; background: black; }
 
-    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    .markdown, .diff, .title { border: 1px solid #<?=$colour_dark?>; padding: 0.5rem; border-radius: 3px; }
-    .markdown, .title { background-color: white; }
-    .separator { border-bottom: 4px solid #<?=$colour_dark?>; margin: 1rem -1rem; }
-    .separator:last-child { display: none; }
-    .diff { background-color: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; }
+    .markdown, .title { background: white; padding: 8px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; }
+    .diff { background: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 8px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; }
     .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px #<?=$colour_highlight?>; }
+    .separator { border-bottom: 4px solid #<?=$colour_dark?>; margin: 14px -14px; }
+    .separator:last-child { display: none; }
 
     .who, .when { white-space: nowrap; }
     .when { font-size: smaller; color: #<?=$colour_dark?>; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 3px; }
+    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 16px; border-radius: 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -60,7 +58,13 @@ extract(cdb("select account_id
       var dmp = new diff_match_patch();
       $('textarea').each(function(){
         var m = $(this).next(), cm = CodeMirror.fromTextArea($(this)[0],{ lineWrapping: true, readOnly: true });
-        m.attr('data-markdown',cm.getValue()).renderMarkdown();
+        m.attr('data-markdown',cm.getValue()).renderMarkdown(function(){
+          $('.post:not(.processed) .when').each(function(){
+            $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
+            $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+          });
+          $('.post').addClass('processed');
+        });
         $(cm.getWrapperElement()).css('grid-area',$(this).data('grid-area'));
       });
       $('.diff').each(function(){
@@ -73,7 +77,7 @@ extract(cdb("select account_id
   </script>
   <title>Question History - TopAnswers</title>
 </head>
-<body class="no-mathjax" style="font-size: larger; background-color: #<?=$colour_light?>;">
+<body class="no-mathjax" style="font-size: larger; background: #<?=$colour_light?>;">
   <header>
     <div>
       <a href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>

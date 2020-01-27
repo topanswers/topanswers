@@ -11,18 +11,20 @@ if(isset($_GET['id'])){
 extract(cdb("select account_id,account_license_id,account_codelicense_id
                    ,answer_id,answer_markdown,answer_license
                    ,question_id,question_title,question_markdown
-                   ,community_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight
+                   ,community_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
 ?>
 <!doctype html>
-<html>
+<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99;">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/post.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
@@ -30,11 +32,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
-    header select, header input, header a:not(.frame) { margin: 0 4px; }
-    header a { color: #<?=$colour_mid?>; }
 
-    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
 
@@ -74,7 +72,13 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
       var map;
 
       function render(){
-        $('#answer').attr('data-markdown',cm.getValue()).renderMarkdown();
+        $('#answer').attr('data-markdown',cm.getValue()).renderMarkdown(function(){
+          $('.post:not(.processed) .when').each(function(){
+            $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
+            $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+          });
+          $('.post').addClass('processed');
+        });
         map = [];
         $('#answer [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$answer_id){?>localStorage.setItem('<?=$community_name?>.answer.<?=$question_id?>',cm.getValue());<?}?>
@@ -153,9 +157,9 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id
   <title><?=$answer_id?'Edit Answer':'Answer Question'?> - TopAnswers</title>
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
-  <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between;">
+  <header>
     <div>
-      <a href="/<?=$community_name?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community_name)?></a>
+      <a href="/<?=$community_name?>">TopAnswers <?=ucfirst($community_name)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <?if(!$answer_id){?>

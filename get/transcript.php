@@ -6,7 +6,7 @@ if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
 $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 extract(cdb("select account_id,community_name,room_id,room_derived_name,room_can_chat,room_question_id,community_code_language,my_community_regular_font_name,my_community_monospace_font_name
-                   ,colour_dark,colour_mid,colour_light,colour_highlight
+                   ,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
              from one"));
 $max = 500;
 $search = $_GET['search']??'';
@@ -51,40 +51,37 @@ if(isset($_GET['month'])){
 }
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
+<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99;">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/post.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
-    header select, header input, header a:not(.frame) { margin: 0 4px; }
-    header a { color: #<?=$colour_mid?>; }
     mark[data-markjs] { background-color: #<?=$colour_highlight?>80; }
     a:not([href]) { color: #<?=$colour_highlight?>; }
-
-    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-
-    .period { border: 2px solid #<?=$colour_mid?>; border-right: none; }
-    .period>div { margin: 0.5em; white-space: nowrap; }
-    .period>div>span { font-size: smaller; font-style: italic; }
-    .spacer { flex: 0 0 auto; min-height: 1em; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>60; background-color: #<?=$colour_mid?>; }
-
     a[data-lightbox] img { cursor: zoom-in; }
+
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
+    .period { border: 2px solid #<?=$colour_mid?>; border-right: none; flex: 0 0 auto; overflow: auto; }
+    .period>div { margin: 7px; white-space: nowrap; }
+    .period>div>span { font-size: smaller; font-style: italic; }
+    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; }
+
+    #messages { flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 13px; overflow: auto; background-color: #<?=$colour_mid?>; scroll-behavior: smooth; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message .who { white-space: nowrap; font-size: 10px;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
-    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background: white; overflow: auto; }
-    .message .markdown-wrapper { display: flex; position: relative; flex: 0 1 auto; max-height: 50vh; padding: 0.2em; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background-color: white; overflow: hidden; }
-    .message .markdown-wrapper .reply { position: absolute; right: 0; bottom: 0; background-color: #fffd; padding: 0.2em; padding-left: 0.4em; }
+    .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background: white; overflow: auto; }
 
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
@@ -101,10 +98,6 @@ if(isset($_GET['month'])){
     .message.merged .icon { visibility: hidden; }
     .message.thread .markdown { background: #<?=$colour_highlight?>40; }
     .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
-
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 1.1rem; border-radius: 3px; }
-    .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
-    .CodeMirror-wrap pre { word-break: break-word; }
   </style>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
@@ -150,7 +143,7 @@ if(isset($_GET['month'])){
   </header>
   <main style="display: flex; flex: 1 1 auto; background-color: #<?=$colour_light?>; overflow: hidden;">
     <?if($search){?>
-      <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
+      <div id="messages">
         <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.55',false)");?>
         <?db("select set_config('pg_trgm.gin_fuzzy_search_limit','1000',false)");?>
         <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,i_flagged,i_starred,chat_flag_count,chat_star_count,chat_has_history
@@ -186,7 +179,7 @@ if(isset($_GET['month'])){
       </div>
     <?}else{?>
       <?if(isset($_GET['year'])){?>
-        <div class="period" style="flex 0 0 auto;">
+        <div class="period">
           <div>
             <div>year</div>
           </div>
@@ -199,7 +192,7 @@ if(isset($_GET['month'])){
         </div>
       <?}?>
       <?if(isset($_GET['month'])){?>
-        <div class="period" style="flex 0 0 auto;">
+        <div class="period">
           <div>
             <div>month</div>
           </div>
@@ -212,7 +205,7 @@ if(isset($_GET['month'])){
         </div>
       <?}?>
       <?if(isset($_GET['day'])){?>
-        <div class="period" style="flex 0 0 auto;">
+        <div class="period">
           <div>
             <div>day</div>
           </div>
@@ -237,7 +230,7 @@ if(isset($_GET['month'])){
           <?}?>
         </div>
       <?}?>
-      <div id="messages" style="flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 1em; overflow: scroll; background-color: #<?=$colour_mid?>; scroll-behavior: smooth;">
+      <div id="messages">
         <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,i_flagged,i_starred,chat_account_will_repeat
                             ,reply_is_different_segment,chat_flag_count,chat_star_count,chat_has_history,chat_account_is_repeat
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text

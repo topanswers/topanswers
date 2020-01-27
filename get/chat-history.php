@@ -9,34 +9,34 @@ extract(cdb("select account_id
                    ,room_id,room_name
                    ,community_name,community_display_name,community_code_language
                    ,my_community_regular_font_name,my_community_monospace_font_name
-                   ,colour_dark,colour_mid,colour_light,colour_highlight
+                   ,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
              from one"));
 ?>
 <!doctype html>
-<html style="box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: smaller;">
+<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99;">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/post.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
     *:not(hr) { box-sizing: inherit; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { margin: 0; padding: 0; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: #<?=$colour_dark?>; color: #<?=$colour_mid?>; white-space: nowrap; }
-    header select, header input, header a:not(.frame) { margin: 0 4px; }
-    header a { color: #<?=$colour_mid?>; }
 
-    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    .markdown, .diff { border: 1px solid #<?=$colour_dark?>; padding: 0.5rem; border-radius: 3px; }
+    .markdown { background: white; padding: 0.25rem; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; }
+    .diff { background: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; }
+    .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px #<?=$colour_highlight?>; }
     .separator { border-bottom: 4px solid #<?=$colour_dark?>; margin: 1rem -1rem; }
     .separator:last-child { display: none; }
-    .diff { background-color: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre-wrap; }
 
     .who, .when { white-space: nowrap; }
     .when { font-size: smaller; color: #<?=$colour_dark?>; }
@@ -71,9 +71,9 @@ extract(cdb("select account_id
   <title>Chat Message History - TopAnswers</title>
 </head>
 <body style="font-size: larger; background-color: #<?=$colour_light?>;">
-  <header style="border-bottom: 2px solid black; display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; flex: 0 0 auto;">
+  <header>
     <div>
-      <a href="/<?=$community?>" style="color: #<?=$colour_mid?>;">TopAnswers <?=ucfirst($community)?></a>
+      <a href="/<?=$community?>">TopAnswers <?=ucfirst($community)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>

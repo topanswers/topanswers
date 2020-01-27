@@ -44,7 +44,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html>
+<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99;">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
@@ -54,6 +54,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/lib/select2.css">
   <link rel="stylesheet" href="/lib/starrr.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/post.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <noscript>
@@ -76,49 +78,19 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     [data-rz-handle='horizontal'] { margin: 7px 0; }
     [data-rz-handle='horizontal']:not(:hover):not(:active) { background: transparent !important; }
 
-    header, header>div, #qa .bar, #qa .bar>div, .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
-    header, #qa .bar>div:not(.shrink), .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
-    header>div, #qa .bar.shrink, .container.shrink, .element.shrink { flex: 0 1 auto; }
-
-    header { min-height: 30px; flex-wrap: wrap; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; }
-    main header { border-bottom: 2px solid black; }
-    #chat-wrapper header { border-top: 2px solid black; }
-    header a { color: #<?=$colour_light?>; }
-
-    .frame { border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
     .icon:not(.roomicon) { border-radius: 2px; }
     .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px #<?=$colour_dark?>; cursor: pointer; }
     .icon.ping { box-shadow: 0 0 0 1px #<?=$colour_highlight?>; }
-    .element { margin: 0 4px; }
     .highlight { color: #<?=$colour_highlight?>; }
-
-    .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 4px; }
-    .tag::after { position: absolute; border-radius: 50%; background: #<?=$colour_light?>; border: 1px solid #<?=$colour_dark?>; height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
-    .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: #<?=$colour_dark?>; background: #<?=$colour_mid?>; border-radius: 50%; }
-    .tag i::before { border-radius: 50%; }
+    .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
+    .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
+    .container.shrink, .element.shrink { flex: 0 1 auto; }
 
     #qa { overflow: auto; scroll-behavior: smooth; }
-    #qa .post { background-color: white; border-radius: 3px; margin: 16px 16px 32px 16px; overflow: hidden; }
-    #qa .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; }
-    #qa .post:not(.processed) { opacity: 0; }
-    #qa .post:not(:hover) .hover { display: none; }
     #qa .banner { display: flex; margin: 16px 16px 0 16px; align-items: center; }
     #qa .banner h1, #qa .banner h3 { color: #<?=$colour_light?>; font-weight: normal; margin: 0; }
-    #qa .title { display: flex; border-bottom: 1px solid #<?=$colour_dark?>; font-size: 18px; }
-    #qa .bar { height: 22px; background: #<?=$colour_light?>; font-size: 12px; }
-    #qa .bar .fa { text-decoration: none; }
-    #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }
-    #qa .bar .icon+.icon { margin-left: 0; }
-    #qa .answers:not(:empty) { border-top: 1px solid #<?=$colour_dark?>; }
-    #qa .answers .bar { background-color: white; }
-    #qa .answers .bar:not(:last-child) { border-bottom: 1px solid #<?=$colour_dark?>80; height: 23px; }
-    #qa .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #qa .post.deleted>.title>a, #qa .post.deleted>.markdown, #qa .post .answers>.deleted { background: repeating-linear-gradient( 135deg, #99000020, #99000040 8px);
-                                  text-shadow: 2px 0 2px white, 0 2px 2px white, -2px 0 2px white, 0 -2px 2px white, 2px 2px 2px white, 2px 2px 2px white, -2px 2px 2px white, 2px -2px 2px white; }
-    #qa .title > div { flex: 0 0 auto; padding: 8px; background: #<?=$colour_mid?>; border-right: 1px solid #<?=$colour_dark?>; box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
-    #qa .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
-    #qa .question>a { display: block; padding: 8px; border-bottom: 1px solid #<?=$colour_dark?>; text-decoration: none; font-size: 18px; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #chat-wrapper header { border-top: 2px solid black; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
     <?if($question){?>
@@ -131,8 +103,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #qa #question { margin-bottom: 16px; }
       #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
       #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
-      #qa .markdown .post { border: 3px solid #<?=$colour_dark?>; margin: 0; }
-      #qa .markdown .post .tag:hover i { visibility: hidden; }
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
       #qa .bar .element.fa-bell { color: #<?=$colour_highlight?>; }
       #qa .bar .element.fa-flag { color: #<?=$colour_warning?>; }
@@ -192,7 +162,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; background: #<?=$colour_mid?>; }
+    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; }
 
     .select2-dropdown { border: 1px solid #<?=$colour_dark?> !important; box-shadow: 0 0 0.2rem 0.3rem white; }
     a[data-lightbox] img { cursor: zoom-in; }
@@ -903,7 +873,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <input class="panecontrol element" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
       </div>
       <?if(!$question){?><div><input class="element" type="search" id="search" placeholder="search"></div><?}?>
-      <div>
+      <div style="display: flex; align-items: center; height: 100%;">
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
           <form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask"></form>
@@ -1122,7 +1092,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <div id="dummyresizerx"></div>
   <div id="chat-wrapper" class="pane hidepane">
     <header>
-      <div>
+      <div style="display: flex; align-items: center; height: 100%;">
         <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?>><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
         <?if(!$question){?>
           <select id="room" class="element">

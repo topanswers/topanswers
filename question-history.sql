@@ -21,6 +21,7 @@ select question_id,question_title
      , encode(community_mid_shade,'hex') colour_mid
      , encode(community_light_shade,'hex') colour_light
      , encode(community_highlight_color,'hex') colour_highlight
+     , encode(community_warning_color,'hex') colour_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
 from (select community_id,question_id,question_title,question_se_question_id from _question natural join db.question) q

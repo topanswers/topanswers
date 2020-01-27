@@ -1,0 +1,5 @@
+header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: var(--colour-dark); color: var(--colour-light); white-space: nowrap; }
+header select, header input, header a:not(.frame) { margin: 0 4px; }
+header a { color: var(--colour-light); }
+
+.frame { border: 1px solid var(--colour-dark); margin: 2px; outline: 1px solid var(--colour-light); background-color: var(--colour-light); }

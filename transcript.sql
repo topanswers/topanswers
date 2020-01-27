@@ -15,6 +15,7 @@ select account_id,account_is_dev,community_id,community_name,community_code_lang
      , encode(community_mid_shade,'hex') colour_mid
      , encode(community_light_shade,'hex') colour_light
      , encode(community_highlight_color,'hex') colour_highlight
+     , encode(community_warning_color,'hex') colour_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , (room_type='public' or x.account_id is not null) room_can_chat

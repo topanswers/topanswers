@@ -1,0 +1,29 @@
+.element { margin: 0 4px; }
+
+.tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: var(--colour-mid); border: 1px solid var(--colour-dark); font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 4px; }
+.tag::after { position: absolute; border-radius: 50%; background: var(--colour-light); border: 1px solid var(--colour-dark); height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
+.tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: var(--colour-dark); background: var(--colour-mid); border-radius: 50%; }
+.tag i::before { border-radius: 50%; }
+
+.post { background-color: white; border-radius: 3px; margin: 16px 16px 32px 16px; overflow: hidden; }
+.post:not(.processed) { opacity: 0; }
+.post:not(:hover) .hover { display: none; }
+.post.deleted>.title>a, .post.deleted>.markdown, .post .answers>.deleted { background: repeating-linear-gradient( 135deg, #99000020, #99000040 8px);
+                          text-shadow: 2px 0 2px white, 0 2px 2px white, -2px 0 2px white, 0 -2px 2px white, 2px 2px 2px white, 2px 2px 2px white, -2px 2px 2px white, 2px -2px 2px white; }
+.post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; }
+.post .title { display: flex; border-bottom: 1px solid var(--colour-dark); font-size: 18px; }
+.post .title > div { flex: 0 0 auto; padding: 8px; background: var(--colour-mid); border-right: 1px solid var(--colour-dark); box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
+.post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
+.post .bar { height: 22px; background: var(--colour-light); font-size: 12px; }
+.post .bar .fa { text-decoration: none; }
+.post .bar .fa:not(.highlight) { color: var(--colour-dark); }
+.post .bar .icon+.icon { margin-left: 0; }
+.post .bar, .post .bar>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
+.post .bar>div:not(.shrink) { flex: 0 0 auto; }
+.post .bar.shrink { flex: 0 1 auto; }
+.post .answers:not(:empty) { border-top: 1px solid var(--colour-dark); }
+.post .answers .bar { background-color: white; }
+.post .answers .bar:not(:last-child) { border-bottom: 1px solid var(--colour-dark-99); height: 23px; }
+.post .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post .markdown .post { border: 3px solid var(--colour-dark); margin: 0; }
+.post .markdown .post .tag:hover i { visibility: hidden; }

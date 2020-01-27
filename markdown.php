@@ -39,7 +39,9 @@
   .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 2 / span 1; margin: 2px 0 0 1px; }
   .markdown .quoted-message > img { grid-row: 2 / span 1; }
   .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 0.25rem; border: 1px solid var(--dark-colour); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
-  .dbfiddle { margin: 0.5rem; padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 3px; }
+  .markdown .post { border: 3px solid #<?=$colour_dark?>; margin: 0; }
+  .markdown .post .tag:hover i { visibility: hidden; }
+  .dbfiddle { padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 3px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-family: '<?=$my_community_monospace_font_name?>', monospace; border-radius: 3px; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 0.5rem; }
@@ -50,7 +52,6 @@
   .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; margin-top: 5px; padding: 2px }
   .dbfiddle .qp-statement-header { display: none; }
   .qp-tt { z-index: 999; box-shadow: 0 0 2px 2px white; }
-
 </style>
 <script src="/lib/markdown-it.js"></script>
 <script src="/lib/markdown-it-inject-linenumbers.js"></script>
