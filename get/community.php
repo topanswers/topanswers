@@ -107,6 +107,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .banner h1, #qa .banner h3 { color: #<?=$colour_light?>; font-weight: normal; margin: 0; }
     #qa .title { display: flex; border-bottom: 1px solid #<?=$colour_dark?>; font-size: 18px; }
     #qa .bar { height: 22px; background: #<?=$colour_light?>; font-size: 12px; }
+    #qa .bar .fa { text-decoration: none; }
     #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }
     #qa .bar .icon+.icon { margin-left: 0; }
     #qa .answers:not(:empty) { border-top: 1px solid #<?=$colour_dark?>; }
@@ -1000,6 +1001,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
                   <?}?>
                 <?}?>
+                <a href="/<?=$community_name?>?q=<?=$question_id?>" class="element fa fw fa-link" title="permalink"></a>
                 <div class="element fa fw fa-bell" title="unsubscribe from this question"></div>
                 <div class="element fa fw fa-bell-o" title="subscribe to this question"></div>
               </div>
@@ -1091,6 +1093,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                       <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
                     <?}?>
                   <?}?>
+                  <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element fa fw fa-link" title="permalink"></a>
                 </div>
               <?}?>
             </div>
