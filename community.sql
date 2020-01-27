@@ -66,7 +66,7 @@ select account_id,community_id,community_name,community_code_language,room_id
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported
-      ,kind_short_description,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
+      ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
       ,question_communicant_se_user_id,question_communicant_votes
       ,question_license_href,question_has_codelicense,question_codelicense_name
      , question_account_id is not distinct from account_id question_account_is_me
@@ -94,7 +94,7 @@ from db.room r natural join db.community
      natural left join db.writer x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
-                              ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
+                              ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
                              , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
                              , license_name question_license_name
                              , license_href question_license_href

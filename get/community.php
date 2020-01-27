@@ -33,7 +33,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,question_communicant_se_user_id,question_communicant_votes
                    ,question_license_href,question_has_codelicense,question_codelicense_name
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
-                   ,kind_short_description,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
+                   ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
