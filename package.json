@@ -1,0 +1,24 @@
+{
+  "name": "topanswers",
+  "version": "0.0.0",
+  "description": "A lasting library of knowledge for the internet.",
+  "main": "get/index.php",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/topanswers/topanswers.git"
+  },
+  "author": "Jack Douglas <jack@douglastechnology.co.uk>",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "codemirror": "^5.50.2",
+    "fork-awesome": "^1.1.7",
+    "highlight.js": "^9.17.1",
+    "jquery": "^3.4.1",
+    "lightbox2": "^2.11.1",
+    "moment": "^2.24.0"
+  },
+  "bugs": {
+    "url": "https://github.com/topanswers/topanswers/issues"
+  },
+  "homepage": "https://topanswers.xyz"
+}

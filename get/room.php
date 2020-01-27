@@ -30,7 +30,7 @@ extract(cdb("select account_id,room_id,room_name,room_has_image,community_name,m
     fieldset { display: inline-block; margin: 16px; border: none; background-color: white; border-radius: 3px; }
     legend { background-color: white; box-shadow: 0 0 1px 1px #<?=$colour_dark?>; border-radius: 3px; padding: 2px 4px; }
   </style>
-  <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery/dist/jquery.min.js"></script>
   <script>
     $(function(){
     });

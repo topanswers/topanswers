@@ -81,7 +81,7 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
     input[type='file'] { color: transparent; }
     <?if(isset($_GET['highlight-recovery'])){?>.highlight { background-color: yellow; }<?}?>
   </style>
-  <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery/dist/jquery.min.js"></script>
   <script>
     $(function(){
       $('#pin').click(function(){ $(this).prop('disabled',true); $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'pin', pin: '<?=$pin?>' }, xhrFields: { withCredentials: true } }).done(function(){

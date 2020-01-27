@@ -50,10 +50,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
-  <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
+  <link rel="stylesheet" href="/lib/lightbox2/dist/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/select2.css">
   <link rel="stylesheet" href="/lib/starrr.css">
-  <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/lib/codemirror/lib/codemirror.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <noscript>
@@ -260,13 +260,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
-  <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery/dist/jquery.min.js"></script>
   <script src="/lib/jquery.waitforimages.js"></script>
-  <script src="/lib/codemirror/codemirror.js"></script>
-  <script src="/lib/codemirror/sql.js"></script>
+  <script src="/lib/codemirror/lib/codemirror.js"></script>
+  <script src="/lib/codemirror/mode/sql/sql.js"></script>
   <?require '../markdown.php';?>
-  <script src="/lib/lightbox2/js/lightbox.min.js"></script>
-  <script src="/lib/moment.js"></script>
+  <script src="/lib/lightbox2/dist/js/lightbox.min.js"></script>
+  <script src="/lib/moment/min/moment-with-locales.js"></script>
   <script src="/lib/resizer.js"></script>
   <script src="/lib/favico.js"></script>
   <script src="/lib/select2.js"></script>
