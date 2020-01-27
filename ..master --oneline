@@ -1,0 +1,152 @@
+[1mdiff --git a/community.sql b/community.sql[m
+[1mindex 2cc00af5..1cb73ed6 100644[m
+[1m--- a/community.sql[m
+[1m+++ b/community.sql[m
+[36m@@ -66,7 +66,7 @@[m [mselect account_id,community_id,community_name,community_code_language,room_id[m
+       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags[m
+       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged[m
+       ,question_when,question_account_id,question_account_name,question_account_is_imported[m
+[31m-      ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer[m
+[32m+[m[32m      ,kind_short_description,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer[m
+       ,question_communicant_se_user_id,question_communicant_votes[m
+       ,question_license_href,question_has_codelicense,question_codelicense_name[m
+      , question_account_id is not distinct from account_id question_account_is_me[m
+[36m@@ -95,6 +95,7 @@[m [mfrom db.room r natural join db.community[m
+      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s[m
+      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags[m
+                               ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer[m
+[32m+[m[32m                             , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description[m
+                              , license_name question_license_name[m
+                              , license_href question_license_href[m
+                              , codelicense_name question_codelicense_name[m
+[1mdiff --git a/duplicate.sql b/duplicate.sql[m
+[1mindex 7d9c2a75..65aea252 100644[m
+[1m--- a/duplicate.sql[m
+[1m+++ b/duplicate.sql[m
+[36m@@ -13,7 +13,7 @@[m [mcreate view answer with (security_barrier) as select answer_id, community_name f[m
+ create view one with (security_barrier) as[m
+ select get_account_id() account_id[m
+       ,community_name[m
+[31m-      ,question_id,question_at,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes[m
+[32m+[m[32m      ,question_id,question_at,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,kind_short_description[m
+      , coalesce(question_vote_votes,0) question_votes_from_me[m
+       ,answer_id,answer_at,answer_markdown,answer_account_id,answer_account_name,answer_votes,answer_communicant_votes[m
+      , coalesce(answer_vote_votes,0) answer_votes_from_me[m
+[36m@@ -25,10 +25,11 @@[m [mfrom (select community_id,question_id,answer_id,answer_at,answer_markdown,answer[m
+       where answer_id=get_answer_id() and not answer_is_deleted) a[m
+      natural join db.community[m
+      natural join (select question_id,question_at,question_title,question_votes[m
+[32m+[m[32m                        , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description[m
+                         , account_id question_account_id[m
+                         , account_name question_account_name[m
+                         , coalesce(communicant_votes,0) question_communicant_votes[m
+[31m-                   from api._question natural join db.question natural join db.account natural join db.communicant[m
+[32m+[m[32m                   from api._question natural join db.question natural join db.kind natural join db.account natural join db.communicant[m
+                    where not question_is_deleted) q[m
+      natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) qv[m
+      natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) av[m
+[1mdiff --git a/get/community.php b/get/community.php[m
+[1mindex 7ab88837..b0cf0818 100755[m
+[1m--- a/get/community.php[m
+[1m+++ b/get/community.php[m
+[36m@@ -33,7 +33,7 @@[m [mextract(cdb("select login_resizer_percent,login_chat_resizer_percent[m
+                    ,question_communicant_se_user_id,question_communicant_votes[m
+                    ,question_license_href,question_has_codelicense,question_codelicense_name[m
+                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso[m
+[31m-                   ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer[m
+[32m+[m[32m                   ,kind_short_description,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer[m
+              from one"));[m
+ $dev = $account_is_dev;[m
+ $_GET['community']===$community_name || fail(400,'invalid community');[m
+[36m@@ -104,7 +104,7 @@[m [mob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });[m
+     #qa .post:not(.processed) { opacity: 0; }[m
+     #qa .post:not(:hover) .hover { display: none; }[m
+     #qa .banner { display: flex; margin: 16px 16px 0 16px; align-items: center; }[m
+[31m-    #qa .banner h1 { font-size: 28px; color: #<?=$colour_light?>; font-weight: normal; margin: 0; }[m
+[32m+[m[32m    #qa .banner h1, #qa .banner h3 { color: #<?=$colour_light?>; font-weight: normal; margin: 0; }[m
+     #qa .title { display: flex; border-bottom: 1px solid #<?=$colour_dark?>; font-size: 18px; }[m
+     #qa .bar { height: 22px; background: #<?=$colour_light?>; font-size: 12px; }[m
+     #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }[m
+[36m@@ -115,8 +115,9 @@[m [mob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });[m
+     #qa .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }[m
+     #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background: repeating-linear-gradient( 135deg, #<?=$colour_warning?>20, #<?=$colour_warning?>40 8px);[m
+                                   text-shadow: 2px 0 2px white, 0 2px 2px white, -2px 0 2px white, 0 -2px 2px white, 2px 2px 2px white, 2px 2px 2px white, -2px 2px 2px white, 2px -2px 2px white; }[m
+[32m+[m[32m    #qa .title > div { flex: 0 0 auto; padding: 8px; background: #<?=$colour_mid?>; border-right: 1px solid #<?=$colour_dark?>; box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }[m
+[32m+[m[32m    #qa .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }[m
+     #qa .question>a { display: block; padding: 8px; border-bottom: 1px solid #<?=$colour_dark?>; text-decoration: none; font-size: 18px; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }[m
+[31m-[m
+     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }[m
+ [m
+     <?if($question){?>[m
+[36m@@ -131,7 +132,6 @@[m [mob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });[m
+       #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }[m
+       #qa .markdown .post { border: 3px solid #<?=$colour_dark?>; margin: 0; }[m
+       #qa .markdown .post .tag:hover i { visibility: hidden; }[m
+[31m-      #qa .title { display: block; overflow: hidden; text-overflow: ellipsis; padding: 8px; white-space: nowrap; }[m
+       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }[m
+       #qa .bar .element.fa-bell { color: #<?=$colour_highlight?>; }[m
+       #qa .bar .element.fa-flag { color: #<?=$colour_warning?>; }[m
+[36m@@ -146,9 +146,6 @@[m [mob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });[m
+       #qa .post:not(.flagged) .bar .element.fa-flag { display: none; }[m
+       #qa .post.flagged .bar .element.fa-flag-o { display: none; }[m
+       #qa .post.counterflagged .bar .element.fa-flag-checkered { color: #<?=$colour_highlight?>; }[m
+[31m-    <?}else{?>[m
+[31m-      #qa .title > div { flex: 0 0 auto; padding: 8px; background: #<?=$colour_mid?>; border-right: 1px solid #<?=$colour_dark?>; box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }[m
+[31m-      #qa .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }[m
+     <?}?>[m
+ [m
+     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }[m
+[36m@@ -915,15 +912,14 @@[m [mob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });[m
+     </header>[m
+     <div id="qa">[m
+       <?if($question){?>[m
+[31m-        <div class="banner">[m
+[31m-          <h1><?=$kind_description?></h1>[m
+[31m-          <div style="flex: 1 1 0;"></div>[m
+[31m-        </div>[m
+         <div id="question" data-id="<?=$question?>" class="post<?=$question_i_subscribed?' subscribed':''?><?[m
+                                                              ?><?=$question_i_flagged?' flagged':''?><?[m
+                                                              ?><?=$question_i_counterflagged?' counterflagged':''?><?[m
+                                                              ?><?=$question_is_deleted?' deleted':''?>">[m
+[31m-          <div class="title"><?=$question_title?></div>[m
+[32m+[m[32m          <div class="title">[m
+[32m+[m[32m            <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>[m
+[32m+[m[32m            <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>[m
+[32m+[m[32m          </div>[m
+           <div class="bar">[m
+             <div>[m
+               <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">[m
+[36m@@ -1013,7 +1009,7 @@[m [mob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });[m
+         <?if($kind_has_answers){?>[m
+           <div class="banner">[m
+             <?$answer_count = ccdb("select count(1) from answer");?>[m
+[31m-            <h1><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h1>[m
+[32m+[m[32m            <h3><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h3>[m
+             <div style="flex: 1 1 0;"></div>[m
+             <form method="GET" action="/answer"> <input type="hidden" name="question" value="<?=$question?>"> <input id="provide" type="submit" value="provide <?=$question_answered_by_me?'another':'an'?> answer"<?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'':' disabled'?>> </form>[m
+           </div>[m
+[1mdiff --git a/get/duplicate.php b/get/duplicate.php[m
+[1mindex cce19116..c8990735 100755[m
+[1m--- a/get/duplicate.php[m
+[1m+++ b/get/duplicate.php[m
+[36m@@ -11,7 +11,7 @@[m [mccdb("select count(1) from answer where answer_id=$1 and community_name=$2",$_GE[m
+ $auth = ccdb("select login_answer(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['id']);[m
+ extract(cdb("select account_id[m
+                    ,community_name[m
+[31m-                   ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me[m
+[32m+[m[32m                   ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me,kind_short_description[m
+                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso[m
+                   , extract('epoch' from current_timestamp-question_at)::bigint question_when[m
+                    ,answer_id,answer_markdown,answer_account_id,answer_account_name,answer_votes,answer_votes_from_me,answer_communicant_votes[m
+[36m@@ -20,7 +20,10 @@[m [mextract(cdb("select account_id[m
+              from one"));[m
+ ?>[m
+ <div class="question post" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">[m
+[31m-  <a href="/<?=$community_name?>?q=<?=$question_id?>#question" title="<?=$question_title?>"><?=$question_title?></a>[m
+[32m+[m[32m  <div class="title">[m
+[32m+[m[32m    <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>[m
+[32m+[m[32m    <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>[m
+[32m+[m[32m  </div>[m
+   <div class="bar">[m
+     <div>[m
+       <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">[m

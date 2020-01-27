@@ -33,7 +33,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,question_communicant_se_user_id,question_communicant_votes
                    ,question_license_href,question_has_codelicense,question_codelicense_name
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
-                   ,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
+                   ,kind_short_description,kind_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
@@ -104,7 +104,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .post:not(.processed) { opacity: 0; }
     #qa .post:not(:hover) .hover { display: none; }
     #qa .banner { display: flex; margin: 16px 16px 0 16px; align-items: center; }
-    #qa .banner h1 { font-size: 28px; color: #<?=$colour_light?>; font-weight: normal; margin: 0; }
+    #qa .banner h1, #qa .banner h3 { color: #<?=$colour_light?>; font-weight: normal; margin: 0; }
     #qa .title { display: flex; border-bottom: 1px solid #<?=$colour_dark?>; font-size: 18px; }
     #qa .bar { height: 22px; background: #<?=$colour_light?>; font-size: 12px; }
     #qa .bar .fa:not(.highlight) { color: #<?=$colour_dark?>; }
@@ -115,8 +115,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background: repeating-linear-gradient( 135deg, #<?=$colour_warning?>20, #<?=$colour_warning?>40 8px);
                                   text-shadow: 2px 0 2px white, 0 2px 2px white, -2px 0 2px white, 0 -2px 2px white, 2px 2px 2px white, 2px 2px 2px white, -2px 2px 2px white, 2px -2px 2px white; }
+    #qa .title > div { flex: 0 0 auto; padding: 8px; background: #<?=$colour_mid?>; border-right: 1px solid #<?=$colour_dark?>; box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
+    #qa .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
     #qa .question>a { display: block; padding: 8px; border-bottom: 1px solid #<?=$colour_dark?>; text-decoration: none; font-size: 18px; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
     <?if($question){?>
@@ -131,7 +132,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
       #qa .markdown .post { border: 3px solid #<?=$colour_dark?>; margin: 0; }
       #qa .markdown .post .tag:hover i { visibility: hidden; }
-      #qa .title { display: block; overflow: hidden; text-overflow: ellipsis; padding: 8px; white-space: nowrap; }
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
       #qa .bar .element.fa-bell { color: #<?=$colour_highlight?>; }
       #qa .bar .element.fa-flag { color: #<?=$colour_warning?>; }
@@ -146,9 +146,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #qa .post:not(.flagged) .bar .element.fa-flag { display: none; }
       #qa .post.flagged .bar .element.fa-flag-o { display: none; }
       #qa .post.counterflagged .bar .element.fa-flag-checkered { color: #<?=$colour_highlight?>; }
-    <?}else{?>
-      #qa .title > div { flex: 0 0 auto; padding: 8px; background: #<?=$colour_mid?>; border-right: 1px solid #<?=$colour_dark?>; box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
-      #qa .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
     <?}?>
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
@@ -915,15 +912,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </header>
     <div id="qa">
       <?if($question){?>
-        <div class="banner">
-          <h1><?=$kind_description?></h1>
-          <div style="flex: 1 1 0;"></div>
-        </div>
         <div id="question" data-id="<?=$question?>" class="post<?=$question_i_subscribed?' subscribed':''?><?
                                                              ?><?=$question_i_flagged?' flagged':''?><?
                                                              ?><?=$question_i_counterflagged?' counterflagged':''?><?
                                                              ?><?=$question_is_deleted?' deleted':''?>">
-          <div class="title"><?=$question_title?></div>
+          <div class="title">
+            <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
+            <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
+          </div>
           <div class="bar">
             <div>
               <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
@@ -1013,7 +1009,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?if($kind_has_answers){?>
           <div class="banner">
             <?$answer_count = ccdb("select count(1) from answer");?>
-            <h1><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h1>
+            <h3><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h3>
             <div style="flex: 1 1 0;"></div>
             <form method="GET" action="/answer"> <input type="hidden" name="question" value="<?=$question?>"> <input id="provide" type="submit" value="provide <?=$question_answered_by_me?'another':'an'?> answer"<?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'':' disabled'?>> </form>
           </div>
