@@ -113,7 +113,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .answers .bar { background-color: white; }
     #qa .answers .bar:not(:last-child) { border-bottom: 1px solid #<?=$colour_dark?>80; height: 23px; }
     #qa .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #qa .post.deleted>:not(.bar), #qa .post .answers>.deleted { background: repeating-linear-gradient( 135deg, #<?=$colour_warning?>20, #<?=$colour_warning?>40 8px);
+    #qa .post.deleted>.title>a, #qa .post.deleted>.markdown, #qa .post .answers>.deleted { background: repeating-linear-gradient( 135deg, #99000020, #99000040 8px);
                                   text-shadow: 2px 0 2px white, 0 2px 2px white, -2px 0 2px white, 0 -2px 2px white, 2px 2px 2px white, 2px 2px 2px white, -2px 2px 2px white, 2px -2px 2px white; }
     #qa .title > div { flex: 0 0 auto; padding: 8px; background: #<?=$colour_mid?>; border-right: 1px solid #<?=$colour_dark?>; box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
     #qa .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }

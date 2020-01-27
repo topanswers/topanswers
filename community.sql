@@ -93,7 +93,7 @@ from db.room r natural join db.community
      natural left join db.communicant
      natural left join db.writer x
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
-     natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
+     natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,question_is_deleted
                               ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
                              , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
                              , license_name question_license_name
@@ -109,7 +109,6 @@ from db.room r natural join db.community
                              , exists(select 1 from db.subscription s natural join db.login where login_uuid=get_login_uuid() and s.question_id=q.question_id) question_i_subscribed
                              , exists(select 1 from db.question_flag f natural join db.login where login_uuid=get_login_uuid() and f.question_id=q.question_id and question_flag_direction=1) question_i_flagged
                              , exists(select 1 from db.question_flag f natural join db.login where login_uuid=get_login_uuid() and f.question_id=q.question_id and question_flag_direction=-1) question_i_counterflagged
-                             , question_crew_flags>0 question_is_deleted
                              , coalesce(communicant_votes,0) question_communicant_votes
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at)::bigint question_when
