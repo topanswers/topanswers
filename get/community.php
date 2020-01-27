@@ -65,7 +65,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </noscript>
   <style>
     *:not(hr) { box-sizing: inherit; }
-    * { scrollbar-color: #<?=$colour_dark?>80 #<?=$colour_mid?>; }
+    * { scrollbar-color: #<?=$colour_dark?>80 #<?=$colour_mid?>; scrollbar-width: thin; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
     body { display: flex; background: #<?=$colour_dark?>; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
