@@ -140,7 +140,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
     #notifications .message .fa.fa-times-circle { text-decoration: none; }
     #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: var(--colour-light); margin: 0 16px; }
-    #messages { flex: 1 1 auto; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid var(--colour-dark); background: var(--colour-mid); padding: 4px; }
+    #messages { flex: 1 1 0; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid var(--colour-dark); background: var(--colour-mid); padding: 4px; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { display: none; }
     #starboard { background: var(--colour-mid); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid var(--colour-dark);  }
@@ -151,12 +151,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #starboard .message:not(:hover) .button-group:not(:first-child) { display: grid; }
     #starboard .message:not(:hover) .button-group:not(:first-child) .fa-link { display: none; }
 
+    #preview { display: block; width: 100%; background: var(--colour-light); border-top: 1px solid var(--colour-dark); padding: 4px; }
     #canchat-wrapper { flex: 0 0 auto; }
     #chattext-wrapper { position: relative; display: flex; border-top: 1px solid var(--colour-dark); }
     #chatuploadfile { display: none; }
     #chatupload { position: absolute; right: 4px; top: 0; bottom: 0; font-size: 18px; color: var(--colour-dark); }
     #chatupload:active>div { color: var(--colour-mid); }
-    #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; }
+    #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 26px; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; }
 
     #chatorstarred { pointer-events: none; }
     #chatorstarred a[href] { pointer-events: auto; }
@@ -1146,7 +1147,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?}?>
           </div>
           <?if($canchat){?>
-            <div id="preview" class="message processed" style="display: block; width: 100%; background: var(--colour-light); border-top: 1px solid var(--colour-dark); padding: 0.2rem;">
+            <div id="preview" class="message processed">
               <div id="replying" style="width: 100%; font-style: italic; font-size: 10px;" data-id="">
                 <span>Preview:</span>
                 <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>

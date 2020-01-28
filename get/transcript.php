@@ -80,6 +80,7 @@ if(isset($_GET['month'])){
     #messages { flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 13px; overflow: auto; background-color: #<?=$colour_mid?>; scroll-behavior: smooth; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
+    .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
     .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background: white; overflow: auto; }
 
@@ -121,7 +122,9 @@ if(isset($_GET['month'])){
         });
       }
       $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
-      $('.markdown').renderMarkdown();
+      $('.markdown').renderMarkdown(function() {
+        $('.message').addClass('processed');
+      });
       <?if(!$search){?>threadChat();<?}?>
       $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
       $('.markdown').mark('<?=$search?>', { "separateWordSearch": false, "ignoreJoiners": true });
