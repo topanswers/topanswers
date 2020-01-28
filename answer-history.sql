@@ -4,11 +4,12 @@ set local search_path to answer_history,api,pg_temp;
 --
 --
 create view history as
-select answer_history_id,account_id,account_name,answer_history_markdown
+select answer_history_id,account_id,answer_history_markdown
+     , account_derived_name account_name
      , to_char(answer_history_at,'YYYY-MM-DD HH24:MI:SS') answer_history_at
      , lag(answer_history_markdown) over (order by answer_history_at) prev_markdown
      , row_number() over (order by answer_history_at) rn
-from db.answer_history natural join db.account
+from db.answer_history natural join api._account
 where answer_id=get_answer_id();
 --
 create view one with (security_barrier) as

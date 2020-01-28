@@ -11,16 +11,16 @@
   .markdown ul { padding-left: 2em; }
   .markdown li { margin: 0.2rem 0; }
   .markdown img { max-width: 100%; max-height: 30rem; margin: 1px; }
-  .markdown hr { background-color: #<?=$colour_mid?>; border: 0; height: 2px; }
+  .markdown hr { background-color: var(--colour-mid); border: 0; height: 2px; }
   .markdown table { border-collapse: collapse; table-layout: fixed; }
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-  .markdown th { background-color: #<?=$colour_mid?>; }
+  .markdown th { background-color: var(--colour-mid); }
   .markdown td { background-color: white; }
   .markdown td, .markdown th { font-family: '<?=$my_community_monospace_font_name?>', monospace; font-size: 90%; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
-  .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid #<?=$colour_mid?>; background-color: #<?=$colour_light?>40; }
+  .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid var(--colour-dark-99); background-color: var(--colour-light); }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
-  .markdown code { padding: 0 0.2em; background-color: #<?=$colour_light?>; border: 1px solid #<?=$colour_mid?>; border-radius: 1px; overflow-wrap: break-word; }
+  .markdown code { padding: 0 0.2em; background-color: var(--colour-light); border: 1px solid var(--colour-mid); border-radius: 1px; overflow-wrap: break-word; }
   .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
   .markdown nav ol { counter-reset: list-item; }
   .markdown nav li { display: block; counter-increment: list-item; }
@@ -34,22 +34,22 @@
   .markdown .footnote-ref>a { text-decoration: none; }
   .markdown .quoted-message { border-radius: 2px; padding: 5px; display: grid; grid-template-columns: 22px auto 11px auto; grid-template-rows: auto auto; overflow: auto; }
   .markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 4; grid-row: 1 / span 1; }
-  .markdown .quoted-message > p > a { color: #<?=$colour_dark?>; text-decoration: none; }
+  .markdown .quoted-message > p > a { color: var(--colour-dark); text-decoration: none; }
   .markdown .quoted-message > p > em { white-space: nowrap; }
   .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 2 / span 1; margin: 2px 0 0 1px; }
   .markdown .quoted-message > img { grid-row: 2 / span 1; }
   .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 0.25rem; border: 1px solid var(--dark-colour); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
-  .markdown .post { border: 3px solid #<?=$colour_dark?>; margin: 0; }
+  .markdown .post { border: 3px solid var(--colour-dark); margin: 0; }
   .markdown .post .tag:hover i { visibility: hidden; }
-  .dbfiddle { padding: 0.5rem; background-color: #<?=$colour_light?>; border-radius: 3px; }
-  .dbfiddle .CodeMirror { height: auto; border: 1px solid #<?=$colour_dark?>; font-family: '<?=$my_community_monospace_font_name?>', monospace; border-radius: 3px; }
+  .dbfiddle { padding: 0.5rem; background-color: var(--colour-light); border-radius: 3px; }
+  .dbfiddle .CodeMirror { height: auto; border: 1px solid var(--colour-dark); font-family: '<?=$my_community_monospace_font_name?>', monospace; border-radius: 3px; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 0.5rem; }
   .dbfiddle>div { margin-top: 0.5rem; }
   .dbfiddle .batch { overflow: hidden; min-width: 0; }
-  .dbfiddle .error { overflow: auto; white-space: pre; font-family: '<?=$my_community_monospace_font_name?>', monospace; background-color: #<?=$colour_highlight?>40; }
+  .dbfiddle .error { overflow: auto; white-space: pre; font-family: '<?=$my_community_monospace_font_name?>', monospace; background-color: var(--colour-highlight-40); }
   .dbfiddle a { font-size: smaller; }
-  .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; margin-top: 5px; padding: 2px }
+  .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--colour-dark); border-radius: 3px; margin-top: 5px; padding: 2px }
   .dbfiddle .qp-statement-header { display: none; }
   .qp-tt { z-index: 999; box-shadow: 0 0 2px 2px white; }
   .katex-block { overflow: auto; }

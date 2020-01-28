@@ -44,7 +44,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99;">
+<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99; --colour-highlight-40: #<?=$colour_highlight?>40;">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
@@ -67,9 +67,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </noscript>
   <style>
     *:not(hr) { box-sizing: inherit; }
-    * { scrollbar-color: #<?=$colour_dark?>80 #<?=$colour_mid?>; scrollbar-width: thin; }
+    * { scrollbar-color: var(--colour-dark-99) var(--colour-mid); scrollbar-width: thin; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
-    body { display: flex; background: #<?=$colour_dark?>; }
+    body { display: flex; background: var(--colour-dark); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
@@ -80,16 +80,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
     .icon:not(.roomicon) { border-radius: 2px; }
-    .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px #<?=$colour_dark?>; cursor: pointer; }
-    .icon.ping { box-shadow: 0 0 0 1px #<?=$colour_highlight?>; }
-    .highlight { color: #<?=$colour_highlight?>; }
+    .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px var(--colour-dark); cursor: pointer; }
+    .icon.ping { box-shadow: 0 0 0 1px var(--colour-highlight); }
+    .highlight { color: var(--colour-highlight); }
     .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
-    .container:not(.shrink), .element:not(.shrink)  { flex: 0 0 auto; }
-    .container.shrink, .element.shrink { flex: 0 1 auto; }
+    .container:not(.shrink)  { flex: 0 0 auto; }
+    .container.shrink { flex: 0 1 auto; }
+    <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
+    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
+    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: var(--colour-dark-99); }
+
+    .select2-dropdown { border: 1px solid var(--colour-dark) !important; box-shadow: 0 0 0.2rem 0.3rem white; }
+    a[data-lightbox] img { cursor: zoom-in; }
 
     #qa { overflow: auto; scroll-behavior: smooth; }
     #qa .banner { display: flex; margin: 16px 16px 0 16px; align-items: center; }
-    #qa .banner h1, #qa .banner h3 { color: #<?=$colour_light?>; font-weight: normal; margin: 0; }
+    #qa .banner h1, #qa .banner h3 { color: var(--colour-light); font-weight: normal; margin: 0; }
     #chat-wrapper header { border-top: 2px solid black; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
@@ -101,13 +107,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
 
       #qa #question { margin-bottom: 16px; }
-      #qa .post:target { box-shadow: 0 0 1px 2px #<?=$colour_highlight?>; }
-      #qa .markdown { border: 1px solid #<?=$colour_dark?>; border-width: 1px 0; padding: 8px; }
+      #qa .post:target { box-shadow: 0 0 1px 2px var(--colour-highlight); }
+      #qa .markdown { border: 1px solid var(--colour-dark); border-width: 1px 0; padding: 8px; }
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
-      #qa .bar .element.fa-bell { color: #<?=$colour_highlight?>; }
-      #qa .bar .element.fa-flag { color: #<?=$colour_warning?>; }
-      #qa .bar .starrr a.fa-star { color: #<?=$colour_highlight?>; }
-      #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
+      #qa .bar .element.fa-bell { color: var(--colour-highlight); }
+      #qa .bar .element.fa-flag { color: var(--colour-warning); }
+      #qa .bar .starrr a.fa-star { color: var(--colour-highlight); }
+      #qa .bar .starrr a.fa-star-o { color: var(--colour-dark); }
       #qa .bar [data-total]::after { content: attr(data-total) ' stars'; }
       #qa .bar [data-total="1"]::after { content: attr(data-total) ' star'; margin-right: 0.4em; }
       #qa .bar [data-total][data-required]:not([data-required="0"]):not([data-required^="-"])::after { content: attr(data-total) ' stars (' attr(data-required) ' more required to launch)'; }
@@ -116,94 +122,85 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #qa .post.subscribed .bar .element.fa-bell-o { display: none; }
       #qa .post:not(.flagged) .bar .element.fa-flag { display: none; }
       #qa .post.flagged .bar .element.fa-flag-o { display: none; }
-      #qa .post.counterflagged .bar .element.fa-flag-checkered { color: #<?=$colour_highlight?>; }
+      #qa .post.counterflagged .bar .element.fa-flag-checkered { color: var(--colour-highlight); }
     <?}?>
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
-    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 4px; }
+    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; }
     #chat-wrapper .label a[href="."] { text-decoration: none; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
     #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px 0; }
 
-    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; margin: 0 16px; border-radius: 3px; background: #<?=$colour_light?>; }
+    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; margin: 0 16px; border-radius: 3px; background: var(--colour-light); }
     #notification-wrapper:empty, #notification-wrapper:empty + [data-rz-handle] { display: none; }
-    #notification-wrapper .label { border-bottom: 1px solid #<?=$colour_dark?>; flex: 0 0 auto; }
+    #notification-wrapper .label { border-bottom: 1px solid var(--colour-dark); flex: 0 0 auto; }
     #notifications { overflow-x: hidden; overflow-y: auto; }
-    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: #<?=$colour_light?>; margin: 0 16px; }
-
-    #chat-panels .message .who { top: -1.2em; line-height: 1; }
-    #chat-panels .markdown img { max-height: 7rem; }
-    #chat-panels .message.thread .markdown { background: #<?=$colour_highlight?>40; }
-    #messages .message .when { font-style: italic; }
-    #messages .message:not(:hover) .when { display: none; }
-    #messages .message .who>a { color: #<?=$colour_dark?>; }
-    #messages .message .who>a[href^='#'] { text-decoration: none; }
-    #notifications .message { padding: 0.3em; border-bottom: 1px solid #<?=$colour_dark?>; }
+    #notifications .message { padding: 4px; border-bottom: 1px solid var(--colour-dark); }
     #notifications .message[data-type='chat'] { padding-top: 1.3em; }
     #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
-
-    #starboard { background: #<?=$colour_mid?>; overflow-x: hidden; overflow-y: auto; }
-    #starboard .message { padding: 0.3em; border-bottom: 1px solid #<?=$colour_dark?>; padding-top: 1.3em; }
+    #notifications .message .fa.fa-times-circle { text-decoration: none; }
+    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: var(--colour-light); margin: 0 16px; }
+    #messages { flex: 1 1 auto; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid var(--colour-dark); background: var(--colour-mid); padding: 4px; }
+    #messages .message .who { top: -1.3em; }
+    #messages .message:not(:hover) .when { display: none; }
+    #starboard { background: var(--colour-mid); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid var(--colour-dark);  }
+    #starboard .message { padding: 4px; padding-top: 1.3em; border-top: 1px solid var(--colour-dark); }
+    #starboard .message .who { top: 0.2rem; font-size: 12px; }
     #starboard .message .button-group:not(:first-child) .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
     #starboard .message .button-group:first-child { display: none; }
     #starboard .message:not(:hover) .button-group:not(:first-child) { display: grid; }
     #starboard .message:not(:hover) .button-group:not(:first-child) .fa-link { display: none; }
-    #chat-panels #starboard .message .who { top: 0.2rem; font-size: 12px; }
 
     #canchat-wrapper { flex: 0 0 auto; }
-    #chattext-wrapper { position: relative; display: flex; border-top: 1px solid #<?=$colour_dark?>; }
+    #chattext-wrapper { position: relative; display: flex; border-top: 1px solid var(--colour-dark); }
     #chatuploadfile { display: none; }
-    #chatupload { position: absolute; right: 4px; top: 0; bottom: 0; font-size: 18px; color: #<?=$colour_dark?>; }
-    #chatupload:active>div { color: #<?=$colour_mid?>; }
+    #chatupload { position: absolute; right: 4px; top: 0; bottom: 0; font-size: 18px; color: var(--colour-dark); }
+    #chatupload:active>div { color: var(--colour-mid); }
     #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 0; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; }
 
     #chatorstarred { pointer-events: none; }
     #chatorstarred a[href] { pointer-events: auto; }
 
-    <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
-    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
-    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; }
-
-    .select2-dropdown { border: 1px solid #<?=$colour_dark?> !important; box-shadow: 0 0 0.2rem 0.3rem white; }
-    a[data-lightbox] img { cursor: zoom-in; }
-
-    #active { flex: 0 0 23px; display: flex; flex-direction: column; justify-content: space-between; background: #<?=$colour_light?>; border-left: 1px solid #<?=$colour_dark?>; overflow-y: hidden; }
-    #active-rooms { flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden; }
-    #active-rooms a { position: relative; }
-    #active-rooms a.processed[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: #<?=$colour_highlight?>; color: black;
-                                                         width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
-    #active-rooms>a:not([href])>.icon { outline: 1px solid #<?=$colour_highlight?>; }
-    #active-rooms>a[href]:hover>.icon { outline: 1px solid #<?=$colour_highlight?>80; }
-    #active-spacer { flex: 0 0 auto; padding: 1rem 0; cursor: pointer; }
-    #active-spacer>div { background: #<?=$colour_dark?>; height: 1px; }
-    #active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
-
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
-    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background: white; overflow: auto; }
-
-    .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
+    .message .who>a { color: var(--colour-dark); }
+    .message .who>a[href^='#'] { text-decoration: none; }
+    .message .when { color: var(--colour-dark); }
+    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 4px; border: 1px solid var(--colour-dark-99); border-radius: 3px; background: white; overflow: auto; }
+    .message .markdown img { max-height: 7rem; }
+    .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-top: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
-    .message .button-group .fa { color: #<?=$colour_dark?>; cursor: pointer; text-decoration: none; }
-    .message .button-group .fa.me { color: #<?=$colour_highlight?>; }
+    .message .button-group .fa { color: var(--colour-dark); cursor: pointer; text-decoration: none; }
+    .message .button-group .fa.me { color: var(--colour-highlight); }
     .message:hover .button-group:first-child { display: none; }
     .message .button-group:not(.show) { display: none; }
     .message:not(:hover) .button-group:not(:first-child) { display: none; }
     .message .button-group:first-child .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
     .message .button-group:first-child .fa[data-count][data-count="0"] { visibility: hidden; }
-
     .message.merged { margin-top: -1px; }
     .message.merged > .who, .message.merged > .icon { visibility: hidden; }
-    .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
+    .message:target .markdown { box-shadow: 0 0 2px 2px var(--colour-highlight) inset; }
+    .message.thread .markdown { background: var(--colour-highlight-40); }
+
+    #active { flex: 0 0 23px; display: flex; flex-direction: column; justify-content: space-between; background: var(--colour-light); border-left: 1px solid var(--colour-dark); overflow-y: hidden; }
+    #active-rooms { flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden; }
+    #active-rooms a { position: relative; }
+    #active-rooms a.processed[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: var(--colour-highlight); color: black;
+                                                         width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
+    #active-rooms>a:not([href])>.icon { outline: 1px solid var(--colour-highlight); }
+    #active-rooms>a[href]:hover>.icon { outline: 1px solid var(--colour-highlight-99); }
+    #active-spacer { flex: 0 0 auto; padding: 1rem 0; cursor: pointer; }
+    #active-spacer>div { background: var(--colour-dark); height: 1px; }
+    #active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 
     .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
     .simple-pagination ul { display: flex; padding: 0; }
-    .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; outline-left: 1px solid #<?=$colour_dark?>; }
+    .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; outline-left: 1px solid var(--colour-dark); }
     .simple-pagination li>span { user-select: none; }
-    .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: black; text-align: center; background-color: #<?=$colour_light?>; outline: 1px solid #<?=$colour_dark?>; }
-    .simple-pagination li:not(.disabled):not(.active):hover>* { background-color: #<?=$colour_mid?>; }
-    .simple-pagination li>.current:not(.prev):not(.next) { position: relative; z-index: 1; outline: 2px solid #<?=$colour_highlight?>; }
+    .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: black; text-align: center; background-color: var(--colour-light); outline: 1px solid var(--colour-dark); }
+    .simple-pagination li:not(.disabled):not(.active):hover>* { background-color: var(--colour-mid); }
+    .simple-pagination li>.current:not(.prev):not(.next) { position: relative; z-index: 1; outline: 2px solid var(--colour-highlight); }
     .simple-pagination li>.ellipse { padding: 0 10px; user-select: none; }
     .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
     .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
@@ -336,7 +333,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function processStarboard(){
         $('#starboard .markdown').renderMarkdown();
-        $('#starboard .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+        $('#starboard .when').each(function(){
+          $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
+        });
         $('#starboard>.message').addClass('processed');
       }
       function updateStarboard(){
@@ -365,7 +364,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             if(scroll){
               setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); newchat.addClass('processed'); },0);
             }else{
-              $('#messages').css('scroll-behavior','smooth').css('border-bottom','3px solid #<?=$colour_highlight?>').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
+              $('#messages').css('scroll-behavior','smooth').css('border-bottom','3px solid var(--colour-highlight)').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
               newchat.addClass('processed');
             }
           });
@@ -773,7 +772,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var t = $(this), f = t.closest('form')
           , ids = prompt('Enter question or answer id or url (and optionally further answer ids/urls from the same question) from <?=$sesite_url?>.\nSeparate each id/url with a space. No need to list your own answers; they will be imported automatically.');
         if(ids!==null) {
-          t.hide().after('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+          t.hide().after('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
           f.find('[name=seids]').attr('value',ids);
           f.submit();
         }
@@ -791,27 +790,27 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
       $('#chat-wrapper').on('click','.message[data-type="chat"] .dismiss', function(){
         $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="question"] .dismiss', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-question', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="question flag"] .dismiss', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-question-flag', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="answer"] .dismiss', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-answer', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
         return false;
       });
       $('#chat-wrapper').on('click','.message[data-type="answer flag"] .dismiss', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-answer-flag', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
         return false;
       });
       function search(){
@@ -1119,16 +1118,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div id="chatorstarred" class="element"><a><?=$question?'Comments':'Chat'?></a> / <a href=".">Starred</a></div>
             <div class="element"><a class="element" href="/transcript?room=<?=$room?>">transcript</a></div>
           </div>
-          <div id="starboard" style="flex: 1 1 auto; display: none; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; xpadding: 0.5rem;">
+          <div id="starboard">
             <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
             <div style="flex: 1 0 0;"></div>
           </div>
-          <div id="messages" style="flex: 1 1 auto; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid #<?=$colour_dark?>; background: #<?=$colour_mid?>; padding: 0.5rem;">
+          <div id="messages">
             <?if($room_has_chat){?>
-              <div style="flex: 1 0 0;"></div>
+              <div style="flex: 1 0 10px;"></div>
               <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
             <?}elseif($question){?>
-              <div style="flex: 1 0 0.5em;">
+              <div style="flex: 1 0 10px;">
                 <div style="padding: 10vh 20%;">
                   <?if($auth){?>
                     <?if($question_se_question_id){?>
@@ -1147,7 +1146,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?}?>
           </div>
           <?if($canchat){?>
-            <div id="preview" class="message processed" style="display: block; width: 100%; background: #<?=$colour_light?>; border-top: 1px solid #<?=$colour_dark?>; padding: 0.2rem;">
+            <div id="preview" class="message processed" style="display: block; width: 100%; background: var(--colour-light); border-top: 1px solid var(--colour-dark); padding: 0.2rem;">
               <div id="replying" style="width: 100%; font-style: italic; font-size: 10px;" data-id="">
                 <span>Preview:</span>
                 <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>

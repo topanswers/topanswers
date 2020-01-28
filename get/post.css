@@ -1,4 +1,7 @@
 .element { margin: 0 4px; }
+.element:not(.shrink)  { flex: 0 0 auto; }
+.element.shrink { flex: 0 1 auto; }
+.element>.element:first-child, .element>.element:last-child { margin: 0; }
 
 .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: var(--colour-mid); border: 1px solid var(--colour-dark); font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 4px; }
 .tag::after { position: absolute; border-radius: 50%; background: var(--colour-light); border: 1px solid var(--colour-dark); height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }

@@ -3,7 +3,7 @@ grant usage on schema starboard to get;
 set local search_path to starboard,api,pg_temp;
 --
 --
-create view account with (security_barrier) as select account_id,account_name from db.account;
+create view account with (security_barrier) as select account_id,account_derived_name account_name from api._account;
 --
 create view chat with (security_barrier) as
 select chat_id,account_id,account_name,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_reply_account_name,chat_markdown

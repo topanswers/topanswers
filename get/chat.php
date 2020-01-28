@@ -42,38 +42,38 @@ $id = $_GET['id']??ccdb("select recent()");
     <?if($authenticated){?>
       <span class="buttons">
         <span class="button-group show">
-          <i class="stars <?=$i_starred?'me ':''?>fa fa-star<?=($account_is_me||$i_starred)?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+          <i class="stars <?=$i_starred?'me ':''?>fa fa-fw fa-star<?=($account_is_me||$i_starred)?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
           <i></i>
-          <i class="flags <?=$i_flagged?'me ':''?>fa fa-flag<?=($account_is_me||$i_flagged)?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
+          <i class="flags <?=$i_flagged?'me ':''?>fa fa-fw fa-flag<?=($account_is_me||$i_flagged)?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
           <i></i>
         </span>
         <?if($room_can_chat){?>
           <?if($account_is_me){?>
             <span class="button-group show">
-              <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+              <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-fw fa-link" title="permalink"></a>
               <i></i>
-              <?if($chat_editable_age){?><i class="fa fa-edit" title="edit"></i><?}else if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+              <?if($chat_editable_age){?><i class="fa fa-fw fa-edit" title="edit"></i><?}else if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
               <i></i>
             </span>
           <?}else{?>
             <span class="button-group show">
-              <i class="<?=$i_starred?'me ':''?>fa fa-star<?=$i_starred?'':'-o'?>" title="star"></i>
-              <i class="fa fa-ellipsis-h" title="more actions"></i>
-              <i class="<?=$i_flagged?'me ':''?> fa fa-flag<?=$i_flagged?'':'-o'?>" title="flag"></i>
-              <i class="fa fa-reply fa-rotate-180" title="reply"></i>
+              <i class="<?=$i_starred?'me ':''?>fa fa-fw fa-star<?=$i_starred?'':'-o'?>" title="star"></i>
+              <i class="fa fa-fw fa-ellipsis-h" title="more actions"></i>
+              <i class="<?=$i_flagged?'me ':''?> fa fa-fw fa-flag<?=$i_flagged?'':'-o'?>" title="flag"></i>
+              <i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i>
             </span>
             <span class="button-group">
-              <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
-              <i class="fa fa-ellipsis-h" title="more actions"></i>
-              <?if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+              <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-fw fa-link" title="permalink"></a>
+              <i class="fa fa-fw fa-ellipsis-h" title="more actions"></i>
+              <?if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-fw fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
               <i></i>
             </span>
           <?}?>
         <?}else{?>
           <span class="button-group show">
-            <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
+            <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-fw fa-link" title="permalink"></a>
             <i></i>
-            <?if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+            <?if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-fw fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
             <i></i>
           </span>
         <?}?>

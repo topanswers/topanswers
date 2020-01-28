@@ -47,7 +47,7 @@ create function search(text)
   with c as (select chat.*, strict_word_similarity($1,chat_markdown) word_similarity, similarity($1,chat_markdown) similarity from chat where room_id=get_room_id() and $1<<%chat_markdown)
   select chat_id,account_id,chat_reply_id,chat_markdown,chat_at
        , account_id=get_account_id() account_is_me
-       , coalesce(nullif(account_name,''),'Anonymous') account_name
+       , account_derived_name account_name
        , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
        , (select account_id=get_account_id() from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
        , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=get_account_id()) i_flagged
@@ -55,7 +55,7 @@ create function search(text)
        , (select count(1)::integer from chat_flag where chat_id=c.chat_id) chat_flag_count
        , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
        , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
-  from c natural join account
+  from c natural join api._account
   where get_account_id() is not null or (select count(1)::integer from chat_flag where chat_id=c.chat_id)=0
   order by word_similarity+similarity desc, chat_at desc limit 100;
 $$;

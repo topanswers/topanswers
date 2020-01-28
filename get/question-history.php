@@ -12,7 +12,7 @@ extract(cdb("select account_id
              from one"));
 ?>
 <!doctype html>
-<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99;">
+<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99; --colour-highlight-40: #<?=$colour_highlight?>40;">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
@@ -32,16 +32,16 @@ extract(cdb("select account_id
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    .markdown, .title { background: white; padding: 8px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; }
-    .diff { background: #<?=$colour_mid?>; overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 8px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; }
-    .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px #<?=$colour_highlight?>; }
-    .separator { border-bottom: 4px solid #<?=$colour_dark?>; margin: 14px -14px; }
+    .markdown, .title { background: white; padding: 8px; font-size: 16px; border: 1px solid var(--colour-dark); border-radius: 3px; }
+    .diff { background: var(--colour-mid); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 8px; border: 1px solid var(--colour-dark); border-radius: 3px; }
+    .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px var(--colour-highlight); }
+    .separator { border-bottom: 4px solid var(--colour-dark); margin: 14px -14px; }
     .separator:last-child { display: none; }
 
     .who, .when { white-space: nowrap; }
-    .when { font-size: smaller; color: #<?=$colour_dark?>; }
+    .when { font-size: smaller; color: var(--colour-dark); }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 16px; border-radius: 3px; }
+    .CodeMirror { height: 100%; border: 1px solid var(--colour-dark); font-size: 16px; border-radius: 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -77,7 +77,7 @@ extract(cdb("select account_id
   </script>
   <title>Question History - TopAnswers</title>
 </head>
-<body class="no-mathjax" style="font-size: larger; background: #<?=$colour_light?>;">
+<body class="no-mathjax" style="font-size: larger; background: var(--colour-light);">
   <header>
     <div>
       <a href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>
