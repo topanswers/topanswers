@@ -110,8 +110,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #qa .bar .starrr a.fa-star-o { color: #<?=$colour_dark?>; }
       #qa .bar [data-total]::after { content: attr(data-total) ' stars'; }
       #qa .bar [data-total="1"]::after { content: attr(data-total) ' star'; margin-right: 0.4em; }
-      #qa .bar [data-total][data-required]:not([data-required="0"]):not([data-required^="-"])::after { content: attr(data-total) ' stars (' attr(data-required) ' more required)'; }
-      #qa .bar [data-total="1"][data-required]:not([data-required="0"]):not([data-required^="-"])::after { content: attr(data-total) ' star (' attr(data-required) ' more required)'; margin-right: 0.4em; }
+      #qa .bar [data-total][data-required]:not([data-required="0"]):not([data-required^="-"])::after { content: attr(data-total) ' stars (' attr(data-required) ' more required to launch)'; }
+      #qa .bar [data-total="1"][data-required]:not([data-required="0"]):not([data-required^="-"])::after { content: attr(data-total) ' star (' attr(data-required) ' more required to launch)'; margin-right: 0.4em; }
       #qa .post:not(.subscribed) .bar .element.fa-bell { display: none; }
       #qa .post.subscribed .bar .element.fa-bell-o { display: none; }
       #qa .post:not(.flagged) .bar .element.fa-flag { display: none; }
