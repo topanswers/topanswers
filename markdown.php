@@ -205,7 +205,7 @@
 
     $.fn.renderMarkdownSummary = function(){
       this.filter('[data-markdown]').each(function(){
-        $(this).html(mdsummary.renderInline($(this).attr('data-markdown')).split('\n')[0]);
+        $(this).html(mdsummary.renderInline($(this).attr('data-markdown')).split('\n')[0].replace(/^[ #]+|[ #]+$/g,''));
       });
       return this;
     };
