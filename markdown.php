@@ -52,6 +52,7 @@
   .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; margin-top: 5px; padding: 2px }
   .dbfiddle .qp-statement-header { display: none; }
   .qp-tt { z-index: 999; box-shadow: 0 0 2px 2px white; }
+  .katex-block { overflow: auto; }
 </style>
 <script src="/lib/markdown-it.js"></script>
 <script src="/lib/markdown-it-inject-linenumbers.js"></script>
