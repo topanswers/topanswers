@@ -102,7 +102,7 @@ create function quote(rid integer, cid bigint) returns text language sql securit
   select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
   --
   select '::: quote '||room_id||' '||cid||' '||account_id||' '||encode(community_mid_shade,'hex')||' '||encode(community_dark_shade,'hex')||chr(10)
-         ||account_derived_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)||' — '
+         ||account_derived_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)
            ||(case when room_id<>rid then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?room='||room_id||'#c'||cid||')*' else '['||chat_iso||'](#c'||cid||')' end)||'  '||chr(10)
          ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
          ||':::'

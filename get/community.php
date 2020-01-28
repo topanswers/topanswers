@@ -144,7 +144,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { display: none; }
     #starboard { background: var(--colour-mid); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid var(--colour-dark);  }
-    #starboard .message { padding: 4px; padding-top: 1.3em; border-top: 1px solid var(--colour-dark); }
+    #starboard .message { padding: 4px; padding-top: 1.3em; border-top: 1px solid var(--colour-dark-99); }
     #starboard .message .who { top: 0.2rem; font-size: 12px; }
     #starboard .message .button-group:not(:first-child) .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
     #starboard .message .button-group:first-child { display: none; }
@@ -628,7 +628,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         if(s&&(s[2]===s[4])){
           $.get({ url: '/chat?quote&room=<?=$room?>&id='+s[2], async: !sync }).done(function(r){
             if($('#chattext').val()===m){
-              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return '*'+(moment(match).fromNow())+'*'; })).renderMarkdown();
+              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return ' *— '+(moment(match).fromNow())+'*'; })).renderMarkdown();
               setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
             }
           }).fail(function(){

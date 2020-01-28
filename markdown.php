@@ -35,10 +35,10 @@
   .markdown .quoted-message { border-radius: 2px; padding: 5px; display: grid; grid-template-columns: 22px auto 11px auto; grid-template-rows: auto auto; overflow: auto; }
   .markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 4; grid-row: 1 / span 1; }
   .markdown .quoted-message > p > a { color: var(--colour-dark); text-decoration: none; }
-  .markdown .quoted-message > p > em { white-space: nowrap; }
+  .markdown .quoted-message > p em { color: var(--colour-dark); font-style: normal; white-space: nowrap; }
   .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 2 / span 1; margin: 2px 0 0 1px; }
   .markdown .quoted-message > img { grid-row: 2 / span 1; }
-  .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 0.25rem; border: 1px solid var(--dark-colour); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
+  .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 4px; border: 1px solid var(--colour-dark-99); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
   .markdown .post { border: 3px solid var(--colour-dark); margin: 0; }
   .markdown .post .tag:hover i { visibility: hidden; }
   .dbfiddle { padding: 0.5rem; background-color: var(--colour-light); border-radius: 3px; }
@@ -136,7 +136,7 @@
                  render: function (tokens, idx) {
                    var m = tokens[idx].info.trim().match(/^quote ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$/);
                    if (tokens[idx].nesting === 1) {
-                     return '<div class="quoted-message" style="--dark-colour: #'+m[5]+'99; background: #'+m[4]+';">\n<img class="icon" src="/identicon?id='+m[3]+'">\n<a class="fa fa-link" style="color: #'+m[5]+';" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
+                     return '<div class="quoted-message" style="--colour-dark: #'+m[5]+'; --colour-dark-99: #'+m[5]+'99; background: #'+m[4]+';">\n<img class="icon" src="/identicon?id='+m[3]+'">\n<a class="fa fa-fw fa-link" style="color: #'+m[5]+';" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
                    } else {
                      return '</div>\n';
                    }
