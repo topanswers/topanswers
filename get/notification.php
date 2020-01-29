@@ -129,11 +129,11 @@ $notification_count = ccdb("select count(1) from chat_notification")
               <span class="when" data-at="<?=$notification_at_iso?>"></span>,
               <?=$chat_from_account_name?>
               <?if($notification_room_id!==$room_id){?>
-                <?=$chat_reply_id?' <span>replying to</span> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
-                <span> in </span>
-                <a href="/<?=$notification_community_name?>?<?=$chat_is_question_room?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
+                <?=$chat_reply_id?' <span>&nbsp;replying to&nbsp;</span> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
+                <span>&nbsp;in&nbsp;</span>
+                <a class="ellipsis" href="/<?=$notification_community_name?>?<?=$chat_is_question_room?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
               <?}else{?>
-                <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'">replying to</a> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
+                <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'">&nbsp;replying to&nbsp;</a> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
               <?}?>
             </span>
             <img title="<?=($chat_from_account_name)?$chat_from_account_name:'Anonymous'?>" class="icon" src="/identicon?id=<?=$chat_from_account_id?>">
@@ -164,22 +164,22 @@ $notification_count = ccdb("select count(1) from chat_notification")
             <i class="fa fa-times-circle" title="dismiss notification"></i>
             <span class="when" data-at="<?=$notification_at_iso?>"></span>
             <span>, question edit:&nbsp;</span>
-            <a href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+            <a class="ellipsis" href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
           <?}elseif($notification_type==='question flag'){?>
             <i class="fa fa-times-circle" title="dismiss notification"></i>
             <span class="when" data-at="<?=$notification_at_iso?>"></span>
             <span>, <?=($notification_count>1)?$notification_count.' ':''?> question flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
-            <a href="/<?=$notification_community_name?>?q=<?=$question_id?>#question" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+            <a class="ellipsis" href="/<?=$notification_community_name?>?q=<?=$question_id?>#question" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
           <?}elseif($notification_type==='answer'){?>
             <i class="fa fa-times-circle" title="dismiss notification"></i>
             <span class="when" data-at="<?=$notification_at_iso?>"></span>
             <span>, answer <?=$answer_notification_is_edit?'edit':'posted'?> on:&nbsp;</span>
-            <a href="/<?=$answer_notification_is_edit?('answer-history?id='.$answer_id.'#h'.$notification_id):($notification_community_name.'?q='.$question_id.'#a'.$answer_id)?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+            <a class="ellipsis" href="/<?=$answer_notification_is_edit?('answer-history?id='.$answer_id.'#h'.$notification_id):($notification_community_name.'?q='.$question_id.'#a'.$answer_id)?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
           <?}elseif($notification_type==='answer flag'){?>
             <i class="fa fa-times-circle" title="dismiss notification"></i>
             <span class="when" data-at="<?=$notification_at_iso?>"></span>
             <span>, <?=($notification_count>1)?$notification_count.' ':''?> answer flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
-            <a href="/<?=$notification_community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+            <a class="ellipsis" href="/<?=$notification_community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
           <?}?>
         </div>
       <?}?>

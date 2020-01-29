@@ -183,12 +183,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     .notification { padding: 4px; border-radius: 3px; margin: 2px; border: 1px solid var(--colour-dark-99); }
     .notification:not(.processed) { opacity: 0; }
-    .notification:not(.message) { overflow: hidden; text-overflow: ellipsis; font-size: 12px; white-space: nowrap; }
+    .notification:not(.message) { display: flex; overflow: hidden; font-size: 12px; white-space: nowrap; }
     .notification.message { padding-top: 1.3em; }
-    .notification.message .who { top: 0.2rem; font-size: 12px; }
+    .notification.message .who { display: flex; width: calc(100% - 8px); overflow: hidden; top: 0.2rem; font-size: 12px; }
     .notification.message .who > span { color: var(--colour-dark); }
     .notification.message .who > a['href'^='#'] { text-decoration: none; }
     .notification .when { color: var(--colour-dark); }
+    .notification .ellipsis { overflow: hidden; text-overflow: ellipsis; }
     .notification .fa.fa-times-circle { color: var(--colour-warning); cursor: pointer; margin: 0 3px 0 1px; }
     .notification .fa.fa-spinner { color: var(--colour-dark); }
     .notification a { color: var(--colour-dark); }
