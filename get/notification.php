@@ -4,16 +4,17 @@ include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to notification,pg_temp");
 $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
-extract(cdb("select colour_dark,room_id,room_can_chat from one"));
+extract(cdb("select room_id,room_can_chat from one"));
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
+$notification_count = ccdb("select count(1) from chat_notification")
+                    + ccdb("select count(1) from question_notification")
+                    + ccdb("select count(1) from answer_notification")
+                    + ccdb("select count(1) from question_flag_notification")
+                    + ccdb("select count(1) from answer_flag_notification");
 ?>
 <div id="notification-wrapper">
-  <?if(ccdb("select count(*)>0 from chat_notification")
-     ||ccdb("select count(*)>0 from question_notification")
-     ||ccdb("select count(*)>0 from answer_notification")
-     ||ccdb("select count(*)>0 from question_flag_notification")
-     ||ccdb("select count(*)>0 from answer_flag_notification")){?>
-    <div class="label container"><div class="element">Notifications</div></div>
+  <?if($notification_count>0){?>
+    <div class="label container"><div class="element"><?=$notification_count?> Notification<?=($notification_count===1)?'':'s'?></div></div>
     <div id="notifications">
       <?foreach(db("with c as (select 'chat' notification_type
                                     , 1 notification_count
@@ -22,6 +23,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
                                     , encode(community_mid_shade,'hex') notification_mid_shade
                                     , encode(community_dark_shade,'hex') notification_dark_shade
+                                    , encode(community_warning_shade,'hex') notification_warning_shade
                                     , community_name notification_community_name
                                     , question_id
                                     , null::text question_title
@@ -51,6 +53,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , to_char(question_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
                                     , encode(community_mid_shade,'hex') notification_mid_shade
                                     , encode(community_dark_shade,'hex') notification_dark_shade
+                                    , encode(community_warning_shade,'hex') notification_warning_shade
                                     , community_name notification_community_name
                                     , question_id
                                     , question_title
@@ -66,6 +69,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , to_char(question_flag_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
                                     , encode(community_mid_shade,'hex') notification_mid_shade
                                     , encode(community_dark_shade,'hex') notification_dark_shade
+                                    , encode(community_warning_shade,'hex') notification_warning_shade
                                     , community_name notification_community_name
                                     , question_id
                                     , question_title
@@ -73,12 +77,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , null::boolean
                                     , null::integer
                                     , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                               from (select question_id,question_title,community_name,community_mid_shade,community_dark_shade
+                               from (select question_id,question_title,community_name,community_mid_shade,community_dark_shade,community_warning_shade
                                           , max(question_flag_history_id) question_flag_history_id
                                           , max(question_flag_notification_at) question_flag_notification_at
                                           , count(distinct account_id) question_flag_count
                                      from question_flag_notification
-                                     group by question_id,question_title,community_name,community_mid_shade,community_dark_shade) n )
+                                     group by question_id,question_title,community_name,community_mid_shade,community_dark_shade,community_warning_shade) n )
                        , a as (select 'answer' notification_type
                                     , 1 notification_count
                                     , answer_history_id notification_id
@@ -86,6 +90,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , to_char(answer_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
                                     , encode(community_mid_shade,'hex') notification_mid_shade
                                     , encode(community_dark_shade,'hex') notification_dark_shade
+                                    , encode(community_warning_shade,'hex') notification_warning_shade
                                     , community_name notification_community_name
                                     , question_id
                                     , question_title
@@ -101,6 +106,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , to_char(answer_flag_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
                                     , encode(community_mid_shade,'hex') notification_mid_shade
                                     , encode(community_dark_shade,'hex') notification_dark_shade
+                                    , encode(community_warning_shade,'hex') notification_warning_shade
                                     , community_name notification_community_name
                                     , question_id
                                     , question_title
@@ -108,80 +114,72 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                     , null::boolean
                                     , null::integer
                                     , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                               from (select answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade
+                               from (select answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade,community_warning_shade
                                           , max(answer_flag_history_id) answer_flag_history_id
                                           , max(answer_flag_notification_at) answer_flag_notification_at
                                           , count(distinct account_id) answer_flag_count
                                      from answer_flag_notification
-                                     group by answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade) n)
+                                     group by answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade,community_warning_shade) n)
                     select * from c union all select * from q union all select * from qf union all select * from a union all select * from af
                     order by notification_at limit 20") as $r){ extract($r);?>
-        <div id="n<?=$notification_id?>" class="message" style="background: #<?=$notification_mid_shade?>; --colour-dark: #<?=$notification_dark_shade?>; --colour-dark-99: #<?=$notification_dark_shade?>99;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
+        <div id="n<?=$notification_id?>" class="notification<?=($notification_type==='chat')?' message':''?>" style="background: #<?=$notification_mid_shade?>; --colour-dark: #<?=$notification_dark_shade?>; --colour-warning: #<?=$notification_warning_shade?>; --colour-dark-99: #<?=$notification_dark_shade?>99;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
           <?if($notification_type==='chat'){?>
             <span class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.($chat_reply_account_is_me?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
-              <a href='#' class="dismiss fa fa-fw fa-times-circle" style="color: var(--colour-dark);" title="dismiss notification"></a>
-              <span class="when" style="color: var(--colour-dark);" data-at="<?=$notification_at_iso?>"></span>, 
+              <i class="fa fa-times-circle" title="dismiss notification"></i>
+              <span class="when" data-at="<?=$notification_at_iso?>"></span>,
               <?=$chat_from_account_name?>
               <?if($notification_room_id!==$room_id){?>
-                <?=$chat_reply_id?' replying to '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
-                <span style="color: var(--colour-dark);"> in </span>
-                <a href="/<?=$notification_community_name?>?<?=$chat_is_question_room?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>" style="color: var(--colour-dark);" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
+                <?=$chat_reply_id?' <span>replying to</span> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
+                <span> in </span>
+                <a href="/<?=$notification_community_name?>?<?=$chat_is_question_room?'q='.$question_id:'room='.$notification_room_id?>" data-room="<?=$notification_room_id?>" title="<?=$chat_room_name?>"><?=$chat_room_name?></a>
               <?}else{?>
-                <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: var(--colour-dark); text-decoration: none;">&nbsp;replying to&nbsp;</a> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
+                <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'">replying to</a> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
               <?}?>
             </span>
             <img title="<?=($chat_from_account_name)?$chat_from_account_name:'Anonymous'?>" class="icon" src="/identicon?id=<?=$chat_from_account_id?>">
-            <div class="markdown" data-markdown="<?=$chat_markdown?>" style="border-color: var(--colour-dark-99);"><pre><?=$chat_markdown?></pre></div>
+            <div class="markdown" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
             <?if($room_can_chat&&($notification_room_id===$room_id)){?>
               <span class="buttons">
                 <span class="button-group show">
-                  <i class="stars <?=$chat_i_starred?'me ':''?>fa fa-fw fa-star<?=$chat_i_starred?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+                  <i class="stars <?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
                   <i></i>
-                  <i class="flags <?=$chat_i_flagged?'me ':''?>fa fa-fw fa-flag<?=$chat_i_flagged?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
+                  <i class="flags <?=$chat_i_flagged?'me ':''?>fa fa-flag<?=$chat_i_flagged?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
                   <i></i>
                 </span>
                 <span class="button-group show">
-                  <i class="<?=$chat_i_starred?'me ':''?>fa fa-fw fa-star<?=$chat_i_starred?'':'-o'?>" title="star"></i>
-                  <i class="fa fa-fw fa-ellipsis-h" title="more actions"></i>
-                  <i class="<?=$chat_i_flagged?'me ':''?> fa fa-fw fa-flag<?=$chat_i_flagged?'':'-o'?>" title="flag"></i>
-                  <i class="fa fa-fw fa-reply fa-rotate-180" title="reply"></i>
+                  <i class="<?=$chat_i_starred?'me ':''?>fa fa-star<?=$chat_i_starred?'':'-o'?>" title="star"></i>
+                  <i class="fa fa-ellipsis-h" title="more actions"></i>
+                  <i class="<?=$chat_i_flagged?'me ':''?> fa fa-flag<?=$chat_i_flagged?'':'-o'?>" title="flag"></i>
+                  <i class="fa fa-reply fa-rotate-180" title="reply"></i>
                 </span>
                 <span class="button-group">
-                  <a href="/transcript?room=<?=$notification_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-fw fa-link" title="permalink"></a>
-                  <i class="fa fa-fw fa-ellipsis-h" title="more actions"></i>
-                  <?if($chat_has_history){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-fw fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+                  <a href="/transcript?room=<?=$notification_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-link" title="permalink"></a>
+                  <i class="fa fa-ellipsis-h" title="more actions"></i>
+                  <?if($chat_has_history){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
                   <i></i>
                 </span>
               </span>
             <?}?>
           <?}elseif($notification_type==='question'){?>
-            <div style="overflow: hidden; text-overflow: ellipsis; font-size: 12px; white-space: nowrap;">
-              <a href='.' class="dismiss fa fa-fw fa-times-circle" style="color: var(--colour-dark);" title="dismiss notification"></a>
-              <span class="when" style="color: var(--colour-dark);" data-at="<?=$notification_at_iso?>"></span>
-              <span>, question edit:&nbsp;</span>
-              <a href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" style="color: var(--colour-dark);" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
-            </div>
+            <i class="fa fa-times-circle" title="dismiss notification"></i>
+            <span class="when" data-at="<?=$notification_at_iso?>"></span>
+            <span>, question edit:&nbsp;</span>
+            <a href="/question-history?id=<?=$question_id?>#h<?=$notification_id?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
           <?}elseif($notification_type==='question flag'){?>
-            <div style="overflow: hidden; text-overflow: ellipsis; font-size: 12px; white-space: nowrap;">
-              <a href='.' class="dismiss fa fa-fw fa-times-circle" style="color: var(--colour-dark);" title="dismiss notification"></a>
-              <span class="when" style="color: var(--colour-dark);" data-at="<?=$notification_at_iso?>"></span>
-              <span>, <?=($notification_count>1)?$notification_count.' ':''?> question flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
-              <a href="/<?=$notification_community_name?>?q=<?=$question_id?>#question" style="color: var(--colour-dark);" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
-            </div>
+            <i class="fa fa-times-circle" title="dismiss notification"></i>
+            <span class="when" data-at="<?=$notification_at_iso?>"></span>
+            <span>, <?=($notification_count>1)?$notification_count.' ':''?> question flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
+            <a href="/<?=$notification_community_name?>?q=<?=$question_id?>#question" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
           <?}elseif($notification_type==='answer'){?>
-            <div style="overflow: hidden; text-overflow: ellipsis; font-size: 12px; white-space: nowrap;">
-              <a href='.' class="dismiss fa fa-fw fa-times-circle" style="color: var(--colour-dark);" title="dismiss notification"></a>
-              <span class="when" style="color: var(--colour-dark);" data-at="<?=$notification_at_iso?>"></span>
-              <span>, answer <?=$answer_notification_is_edit?'edit':'posted'?> on:&nbsp;</span>
-              <a href="/<?=$answer_notification_is_edit?('answer-history?id='.$answer_id.'#h'.$notification_id):($notification_community_name.'?q='.$question_id.'#a'.$answer_id)?>" style="color: var(--colour-dark);" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
-            </div>
+            <i class="fa fa-times-circle" title="dismiss notification"></i>
+            <span class="when" data-at="<?=$notification_at_iso?>"></span>
+            <span>, answer <?=$answer_notification_is_edit?'edit':'posted'?> on:&nbsp;</span>
+            <a href="/<?=$answer_notification_is_edit?('answer-history?id='.$answer_id.'#h'.$notification_id):($notification_community_name.'?q='.$question_id.'#a'.$answer_id)?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
           <?}elseif($notification_type==='answer flag'){?>
-            <div style="overflow: hidden; text-overflow: ellipsis; font-size: 12px; white-space: nowrap;">
-              <a href='.' class="dismiss fa fa-fw fa-times-circle" style="color: var(--colour-dark);" title="dismiss notification"></a>
-              <span class="when" style="color: var(--colour-dark);" data-at="<?=$notification_at_iso?>"></span>
-              <span>, <?=($notification_count>1)?$notification_count.' ':''?> answer flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
-              <a href="/<?=$notification_community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" style="color: var(--colour-dark);" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
-            </div>
+            <i class="fa fa-times-circle" title="dismiss notification"></i>
+            <span class="when" data-at="<?=$notification_at_iso?>"></span>
+            <span>, <?=($notification_count>1)?$notification_count.' ':''?> answer flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
+            <a href="/<?=$notification_community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
           <?}?>
         </div>
       <?}?>

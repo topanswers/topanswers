@@ -61,6 +61,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <noscript>
     <style>
       .message:not(.processed) { opacity: unset !important; }
+      .notification:not(.processed) { opacity: unset !important; }
       #qa .post:not(.processed) { opacity: unset !important; }
       .markdown>pre.noscript { white-space: pre-wrap; }
     </style>
@@ -135,10 +136,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #notification-wrapper:empty, #notification-wrapper:empty + [data-rz-handle] { display: none; }
     #notification-wrapper .label { border-bottom: 1px solid var(--colour-dark); flex: 0 0 auto; }
     #notifications { overflow-x: hidden; overflow-y: auto; }
-    #notifications .message { padding: 4px; border-bottom: 1px solid var(--colour-dark); }
-    #notifications .message[data-type='chat'] { padding-top: 1.3em; }
-    #notifications .message[data-type='chat'] .who { top: 0.2rem; font-size: 12px; }
-    #notifications .message .fa.fa-times-circle { text-decoration: none; }
     #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: var(--colour-light); margin: 0 16px; }
     #messages { flex: 1 1 0; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid var(--colour-dark); background: var(--colour-mid); padding: 4px; }
     #messages .message .who { top: -1.3em; }
@@ -162,7 +159,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chatorstarred { pointer-events: none; }
     #chatorstarred a[href] { pointer-events: auto; }
 
-    .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
+    .message { position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
     .message .who>a { color: var(--colour-dark); }
@@ -170,7 +167,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message .when { color: var(--colour-dark); }
     .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 4px; border: 1px solid var(--colour-dark-99); border-radius: 3px; background: white; overflow: auto; }
     .message .markdown img { max-height: 7rem; }
-    .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-top: 1px; }
+    .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-top: 1px; margin-left: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
     .message .button-group .fa { color: var(--colour-dark); cursor: pointer; text-decoration: none; }
     .message .button-group .fa.me { color: var(--colour-highlight); }
@@ -183,6 +180,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message.merged > .who, .message.merged > .icon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px var(--colour-highlight) inset; }
     .message.thread .markdown { background: var(--colour-highlight-40); }
+
+    .notification { padding: 4px; border-radius: 3px; margin: 2px; border: 1px solid var(--colour-dark-99); }
+    .notification:not(.processed) { opacity: 0; }
+    .notification:not(.message) { overflow: hidden; text-overflow: ellipsis; font-size: 12px; white-space: nowrap; }
+    .notification.message { padding-top: 1.3em; }
+    .notification.message .who { top: 0.2rem; font-size: 12px; }
+    .notification.message .who > span { color: var(--colour-dark); }
+    .notification.message .who > a['href'^='#'] { text-decoration: none; }
+    .notification .when { color: var(--colour-dark); }
+    .notification .fa.fa-times-circle { color: var(--colour-warning); cursor: pointer; margin: 0 3px 0 1px; }
+    .notification .fa.fa-spinner { color: var(--colour-dark); }
+    .notification a { color: var(--colour-dark); }
 
     #active { flex: 0 0 23px; display: flex; flex-direction: column; justify-content: space-between; background: var(--colour-light); border-left: 1px solid var(--colour-dark); overflow-y: hidden; }
     #active-rooms { flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden; }
@@ -468,7 +477,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function processNotifications(){
         $('#notification-wrapper .markdown').renderMarkdown();
         $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-        $('#notifications>.message').addClass('processed');
+        $('#notifications>.notification').addClass('processed');
       }
       function updateNotifications(){
         $.get('/notification?room=<?=$room_id?>',function(r){
@@ -789,29 +798,29 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         else t.prev().animate({ 'flex-shrink': 1 });
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
-      $('#chat-wrapper').on('click','.message[data-type="chat"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
+      $('#chat-wrapper').on('click','.notification[data-type="chat"] .fa.fa-times-circle', function(){
+        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
-      $('#chat-wrapper').on('click','.message[data-type="question"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-question', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
+      $('#chat-wrapper').on('click','.notification[data-type="question"] .fa.fa-times-circle', function(){
+        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-question', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
-      $('#chat-wrapper').on('click','.message[data-type="question flag"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-question-flag', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
+      $('#chat-wrapper').on('click','.notification[data-type="question flag"] .fa.fa-times-circle', function(){
+        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-question-flag', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
-      $('#chat-wrapper').on('click','.message[data-type="answer"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-answer', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
+      $('#chat-wrapper').on('click','.notification[data-type="answer"] .fa.fa-times-circle', function(){
+        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-answer', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
-      $('#chat-wrapper').on('click','.message[data-type="answer flag"] .dismiss', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-answer-flag', id: $(this).closest('.message').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse" style="color: var(--colour-dark);"></i>');
+      $('#chat-wrapper').on('click','.notification[data-type="answer flag"] .fa.fa-times-circle', function(){
+        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-answer-flag', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
       function search(){
