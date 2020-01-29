@@ -714,10 +714,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
-      $('#dummyresizerx').remove();
-      $('#dummyresizery').remove();
-      const qaAndChat = new Resizer('body', { width: 2, colour: 'black', full_length: true, callback: function(w) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); } });
-      const notificationsAndChat = new Resizer('#chat-panels', { width: 2, colour: 'black', full_length: true, callback: function(y) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'chat_resizer', position: Math.round(y) }, xhrFields: { withCredentials: true } }); } });
+      <?if($auth){?>
+        $('#dummyresizerx').remove();
+        $('#dummyresizery').remove();
+        const qaAndChat = new Resizer('body', { width: 2, colour: 'black', full_length: true, callback: function(w) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); } });
+        const notificationsAndChat = new Resizer('#chat-panels', { width: 2, colour: 'black', full_length: true, callback: function(y) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'chat_resizer', position: Math.round(y) }, xhrFields: { withCredentials: true } }); } });
+      <?}?>
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
       $('#chatuploadfile').change(function() {
         if(this.files[0].size > 2097152){
@@ -1121,17 +1123,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </header>
     <div id="chat">
       <div id="chat-panels">
-        <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-        <div id="dummyresizery" data-rz-handle="horizontal"></div>
+        <?if($auth){?>
+          <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+          <div id="dummyresizery" data-rz-handle="horizontal"></div>
+        <?}?>
         <div id="messages-wrapper">
           <div class="label container">
-            <div id="chatorstarred" class="element"><a><?=$question?'Comments':'Chat'?></a> / <a href=".">Starred</a></div>
+            <div id="chatorstarred" class="element"><a><?=$question?'Comments':'Chat'?></a><?=($auth)?' / <a href=".">Starred</a>':''?></div>
             <div class="element"><a class="element" href="/transcript?room=<?=$room?>">transcript</a></div>
           </div>
-          <div id="starboard">
-            <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-            <div style="flex: 1 0 0;"></div>
-          </div>
+          <?if($auth){?>
+            <div id="starboard">
+              <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+              <div style="flex: 1 0 0;"></div>
+            </div>
+          <?}?>
           <div id="messages">
             <?if($room_has_chat){?>
               <div style="flex: 1 0 10px;"></div>
