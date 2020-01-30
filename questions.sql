@@ -21,7 +21,7 @@ from db.question_tag_x qt natural join (select * from db.tag where community_id=
 where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
 create view answer with (security_barrier) as
-select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted
+select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted,answer_summary
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , account_id answer_account_id
      , account_derived_name answer_account_name

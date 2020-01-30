@@ -295,6 +295,7 @@ create table answer(
 , codelicense_id integer references codelicense not null
 , answer_se_imported_at timestamptz
 , answer_proposed_answer_id integer
+, answer_summary text not null)
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 

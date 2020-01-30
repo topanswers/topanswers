@@ -72,7 +72,7 @@ if($search){
       </div>
     </div>
     <div class="answers">
-      <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes
+      <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
                          , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                          , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
                          , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
@@ -81,7 +81,7 @@ if($search){
                     where question_id=$1
                     order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$question_id) as $r){ extract($r);?>
         <div class="bar<?=$answer_is_deleted?' deleted':''?>">
-          <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element summary shrink">Answer: <span data-markdown="<?=strtok($answer_markdown,"\n\r");?>"><?=strtok($answer_markdown,"\n\r");?></span></a>
+          <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element summary shrink">Answer: <span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
           <div>
             <?if($answer_change==='answered'){?>
               <span class="element hover">(answered)</span>

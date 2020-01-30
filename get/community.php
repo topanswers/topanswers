@@ -383,7 +383,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           var id = $(this).data('id'), rid = id;
           function foo(b){
             if(arguments.length!==0) $(this).addClass('t'+id);
-            if(arguments.length===0 || b===true) if($(this).data('reply-id')) { console.log($(this).data('id')+':'+$(this).data('reply-id')); $('.message[data-id='+$(this).data('reply-id')+']').each(function(){ foo.call(this,true) }); }
+            if(arguments.length===0 || b===true) if($(this).data('reply-id')) $('.message[data-id='+$(this).data('reply-id')+']').each(function(){ foo.call(this,true) });
             if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
           }
           foo.call(this);

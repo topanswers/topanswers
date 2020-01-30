@@ -43,6 +43,20 @@ begin
 end$$;
 --
 --
+create function _markdownsummary(text) returns text language sql immutable security definer set search_path=db,api,pg_temp as $$
+  with recursive
+     m as (select regexp_replace(r[1],'([!$()*+.:<=>?[\\\]^{|}-])', '\\\1', 'g') str_from, trim(trailing chr(13) from r[2]) str_to, (row_number() over ())::integer rn 
+           from regexp_matches($1,'^(\[[^\]]+]): (.*)$','ng') r)
+   , w(markdown) as (select split_part(trim(leading chr(13) from $1),chr(13),1), 1 rn
+                     union all
+                     select regexp_replace(
+                              regexp_replace(markdown,'(?<=\[[^\]]+])'||str_from,'('||str_to||')')
+                             ,'(?<=(?<!\])'||str_from||')'
+                             ,'('||str_to||')')
+                            ,rn+1  from w join m using(rn))
+  select trim(both ' #' from markdown) from w order by rn desc limit 1;
+$$;
+--
 create function vote(votes integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid answer') where get_answer_id() is null;
@@ -103,7 +117,7 @@ create function flag(direction integer) returns void language sql security defin
   update account set account_notification_id = default where account_id in (select account_id from qfn);
 $$;
 --
-create function change(markdown text) returns void language sql security definer set search_path=db,api,pg_temp as $$
+create function change(markdown text) returns void language sql security definer set search_path=db,api,answer,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid answer') where get_answer_id() is null;
   select _error(429,'rate limit') where (select count(*)
@@ -120,10 +134,10 @@ create function change(markdown text) returns void language sql security definer
              returning account_id)
   update account set account_notification_id = default where account_id in (select account_id from n);
   --
-  update answer set answer_markdown = markdown, answer_change_at = default where answer_id=get_answer_id();
+  update answer set answer_markdown = markdown, answer_summary = _markdownsummary(markdown), answer_change_at = default where answer_id=get_answer_id();
 $$;
 --
-create function new(markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
+create function new(markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,answer,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid question') where get_question_id() is null;
   select _error('question needs more votes before answers are permitted') from question natural join kind where question_id=get_question_id() and question_votes<kind_minimum_votes_to_answer;
@@ -132,7 +146,7 @@ create function new(markdown text, lic integer, codelic integer) returns integer
   select _ensure_communicant(get_account_id(),get_community_id());
   update question set question_poll_major_id = default where question_id=get_question_id();
   --
-  with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id) values(get_question_id(),get_account_id(),markdown,lic,codelic) returning answer_id)
+  with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_summary) values(get_question_id(),get_account_id(),markdown,lic,codelic,_markdownsummary(markdown)) returning answer_id)
      , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id,answer_history_id)
      , n as (insert into answer_notification(answer_history_id,account_id)
              select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=get_question_id() and account_id<>get_account_id()) z
