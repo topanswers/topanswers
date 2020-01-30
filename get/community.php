@@ -54,6 +54,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/lib/select2.css">
   <link rel="stylesheet" href="/lib/starrr.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/post.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -67,8 +68,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </style>
   </noscript>
   <style>
-    *:not(hr) { box-sizing: inherit; }
-    * { scrollbar-color: var(--colour-dark-99) var(--colour-mid); scrollbar-width: thin; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
     body { display: flex; background: var(--colour-dark); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }

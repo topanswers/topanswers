@@ -1,0 +1,9 @@
+*:not(hr) { box-sizing: inherit; }
+* { scrollbar-color: var(--colour-dark-99) var(--colour-mid); scrollbar-width: thin; }
+
+h1 { font-size: 28px; margin: 28px 0; }
+h2 { font-size: 26px; margin: 26px 0; }
+h3 { font-size: 24px; margin: 24px 0; }
+h4 { font-size: 22px; margin: 22px 0; }
+h5 { font-size: 20px; margin: 20px 0; }
+h6 { font-size: 18px; margin: 18px 0; }
