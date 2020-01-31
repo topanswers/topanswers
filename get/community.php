@@ -148,6 +148,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #starboard .message:not(:hover) .button-group:not(:first-child) .fa-link { display: none; }
 
     #preview { display: block; width: 100%; background: var(--colour-light); border-top: 1px solid var(--colour-dark); padding: 4px; }
+    #preview .markdown:empty { visibility: hidden; }
     #canchat-wrapper { flex: 0 0 auto; }
     #chattext-wrapper { position: relative; display: flex; border-top: 1px solid var(--colour-dark); }
     #chatuploadfile { display: none; }
@@ -862,7 +863,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </script>
   <title><?=$room_name?> - TopAnswers</title>
 </head>
-<body class="no-mathjax">
+<body>
   <main class="pane">
     <header>
       <div>

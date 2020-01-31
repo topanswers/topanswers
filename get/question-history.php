@@ -77,7 +77,7 @@ extract(cdb("select account_id
   </script>
   <title>Question History - TopAnswers</title>
 </head>
-<body class="no-mathjax" style="font-size: larger; background: var(--colour-light);">
+<body style="font-size: larger; background: var(--colour-light);">
   <header>
     <div>
       <a href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>
