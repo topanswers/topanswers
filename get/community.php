@@ -33,7 +33,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,question_communicant_se_user_id,question_communicant_votes
                    ,question_license_href,question_has_codelicense,question_codelicense_name
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
-                   ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
+                   ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
@@ -745,7 +745,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           var t = $(this), v = t.data('votes'), vv = t.prev().data('total');
           t.starrr({
             rating: v,
-            max: <?=$community_my_power?>,
+            max: (t.data('type')==='question')?<?=$kind_allows_question_multivotes?$community_my_power:1?>:<?=$kind_allows_answer_multivotes?$community_my_power:1?>,
             change: function(e,n){
               n = n||0;
               if(n!==v){

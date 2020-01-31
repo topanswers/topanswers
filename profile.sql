@@ -95,20 +95,12 @@ create function change_image(image bytea) returns void language sql security def
   update account set account_image = image, account_change_id = default, account_change_at = default where account_id=get_account_id();
 $$;
 --
-create function change_license(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  update account set account_license_id = id where account_id=get_account_id();
-$$;
 create function change_license(id integer, later boolean) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('"or later" not allowed for '||license_name) from license where license_id=id and later and not license_is_versioned;
   update account set account_license_id = id, account_permit_later_license = later where account_id=get_account_id();
 $$;
 --
-create function change_codelicense(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  update account set account_codelicense_id = id where account_id=get_account_id();
-$$;
 create function change_codelicense(id integer, later boolean) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=id and later and not codelicense_is_versioned;

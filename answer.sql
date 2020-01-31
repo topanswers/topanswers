@@ -15,12 +15,11 @@ select *
      , encode(community_warning_color,'hex') colour_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-     , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
 from (select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) ac
-     cross join (select community_id,question_id,question_title,question_markdown from db.question where question_id=get_question_id()) q
+     cross join (select community_id,question_id,question_title,question_markdown,kind_allows_answer_multivotes from db.question natural join db.kind where question_id=get_question_id()) q
      natural join (select community_id,community_name,community_code_language,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color
-                         ,community_regular_font_id,community_monospace_font_id
-                   from db.community) c
+                         ,community_regular_font_id,community_monospace_font_id,community_my_power
+                   from db.community natural join api._community) c
      natural left join (select account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id,communicant_votes from db.communicant) co
      natural left join (select question_id,answer_id,answer_markdown
                              , license_name||(case when answer_permit_later_license then ' or later' else '' end)||(case when codelicense_id<>1 then ' + '||codelicense_name||(case when answer_permit_later_codelicense then ' or later' else '' end) else '' end) answer_license
@@ -60,7 +59,7 @@ $$;
 create function vote(votes integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid answer') where get_answer_id() is null;
-  select _error('invalid number of votes cast') from answer.one where votes<0 or votes>community_my_power;
+  select _error('invalid number of votes cast') from answer.one where votes<0 or votes>(case when kind_allows_answer_multivotes then community_my_power else 1 end);
   select _error('cant vote on own answer') from answer.one where account_id=answer_account_id;
   select _error(429,'rate limit') where (select count(*) from answer_vote where account_id=get_account_id() and answer_vote_at>current_timestamp-'1m'::interval)>4;
   select _error(429,'rate limit') where (select count(*) from answer_vote_history where account_id=get_account_id() and answer_vote_history_at>current_timestamp-'1m'::interval)>10;
@@ -137,23 +136,6 @@ create function change(markdown text) returns void language sql security definer
   update answer set answer_markdown = markdown, answer_summary = _markdownsummary(markdown), answer_change_at = default where answer_id=get_answer_id();
 $$;
 --
-create function new(markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,answer,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid question') where get_question_id() is null;
-  select _error('question needs more votes before answers are permitted') from question natural join kind where question_id=get_question_id() and question_votes<kind_minimum_votes_to_answer;
-  select _error(429,'rate limit') where exists (select 1 from answer where account_id=get_account_id() and answer_at>current_timestamp-'1m'::interval);
-  --
-  select _ensure_communicant(get_account_id(),get_community_id());
-  update question set question_poll_major_id = default where question_id=get_question_id();
-  --
-  with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_summary) values(get_question_id(),get_account_id(),markdown,lic,codelic,_markdownsummary(markdown)) returning answer_id)
-     , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id,answer_history_id)
-     , n as (insert into answer_notification(answer_history_id,account_id)
-             select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=get_question_id() and account_id<>get_account_id()) z
-             returning account_id)
-     , a as (update account set account_notification_id = default where account_id in (select account_id from n))
-  select answer_id from i;
-$$;
 create function new(markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,answer,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid question') where get_question_id() is null;
