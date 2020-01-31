@@ -50,7 +50,7 @@ create function _markdownsummary(text) returns text language sql immutable secur
                      union all
                      select regexp_replace(
                               regexp_replace(markdown,'(?<=\[[^\]]+])'||str_from,'('||str_to||')')
-                             ,'(?<=(?<!\])'||str_from||')'
+                             ,'(?<=(?<!\])'||str_from||')(?!\()'
                              ,'('||str_to||')')
                             ,rn+1  from w join m using(rn))
   select trim(both ' #' from markdown) from w order by rn desc limit 1;
