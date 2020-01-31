@@ -10,7 +10,7 @@ if(isset($_GET['id'])){
   $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'');
   $auth||(($_GET['community']==='databases')&&isset($_GET['rdbms'])&&isset($_GET['fiddle'])) || fail(403,'need to be logged in to visit this page unless from a fiddle');
 }
-extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id
+extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
                    ,community_id,community_name,community_display_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
@@ -20,6 +20,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_license_href,question_has_codelicense,question_codelicense_name
              from one"));
+ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
 <html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99; --colour-highlight-40: #<?=$colour_highlight?>40;">
@@ -167,6 +168,13 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
       $('.button.fa-list-ul').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
       $('.button.fa-undo').click(function(){ cm.undo(); cm.focus(); });
       $('.button.fa-repeat').click(function(){ cm.redo(); cm.focus(); });
+      $('[name="license"],[name="codelicense"]').on('change',function(){
+        if($(this).children('option:selected').data('versioned')===true){
+          $(this).next().css('color','unset').find('input').prop('disabled',false);
+        }else{
+          $(this).next().css('color','var(--colour-mid)').find('input').prop('checked',false).prop('disabled',true);
+        }
+      }).trigger('change');
       render();
       <?if(!$auth){?>
         $('#join').click(function(){
@@ -197,16 +205,22 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
               <option value="<?=$kind_id?>"<?=($i===0)?' selected':''?>><?=$kind_description?></option>
             <?}?>
           </select>
-          <select class="element" name="license" form="form">
-            <?foreach(db("select license_id,license_name from license order by license_name") as $r){ extract($r);?>
-              <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
-            <?}?>
-          </select>
-          <select class="element" name="codelicense" form="form">
-            <?foreach(db("select codelicense_id,codelicense_name from codelicense order by codelicense_id<>1, codelicense_name") as $r){ extract($r);?>
-              <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
-            <?}?>
-          </select>
+          <span class="element">
+            <select name="license" form="form">
+              <?foreach(db("select license_id,license_name,license_is_versioned from license order by license_name") as $r){ extract($r);?>
+                <option value="<?=$license_id?>" data-versioned="<?=$license_is_versioned?'true':'false'?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
+              <?}?>
+            </select>
+            <label><input type="checkbox" name="license-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
+          </span>
+          <span class="element">
+            <select name="codelicense" form="form">
+              <?foreach(db("select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense order by codelicense_id<>1, codelicense_name") as $r){ extract($r);?>
+                <option value="<?=$codelicense_id?>" data-versioned="<?=$codelicense_is_versioned?'true':'false'?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
+              <?}?>
+            </select>
+            <label><input type="checkbox" name="codelicense-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
+          </span>
         <?}?>
         <input class="element" id="submit" type="submit" form="form" value="<?=$question_id?'update post under '.$license:'submit'?>">
         <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
@@ -255,3 +269,4 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
   <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
 </body>   
 </html>   
+<?ob_end_flush();

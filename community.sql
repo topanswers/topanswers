@@ -39,10 +39,10 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , account_is_imported answer_account_is_imported
      , account_id answer_account_id
      , account_derived_name answer_account_name
-     , license_name answer_license_name
+     , license_name||(case when answer_permit_later_license then ' or later' else '' end) answer_license_name
      , license_href answer_license_href
      , codelicense_id answer_codelicense_id
-     , codelicense_name answer_codelicense_name
+     , codelicense_name||(case when answer_permit_later_codelicense then ' or later' else '' end) answer_codelicense_name
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
      , communicant_se_user_id answer_communicant_se_user_id
@@ -95,9 +95,9 @@ from db.room r natural join db.community natural join api._community
      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,question_is_deleted
                               ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer
                              , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
-                             , license_name question_license_name
+                             , license_name||(case when question_permit_later_license then ' or later' else '' end) question_license_name
                              , license_href question_license_href
-                             , codelicense_name question_codelicense_name
+                             , codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) question_codelicense_name
                              , account_id question_account_id
                              , account_derived_name question_account_name
                              , account_is_imported question_account_is_imported

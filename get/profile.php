@@ -10,7 +10,7 @@ if(isset($_GET['uuid'])){
 }
 
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'meta') || fail(403,'access denied');
-extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id
+extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
                    ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
                    ,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
                    ,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name,sesite_url,communicant_se_user_id,one_stackapps_secret
@@ -52,6 +52,7 @@ if(isset($_GET['action'])){
 }
 
 $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
+ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
 <html>
@@ -78,7 +79,8 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
     fieldset { display: inline-block; margin: 16px; border-radius: 3px; }
     :not(main)>fieldset { background-color: white; border: none; }
     legend { background-color: white; box-shadow: 0 0 1px 1px #<?=$colour_dark?>; border-radius: 3px; padding: 2px 4px; }
-    input[type='file'] { color: transparent; }
+    input[type="file"] { color: transparent; }
+    input[type="submit"] { margin-left: 16px; }
     <?if(isset($_GET['highlight-recovery'])){?>.highlight { background-color: yellow; }<?}?>
   </style>
   <script src="/lib/jquery.js"></script>
@@ -88,6 +90,13 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
         $('#pin').replaceWith('<code><?=$pin?></code>'); });
       });
       $('#uuid').click(function(){ var t = $(this); $.get('/profile?uuid').done(function(r){ t.replaceWith('<span class="highlight">'+r+'</span>'); }); });
+      $('[name="license"],[name="codelicense"]').on('change',function(){
+        if($(this).children('option:selected').data('versioned')===true){
+          $(this).next().css('color','black').find('input').prop('disabled',false);
+        }else{
+          $(this).next().css('color','#ccc').find('input').prop('checked',false).prop('disabled',true);
+        }
+      }).trigger('change');
       $('[name]').on('change input',function(){
         $(this).parents('fieldset').siblings().find('[name],input').prop('disabled',true);
         $(this).closest('fieldset').find('input[type=submit]').css('visibility','visible');
@@ -173,10 +182,11 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
           <input type="hidden" name="action" value="license">
           <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
           <select name="license">
-            <?foreach(db("select license_id,license_name from license") as $r){ extract($r);?>
-              <option value="<?=$license_id?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
+            <?foreach(db("select license_id,license_name,license_is_versioned from license") as $r){ extract($r);?>
+              <option value="<?=$license_id?>" data-versioned="<?=$license_is_versioned?'true':'false'?>" <?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
             <?}?>
           </select>
+          <label><input type="checkbox" name="orlater"<?=$account_permit_later_license?'checked':''?>>or later</label>
           <input type="submit" value="save">
         </form>
       </fieldset>
@@ -186,10 +196,11 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
           <input type="hidden" name="action" value="codelicense">
           <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
           <select name="codelicense">
-            <?foreach(db("select codelicense_id,codelicense_name from codelicense") as $r){ extract($r);?>
-              <option value="<?=$codelicense_id?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
+            <?foreach(db("select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense") as $r){ extract($r);?>
+              <option value="<?=$codelicense_id?>" data-versioned="<?=$codelicense_is_versioned?'true':'false'?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
             <?}?>
           </select>
+          <label><input type="checkbox" name="orlater"<?=$account_permit_later_codelicense?'checked':''?>>or later</label>
           <input type="submit" value="save">
         </form>
       </fieldset>
@@ -242,3 +253,4 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
   </main>
 </body>
 </html>
+<?ob_end_flush();

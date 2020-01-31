@@ -3,8 +3,8 @@ grant usage on schema profile to get,post;
 set local search_path to profile,api,pg_temp;
 --
 --
-create view license with (security_barrier) as select license_id,license_name,license_href from db.license;
-create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
+create view license with (security_barrier) as select license_id,license_name,license_href,license_is_versioned from db.license;
+create view codelicense with (security_barrier) as select codelicense_id,codelicense_name,codelicense_is_versioned from db.codelicense;
 create view font with (security_barrier) as select font_id,font_name,font_is_monospace from db.font;
 --
 create view community with (security_barrier) as
@@ -13,7 +13,7 @@ from db.community natural left join (select community_id, account_id from db.log
 where community_type='public' or account_id is not null;
 --
 create view one with (security_barrier) as
-select account_id,account_name,account_license_id,account_codelicense_id,account_uuid
+select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense
      , account_image is not null account_has_image
       ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
      , encode(community_dark_shade,'hex') colour_dark
@@ -28,7 +28,7 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
       ,communicant_se_user_id
       ,one_stackapps_secret
-from (select account_id,account_name,account_image,account_license_id,account_codelicense_id,account_uuid from db.account where account_id=get_account_id()) a
+from (select account_id,account_name,account_image,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) a
      cross join db.one
      natural left join (select * from db.community left join db.sesite on community_sesite_id=sesite_id where community_id=get_community_id()) c
      natural left join db.communicant;
@@ -99,10 +99,20 @@ create function change_license(id integer) returns void language sql security de
   select _error('access denied') where get_account_id() is null;
   update account set account_license_id = id where account_id=get_account_id();
 $$;
+create function change_license(id integer, later boolean) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('"or later" not allowed for '||license_name) from license where license_id=id and later and not license_is_versioned;
+  update account set account_license_id = id, account_permit_later_license = later where account_id=get_account_id();
+$$;
 --
 create function change_codelicense(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   update account set account_codelicense_id = id where account_id=get_account_id();
+$$;
+create function change_codelicense(id integer, later boolean) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=id and later and not codelicense_is_versioned;
+  update account set account_codelicense_id = id, account_permit_later_codelicense = later where account_id=get_account_id();
 $$;
 --
 create function set_se_user_id(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$

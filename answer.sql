@@ -3,8 +3,8 @@ grant usage on schema answer to get,post;
 set local search_path to answer,api,pg_temp;
 --
 --
-create view license with (security_barrier) as select license_id,license_name,license_href from db.license;
-create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
+create view license with (security_barrier) as select license_id,license_name,license_href,license_is_versioned from db.license;
+create view codelicense with (security_barrier) as select codelicense_id,codelicense_name,codelicense_is_versioned from db.codelicense;
 --
 create view one with (security_barrier) as
 select *
@@ -16,14 +16,14 @@ select *
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
-from (select account_id,account_license_id,account_codelicense_id from db.account where account_id=get_account_id()) ac
+from (select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) ac
      cross join (select community_id,question_id,question_title,question_markdown from db.question where question_id=get_question_id()) q
      natural join (select community_id,community_name,community_code_language,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color
                          ,community_regular_font_id,community_monospace_font_id
                    from db.community) c
      natural left join (select account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id,communicant_votes from db.communicant) co
      natural left join (select question_id,answer_id,answer_markdown
-                             , license_name||(case when codelicense_id<>1 then ' + '||codelicense_name else '' end) answer_license
+                             , license_name||(case when answer_permit_later_license then ' or later' else '' end)||(case when codelicense_id<>1 then ' + '||codelicense_name||(case when answer_permit_later_codelicense then ' or later' else '' end) else '' end) answer_license
                              , account_id answer_account_id
                         from db.answer natural join db.license natural join db.codelicense
                         where answer_id=get_answer_id()) a;
@@ -147,6 +147,27 @@ create function new(markdown text, lic integer, codelic integer) returns integer
   update question set question_poll_major_id = default where question_id=get_question_id();
   --
   with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_summary) values(get_question_id(),get_account_id(),markdown,lic,codelic,_markdownsummary(markdown)) returning answer_id)
+     , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id,answer_history_id)
+     , n as (insert into answer_notification(answer_history_id,account_id)
+             select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=get_question_id() and account_id<>get_account_id()) z
+             returning account_id)
+     , a as (update account set account_notification_id = default where account_id in (select account_id from n))
+  select answer_id from i;
+$$;
+create function new(markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,answer,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid question') where get_question_id() is null;
+  select _error('question needs more votes before answers are permitted') from question natural join kind where question_id=get_question_id() and question_votes<kind_minimum_votes_to_answer;
+  select _error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
+  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
+  select _error(429,'rate limit') where (select count(*) from answer where account_id=get_account_id() and answer_at>current_timestamp-'2m'::interval)>3;
+  --
+  select _ensure_communicant(get_account_id(),get_community_id());
+  update question set question_poll_major_id = default where question_id=get_question_id();
+  --
+  with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_summary,answer_permit_later_license,answer_permit_later_codelicense)
+             values(get_question_id(),get_account_id(),markdown,lic,codelic,_markdownsummary(markdown),lic_orlater,codelic_orlater)
+             returning answer_id)
      , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id,answer_history_id)
      , n as (insert into answer_notification(answer_history_id,account_id)
              select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=get_question_id() and account_id<>get_account_id()) z

@@ -3,12 +3,13 @@ grant usage on schema question to get,post;
 set local search_path to question,api,pg_temp;
 --
 --
-create view license with (security_barrier) as select license_id,license_name,license_href from db.license;
-create view codelicense with (security_barrier) as select codelicense_id,codelicense_name from db.codelicense;
+create view license with (security_barrier) as select license_id,license_name,license_href,license_is_versioned from db.license;
+create view codelicense with (security_barrier) as select codelicense_id,codelicense_name,codelicense_is_versioned from db.codelicense;
 create view kind with (security_barrier) as select kind_id,kind_description,sanction_ordinal from db.kind natural join db.sanction where community_id=get_community_id();
 --
 create view one with (security_barrier) as
-select account_id,account_license_id,account_codelicense_id,community_id,community_name,community_display_name,community_code_language
+select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
+      ,community_id,community_name,community_display_name,community_code_language
       ,sesite_url
       ,question_id,question_title,question_markdown,question_license_name,question_se_question_id
       ,question_is_deleted,question_answered_by_me
@@ -25,13 +26,13 @@ select account_id,account_license_id,account_codelicense_id,community_id,communi
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
 from db.community
-     natural left join (select account_id,account_is_dev,account_license_id,account_codelicense_id from db.account where account_id=get_account_id()) a
+     natural left join (select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) a
      natural left join db.communicant
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
      natural left join (select question_id,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags
-                             , license_name question_license_name
+                             , license_name||(case when question_permit_later_license then ' or later' else '' end) question_license_name
                              , license_href question_license_href
-                             , codelicense_name question_codelicense_name
+                             , codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) question_codelicense_name
                              , account_id question_account_id
                              , account_name question_account_name
                              , account_is_imported question_account_is_imported
@@ -121,10 +122,30 @@ create function _new_question(cid integer, aid integer, knd integer, title text,
      , s as (insert into subscription(account_id,question_id) select aid,question_id from q)
   select question_id from q;
 $$;
+create function _new_question(cid integer, aid integer, knd integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean)
+                returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid community') where not exists (select 1 from community where community_id=cid);
+  select _error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
+  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
+  select _ensure_communicant(aid,cid);
+  --
+  with r as (insert into room(community_id) values(cid) returning room_id)
+     , q as (insert into question(community_id,account_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense)
+             select cid,aid,knd,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater from r returning question_id)
+     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select question_id,aid,title,markdown from q)
+     , s as (insert into subscription(account_id,question_id) select aid,question_id from q)
+  select question_id from q;
+$$;
 --
 create function new(knd integer, title text, markdown text, lic integer, codelic integer) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
   select _error(429,'rate limit') where exists (select 1 from question where account_id=get_account_id() and question_at>current_timestamp-'5m'::interval);
   select _new_question(get_community_id(),get_account_id(),knd,title,markdown,lic,codelic,null);
+$$;
+create function new(knd integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
+  select _new_question(get_community_id(),get_account_id(),knd,title,markdown,lic,lic_orlater,codelic,codelic_orlater);
 $$;
 --
 create function change(title text, markdown text) returns void language sql security definer set search_path=db,api,pg_temp as $$

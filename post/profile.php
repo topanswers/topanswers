@@ -55,8 +55,8 @@ if($auth){
         exit;
       case 'pin': db("select authenticate_pin($1)",$_POST['pin']); exit;
       case 'regenerate': db("select regenerate_account_uuid()"); header('Location: '.$_POST['location']); exit;
-      case 'license': db("select change_license($1)",$_POST['license']); header('Location: '.$_POST['location']); exit;
-      case 'codelicense': db("select change_codelicense($1)",$_POST['codelicense']); header('Location: '.$_POST['location']); exit;
+      case 'license': db("select change_license($1,$2)",$_POST['license'],isset($_POST['orlater'])?'t':'f'); header('Location: '.$_POST['location']); exit;
+      case 'codelicense': db("select change_codelicense($1,$2)",$_POST['codelicense'],isset($_POST['orlater'])?'t':'f'); header('Location: '.$_POST['location']); exit;
       case 'resizer': exit(ccdb("select change_resizer($1)",$_POST['position']));
       case 'chat_resizer': exit(ccdb("select change_chat_resizer($1)",$_POST['position']));
       default: fail(400,'unrecognized action for authenticated user with community not set');
