@@ -62,7 +62,7 @@ from db.answer_flag natural join (select answer_id from db.answer where question
 where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
-select account_id,community_id,community_name,community_code_language,room_id
+select account_id,community_id,community_name,community_my_power,community_code_language,room_id
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported
@@ -86,9 +86,8 @@ select account_id,community_id,community_name,community_code_language,room_id
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , a.account_id is not null and (room_type='public' or x.account_id is not null) room_can_chat
-     , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
      , sesite_url
-from db.room r natural join db.community
+from db.room r natural join db.community natural join api._community
      natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
      natural left join db.writer x

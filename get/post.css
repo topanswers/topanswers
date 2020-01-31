@@ -1,13 +1,3 @@
-.element { margin: 0 4px; }
-.element:not(.shrink)  { flex: 0 0 auto; }
-.element.shrink { flex: 0 1 auto; }
-.element>.element:first-child, .element>.element:last-child { margin: 0; }
-
-.tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: var(--colour-mid); border: 1px solid var(--colour-dark); font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 4px; }
-.tag::after { position: absolute; border-radius: 50%; background: var(--colour-light); border: 1px solid var(--colour-dark); height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
-.tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: var(--colour-dark); background: var(--colour-mid); border-radius: 50%; }
-.tag i::before { border-radius: 50%; }
-
 .post { background-color: white; border-radius: 3px; margin: 16px 16px 32px 16px; overflow: hidden; }
 .post:not(.processed) { opacity: 0; }
 .post:not(:hover) .hover { display: none; }
@@ -24,6 +14,10 @@
 .post .bar, .post .bar>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
 .post .bar>div:not(.shrink) { flex: 0 0 auto; }
 .post .bar.shrink { flex: 0 1 auto; }
+.post .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: var(--colour-mid); border: 1px solid var(--colour-dark); font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 4px; }
+.post .tag::after { position: absolute; border-radius: 50%; background: var(--colour-light); border: 1px solid var(--colour-dark); height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
+.post .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: var(--colour-dark); background: var(--colour-mid); border-radius: 50%; }
+.post .tag i::before { border-radius: 50%; }
 .post .answers:not(:empty) { border-top: 1px solid var(--colour-dark); }
 .post .answers .bar { background-color: white; }
 .post .answers .bar:not(:last-child) { border-bottom: 1px solid var(--colour-dark-99); height: 23px; }

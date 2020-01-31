@@ -82,10 +82,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .icon:not(.roomicon) { border-radius: 2px; }
     .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px var(--colour-dark); cursor: pointer; }
     .icon.ping { box-shadow: 0 0 0 1px var(--colour-highlight); }
-    .highlight { color: var(--colour-highlight); }
-    .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
-    .container:not(.shrink)  { flex: 0 0 auto; }
-    .container.shrink { flex: 0 1 auto; }
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: var(--colour-dark-99); }

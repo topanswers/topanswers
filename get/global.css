@@ -7,3 +7,13 @@ h3 { font-size: 22px; margin: 22px 0; }
 h4 { font-size: 19px; margin: 19px 0; }
 h5 { font-size: 16px; margin: 16px 0; }
 h6 { font-size: 16px; margin: 16px 0; }
+
+.container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
+.container:not(.shrink)  { flex: 0 0 auto; }
+.container.shrink { flex: 0 1 auto; }
+.element { margin: 0 4px; }
+.element:not(.shrink)  { flex: 0 0 auto; }
+.element.shrink { flex: 0 1 auto; }
+.element>.element:first-child, .element>.element:last-child { margin: 0; }
+.highlight { color: var(--colour-highlight); }
+

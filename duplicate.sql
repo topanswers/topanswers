@@ -12,7 +12,7 @@ create view answer with (security_barrier) as select answer_id, community_name f
 --
 create view one with (security_barrier) as
 select get_account_id() account_id
-      ,community_name
+      ,community_name,community_my_power
       ,question_id,question_at,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,kind_short_description
      , coalesce(question_vote_votes,0) question_votes_from_me
       ,answer_id,answer_at,answer_markdown,answer_account_id,answer_account_name,answer_votes,answer_communicant_votes
@@ -24,6 +24,7 @@ from (select community_id,question_id,answer_id,answer_at,answer_markdown,answer
       from api._answer natural join db.answer natural join db.account natural join db.communicant
       where answer_id=get_answer_id() and not answer_is_deleted) a
      natural join db.community
+     natural join api._community
      natural join (select question_id,question_at,question_title,question_votes
                         , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
                         , account_id question_account_id

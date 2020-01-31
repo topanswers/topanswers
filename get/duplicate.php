@@ -10,7 +10,7 @@ ccdb("select count(1) from answer where answer_id=$1",$_GET['id'])===1 || fail(4
 ccdb("select count(1) from answer where answer_id=$1 and community_name=$2",$_GET['id'],$_GET['community'])===1 || fail(400,'wrong community');
 $auth = ccdb("select login_answer(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['id']);
 extract(cdb("select account_id
-                   ,community_name
+                   ,community_name,community_my_power
                    ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me,kind_short_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                   , extract('epoch' from current_timestamp-question_at)::bigint question_when

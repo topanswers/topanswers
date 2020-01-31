@@ -58,6 +58,7 @@ if(isset($_GET['month'])){
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/post.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
