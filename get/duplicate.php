@@ -19,7 +19,7 @@ extract(cdb("select account_id
                   , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
              from one"));
 ?>
-<div class="question post" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
+<div class="question post" data-id="<?=$question_id?>">
   <div class="title">
     <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
     <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
