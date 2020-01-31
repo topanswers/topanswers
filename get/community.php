@@ -754,9 +754,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   var req;
                   vv = vv-v+n;
                   v = n;
-                  req = <?=$kind_minimum_votes_to_answer?>-vv;
-                  t.css({'opacity':'1','pointer-events':'auto'}).prev().attr('data-total',vv).attr('data-required',req);
-                  $('#provide').prop('disabled',req>0)
+                  t.css({'opacity':'1','pointer-events':'auto'}).prev().attr('data-total',vv);
+                  if(t.data('type')==='question'){
+                    req = <?=$kind_minimum_votes_to_answer?>-vv;
+                    t.prev().attr('data-required',req);
+                    $('#provide').prop('disabled',req>0)
+                  }
                 }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); });
               }
             }
