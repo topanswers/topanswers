@@ -52,12 +52,14 @@ create table license(
 , license_name text unique not null
 , license_href text
 , license_is_versioned boolean default false not null
+, license_description text unique not null
 );
 
 create table codelicense(
   codelicense_id integer generated always as identity primary key
 , codelicense_name text unique not null
 , codelicense_is_versioned boolean default false not null
+, codelicense_description text unique not null
 );
 
 create table account(

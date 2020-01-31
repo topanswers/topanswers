@@ -31,7 +31,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_communicant_se_user_id,question_communicant_votes
-                   ,question_license_href,question_has_codelicense,question_codelicense_name
+                   ,question_license_href,question_has_codelicense,question_codelicense_name,question_license_description,question_codelicense_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                    ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
              from one"));
@@ -913,10 +913,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <?}?>
               </span>
               <span class="element">
-                <a href="<?=$question_license_href?>"><?=$question_license_name?></a>
+                <a href="<?=$question_license_href?>" title="<?=$question_license_description?>"><?=$question_license_name?></a>
                 <?if($question_has_codelicense){?>
                   <span> + </span>
-                  <a href="/meta?q=24"><?=$question_codelicense_name?> for original code</a>
+                  <a href="/meta?q=24" title="<?=$question_codelicense_description?>"><?=$question_codelicense_name?> for original code</a>
                 <?}?>
               </span>
               <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"></span>
@@ -998,7 +998,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
-                            ,answer_license_href,answer_license_name,answer_codelicense_name,answer_account_name,answer_account_is_imported
+                            ,answer_license_href,answer_license_name,answer_codelicense_name,answer_license_description,answer_codelicense_description,answer_account_name,answer_account_is_imported
                             ,answer_communicant_votes,answer_communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
                            , answer_account_id=$1 answer_account_is_me
                            , answer_crew_flags>0 answer_is_deleted
@@ -1016,10 +1016,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <div>
                 <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
                 <span class="element">
-                  <a href="<?=$answer_license_href?>"><?=$answer_license_name?></a>
+                  <a href="<?=$answer_license_href?>" title="<?=$answer_license_description?>"><?=$answer_license_name?></a>
                   <?if($answer_has_codelicense){?>
                     <span> + </span>
-                    <a href="/meta?q=24"><?=$answer_codelicense_name?> for original code</a></span>
+                    <a href="/meta?q=24" title="<?=$answer_codelicense_description?>"><?=$answer_codelicense_name?> for original code</a></span>
                   <?}?>
                 </span>
                 <span class="element">

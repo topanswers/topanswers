@@ -40,9 +40,11 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , account_id answer_account_id
      , account_derived_name answer_account_name
      , license_name||(case when answer_permit_later_license then ' or later' else '' end) answer_license_name
+     , license_description answer_license_description
      , license_href answer_license_href
      , codelicense_id answer_codelicense_id
      , codelicense_name||(case when answer_permit_later_codelicense then ' or later' else '' end) answer_codelicense_name
+     , codelicense_description answer_codelicense_description
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
      , communicant_se_user_id answer_communicant_se_user_id
@@ -63,12 +65,12 @@ where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
 select account_id,community_id,community_name,community_my_power,community_code_language,room_id
-      ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
+      ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,question_communicant_se_user_id,question_communicant_votes
-      ,question_license_href,question_has_codelicense,question_codelicense_name
+      ,question_license_href,question_has_codelicense,question_codelicense_name,question_codelicense_description
      , question_account_id is not distinct from account_id question_account_is_me
      , coalesce(login_resizer_percent,70) login_resizer_percent
      , coalesce(login_chat_resizer_percent,30) login_chat_resizer_percent
@@ -96,8 +98,10 @@ from db.room r natural join db.community natural join api._community
                               ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
                              , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
                              , license_name||(case when question_permit_later_license then ' or later' else '' end) question_license_name
+                             , license_description question_license_description
                              , license_href question_license_href
                              , codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) question_codelicense_name
+                             , codelicense_description question_codelicense_description
                              , account_id question_account_id
                              , account_derived_name question_account_name
                              , account_is_imported question_account_is_imported
