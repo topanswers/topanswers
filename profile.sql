@@ -12,6 +12,13 @@ select community_id,community_name,community_room_id,community_display_name
 from db.community natural left join (select community_id, account_id from db.login natural join db.member where login_uuid=get_login_uuid()) m
 where community_type='public' or account_id is not null;
 --
+create view question with (security_barrier) as
+select community_id
+      ,question_id,question_at,question_title,question_votes
+      ,kind_description
+from db.question natural join db.kind
+where community_id=get_community_id() and account_id=get_account_id();
+--
 create view one with (security_barrier) as
 select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense
      , account_image is not null account_has_image

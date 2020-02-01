@@ -59,6 +59,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
+  <link rel="stylesheet" href="/lib/datatables/datatables.min.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
@@ -82,8 +83,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     input[type="file"] { color: transparent; }
     input[type="submit"] { margin-left: 16px; }
     <?if(isset($_GET['highlight-recovery'])){?>.highlight { background-color: yellow; }<?}?>
+
+    table { border-collapse: collapse; }
+    td,th { border: 1px solid black; white-space: nowrap; }
   </style>
   <script src="/lib/jquery.js"></script>
+  <script src="/lib/datatables/datatables.min.js"></script>
   <script>
     $(function(){
       $('#pin').click(function(){ $(this).prop('disabled',true); $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'pin', pin: '<?=$pin?>' }, xhrFields: { withCredentials: true } }).done(function(){
@@ -105,6 +110,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?if(isset($_GET['highlight-recovery'])){?>$('#uuid').click();<?}?>
       $('#community').change(function(){ window.location = '/profile?community='+$(this).find(':selected').attr('data-name'); });
       $('input[value=save]').css('visibility','hidden');
+      $('table').DataTable({ select: true, dom: 'Pfrtip' });
     });
   </script>
   <title>Profile | TopAnswers</title>
@@ -249,6 +255,30 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </form>
         </fieldset>
       <?}?>
+    </fieldset>
+    <fieldset>
+      <legend>community activity</legend>
+      <fieldset>
+        <legend>questions</legend>
+        <table data-order='[[1,"desc"]]' data-page-length='10'>
+          <thead>
+            <tr><th>date/time</th><th>type</th><th>title</th><th>stars</th></tr>
+          </thead>
+          <tbody>
+            <?foreach(db("select question_id,question_title,question_votes,kind_description
+                               , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
+                          from question
+                          order by question_at desc") as $r){extract($r);?>
+              <tr>
+                <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
+                <td><?=$kind_description?></td>
+                <td><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></td>
+                <td><?=$question_votes?></td>
+              </tr>
+            <?}?>
+          </tbody>
+        </table>
+      </fieldset>
     </fieldset>
   </main>
 </body>
