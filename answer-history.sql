@@ -17,7 +17,7 @@ select answer_id
      , answer_se_answer_id is not null answer_is_imported
       ,question_id,question_title
       ,account_id
-      ,community_id,community_name,community_display_name,community_code_language
+      ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace
      , encode(community_dark_shade,'hex') colour_dark
      , encode(community_mid_shade,'hex') colour_mid
      , encode(community_light_shade,'hex') colour_light

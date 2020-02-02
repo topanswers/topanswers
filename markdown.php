@@ -16,7 +16,7 @@
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
   .markdown th { background-color: var(--colour-mid); }
   .markdown td { background-color: white; }
-  .markdown td, .markdown th { font-family: '<?=$my_community_monospace_font_name?>', monospace; font-size: 90%; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
+  .markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
   .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid var(--colour-dark-99); background-color: var(--colour-light); }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
@@ -42,12 +42,12 @@
   .markdown .post { border: 3px solid var(--colour-dark); margin: 0; }
   .markdown .post .tag:hover i { visibility: hidden; }
   .dbfiddle { padding: 0.5rem; background-color: var(--colour-light); border-radius: 3px; }
-  .dbfiddle .CodeMirror { height: auto; border: 1px solid var(--colour-dark); font-family: '<?=$my_community_monospace_font_name?>', monospace; border-radius: 3px; }
+  .dbfiddle .CodeMirror { height: auto; border: 1px solid var(--colour-dark); font-family: var(--monospace-font-family); border-radius: 3px; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 0.5rem; }
   .dbfiddle>div { margin-top: 0.5rem; }
   .dbfiddle .batch { overflow: hidden; min-width: 0; }
-  .dbfiddle .error { overflow: auto; white-space: pre; font-family: '<?=$my_community_monospace_font_name?>', monospace; background-color: var(--colour-highlight-40); }
+  .dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--monospace-font-family); background-color: var(--colour-highlight-40); }
   .dbfiddle a { font-size: smaller; }
   .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--colour-dark); border-radius: 3px; margin-top: 5px; padding: 2px }
   .dbfiddle .qp-statement-header { display: none; }

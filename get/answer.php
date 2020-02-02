@@ -17,7 +17,17 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id,account
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99; --colour-highlight-40: #<?=$colour_highlight?>40;">
+<html style="--colour-dark: #<?=$colour_dark?>;
+             --colour-mid: #<?=$colour_mid?>;
+             --colour-light: #<?=$colour_light?>;
+             --colour-highlight: #<?=$colour_highlight?>;
+             --colour-warning: #<?=$colour_warning?>;
+             --colour-dark-99: #<?=$colour_dark?>99;
+             --colour-highlight-40: #<?=$colour_highlight?>40;
+             --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
+             --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
+             --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
+             ">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">

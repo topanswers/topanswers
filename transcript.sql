@@ -10,7 +10,7 @@ create view chat_day with (security_barrier) as select chat_year,chat_month,chat
 create view chat_hour with (security_barrier) as select chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour where room_id=get_room_id();
 --
 create view one with (security_barrier) as
-select account_id,account_is_dev,community_id,community_name,community_code_language,room_id,room_derived_name,room_question_id
+select account_id,account_is_dev,community_id,community_name,community_code_language,room_id,room_derived_name,room_question_id,community_tables_are_monospace
      , encode(community_dark_shade,'hex') colour_dark
      , encode(community_mid_shade,'hex') colour_mid
      , encode(community_light_shade,'hex') colour_light

@@ -21,7 +21,7 @@ if(!isset($_GET['room'])&&!isset($_GET['q'])){
 if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
 extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,account_id,account_is_dev,account_notification_id
-                   ,community_id,community_name,community_my_power,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,community_id,community_name,community_my_power,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
                    ,room_id,room_name,room_can_chat,room_has_chat
                    ,my_community_regular_font_name,my_community_monospace_font_name
@@ -44,7 +44,17 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="--colour-dark: #<?=$colour_dark?>; --colour-mid: #<?=$colour_mid?>; --colour-light: #<?=$colour_light?>; --colour-highlight: #<?=$colour_highlight?>; --colour-warning: #<?=$colour_warning?>; --colour-dark-99: #<?=$colour_dark?>99; --colour-highlight-40: #<?=$colour_highlight?>40;">
+<html style="--colour-dark: #<?=$colour_dark?>;
+             --colour-mid: #<?=$colour_mid?>;
+             --colour-light: #<?=$colour_light?>;
+             --colour-highlight: #<?=$colour_highlight?>;
+             --colour-warning: #<?=$colour_warning?>;
+             --colour-dark-99: #<?=$colour_dark?>99;
+             --colour-highlight-40: #<?=$colour_highlight?>40;
+             --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
+             --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
+             --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
+             ">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
@@ -68,12 +78,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </style>
   </noscript>
   <style>
-    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
+    html { box-sizing: border-box; font-family: var(--regular-font-family); font-size: 16px; }
     body { display: flex; background: var(--colour-dark); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
-    textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
+    textarea, pre, code, .CodeMirror { font-family: var(--monospace-font-family); }
     textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
     [data-rz-handle='horizontal'] { margin: 7px 0; }
     [data-rz-handle='horizontal']:not(:hover):not(:active) { background: transparent !important; }
