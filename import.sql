@@ -15,6 +15,20 @@ create function login_community(uuid,text) returns boolean language sql security
 create function login_question(uuid,integer) returns boolean language sql security definer as $$select api.login_question($1,$2);$$;
 --
 --
+create function _markdownsummary(text) returns text language sql immutable security definer set search_path=db,api,pg_temp as $$
+  with recursive
+     m as (select regexp_replace(r[1],'([!$()*+.:<=>?[\\\]^{|}-])', '\\\1', 'g') str_from, trim(trailing chr(13) from r[2]) str_to, (row_number() over ())::integer rn 
+           from regexp_matches($1,'^(\[[^\]]+]): (.*)$','ng') r)
+   , w(markdown) as (select split_part(trim(leading chr(13) from $1),chr(13),1), 1 rn
+                     union all
+                     select regexp_replace(
+                              regexp_replace(markdown,'(?<=\[[^\]]+])'||str_from,'('||str_to||')')
+                             ,'(?<=(?<!\])'||str_from||')(?!\()'
+                             ,'('||str_to||')')
+                            ,rn+1  from w join m using(rn))
+  select trim(both ' #' from markdown) from w order by rn desc limit 1;
+$$;
+--
 create function _ensure_seuser(seuid integer, seuname text) returns integer language plpgsql security definer set search_path=db,api,pg_temp as $$
 declare
   id integer;
@@ -58,15 +72,15 @@ create function new_questionanon(title text, markdown text, tags text, seqid int
   with u as (select account_id from communicant where community_id=get_community_id() and communicant_se_user_id=0) select _new_question(account_id,title,markdown,tags,seqid,seat) question_id from u;
 $$;
 --
-create function _new_answer(aid integer, markdown text, seaid integer, seat timestamptz) returns integer language sql security definer set search_path=db,api,pg_temp as $$
+create function _new_answer(aid integer, markdown text, seaid integer, seat timestamptz) returns integer language sql security definer set search_path=db,api,import,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error(400,'already imported') where exists (select 1 from answer where question_id=get_question_id() and answer_se_answer_id=seaid);
   select _ensure_communicant(aid,get_community_id());
   --
   update question set question_poll_major_id = default where question_id=get_question_id();
   --
-  with i as (insert into answer(question_id,account_id,answer_at,answer_markdown,license_id,codelicense_id,answer_se_answer_id,answer_se_imported_at)
-             values(get_question_id(),aid,seat,markdown,4,1,seaid,current_timestamp)
+  with i as (insert into answer(question_id,account_id,answer_at,answer_markdown,answer_summary,license_id,codelicense_id,answer_se_answer_id,answer_se_imported_at)
+             values(get_question_id(),aid,seat,markdown,_markdownsummary(markdown),4,1,seaid,current_timestamp)
              returning answer_id)
   insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id;
 $$;
