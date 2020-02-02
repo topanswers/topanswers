@@ -31,7 +31,7 @@ $id = $_GET['id']??ccdb("select recent()");
   <?if(!$chat_account_is_repeat&&!isset($_GET['one'])){?>
     <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div>
   <?}?>
-  <div id="c<?=$chat_id?>" class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>" data-change-id="<?=$chat_change_id?>" data-at="<?=$chat_at_iso?>">
+  <div id="c<?=$chat_id?>" class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?$chat_reply_id:''?>" data-reply-name="<?=$reply_account_name?>" data-change-id="<?=$chat_change_id?>" data-at="<?=$chat_at_iso?>">
     <span class="who" title="<?=$account_is_me?'Me':$account_name?> <?=$chat_reply_id?'replying to '.($reply_account_is_me?'Me':$reply_account_name):''?>">
       <?=$account_is_me?'<em>Me</em>':$account_name?>
       <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'">replying to</a> '.($reply_account_is_me?'<em>Me</em>':$reply_account_name):''?>

@@ -543,9 +543,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
         var m = $(this).closest('.message');
-        $('#replying').attr('data-id',m.data('id')).attr('data-name',m.data('name')).data('update')();
+        $('#status').attr('data-replyid',m.data('id')).attr('data-replyname',m.data('name')).data('update')();
         $('#chattext').focus();
-        setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       });
       $('#chat-wrapper').on('click','.fa-ellipsis-h', function(){
         if($(this).closest('.button-group').is(':last-child')) $(this).closest('.button-group').removeClass('show').parent().children('.button-group:nth-child(2)').addClass('show');
@@ -554,7 +553,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('click','.fa-edit', function(){
         var m = $(this).closest('.message');
         $('.ping').removeClass('ping');
-        $('#replying').attr('data-id',m.data('id')).attr('data-name',m.data('name')).data('update')();
+        $('#status').attr('data-editid',m.data('id')).attr('data-replyid',m.attr('data-reply-id')).attr('data-replyname',m.attr('data-reply-name')).data('update')();
         $('#chattext').val(m.find('.markdown').attr('data-markdown')).focus().trigger('input');
       });
       function starflag(t,action,direction){
@@ -596,25 +595,26 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('body').on('click','.icon.pingable', function(){
         if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')+' '); }
         $(this).toggleClass('ping');
-        if($('#c'+$('#replying').attr('data-id')).hasClass('mine')) $('#replying').attr('data-id','');
+        //if($('#c'+$('#status').attr('data-id')).hasClass('mine')) $('#status').attr('data-id','');
         $('#chattext').focus();
-        $('#replying').data('update')();
+        $('#status').data('update')();
       });
-      $('#replying').data('update',function(){
-        var state = $('#replying').attr('data-id') || $('.ping').length, strings = [];
-        if($('#replying').attr('data-id')) strings.push(($('#c'+$('#replying').attr('data-id'))).hasClass('mine')?'Editing':('Replying to: '+$('#replying').attr('data-name')));
+      $('#status').data('update',function(){
+        var strings = [];
+        if($('#status').attr('data-editid')) strings.push('Editing');
+        if($('#status').attr('data-replyid')) strings.push('Replying to: '+$('#status').attr('data-replyname'));
         if($('.ping').length) strings.push('Pinging: '+$('.ping').map(function(){ return $(this).data('fullname'); }).get().join(', '));
         if(strings.length){
-          $('#replying').children('span').text(strings.join(', '));
-          $('#cancelreply').show();
+          $('#status').children('span').text(strings.join(', '));
+          $('#cancel').show();
         }else{
-          $('#replying').children('span').text('Preview:');
-          $('#cancelreply').hide();
+          $('#status').children('span').text('Preview:');
+          $('#cancel').hide();
         }
       });
-      $('#cancelreply').click(function(){
+      $('#cancel').click(function(){
         $('.ping').removeClass('ping');
-        $('#replying').attr('data-id','').attr('data-name','').data('update')();
+        $('#status').attr('data-editid','').attr('data-replyid','').attr('data-replyname','').data('update')();
       });
       $('#community').change(function(){
         window.location = '/'+$(this).find(':selected').attr('data-name');
@@ -629,24 +629,24 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         window.location = '/<?=$community_name?>?room='+$(this).val();
       });
       function renderPreview(sync){
-        var m = $('#chattext').val(), s;
+        var m = $('#chattext').val(), s, scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
         sync = typeof sync !== 'undefined' ? sync : false;
         s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
         if(s&&(s[2]===s[4])){
           $.get({ url: '/chat?quote&room=<?=$room?>&id='+s[2], async: !sync }).done(function(r){
             if($('#chattext').val()===m){
               $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return ' *— '+(moment(match).fromNow())+'*'; })).renderMarkdown();
-              setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
+              if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
             }
           }).fail(function(){
             if($('#chattext').val()===m){
               $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
-              setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
+              if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
             }
           });
         }else{
           $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
-          setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
+          if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
         }
       }
       var renderPreviewThrottle;
@@ -656,20 +656,20 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         if(this.scrollHeight>$(this).outerHeight()) $(this).css('height',this.scrollHeight);
         //_.debounce(renderPreview,5000,{ 'leading': true, 'maxWait': 1000, 'trailing': false })();
         renderPreviewThrottle();
-        setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
+        if($('#status').attr('data-replyid')==='') setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){
-        var t = $(this), msg = t.val(),  replyid = $('#replying').attr('data-id'), c = $('#c'+replyid), edit = c.hasClass('mine'), post, arr = [];
+        var t = $(this), msg = t.val(),  replyid = $('#status').attr('data-replyid'), c = $('#c'+replyid), edit = $('#status').attr('data-editid')!=='', editid = $('#status').attr('data-editid'), post, arr = [];
         if(e.which===13) {
           if(!e.shiftKey) {
             if(msg.trim()){
               clearTimeout(chatTimer);
               renderPreview(true);
+              $('.ping').each(function(){ arr.push($(this).data('id')); });
               if(edit){
-                post = { msg: $('#preview .markdown').attr('data-markdown'), room: <?=$room?>, editid: replyid, action: 'edit' };
-                c.css('opacity',0.5);
+                post = { msg: $('#preview .markdown').attr('data-markdown'), room: <?=$room?>, editid: editid, replyid: replyid, pings: arr, action: 'edit' };
+                $('#c'+editid).css('opacity',0.5);
               }else{
-                $('.ping').each(function(){ arr.push($(this).data('id')); });
                 post = { room: <?=$room?>
                        , msg: $('#preview .markdown').attr('data-markdown')
                        , replyid: replyid
@@ -679,14 +679,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               }
               $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).done(function(){
                 if(edit){
-                  c.css('opacity',1).find('.markdown').attr('data-markdown',msg).end().each(renderChat);
+                  $('#c'+editid).css('opacity',1).find('.markdown').attr('data-markdown',msg).attr('data-reply-id',replyid).end().each(renderChat);
                   checkChat();
                 }else{
                   if(replyid) $('#notifications .message[data-id='+replyid+']').remove();
                   if($('#notifications .message').children().length===0) $('#notification-wrapper').children().remove();
                   updateChat();
                 }
-                $('#cancelreply').click();
+                $('#cancel').click();
                 t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
               }).fail(function(r){
                 alert(r.status+' '+r.statusText+'\n'+r.responseText);
@@ -705,7 +705,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             return false;
           }
         }else if(e.which===27){
-          $('#cancelreply').click();
+          $('#cancel').click();
           t.val('').css('height',$(this).data('initialheight')).css('min-height',0).focus().trigger('input');
           return false;
         }
@@ -1163,9 +1163,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
           <?if($canchat){?>
             <div id="preview" class="message processed">
-              <div id="replying" style="width: 100%; font-style: italic; font-size: 10px;" data-id="">
+              <div id="status" style="width: 100%; font-style: italic; font-size: 10px;" data-replyid="" data-replyname="" data-editid="">
                 <span>Preview:</span>
-                <i id="cancelreply" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
+                <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
               </div>
               <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
             </div>

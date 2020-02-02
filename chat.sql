@@ -160,7 +160,9 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
      , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
      , p as (insert into chat_notification(chat_id,account_id)
              select chat_id,account_id
-             from i cross join (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z)
+             from i cross join (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z
+             returning *)
+     , b as (update account set account_notification_id = default from p where account.account_id=p.account_id)
      , r as (insert into participant(room_id,account_id,participant_latest_read_chat_id)
              select room_id,get_account_id(),chat_id from i
              on conflict on constraint participant_pkey do update set participant_latest_chat_at=default, participant_chat_count=participant.participant_chat_count+1, participant_latest_read_chat_id=excluded.participant_latest_read_chat_id)
@@ -178,6 +180,35 @@ create function change(id integer, msg text) returns void language sql security 
   update account set account_notification_id = default where account_id in(select account_id from w);
   --
   update chat set chat_markdown = msg, chat_change_id = default, chat_change_at = default where chat_id=id;
+$$;
+create function change(id integer, msg text, replyid integer, pingids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
+  select _error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
+  select _error('you cannot edit a message that is already a reply to be be a reply to a different message') from chat where chat_id=id and chat_reply_id is not null and chat_reply_id<>replyid;
+  select _error('too late') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>300;
+  select _error(413,'message too long') where length(msg)>5000;
+  --
+  with d as (delete from chat_notification where chat_id=replyid and account_id=get_account_id() returning *)
+  update account set account_notification_id = default from d where account.account_id=d.account_id;
+  --
+  update chat set chat_markdown = msg, chat_reply_id=replyid, chat_change_id = default, chat_change_at = default where chat_id=id;
+  --
+  with h as (insert into chat_history(chat_id,chat_history_markdown) values(id,msg))
+     , n as (insert into chat_notification(chat_id,account_id)
+             select id,(select account_id from chat where chat_id=replyid)  where replyid is not null and (select account_id from chat where chat_id=replyid)<>get_account_id()
+             on conflict do nothing
+             returning *)
+     , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
+     , p as (insert into chat_notification(chat_id,account_id)
+             select id,account_id
+             from (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z
+             on conflict do nothing
+             returning *)
+     , b as (update account set account_notification_id = default from p where account.account_id=p.account_id)
+  select 1;
+  --
+  with w as (select chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
+  update account set account_notification_id = default where account_id in(select account_id from w);
 $$;
 --
 create function dismiss_notification(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
