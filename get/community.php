@@ -779,7 +779,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
       processNewQuestions(true);
       paginateQuestions(questionPage);
-      $('#qa .post').find('.markdown[data-markdown]').renderMarkdown(function(){
+      $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(function(){
         $('#qa .post:not(.processed) .when').each(function(){
           $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
           $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));

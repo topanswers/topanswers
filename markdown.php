@@ -4,6 +4,7 @@
   <link rel="stylesheet" href="/lib/katex/katex.min.css">
 <?}?>
 <style>
+  .summary code { padding: 0 0.2em; background-color: var(--colour-light); border: 1px solid var(--colour-mid); border-radius: 1px; overflow-wrap: break-word; }
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>pre { white-space: pre; }
   .markdown>:first-child { margin-top: 0; }
