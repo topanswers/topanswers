@@ -121,7 +121,7 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                      from answer_flag_notification
                                      group by answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade,community_warning_color) n)
                     select * from c union all select * from q union all select * from qf union all select * from a union all select * from af
-                    order by notification_at limit 20") as $r){ extract($r);?>
+                    order by notification_at desc limit 50") as $r){ extract($r);?>
         <div id="n<?=$notification_id?>" class="notification<?=($notification_type==='chat')?' message':''?>" style="background: #<?=$notification_mid_shade?>; --colour-dark: #<?=$notification_dark_shade?>; --colour-warning: #<?=$notification_warning_shade?>; --colour-dark-99: #<?=$notification_dark_shade?>99;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
           <?if($notification_type==='chat'){?>
             <span class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.($chat_reply_account_is_me?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
