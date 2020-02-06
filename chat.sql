@@ -43,6 +43,7 @@ create function range(startid bigint, endid bigint)
                                   , chat_flag_count integer
                                   , chat_star_count integer
                                   , chat_has_history boolean
+                                  , chat_pings json
                                   , chat_account_is_repeat boolean
                                   , rn bigint
                                    ) language sql security definer set search_path=db,api,chat,pg_temp as $$
@@ -63,6 +64,7 @@ create function range(startid bigint, endid bigint)
                    , (select count(1)::integer from chat_flag where chat_id=c.chat_id) chat_flag_count
                    , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
                    , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
+                   , (select json_agg(p.account_id) from ping p where p.chat_id=c.chat_id and c.account_id=get_account_id()) chat_pings
               from chat c natural join account natural join (select account_id,community_id,communicant_votes from communicant) v
               where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
         where (select account_id from g) is not null or chat_flag_count=0) z
@@ -158,14 +160,16 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
              select chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and (select account_id from chat where chat_id=replyid)<>get_account_id()
              returning *)
      , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
-     , p as (insert into chat_notification(chat_id,account_id)
+    , n2 as (insert into chat_notification(chat_id,account_id)
              select chat_id,account_id
              from i cross join (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z
              returning *)
-     , b as (update account set account_notification_id = default from p where account.account_id=p.account_id)
+    , a2 as (update account set account_notification_id = default from n2 where account.account_id=n2.account_id)
+     , p as (insert into ping(chat_id,account_id) select chat_id,account_id from n2)
      , r as (insert into participant(room_id,account_id,participant_latest_read_chat_id)
              select room_id,get_account_id(),chat_id from i
-             on conflict on constraint participant_pkey do update set participant_latest_chat_at=default, participant_chat_count=participant.participant_chat_count+1, participant_latest_read_chat_id=excluded.participant_latest_read_chat_id)
+             on conflict on constraint participant_pkey
+                do update set participant_latest_chat_at=default, participant_chat_count=participant.participant_chat_count+1, participant_latest_read_chat_id=excluded.participant_latest_read_chat_id)
   select chat_id from i;
 $$;
 --

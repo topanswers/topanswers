@@ -563,6 +563,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('click','.fa-edit', function(){
         var m = $(this).closest('.message');
         $('.ping').removeClass('ping');
+        $.each(m.data('pings'),function(k,v){ $('.icon.pingable[data-id="'+v+'"]').addClass('ping'); });
         $('#status').attr('data-editid',m.data('id')).attr('data-replyid',m.attr('data-reply-id')).attr('data-replyname',m.attr('data-reply-name')).data('update')();
         $('#chattext').val(m.find('.markdown').attr('data-markdown')).focus().trigger('input');
       });
@@ -603,9 +604,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('.post .fa-flag-o').click(function(){ flag.call(this,1); });
       $('.post .fa-flag-checkered').click(function(){ flag.call(this,$('#question').is('.counterflagged')?0:-1); });
       $('body').on('click','.icon.pingable', function(){
-        if(!$(this).hasClass('ping')){ textareaInsertTextAtCursor($('#chattext'),'@'+$(this).data('name')+' '); }
-        $(this).toggleClass('ping');
-        //if($('#c'+$('#status').attr('data-id')).hasClass('mine')) $('#status').attr('data-id','');
+        var t = $(this);
+        if(t.hasClass('ping')){
+          $('.icon.pingable[data-id="'+t.data('id')+'"]').removeClass('ping');
+        }else{
+          $('.icon.pingable[data-id="'+t.data('id')+'"]').addClass('ping');
+          textareaInsertTextAtCursor($('#chattext'),'@'+t.data('name')+' ');
+        }
         $('#chattext').focus();
         $('#status').data('update')();
       });
@@ -613,7 +618,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var strings = [];
         if($('#status').attr('data-editid')) strings.push('Editing');
         if($('#status').attr('data-replyid')) strings.push('Replying to: '+$('#status').attr('data-replyname'));
-        if($('.ping').length) strings.push('Pinging: '+$('.ping').map(function(){ return $(this).data('fullname'); }).get().join(', '));
+        console.debug(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }));
+        console.debug(_.map(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }),function(e){ return e[1]; }));
+        if($('.ping').length) strings.push('Pinging: '+_.map(_.uniqBy($('.ping').map(function(){ return { 'id': $(this).data('id'), 'name': $(this).data('fullname') }; }).get(),function(e){ return e.id; }),function(e){ return e.name; }).join(', '));
         if(strings.length){
           $('#status').children('span').text(strings.join(', '));
           $('#cancel').show();
