@@ -235,6 +235,7 @@ create table kind(
 , kind_minimum_votes_to_answer integer default 0 not null
 , kind_allows_question_multivotes boolean default true not null
 , kind_allows_answer_multivotes boolean default true not null
+, kind_show_answer_summary_toc boolean default false not null
 );
 
 create table sanction(

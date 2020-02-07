@@ -34,6 +34,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,question_license_href,question_has_codelicense,question_codelicense_name,question_license_description,question_codelicense_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                    ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
+                   ,kind_show_answer_summary_toc
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
@@ -787,9 +788,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       processNewQuestions(true);
       paginateQuestions(questionPage);
       $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(function(){
+        $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
         $('#qa .post:not(.processed) .when').each(function(){
-          $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
-          $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+          var t = $(this);
+          t.text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||''));
+          t.attr('title',moment(t.data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
         });
         $('#qa .post').addClass('processed');
       });
@@ -1005,6 +1008,32 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               </div>
             <?}?>
           </div>
+          <?if($kind_show_answer_summary_toc){?>
+            <div style="height: 2px; background: var(--colour-dark);"></div>
+            <div class="answers">
+              <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
+                                 , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
+                                 , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
+                                 , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
+                                 , extract('epoch' from current_timestamp-answer_change_at)::bigint answer_change_when
+                            from answer
+                            order by answer_votes desc, answer_communicant_votes desc, answer_id desc") as $r){ extract($r);?>
+                <div class="bar<?=$answer_is_deleted?' deleted':''?>">
+                  <a href="/<?=$community_name?>?q=<?=$question?>#a<?=$answer_id?>" class="element summary shrink">Answer: <span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
+                  <div>
+                    <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
+                    <?if($answer_votes){?>
+                      <span class="element">
+                        <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
+                      </span>
+                    <?}?>
+                    <span class="element"><?=$answer_account_name?></span>
+                    <img title="Stars: <?=$answer_communicant_votes?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
+                  </div>
+                </div>
+              <?}?>
+            </div>
+          <?}?>
         </div>
         <?if($kind_has_answers){?>
           <div class="banner">

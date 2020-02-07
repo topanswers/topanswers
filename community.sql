@@ -35,7 +35,7 @@ from db.question_flag natural join api._account
 where question_id=get_question_id() and question_flag_direction<>0;
 --
 create view answer with (security_barrier) as
-select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answer_crew_flags,answer_active_flags
+select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answer_crew_flags,answer_active_flags,answer_is_deleted,answer_summary,answer_change_at
      , account_is_imported answer_account_is_imported
      , account_id answer_account_id
      , account_derived_name answer_account_name
@@ -51,6 +51,7 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , coalesce(communicant_votes,0) answer_communicant_votes
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=1) answer_i_flagged
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=-1) answer_i_counterflagged
+     , case when answer_se_imported_at=answer_change_at then 'imported' when answer_change_at>answer_at then 'edited' else 'answered' end answer_change
 from api._answer natural join db.answer a natural join api._account natural join db.account natural join (select question_id,community_id from db.question) q natural join db.license natural join db.codelicense natural join db.communicant
      natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v
 where question_id=get_question_id()
@@ -69,6 +70,7 @@ select account_id,community_id,community_name,community_my_power,community_code_
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
+      ,kind_show_answer_summary_toc
       ,question_communicant_se_user_id,question_communicant_votes
       ,question_license_href,question_has_codelicense,question_codelicense_name,question_codelicense_description
      , question_account_id is not distinct from account_id question_account_is_me
@@ -96,6 +98,7 @@ from db.room r natural join db.community natural join api._community
      natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,question_is_deleted
                               ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
+                              ,kind_show_answer_summary_toc
                              , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
                              , license_name||(case when question_permit_later_license then ' or later' else '' end) question_license_name
                              , license_description question_license_description
