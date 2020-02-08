@@ -407,7 +407,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
       }
       function updateRoomLatest(){
-        var read;
+        var read, count = 0;
         read = localStorage.getItem('read')?JSON.parse(localStorage.getItem('read')):{};
         $('#active-rooms>a:not([data-unread])').each(function(){
           delete read[$(this).attr('data-room')];
@@ -417,12 +417,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           if(r==='<?=$room?>') read['<?=$room?>'] = _.union(read['<?=$room?>']||[],$('#messages>.message').map(function(){ var id = +this.id.substring(1); return (id>l)?id:null; }).get());
           if(read[r]){
             read[r] = $.map(read[r],function(v){ return (v>l)?v:null; });
-            $(this).attr('data-unread',$(this).attr('data-unread')-read[r].length);
+            $(this).attr('data-unread',Math.max(0,$(this).attr('data-unread')-read[r].length));
             if($(this).attr('data-unread')==='0') $(this).removeAttr('data-unread');
           }
           $(this).addClass('processed');
         });
         localStorage.setItem('read',JSON.stringify(read));
+        _.forEach(read,function(e){ count += e.length; });
+        localStorage.setItem('readCount',count);
       }
       function updateChat(scroll){
         var maxChat = $('#messages>.message').last().data('id');
@@ -525,6 +527,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <?if($dev){?>console.log('updating question '+$('.question.changed').first().data('id'));<?}?>
               actionQuestionChange($('.question.changed').first().data('id'));
           <?}?>
+          }else if(+localStorage.getItem('readCount')>99){
+            $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'read', room: <?=$room?>, read: $.map(JSON.parse(localStorage.getItem('read')), function(v){ return _.last(v); }) }, xhrFields: { withCredentials: true } }).done(function(){
+              setChatPollTimeout();
+            });
           }else{
             setChatPollTimeout();
           }

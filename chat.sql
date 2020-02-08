@@ -78,7 +78,7 @@ create function activerooms() returns table (room_id integer, question_id intege
        , question_id
        , coalesce(question_title,room_name,initcap(community_name)||' Chat') room_name
        , community_name
-       , (select count(1) from chat c where c.room_id=r.room_id and c.chat_id>x.participant_latest_read_chat_id) room_account_unread_messages
+       , (select least(99,count(1)) from chat c where c.room_id=r.room_id and c.chat_id>x.participant_latest_read_chat_id) room_account_unread_messages
        , participant_latest_read_chat_id
   from (select room_id,participant_latest_chat_at,participant_latest_read_chat_id,participant_chat_count
         from participant

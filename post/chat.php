@@ -11,6 +11,7 @@ switch($_POST['action']){
   case 'new':
     if(isset($_POST['read'])) db("select read(('{'||$1||'}')::integer[])",implode(',',$_POST['read']));
     exit(ccdb("select new($1,nullif($2,'')::integer,('{'||$3||'}')::integer[])",$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
+  case 'read': exit(ccdb("select read(('{'||$1||'}')::integer[])",implode(',',$_POST['read'])));
   case 'edit': exit(ccdb("select change($1,$2,nullif($3,'')::integer,('{'||$4||'}')::integer[])",$_POST['editid'],$_POST['msg'],$_POST['replyid']??'',isset($_POST['pings'])?implode(',',$_POST['pings']):''));
   case 'flag': exit(ccdb("select set_flag($1)",$_POST['id']));
   case 'unflag': exit(ccdb("select remove_flag($1)",$_POST['id']));
