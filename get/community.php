@@ -260,7 +260,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     $(function(){
       var title = document.title, latestChatId;
       var favicon = new Favico({ animation: 'fade', position: 'up' });
-      var chatTimer, maxChatChangeID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
+      var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
 
       $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
@@ -426,6 +426,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         _.forEach(read,function(e){ count += e.length; });
         localStorage.setItem('readCount',count);
       }
+      function updateActiveRooms(){
+        $.get('/chat?activerooms&room=<?=$room?>').done(function(r){
+          $('#active-rooms').html(r);
+          updateRoomLatest();
+          setChatPollTimeout();
+        }).fail(setChatPollTimeout);
+      }
       function updateChat(scroll){
         var maxChat = $('#messages>.message').last().data('id');
         if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
@@ -447,6 +454,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 $('#active-rooms').html(r);
                 updateRoomLatest();
               });
+              updateActiveRooms();
             <?}?>
           }
           setChatPollTimeout();
@@ -514,7 +522,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           }else if(j.cc>maxChatChangeID){
             <?if($dev){?>console.log('updating chat change flag statuses');<?}?>
             updateChatChangeIDs();
-            maxChatChangeID = j.cc
+            maxChatChangeID = j.cc;
           }else if($('.message.changed').length){
             <?if($dev){?>console.log('updating chat '+$('.message.changed').last().data('id'));<?}?>
             actionChatChange($('.message.changed').last().data('id'));
@@ -522,11 +530,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             }else if((j.q>maxQuestionPollMinorID)&&($('#search').val()==='')){
               <?if($dev){?>console.log('updating guestion change flag statuses');<?}?>
               updateQuestionPollIDs();
-              maxQuestionPollMinorID = j.q
+              maxQuestionPollMinorID = j.q;
             }else if($('.question.changed').length&&($('#search').val()==='')){
               <?if($dev){?>console.log('updating question '+$('.question.changed').first().data('id'));<?}?>
               actionQuestionChange($('.question.changed').first().data('id'));
           <?}?>
+          }else if(j.a>maxActiveRoomChatID){
+            <?if($dev){?>console.log('updating active room list');<?}?>
+            updateActiveRooms();
+            maxActiveRoomChatID = j.a;
           }else if(+localStorage.getItem('readCount')>99){
             $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'read', room: <?=$room?>, read: $.map(JSON.parse(localStorage.getItem('read')), function(v){ return _.last(v); }) }, xhrFields: { withCredentials: true } }).done(function(){
               setChatPollTimeout();

@@ -9,4 +9,5 @@ exit(ccdb("select json_build_object('n',account_notification_id
                                    ,'cc',coalesce(chat_max_change_id,0)
                                    ,'Q',coalesce(question_max_poll_major_id,0)
                                    ,'q',coalesce(question_max_poll_minor_id,0)
+                                   ,'a',coalesce(chat_active_room_max_id,0)
                                    ) from one"));
