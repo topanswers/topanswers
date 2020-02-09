@@ -294,6 +294,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function renderQuestion(){
         $(this).find('.summary span[data-markdown]').renderMarkdownSummary();
+        $(this).find('.answers>.bar:first-child+.bar+.bar+.bar').each(function(){
+          var t = $(this), h = t.nextAll('.bar').addBack();
+          if(h.length>1){
+            t.before('<div class="bar more"><span></span><a href=".">show '+h.length+' more</a><span></span></div>');
+            h.hide();
+          }
+        });
         $(this).find('.when').each(function(){
           var t = $(this);
           $(this).text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||''));
@@ -896,6 +903,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         processStarboard(true);
         return false;
       });
+      $('#qa .post .answers .bar.more a').click(function(){
+        $(this).parent().nextAll('.bar').slideDown().end().slideUp();
+        return false;
+      });
     });
   </script>
   <title><?=$room_name?> - TopAnswers</title>
@@ -1035,9 +1046,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                  , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
                                  , extract('epoch' from current_timestamp-answer_change_at)::bigint answer_change_when
                             from answer
-                            order by answer_votes desc, answer_communicant_votes desc, answer_id desc") as $r){ extract($r);?>
+                            order by answer_votes desc, answer_communicant_votes desc, answer_id desc") as $i=>$r){ extract($r);?>
                 <div class="bar<?=$answer_is_deleted?' deleted':''?>">
-                  <a href="/<?=$community_name?>?q=<?=$question?>#a<?=$answer_id?>" class="element summary shrink">Answer: <span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
+                  <a href="/<?=$community_name?>?q=<?=$question?>#a<?=$answer_id?>" class="element summary shrink"><?=($i===0)?'Top ':''?>Answer<?=($i>0)?' #'.($i+1):''?>: <span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
                   <div>
                     <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
                     <?if($answer_votes){?>
