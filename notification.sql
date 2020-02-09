@@ -55,6 +55,11 @@ from (select answer_flag_history_id,answer_flag_notification_at from db.answer_f
      natural join (select community_id,question_id,question_title from db.question) q
      natural join db.community;
 --
+create view system_notification with (security_barrier) as
+select system_notification_id,system_notification_at,system_notification_message
+from db.system_notification
+where system_notification_dismissed_at is null and account_id=get_account_id();
+--
 create view one with (security_barrier) as
 select room_id
      , (room_type='public' or x.account_id is not null) room_can_chat
@@ -98,6 +103,11 @@ create function dismiss_answer_flag(id integer) returns void language sql securi
              where answer_flag_history_id in(select answer_flag_history_id from answer_flag_history where answer_id=(select answer_id from answer_flag_history where answer_flag_history_id=id))
                    and account_id=get_account_id() returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
+$$;
+--
+create function dismiss_system(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  update system_notification set system_notification_dismissed_at = current_timestamp where system_notification_dismissed_at is null and system_notification_id=id and account_id=get_account_id();
+  update account set account_notification_id = default where account_id=get_account_id();
 $$;
 --
 --

@@ -10,7 +10,8 @@ $notification_count = ccdb("select count(1) from chat_notification")
                     + ccdb("select count(1) from question_notification")
                     + ccdb("select count(1) from answer_notification")
                     + ccdb("select count(1) from question_flag_notification")
-                    + ccdb("select count(1) from answer_flag_notification");
+                    + ccdb("select count(1) from answer_flag_notification")
+                    + ccdb("select count(1) from system_notification");
 ?>
 <div id="notification-wrapper">
   <?if($notification_count>0){?>
@@ -120,9 +121,28 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                           , count(distinct account_id) answer_flag_count
                                      from answer_flag_notification
                                      group by answer_id,question_id,question_title,community_name,community_mid_shade,community_dark_shade,community_warning_color) n)
-                    select * from c union all select * from q union all select * from qf union all select * from a union all select * from af
+                       , s as (select 'system' notification_type
+                                    , 1 notification_count
+                                    , system_notification_id notification_id
+                                    , system_notification_at notification_at
+                                    , to_char(system_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
+                                    , 'f8f8f8' notification_mid_shade
+                                    , '000000' notification_dark_shade
+                                    , '990000' notification_warning_shade
+                                    , null::text notification_community_name
+                                    , null::integer question_id
+                                    , null::text question_title
+                                    , null::integer answer_id
+                                    , null::boolean answer_notification_is_edit
+                                    , null::integer notification_room_id
+                                    , null::integer chat_from_account_id
+                                    , null::integer chat_reply_id
+                                    , system_notification_message chat_markdown
+                                    , null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
+                               from system_notification)
+                    select * from c union all select * from q union all select * from qf union all select * from a union all select * from af union all select * from s
                     order by notification_at desc limit 50") as $r){ extract($r);?>
-        <div id="n<?=$notification_id?>" class="notification<?=($notification_type==='chat')?' message':''?>" style="background: #<?=$notification_mid_shade?>; --colour-dark: #<?=$notification_dark_shade?>; --colour-warning: #<?=$notification_warning_shade?>; --colour-dark-99: #<?=$notification_dark_shade?>99;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
+        <div id="n<?=$notification_id?>" class="notification<?=in_array($notification_type,['chat','system'])?' message':''?>" style="background: #<?=$notification_mid_shade?>; --colour-dark: #<?=$notification_dark_shade?>; --colour-warning: #<?=$notification_warning_shade?>; --colour-dark-99: #<?=$notification_dark_shade?>99;" data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
           <?if($notification_type==='chat'){?>
             <span class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.($chat_reply_account_is_me?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
               <i class="fa fa-times-circle" title="dismiss notification"></i>
@@ -180,6 +200,13 @@ $notification_count = ccdb("select count(1) from chat_notification")
             <span class="when" data-at="<?=$notification_at_iso?>"></span>
             <span>, <?=($notification_count>1)?$notification_count.' ':''?> answer flag<?=($notification_count==='1')?'':'s'?>:&nbsp;</span>
             <a class="ellipsis" href="/<?=$notification_community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" title="<?=$question_title?>"><?=$question_title?>&nbsp;</a>
+          <?}elseif($notification_type==='system'){?>
+            <span class="who" title="">
+              <i class="fa fa-times-circle" title="dismiss notification"></i>
+              <span class="when" data-at="<?=$notification_at_iso?>"></span>,&nbsp;
+              <span>Message from TopAnswers</span>
+            </span>
+            <div class="markdown" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
           <?}?>
         </div>
       <?}?>

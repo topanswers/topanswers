@@ -870,6 +870,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
+      $('#chat-wrapper').on('click','.notification[data-type="system"] .fa.fa-times-circle', function(){
+        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss-system', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
+        return false;
+      });
       function search(){
         if($('#search').val()===''){
           $('#questions>.question').remove();
