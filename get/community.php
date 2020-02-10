@@ -297,7 +297,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $(this).find('.answers>.bar:first-child+.bar+.bar+.bar').each(function(){
           var t = $(this), h = t.nextAll('.bar').addBack();
           if(h.length>1){
-            t.before('<div class="bar more"><span></span><a href=".">show '+h.length+' more</a><span></span></div>');
+            $('<div class="bar more"><span></span><a href=".">show '+h.length+' more</a><span></span></div>').insertBefore(t).click(function(){
+              $(this).nextAll('.bar').slideDown().end().slideUp();
+              return false;
+            });
             h.hide();
           }
         });
@@ -341,7 +344,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           if($('#questions>:first-child').data('poll-major-id')===maxQuestion){
             var newquestions;
             $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
-            newquestions = $(data).filter('.question').each(renderQuestion).prependTo($('#questions')).hide().slideDown(full?0:400);
+            newquestions = $(data).filter('.question').prependTo($('#questions')).hide().slideDown(full?0:400);
             processNewQuestions();
             paginateQuestions(questionPage);
             if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
@@ -906,10 +909,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#starboard,#messages').each(function(){ $(this).css('display',function(i,s){ return s==='none'?'flex':'none'; }); })
         $('#preview,#canchat-wrapper').toggle();
         processStarboard(true);
-        return false;
-      });
-      $('#qa .post .answers .bar.more a').click(function(){
-        $(this).parent().nextAll('.bar').slideDown().end().slideUp();
         return false;
       });
     });

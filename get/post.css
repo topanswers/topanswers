@@ -24,3 +24,5 @@
 .post .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .post .markdown .post { border: 3px solid var(--colour-dark); margin: 0; }
 .post .markdown .post .tag:hover i { visibility: hidden; }
+.post .answers .bar.more:not(:hover) a { text-decoration: none; }
+.post .answers .bar.more a { color: var(--colour-dark); }
