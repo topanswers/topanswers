@@ -65,7 +65,7 @@ from db.account;
 --
 create view _community with (security_barrier) as
 select community_id
-     , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
+     , 1+trunc(log(greatest(communicant_votes,1))) community_my_power
 from (select community_id from db.community natural left join (select community_id,account_id from db.member where account_id=get_account_id()) m where community_type='public' or account_id is not null) c
      natural left join (select community_id,communicant_votes from db.communicant where account_id=get_account_id()) a;
 --

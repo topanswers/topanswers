@@ -31,7 +31,7 @@ from api._answer natural join db.answer natural join api._account natural left j
      natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v;
 --
 create view one with (security_barrier) as
-select account_id,community_id,community_name,community_code_language
+select account_id,community_id,community_name,community_code_language,community_my_power
      , coalesce(account_is_dev,false) account_is_dev
      , coalesce(communicant_is_post_flag_crew,false) communicant_is_post_flag_crew
      , encode(community_dark_shade,'hex') colour_dark
@@ -41,9 +41,8 @@ select account_id,community_id,community_name,community_code_language
      , encode(community_warning_color,'hex') colour_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-     , 1+trunc(log(greatest(communicant_votes,0)+1)) community_my_power
      , (select count(*) from question) num_questions
-from db.community
+from api._community natural join db.community
      natural left join (select * from db.login natural join db.account natural join db.communicant where login_uuid=get_login_uuid()) a
 where community_id=get_community_id();
 --
