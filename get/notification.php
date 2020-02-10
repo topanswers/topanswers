@@ -126,10 +126,10 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                     , system_notification_id notification_id
                                     , system_notification_at notification_at
                                     , to_char(system_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
-                                    , 'f8f8f8' notification_mid_shade
-                                    , '000000' notification_dark_shade
-                                    , '990000' notification_warning_shade
-                                    , null::text notification_community_name
+                                    , encode(community_mid_shade,'hex') notification_mid_shade
+                                    , encode(community_dark_shade,'hex') notification_dark_shade
+                                    , encode(community_warning_color,'hex') notification_warning_shade
+                                    , community_name notification_community_name
                                     , null::integer question_id
                                     , null::text question_title
                                     , null::integer answer_id
@@ -204,7 +204,8 @@ $notification_count = ccdb("select count(1) from chat_notification")
             <span class="who" title="">
               <i class="fa fa-times-circle" title="dismiss notification"></i>
               <span class="when" data-at="<?=$notification_at_iso?>"></span>,&nbsp;
-              <span>Message from TopAnswers</span>
+              Message from&nbsp;
+              <a href="/<?=$notification_community_name?>">TopAnswers<?=$notification_community_name?'/'.$notification_community_name:''?></a>
             </span>
             <div class="markdown" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
           <?}?>

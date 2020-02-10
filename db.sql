@@ -489,6 +489,7 @@ create table system_notification(
 , system_notification_at timestamptz not null default current_timestamp
 , system_notification_dismissed_at timestamptz
 , system_notification_message text not null
+, system_notification_community_id integer references community
 , unique (account_id,system_notification_id)
 );
 create index system_notification_latest_ind on system_notification(account_id,system_notification_at) where system_notification_dismissed_at is null;

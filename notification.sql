@@ -56,8 +56,11 @@ from (select answer_flag_history_id,answer_flag_notification_at from db.answer_f
      natural join db.community;
 --
 create view system_notification with (security_barrier) as
-select system_notification_id,system_notification_at,system_notification_message
-from db.system_notification
+select system_notification_id,system_notification_at,system_notification_message,community_name
+     , coalesce(community_mid_shade,'\xf8f8f8') community_mid_shade
+     , coalesce(community_dark_shade,'\x000000') community_dark_shade
+     , coalesce(community_warning_color,'\x990000') community_warning_color
+from db.system_notification n left join db.community c on c.community_id = n.system_notification_community_id
 where system_notification_dismissed_at is null and account_id=get_account_id();
 --
 create view one with (security_barrier) as
