@@ -419,10 +419,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function updateRoomLatest(){
         var read, count = 0;
         read = localStorage.getItem('read')?JSON.parse(localStorage.getItem('read')):{};
-        $('#active-rooms>a:not([data-unread])').each(function(){
+        $('#active-rooms>a:not([data-unread]):not(.processed)').each(function(){
           delete read[$(this).attr('data-room')];
         });
-        $('#active-rooms>a[data-unread]').each(function(){
+        $('#active-rooms>a[data-unread]:not(.processed)').each(function(){
           var r = $(this).attr('data-room'), l = $(this).data('latest');
           if(r==='<?=$room?>') read['<?=$room?>'] = _.union(read['<?=$room?>']||[],$('#messages>.message').map(function(){ var id = +this.id.substring(1); return (id>l)?id:null; }).get());
           if(read[r]){
