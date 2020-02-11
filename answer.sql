@@ -76,7 +76,11 @@ create function vote(votes integer) returns integer language sql security define
   --
   with i as (insert into answer_vote(answer_id,account_id,answer_vote_votes) values(get_answer_id(),get_account_id(),votes) returning *)
      , r as (select answer_id,community_id,a.account_id,answer_vote_votes from i join answer a using(answer_id) natural join (select question_id,community_id from question) q )
-     , c as (update communicant set communicant_votes = communicant_votes+answer_vote_votes from r where communicant.account_id=r.account_id and communicant.community_id=r.community_id)
+     , c as (update communicant set communicant_votes = communicant_votes+answer_vote_votes from r where communicant.account_id=r.account_id and communicant.community_id=r.community_id returning r.account_id,r.community_id,communicant_votes)
+     , n as (insert into system_notification(account_id,system_notification_message,system_notification_community_id)
+             select account_id,'Congratulations! You have reached the '||pow(10,community_my_power-1)||' star threshold, and can now award '||community_my_power||' stars on '||community_display_name||'.',community_id
+             from c natural join api._community natural join community
+             where trunc(log(greatest(communicant_votes,1)))>trunc(log(greatest(communicant_votes-votes,1))) and account_id=1)
   update answer set answer_votes = answer_votes+answer_vote_votes from i where answer.answer_id=get_answer_id() returning answer_votes;
 $$;
 --
