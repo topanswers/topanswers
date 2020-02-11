@@ -179,7 +179,7 @@ create function vote(votes integer) returns integer language sql security define
      , n as (insert into system_notification(account_id,system_notification_message,system_notification_community_id)
              select account_id,'Congratulations! You have reached the '||pow(10,community_my_power-1)||' star threshold, and can now award '||community_my_power||' stars on '||community_display_name||'.',community_id
              from c natural join api._community natural join community
-             where trunc(log(greatest(communicant_votes,1)))>trunc(log(greatest(communicant_votes-votes,1))) and account_id=1)
+             where trunc(log(greatest(communicant_votes,1)))>trunc(log(greatest(communicant_votes-votes,1))))
   update question set question_votes = question_votes+question_vote_votes from i where question.question_id=get_question_id() returning question_votes;
 $$;
 --
