@@ -419,6 +419,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         read = localStorage.getItem('read')?JSON.parse(localStorage.getItem('read')):{};
         $('#active-rooms>a:not([data-unread]):not(.processed)').each(function(){
           delete read[$(this).attr('data-room')];
+          $(this).addClass('processed');
         });
         $('#active-rooms>a[data-unread]:not(.processed)').each(function(){
           var r = $(this).attr('data-room'), l = $(this).data('latest');
