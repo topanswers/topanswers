@@ -19,11 +19,6 @@ select account_id,account_license_id,account_codelicense_id,account_permit_later
       ,kind_allows_question_multivotes
      , question_account_id is not distinct from account_id question_account_is_me
      , coalesce(account_is_dev,false) account_is_dev
-     , encode(community_dark_shade,'hex') colour_dark
-     , encode(community_mid_shade,'hex') colour_mid
-     , encode(community_light_shade,'hex') colour_light
-     , encode(community_highlight_color,'hex') colour_highlight
-     , encode(community_warning_color,'hex') colour_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
 from db.community

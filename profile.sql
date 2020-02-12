@@ -24,11 +24,6 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
      , account_image is not null account_has_image
       ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-     , encode(community_dark_shade,'hex') colour_dark
-     , encode(community_mid_shade,'hex') colour_mid
-     , encode(community_light_shade,'hex') colour_light
-     , encode(community_highlight_color,'hex') colour_highlight
-     , encode(community_warning_color,'hex') colour_warning
       ,sesite_url
      , (select font_id from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_id
      , (select font_id from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_id

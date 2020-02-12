@@ -83,11 +83,6 @@ select account_id
      , exists(select 1 from db.chat c where c.room_id=r.room_id) room_has_chat
      , coalesce(communicant_is_post_flag_crew,false) communicant_is_post_flag_crew
      , coalesce(communicant_can_import,false) communicant_can_import
-     , encode(community_dark_shade,'hex') colour_dark
-     , encode(community_mid_shade,'hex') colour_mid
-     , encode(community_light_shade,'hex') colour_light
-     , encode(community_highlight_color,'hex') colour_highlight
-     , encode(community_warning_color,'hex') colour_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , a.account_id is not null and (room_type='public' or x.account_id is not null) room_can_chat

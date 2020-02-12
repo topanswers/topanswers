@@ -9,7 +9,7 @@ create view chat_star with (security_barrier) as select chat_id,chat_star_at fro
 create view chat_notification with (security_barrier) as select chat_id,chat_notification_at from db.chat_notification where account_id=get_account_id();
 --
 create view chat with (security_barrier) as
-select room_id,community_id,chat_id,account_id,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_markdown,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning,community_mid_shade,community_dark_shade,community_warning_color,question_id
+select room_id,community_id,chat_id,account_id,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_markdown,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning,question_id
      , chat_reply_account_id=get_account_id() chat_reply_account_is_me
      , coalesce(question_title,room_name) chat_room_name 
      , question_id is not null chat_is_question_room
@@ -27,11 +27,11 @@ from db.question_notification natural join (select question_history_id,question_
 where account_id=get_account_id();
 --
 create view question with (security_barrier) as
-select question_id,question_title,question_room_id,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning,community_mid_shade,community_dark_shade,community_warning_color
+select question_id,question_title,question_room_id,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning
 from (select distinct question_id from question_notification) n natural join db.question natural join api._community natural join db.community;
 --
 create view question_flag_notification with (security_barrier) as
-select question_flag_history_id,question_flag_notification_at,question_id,question_title,account_id,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning,community_mid_shade,community_dark_shade,community_warning_color
+select question_flag_history_id,question_flag_notification_at,question_id,question_title,account_id,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning
 from (select question_flag_history_id,question_flag_notification_at from db.question_flag_notification where account_id=get_account_id()) f
      natural join db.question_flag_history
      natural left join (select community_id,question_id,question_title from db.question) q
@@ -45,7 +45,7 @@ from db.answer_notification natural join (select answer_history_id,answer_id,ans
 where account_id=get_account_id();
 --
 create view answer with (security_barrier) as
-select answer_id,question_id,question_title,question_room_id,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning,community_mid_shade,community_dark_shade,community_warning_color
+select answer_id,question_id,question_title,question_room_id,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning
 from (select distinct answer_id from answer_notification) n
      natural join db.answer
      natural join (select community_id,question_id,question_title,question_room_id from db.question) q
@@ -53,7 +53,7 @@ from (select distinct answer_id from answer_notification) n
      natural join db.community;
 --
 create view answer_flag_notification with (security_barrier) as
-select answer_id,answer_flag_history_id,answer_flag_notification_at,question_id,question_title,account_id,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning,community_mid_shade,community_dark_shade,community_warning_color
+select answer_id,answer_flag_history_id,answer_flag_notification_at,question_id,question_title,account_id,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning
 from (select answer_flag_history_id,answer_flag_notification_at from db.answer_flag_notification where account_id=get_account_id()) f
      natural join db.answer_flag_history
      natural join (select answer_id,question_id from db.answer) a
@@ -63,9 +63,6 @@ from (select answer_flag_history_id,answer_flag_notification_at from db.answer_f
 --
 create view system_notification with (security_barrier) as
 select system_notification_id,system_notification_at,system_notification_message,community_name
-     , coalesce(community_mid_shade,'\xf8f8f8') community_mid_shade
-     , coalesce(community_dark_shade,'\x000000') community_dark_shade
-     , coalesce(community_warning_color,'\x990000') community_warning_color
      , '248,248,248' community_rgb_mid
      , '0,0,0' community_rgb_dark
      , '153,0,0' community_rgb_warning

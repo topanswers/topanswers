@@ -34,11 +34,6 @@ create view one with (security_barrier) as
 select account_id,community_id,community_name,community_code_language,community_my_power
      , coalesce(account_is_dev,false) account_is_dev
      , coalesce(communicant_is_post_flag_crew,false) communicant_is_post_flag_crew
-     , encode(community_dark_shade,'hex') colour_dark
-     , encode(community_mid_shade,'hex') colour_mid
-     , encode(community_light_shade,'hex') colour_light
-     , encode(community_highlight_color,'hex') colour_highlight
-     , encode(community_warning_color,'hex') colour_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , (select count(*) from question) num_questions
