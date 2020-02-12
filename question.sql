@@ -105,26 +105,24 @@ create function remove_tag(tid integer) returns void language sql security defin
   update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
 $$;
 --
-create function _new_question(cid integer, aid integer, knd integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean)
-                returns integer language sql security definer set search_path=db,api,pg_temp as $$
+create function new(knd integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
-  select _error('invalid community') where not exists (select 1 from community where community_id=cid);
+  select _error('invalid community') where not exists (select 1 from community where community_id=get_community_id());
   select _error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
   select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
-  select _ensure_communicant(aid,cid);
-  --
-  with r as (insert into room(community_id) values(cid) returning room_id)
-     , q as (insert into question(community_id,account_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense)
-             select cid,aid,knd,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater from r returning question_id)
-     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
-             select question_id,aid,title,markdown from q)
-     , s as (insert into subscription(account_id,question_id) select aid,question_id from q)
-  select question_id from q;
-$$;
---
-create function new(knd integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,question,pg_temp as $$
   select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
-  select _new_question(get_community_id(),get_account_id(),knd,title,markdown,lic,lic_orlater,codelic,codelic_orlater);
+  select _ensure_communicant(get_account_id(),get_community_id());
+  select _ensure_communicant(account_id,get_community_id()) from kind where kind_id=knd and kind_account_id is not null;
+  --
+  with r as (insert into room(community_id) values(get_community_id()) returning room_id,community_id)
+     , q as (insert into question(community_id,account_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense)
+             select community_id,coalesce(kind_account_id,get_account_id()),knd,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
+             from r cross join (select kind_id,kind_account_id from kind where kind_id=knd) k
+             returning question_id)
+     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select question_id,get_account_id(),title,markdown from q)
+     , s as (insert into subscription(account_id,question_id) select get_account_id(),question_id from q)
+  select question_id from q;
 $$;
 --
 create function change(title text, markdown text) returns void language sql security definer set search_path=db,api,pg_temp as $$
