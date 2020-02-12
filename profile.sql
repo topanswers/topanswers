@@ -23,6 +23,7 @@ create view one with (security_barrier) as
 select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense
      , account_image is not null account_has_image
       ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
+      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , encode(community_dark_shade,'hex') colour_dark
      , encode(community_mid_shade,'hex') colour_mid
      , encode(community_light_shade,'hex') colour_light
@@ -37,7 +38,7 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
       ,one_stackapps_secret
 from (select account_id,account_name,account_image,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) a
      cross join db.one
-     natural left join (select * from db.community left join db.sesite on community_sesite_id=sesite_id where community_id=get_community_id()) c
+     natural left join (select * from api._community natural join db.community left join db.sesite on community_sesite_id=sesite_id where community_id=get_community_id()) c
      natural left join db.communicant;
 --
 --

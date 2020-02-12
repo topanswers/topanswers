@@ -6,7 +6,7 @@ if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
 $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 extract(cdb("select account_id,community_name,room_id,room_derived_name,room_can_chat,room_question_id,community_code_language,my_community_regular_font_name,my_community_monospace_font_name
-                   ,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
              from one"));
 $max = 500;
 $search = $_GET['search']??'';
@@ -51,13 +51,11 @@ if(isset($_GET['month'])){
 }
 ?>
 <!doctype html>
-<html style="--colour-dark: #<?=$colour_dark?>;
-             --colour-mid: #<?=$colour_mid?>;
-             --colour-light: #<?=$colour_light?>;
-             --colour-highlight: #<?=$colour_highlight?>;
-             --colour-warning: #<?=$colour_warning?>;
-             --colour-dark-99: #<?=$colour_dark?>99;
-             --colour-highlight-40: #<?=$colour_highlight?>40;
+<html style="--rgb-dark: <?=$community_rgb_dark?>;
+             --rgb-mid: <?=$community_rgb_mid?>;
+             --rgb-light: <?=$community_rgb_light?>;
+             --rgb-highlight: <?=$community_rgb_highlight?>;
+             --rgb-warning: <?=$community_rgb_warning?>;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
@@ -78,27 +76,27 @@ if(isset($_GET['month'])){
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    mark[data-markjs] { background-color: #<?=$colour_highlight?>80; }
-    a:not([href]) { color: #<?=$colour_highlight?>; }
+    mark[data-markjs] { background-color: rgb(var(--rgb-highlight))80; }
+    a:not([href]) { color: rgb(var(--rgb-highlight)); }
     a[data-lightbox] img { cursor: zoom-in; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .period { border: 2px solid #<?=$colour_mid?>; border-right: none; flex: 0 0 auto; overflow: auto; }
+    .period { border: 2px solid rgb(var(--rgb-mid)); border-right: none; flex: 0 0 auto; overflow: auto; }
     .period>div { margin: 7px; white-space: nowrap; }
     .period>div>span { font-size: smaller; font-style: italic; }
-    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: #<?=$colour_dark?>80; }
+    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: rgba(var(--rgb-dark),0.5); }
 
-    #messages { flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 13px; overflow: auto; background-color: #<?=$colour_mid?>; scroll-behavior: smooth; }
+    #messages { flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 13px; overflow: auto; background-color: rgb(var(--rgb-mid)); scroll-behavior: smooth; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
-    .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid #<?=$colour_dark?>99; border-radius: 3px; background: white; overflow: auto; }
+    .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid rgb(var(--rgb-dark))99; border-radius: 3px; background: white; overflow: auto; }
 
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
-    .message .button-group .fa { color: #<?=$colour_dark?>; cursor: pointer; text-decoration: none; }
-    .message .button-group .fa.me { color: #<?=$colour_highlight?>; }
+    .message .button-group .fa { color: rgb(var(--rgb-dark)); cursor: pointer; text-decoration: none; }
+    .message .button-group .fa.me { color: rgb(var(--rgb-highlight)); }
     .message:hover .button-group:first-child { display: none; }
     .message .button-group:not(.show) { display: none; }
     .message:not(:hover) .button-group:not(:first-child) { display: none; }
@@ -108,8 +106,8 @@ if(isset($_GET['month'])){
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .icon { visibility: hidden; }
-    .message.thread .markdown { background: #<?=$colour_highlight?>40; }
-    .message:target .markdown { box-shadow: 0 0 2px 2px #<?=$colour_highlight?> inset; }
+    .message.thread .markdown { background: rgb(var(--rgb-highlight))40; }
+    .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
   </style>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
@@ -155,7 +153,7 @@ if(isset($_GET['month'])){
       <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
     </div>
   </header>
-  <main style="display: flex; flex: 1 1 auto; background-color: #<?=$colour_light?>; overflow: hidden;">
+  <main style="display: flex; flex: 1 1 auto; background-color: rgb(var(--rgb-light)); overflow: hidden;">
     <?if($search){?>
       <div id="messages">
         <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.55',false)");?>
@@ -164,10 +162,10 @@ if(isset($_GET['month'])){
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
                       from search($1)",$search) as $r){ extract($r);?>
           <small class="who">
-            <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
+            <span style="color: rgb(var(--rgb-dark));"><?=$chat_at_text?>&nbsp;</span>
             <?=$account_is_me?'<em>Me</em>':$account_name?>
             <?if($chat_reply_id){?>
-              <a href="#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
+              <a href="#c<?=$chat_reply_id?>" style="color: rgb(var(--rgb-dark)); text-decoration: none;">&nbsp;replying to&nbsp;</a>
               <?=$reply_account_is_me?'<em>Me</em>':$reply_account_name?>
             <?}?>
           </small>
@@ -253,13 +251,13 @@ if(isset($_GET['month'])){
           <?if(!$chat_account_is_repeat){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
           <div id="c<?=$chat_id?>" class="message<?=$chat_account_is_repeat?' merged':''?>" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
             <small class="who">
-              <span style="color: #<?=$colour_dark?>;"><?=$chat_at_text?>&nbsp;</span>
+              <span style="color: rgb(var(--rgb-dark));"><?=$chat_at_text?>&nbsp;</span>
               <?=$account_is_me?'<em>Me</em>':$account_name?>
               <?if($chat_reply_id){?>
                 <?if($reply_is_different_segment){?>
-                  <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_reply_id?>#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
+                  <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_reply_id?>#c<?=$chat_reply_id?>" style="color: rgb(var(--rgb-dark)); text-decoration: none;">&nbsp;replying to&nbsp;</a>
                 <?}else{?>
-                  <a href="#c<?=$chat_reply_id?>" style="color: #<?=$colour_dark?>; text-decoration: none;">&nbsp;replying to&nbsp;</a>
+                  <a href="#c<?=$chat_reply_id?>" style="color: rgb(var(--rgb-dark)); text-decoration: none;">&nbsp;replying to&nbsp;</a>
                 <?}?>
                 <?=$reply_account_is_me?'<em>Me</em>':$reply_account_name?>
               <?}?>

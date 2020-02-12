@@ -11,7 +11,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <div id="s<?=$chat_id?>" class="message" data-id="<?=$chat_id?>" data-name="<?=$account_name?>" data-reply-id="<?=$chat_reply_id?>">
     <span class="who" title="<?=($chat_account_is_me?'Me':$account_name)?><?=$chat_reply_id?' replying to '.($chat_reply_account_is_me?'Me':$chat_reply_account_name):''?>">
       <?=($chat_account_is_me?'<em>Me</em>':$account_name)?>
-      <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: var(--colour-dark); text-decoration: none;">&nbsp;replying to&nbsp;</a> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
+      <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'" style="color: rgb(var(--rgb-dark)); text-decoration: none;">&nbsp;replying to&nbsp;</a> '.($chat_reply_account_is_me?'<em>Me</em>':$chat_reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
     <img title="<?=($account_name)?$account_name:'Anonymous'?>" class="icon" src="/identicon?id=<?=$account_id?>">

@@ -12,7 +12,7 @@ if(isset($_GET['uuid'])){
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'meta') || fail(403,'access denied');
 extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
                    ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
-                   ,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name,sesite_url,communicant_se_user_id,one_stackapps_secret
              from one"));
 
@@ -55,34 +55,43 @@ $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html>
+<html style="--rgb-dark: <?=$community_rgb_dark?>;
+             --rgb-mid: <?=$community_rgb_mid?>;
+             --rgb-light: <?=$community_rgb_light?>;
+             --rgb-highlight: <?=$community_rgb_highlight?>;
+             --rgb-warning: <?=$community_rgb_warning?>;
+             --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
+             --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
+             --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
+             ">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/datatables/datatables.min.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/global.css">
+  <link rel="stylesheet" href="/header.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
-    body { display: flex; flex-direction: column; background: #<?=$colour_dark?>; }
+    body { display: flex; flex-direction: column; background: rgb(var(--rgb-dark)); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     header, header>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
-    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: #<?=$colour_dark?>; white-space: nowrap; border-bottom: 2px solid black; }
-    header a { color: #<?=$colour_light?>; }
+    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: rgb(var(--rgb-dark)); white-space: nowrap; border-bottom: 2px solid black; }
+    header a { color: rgb(var(--rgb-light)); }
     main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
     main>fieldset { display: flex; flex-direction: column; align-items: flex-start; }
 
-    .frame { display: inline-block; border: 1px solid #<?=$colour_dark?>; margin: 2px; outline: 1px solid #<?=$colour_light?>; background-color: #<?=$colour_light?>; }
+    .frame { display: inline-block; border: 1px solid rgb(var(--rgb-dark)); margin: 2px; outline: 1px solid rgb(var(--rgb-light)); background-color: rgb(var(--rgb-light)); }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
     .element { margin: 0 4px; }
 
     fieldset { display: inline-block; margin: 16px; border-radius: 3px; }
     :not(main)>fieldset { background-color: white; border: none; }
-    legend { background-color: white; box-shadow: 0 0 1px 1px #<?=$colour_dark?>; border-radius: 3px; padding: 2px 4px; }
+    legend { background-color: white; box-shadow: 0 0 1px 1px rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
     input[type="file"] { color: transparent; }
     input[type="submit"] { margin-left: 16px; }
-    <?if(isset($_GET['highlight-recovery'])){?>.highlight { background-color: yellow; }<?}?>
 
     table { border-collapse: collapse; }
     td,th { border: 1px solid black; white-space: nowrap; }
@@ -169,7 +178,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <fieldset>
         <legend>account recovery</legend>
         <ul>
-          <li>Your 'login key' should be kept confidential, just like a password.<span class="highlight"> To ensure continued access to your account, record your 'key' somewhere safe.</span></li>
+          <li>Your 'login key' should be kept confidential, just like a password.<span<?=isset($_GET['highlight-recovery'])?' class="highlight"':''?>> To ensure continued access to your account, please record your 'key' somewhere safe.</span></li>
           <li>It can be used in the same way as a PIN, but does not expire</li>
           <li><input id="uuid" type="button" value="show key"></li>
           <li>If you suspect your 'key' has been discovered, you should regenerate it</li>

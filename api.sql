@@ -66,7 +66,13 @@ from db.account;
 create view _community with (security_barrier) as
 select community_id
      , 1+trunc(log(greatest(communicant_votes,1))) community_my_power
-from (select community_id from db.community natural left join (select community_id,account_id from db.member where account_id=get_account_id()) m where community_type='public' or account_id is not null) c
+     , get_byte(community_dark_shade,0)||','||get_byte(community_dark_shade,1)||','||get_byte(community_dark_shade,2) community_rgb_dark
+     , get_byte(community_mid_shade,0)||','||get_byte(community_mid_shade,1)||','||get_byte(community_mid_shade,2) community_rgb_mid
+     , get_byte(community_light_shade,0)||','||get_byte(community_light_shade,1)||','||get_byte(community_light_shade,2) community_rgb_light
+     , get_byte(community_highlight_color,0)||','||get_byte(community_highlight_color,1)||','||get_byte(community_highlight_color,2) community_rgb_highlight
+     , get_byte(community_warning_color,0)||','||get_byte(community_warning_color,1)||','||get_byte(community_warning_color,2) community_rgb_warning
+from (select community_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color
+      from db.community natural left join (select community_id,account_id from db.member where account_id=get_account_id()) m where community_type='public' or account_id is not null) c
      natural left join (select community_id,communicant_votes from db.communicant where account_id=get_account_id()) a;
 --
 create view _room with (security_barrier) as

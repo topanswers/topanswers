@@ -5,7 +5,7 @@ set local search_path to room,api,pg_temp;
 --
 create view one with (security_barrier) as
 select account_id,account_is_dev
-      ,community_id,community_name
+      ,community_id,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , encode(community_dark_shade,'hex') colour_dark
      , encode(community_mid_shade,'hex') colour_mid
      , encode(community_light_shade,'hex') colour_light
@@ -15,7 +15,7 @@ select account_id,account_is_dev
       ,room_id,room_name
      , room_image is not null room_has_image
      , (select question_id from db.question where question_room_id=room_id) question_id
-from db.room natural join db.community
+from db.room natural join api._community natural join db.community
      natural join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
 where room_id=get_room_id();

@@ -19,6 +19,7 @@ from (select account_id,account_license_id,account_codelicense_id,account_permit
      cross join (select community_id,question_id,question_title,question_markdown,kind_allows_answer_multivotes from db.question natural join db.kind where question_id=get_question_id()) q
      natural join (select community_id,community_name,community_code_language,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color
                          ,community_regular_font_id,community_monospace_font_id,community_my_power,community_tables_are_monospace
+                         ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    from db.community natural join api._community) c
      natural left join (select account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id,communicant_votes from db.communicant) co
      natural left join (select question_id,answer_id,answer_markdown

@@ -16,6 +16,7 @@ select chat_id
       ,room_id,room_name
       ,account_id
       ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace
+      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , encode(community_dark_shade,'hex') colour_dark
      , encode(community_mid_shade,'hex') colour_mid
      , encode(community_light_shade,'hex') colour_light
@@ -26,6 +27,7 @@ select chat_id
 from (select chat_id,community_id,room_id from db.chat where chat_id=get_chat_id()) a
      natural join db.room
      natural join db.community
+     natural join api._community
      natural join (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) ac
      natural left join db.communicant;
 --

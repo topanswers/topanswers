@@ -11,7 +11,7 @@ if(isset($_GET['id'])){
   $auth||(($_GET['community']==='databases')&&isset($_GET['rdbms'])&&isset($_GET['fiddle'])) || fail(403,'need to be logged in to visit this page unless from a fiddle');
 }
 extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
-                   ,community_id,community_name,community_display_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,community_id,community_name,community_display_name,community_code_language,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
                   , question_license_name||(case when question_has_codelicense then ' + '||question_codelicense_name else '' end) license
@@ -23,13 +23,11 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="--colour-dark: #<?=$colour_dark?>;
-             --colour-mid: #<?=$colour_mid?>;
-             --colour-light: #<?=$colour_light?>;
-             --colour-highlight: #<?=$colour_highlight?>;
-             --colour-warning: #<?=$colour_warning?>;
-             --colour-dark-99: #<?=$colour_dark?>99;
-             --colour-highlight-40: #<?=$colour_highlight?>40;
+<html style="--rgb-dark: <?=$community_rgb_dark?>;
+             --rgb-mid: <?=$community_rgb_mid?>;
+             --rgb-light: <?=$community_rgb_light?>;
+             --rgb-highlight: <?=$community_rgb_highlight?>;
+             --rgb-warning: <?=$community_rgb_warning?>;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
@@ -48,7 +46,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <style>
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    body { display: flex; flex-direction: column; background-color: #<?=$colour_light?>; }
+    body { display: flex; flex-direction: column; background-color: rgb(var(--rgb-light)); }
     #form { display: flex; justify-content: center; flex: 1 0 0; padding: 16px; overflow-y: hidden; }
     main { display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
@@ -56,12 +54,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
 
-    #markdown-editor-buttons { display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
+    #markdown-editor-buttons { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
     #markdown-editor-buttons i { padding: 4px; font-size: 15px; text-align: center; }
-    #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 4px; }
+    #markdown-editor-buttons i:hover { color: rgb(var(--rgb-highlight)); cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 4px; }
     #markdown-editor-buttons i:last-child { margin-bottom: 0; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 15px; border-radius: 0 3px 3px 3px; }
+    .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 15px; border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -182,7 +180,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         if($(this).children('option:selected').data('versioned')===true){
           $(this).next().css('color','unset').find('input').prop('disabled',false);
         }else{
-          $(this).next().css('color','var(--colour-mid)').find('input').prop('checked',false).prop('disabled',true);
+          $(this).next().css('color','rgb(var(--rgb-mid))').find('input').prop('checked',false).prop('disabled',true);
         }
       }).trigger('change');
       render();
@@ -248,7 +246,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <input type="hidden" name="community" value="<?=$community_name?>">
     <?}?>
     <main>
-      <input name="title" style="flex 0 0 auto; border: 1px solid #<?=$colour_dark?>; padding: 3px; border-radius: 2px;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
+      <input name="title" style="flex 0 0 auto; border: 1px solid rgb(var(--rgb-dark)); padding: 3px; border-radius: 2px;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
       <div style="flex: 0 0 2vmin;"></div>
       <div style="display: flex; flex: 1 0 0; overflow: hidden;">
         <div style="flex: 0 0 1.6em;">
@@ -272,7 +270,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
         </div>
         <div style="flex: 0 0 2vmin;"></div>
-        <div id="markdown" class="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; overflow-y: auto;"></div>
+        <div id="markdown" class="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto;"></div>
       </div>
     </main>
   </form>

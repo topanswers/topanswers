@@ -9,17 +9,15 @@ extract(cdb("select account_id
                    ,room_id,room_name
                    ,community_name,community_display_name,community_code_language,community_tables_are_monospace
                    ,my_community_regular_font_name,my_community_monospace_font_name
-                   ,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
              from one"));
 ?>
 <!doctype html>
-<html style="--colour-dark: #<?=$colour_dark?>;
-             --colour-mid: #<?=$colour_mid?>;
-             --colour-light: #<?=$colour_light?>;
-             --colour-highlight: #<?=$colour_highlight?>;
-             --colour-warning: #<?=$colour_warning?>;
-             --colour-dark-99: #<?=$colour_dark?>99;
-             --colour-highlight-40: #<?=$colour_highlight?>40;
+<html style="--rgb-dark: <?=$community_rgb_dark?>;
+             --rgb-mid: <?=$community_rgb_mid?>;
+             --rgb-light: <?=$community_rgb_light?>;
+             --rgb-highlight: <?=$community_rgb_highlight?>;
+             --rgb-warning: <?=$community_rgb_warning?>;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
@@ -43,16 +41,16 @@ extract(cdb("select account_id
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    .markdown { background: white; padding: 0.25rem; font-size: 16px; border: 1px solid var(--colour-dark); border-radius: 3px; }
-    .diff { background: var(--colour-mid); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 0.25rem; border: 1px solid var(--colour-dark); border-radius: 3px; }
-    .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px var(--colour-highlight); }
-    .separator { border-bottom: 4px solid var(--colour-dark); margin: 1rem -1rem; }
+    .markdown { background: white; padding: 0.25rem; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; }
+    .diff { background: rgb(var(--rgb-mid)); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 0.25rem; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; }
+    .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px rgb(var(--rgb-highlight)); }
+    .separator { border-bottom: 4px solid rgb(var(--rgb-dark)); margin: 1rem -1rem; }
     .separator:last-child { display: none; }
 
     .who, .when { white-space: nowrap; }
-    .when { font-size: smaller; color: var(--colour-dark); }
+    .when { font-size: smaller; color: rgb(var(--rgb-dark)); }
 
-    .CodeMirror { height: 100%; border: 1px solid var(--colour-dark); font-size: 1.1rem; border-radius: 3px; }
+    .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 1.1rem; border-radius: 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -81,7 +79,7 @@ extract(cdb("select account_id
   </script>
   <title>Chat Message History - TopAnswers</title>
 </head>
-<body style="font-size: larger; background-color: var(--colour-light);">
+<body style="font-size: larger; background-color: rgb(var(--rgb-light));">
   <header>
     <div>
       <a href="/<?=$community?>">TopAnswers <?=ucfirst($community)?></a>

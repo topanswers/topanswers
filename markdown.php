@@ -4,7 +4,7 @@
   <link rel="stylesheet" href="/lib/katex/katex.min.css">
 <?}?>
 <style>
-  .summary code { padding: 0 0.2em; background-color: var(--colour-light); border: 1px solid var(--colour-mid); border-radius: 1px; overflow-wrap: break-word; }
+  .summary code { padding: 0 0.2em; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 1px; overflow-wrap: break-word; }
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>pre { white-space: pre; }
   .markdown>:first-child { margin-top: 0; }
@@ -12,17 +12,17 @@
   .markdown ul { padding-left: 2em; }
   .markdown li { margin: 0.2rem 0; }
   .markdown img { max-width: 100%; max-height: 30rem; margin: 1px; }
-  .markdown hr { background-color: var(--colour-mid); border: 0; height: 2px; }
+  .markdown hr { background-color: rgb(var(--rgb-mid)); border: 0; height: 2px; }
   .markdown table { border-collapse: collapse; table-layout: fixed; }
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-  .markdown th { background-color: var(--colour-mid); }
+  .markdown th { background-color: rgb(var(--rgb-mid)); }
   .markdown td { background-color: white; }
   .markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
-  .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid var(--colour-dark-99); background-color: var(--colour-light); }
+  .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid rgba(var(--rgb-dark),0.6); background-color: rgb(var(--rgb-light)); }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
-  .markdown code { padding: 0 0.2em; background-color: var(--colour-light); border: 1px solid var(--colour-mid); border-radius: 1px; overflow-wrap: break-word; }
-  .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; }
+  .markdown code { padding: 0 0.2em; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 1px; overflow-wrap: break-word; }
+  .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; overflow-wrap: unset; }
   .markdown nav ol { counter-reset: list-item; }
   .markdown nav li { display: block; counter-increment: list-item; }
   .markdown nav li:before { content: counters(list-item,'.') ' '; }
@@ -35,22 +35,27 @@
   .markdown .footnote-ref>a { text-decoration: none; }
   .markdown .quoted-message { border-radius: 2px; padding: 5px; display: grid; grid-template-columns: 22px auto 11px auto; grid-template-rows: auto auto; overflow: auto; }
   .markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 4; grid-row: 1 / span 1; }
-  .markdown .quoted-message > p > a { color: var(--colour-dark); text-decoration: none; }
-  .markdown .quoted-message > p em { color: var(--colour-dark); font-style: normal; white-space: nowrap; }
+  .markdown .quoted-message > p > a { color: rgb(var(--rgb-dark)); text-decoration: none; }
+  .markdown .quoted-message > p em { color: rgb(var(--rgb-dark)); font-style: normal; white-space: nowrap; }
   .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 2 / span 1; margin: 2px 0 0 1px; }
   .markdown .quoted-message > img { grid-row: 2 / span 1; }
-  .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 4px; border: 1px solid var(--colour-dark-99); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
-  .markdown .post { border: 3px solid var(--colour-dark); margin: 0; }
+  .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
+  .markdown .post { border: 3px solid rgb(var(--rgb-dark)); margin: 0; }
   .markdown .post .tag:hover i { visibility: hidden; }
-  .dbfiddle { padding: 0.5rem; background-color: var(--colour-light); border-radius: 3px; }
-  .dbfiddle .CodeMirror { height: auto; border: 1px solid var(--colour-dark); font-family: var(--monospace-font-family); border-radius: 3px; }
+  .markdown .expandable { overflow: hidden; position: relative; }
+  .markdown .expandable>code { overflow: hidden; }
+  .markdown .expander { position: absolute; z-index: 1; height: 50px; top: 250px; padding-top: 34px; left: 0; right: 0; font-family: var(--regular-font-family); font-size: 12px; text-align: center; color: rgb(var(--rgb-dark));
+                        background: linear-gradient(to bottom, rgba(var(--rgb-light),0) 0%, rgb(var(--rgb-light)) 40%, rgb(var(--rgb-light)) 25%); }
+  .markdown .expander:hover { text-decoration: underline; cursor: pointer; }
+  .dbfiddle { padding: 0.5rem; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
+  .dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 0.5rem; }
   .dbfiddle>div { margin-top: 0.5rem; }
   .dbfiddle .batch { overflow: hidden; min-width: 0; }
-  .dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--monospace-font-family); background-color: var(--colour-highlight-40); }
+  .dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--monospace-font-family); background-color: rgba(var(--rgb-highlight),0.25); }
   .dbfiddle a { font-size: smaller; }
-  .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid var(--colour-dark); border-radius: 3px; margin-top: 5px; padding: 2px }
+  .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; margin-top: 5px; padding: 2px }
   .dbfiddle .qp-statement-header { display: none; }
   .qp-tt { z-index: 999; box-shadow: 0 0 2px 2px white; }
   .katex-block { overflow: auto; }
@@ -137,7 +142,7 @@
                  render: function (tokens, idx) {
                    var m = tokens[idx].info.trim().match(/^quote ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$/);
                    if (tokens[idx].nesting === 1) {
-                     return '<div class="quoted-message" style="--colour-dark: #'+m[5]+'; --colour-dark-99: #'+m[5]+'99; background: #'+m[4]+';">\n<img class="icon" src="/identicon?id='+m[3]+'">\n<a class="fa fa-fw fa-link" style="color: #'+m[5]+';" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
+                     return '<div class="quoted-message" style="--rgb-dark: #'+m[5]+'; background: #'+m[4]+';">\n<img class="icon" src="/identicon?id='+m[3]+'">\n<a class="fa fa-fw fa-link" style="color: #'+m[5]+';" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
                    } else {
                      return '</div>\n';
                    }
@@ -199,6 +204,13 @@
         t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         t.find('.object-answer').each(function(){ var t = $(this); $.get('/duplicate?community=<?=$community_name?>&id='+t.attr('data-id')).done(function(r){ t.html(r); typeof callback==='function' && callback(); }); });
+        t.children('pre').each(function(){
+          var t = $(this), h = t.height();
+          if(h>450){
+            t.innerHeight(300).addClass('expandable');
+            $('<div class="expander">show '+Math.round((h-300)/14.4)+' more lines</div>').prependTo(t).click(function(){ t.animate({ height: h }, function(){ t.height(''); }).removeClass('expandable'); $(this).remove(); });
+          }
+        });
         if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
       });
       typeof callback==='function' && callback();

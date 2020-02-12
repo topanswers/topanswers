@@ -11,19 +11,17 @@ if(isset($_GET['id'])){
 extract(cdb("select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
                    ,answer_id,answer_markdown,answer_license
                    ,question_id,question_title,question_markdown
-                   ,community_name,community_code_language,colour_dark,colour_mid,colour_light,colour_highlight,colour_warning
+                   ,community_name,community_code_language,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="--colour-dark: #<?=$colour_dark?>;
-             --colour-mid: #<?=$colour_mid?>;
-             --colour-light: #<?=$colour_light?>;
-             --colour-highlight: #<?=$colour_highlight?>;
-             --colour-warning: #<?=$colour_warning?>;
-             --colour-dark-99: #<?=$colour_dark?>99;
-             --colour-highlight-40: #<?=$colour_highlight?>40;
+<html style="--rgb-dark: <?=$community_rgb_dark?>;
+             --rgb-mid: <?=$community_rgb_mid?>;
+             --rgb-light: <?=$community_rgb_light?>;
+             --rgb-highlight: <?=$community_rgb_highlight?>;
+             --rgb-warning: <?=$community_rgb_warning?>;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
@@ -47,12 +45,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
     .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
 
-    #markdown-editor-buttons { display: flex; flex-direction: column; background: #<?=$colour_mid?>; border: 1px solid #<?=$colour_dark?>; border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
+    #markdown-editor-buttons { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
     #markdown-editor-buttons i { padding: 4px; font-size: 15px; text-align: center; }
-    #markdown-editor-buttons i:hover { color: #<?=$colour_highlight?>; cursor: pointer; background-color: #<?=$colour_light?>; border-radius: 4px; }
+    #markdown-editor-buttons i:hover { color: rgb(var(--rgb_highlight)); cursor: pointer; background-color: rgb(var(--rgb_light)); border-radius: 4px; }
     #markdown-editor-buttons i:last-child { margin-bottom: 0; }
 
-    .CodeMirror { height: 100%; border: 1px solid #<?=$colour_dark?>; font-size: 15px; border-radius: 0 3px 3px 3px; }
+    .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 15px; border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
@@ -163,7 +161,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         if($(this).children('option:selected').data('versioned')===true){
           $(this).next().css('color','unset').find('input').prop('disabled',false);
         }else{
-          $(this).next().css('color','var(--colour-mid)').find('input').prop('checked',false).prop('disabled',true);
+          $(this).next().css('color','rgb(var(--rgb-mid))').find('input').prop('checked',false).prop('disabled',true);
         }
       }).trigger('change');
       render();
@@ -172,7 +170,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </script>
   <title><?=$answer_id?'Edit Answer':'Answer Question'?> - TopAnswers</title>
 </head>
-<body style="display: flex; flex-direction: column; font-size: larger; background-color: #<?=$colour_light?>; height: 100%;">
+<body style="display: flex; flex-direction: column; font-size: larger; background-color: rgb(var(--rgb-light)); height: 100%;">
   <header>
     <div>
       <a href="/<?=$community_name?>">TopAnswers <?=ucfirst($community_name)?></a>
@@ -211,8 +209,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <?}?>
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden;">
-        <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; overflow: hidden;">
-          <div style="flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid #<?=$colour_dark?>;"><?=$question_title?></div>
+        <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow: hidden;">
+          <div style="flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark));"><?=$question_title?></div>
           <div class="markdown" data-markdown="<?=$question_markdown?>" style="flex: 1 0 auto; overflow-y: auto; padding: 0.6em;"></div>
         </div>
       </div>
@@ -235,7 +233,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid #<?=$colour_dark?>; border-radius: 3px; overflow-y: auto;"></div>
+      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto;"></div>
     </main>
   </form>
   <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>

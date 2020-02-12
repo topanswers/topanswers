@@ -1,5 +1,6 @@
 *:not(hr) { box-sizing: inherit; }
-* { scrollbar-color: var(--colour-dark-99) var(--colour-mid); scrollbar-width: thin; }
+* { scrollbar-color: rgba(var(--rgb-dark),0.6) rgb(var(--rgb-mid)); scrollbar-width: thin; }
+*:not(html) { -webkit-transform: translate3d(0, 0, 0); }
 
 h1 { font-size: 28px; margin: 28px 0; }
 h2 { font-size: 25px; margin: 25px 0; }
@@ -15,5 +16,4 @@ h6 { font-size: 16px; margin: 16px 0; }
 .element:not(.shrink)  { flex: 0 0 auto; }
 .element.shrink { flex: 0 1 auto; }
 .element>.element:first-child, .element>.element:last-child { margin: 0; }
-.highlight { color: var(--colour-highlight); }
-
+.highlight { color: rgb(var(--rgb-highlight)); }
