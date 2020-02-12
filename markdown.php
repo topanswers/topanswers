@@ -206,13 +206,15 @@
         t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         t.find('.object-answer').each(function(){ var t = $(this); $.get('/duplicate?community=<?=$community_name?>&id='+t.attr('data-id')).done(function(r){ t.html(r); typeof callback==='function' && callback(); }); });
-        t.children('pre').each(function(){
-          var t = $(this), h = t.height();
-          if(h>450){
-            t.innerHeight(300).addClass('expandable');
-            $('<div class="expander">show '+Math.round((h-300)/14.4)+' more lines</div>').prependTo(t).click(function(){ t.animate({ height: h }, function(){ t.height(''); }).removeClass('expandable'); $(this).remove(); });
-          }
-        });
+        if(!t.hasClass('noexpander')){
+          t.children('pre').each(function(){
+            var t = $(this), h = t.height();
+            if(h>450){
+              t.innerHeight(300).addClass('expandable');
+              $('<div class="expander">show '+Math.round((h-300)/14.4)+' more lines</div>').prependTo(t).click(function(){ t.animate({ height: h }, function(){ t.height(''); }).removeClass('expandable'); $(this).remove(); });
+            }
+          });
+        }
         if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
       });
       typeof callback==='function' && callback();

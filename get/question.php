@@ -270,7 +270,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
         </div>
         <div style="flex: 0 0 2vmin;"></div>
-        <div id="markdown" class="markdown" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto;"></div>
+        <div id="markdown" class="markdown noexpander" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto;"></div>
       </div>
     </main>
   </form>

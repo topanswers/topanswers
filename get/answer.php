@@ -233,7 +233,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
       </div>
       <div style="flex: 0 0 2vmin;"></div>
-      <div id="answer" class="markdown" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto;"></div>
+      <div id="answer" class="markdown noexpander" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto;"></div>
     </main>
   </form>
   <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
