@@ -46,6 +46,7 @@
   .markdown .expandable { overflow: hidden; position: relative; }
   .markdown .expandable>code { overflow: hidden; }
   .markdown .expander { position: absolute; z-index: 1; height: 50px; top: 250px; padding-top: 34px; left: 0; right: 0; font-family: var(--regular-font-family); font-size: 12px; text-align: center; color: rgb(var(--rgb-dark));
+                        border: 1px solid rgb(var(--rgb-mid)); border-top: none; border-bottom-style: dashed;
                         background: linear-gradient(to bottom, rgba(var(--rgb-light),0) 0%, rgb(var(--rgb-light)) 40%, rgb(var(--rgb-light)) 25%); }
   .markdown .expander:hover { text-decoration: underline; cursor: pointer; }
   .dbfiddle { padding: 0.5rem; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
