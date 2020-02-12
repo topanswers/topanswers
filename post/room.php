@@ -4,7 +4,7 @@ include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
 db("set search_path to room,pg_temp");
 ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_POST['id']??'') || fail(403,'access denied');
-extract(cdb("select room_id,room_name,room_has_image,community_name,my_community_regular_font_name,my_community_monospace_font_name,colour_dark,colour_mid,colour_light,colour_highlight,question_id from one"));
+extract(cdb("select room_id,community_name,question_id from one"));
 if(isset($_POST['action'])){
   switch($_POST['action']) {
     case 'switch':
