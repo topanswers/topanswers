@@ -43,10 +43,10 @@
   .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
   .markdown .post { border: 3px solid rgb(var(--rgb-dark)); margin: 0; }
   .markdown .post .tag:hover i { visibility: hidden; }
-  .markdown .expandable { overflow: hidden; position: relative; }
+  .markdown .expandable { overflow: hidden; position: relative; border-bottom: 1px dashed rgb(var(--rgb-mid)); }
   .markdown .expandable>code { overflow: hidden; }
   .markdown .expander { position: absolute; z-index: 1; height: 50px; top: 250px; padding-top: 34px; left: 0; right: 0; font-family: var(--regular-font-family); font-size: 12px; text-align: center; color: rgb(var(--rgb-dark));
-                        border: 1px solid rgb(var(--rgb-mid)); border-top: none; border-bottom-style: dashed;
+                        border: 1px solid rgb(var(--rgb-mid)); border-style: none solid;
                         background: linear-gradient(to bottom, rgba(var(--rgb-light),0) 0%, rgb(var(--rgb-light)) 40%, rgb(var(--rgb-light)) 25%); }
   .markdown .expander:hover { text-decoration: underline; cursor: pointer; }
   .dbfiddle { padding: 0.5rem; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
