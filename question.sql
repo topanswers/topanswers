@@ -112,7 +112,7 @@ create function new(knd integer, title text, markdown text, lic integer, lic_orl
   select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
   select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
   select _ensure_communicant(get_account_id(),get_community_id());
-  select _ensure_communicant(account_id,get_community_id()) from kind where kind_id=knd and kind_account_id is not null;
+  select _ensure_communicant(kind_account_id,get_community_id()) from kind where kind_id=knd and kind_account_id is not null;
   --
   with r as (insert into room(community_id) values(get_community_id()) returning room_id,community_id)
      , q as (insert into question(community_id,account_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense)

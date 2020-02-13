@@ -22,8 +22,9 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                     , chat_id notification_id
                                     , chat_at notification_at
                                     , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
-                                    , community_rgb_mid notification_rgb_mid
                                     , community_rgb_dark notification_rgb_dark
+                                    , community_rgb_mid notification_rgb_mid
+                                    , community_rgb_light notification_rgb_light
                                     , community_rgb_warning notification_rgb_warning
                                     , community_name notification_community_name
                                     , question_id
@@ -52,8 +53,9 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                     , question_history_id notification_id
                                     , question_notification_at notification_at
                                     , to_char(question_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
-                                    , community_rgb_mid notification_rgb_mid
                                     , community_rgb_dark notification_rgb_dark
+                                    , community_rgb_mid notification_rgb_mid
+                                    , community_rgb_light notification_rgb_light
                                     , community_rgb_warning notification_rgb_warning
                                     , community_name notification_community_name
                                     , question_id
@@ -68,8 +70,9 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                     , question_flag_history_id notification_id
                                     , question_flag_notification_at notification_at
                                     , to_char(question_flag_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
-                                    , community_rgb_mid notification_rgb_mid
                                     , community_rgb_dark notification_rgb_dark
+                                    , community_rgb_mid notification_rgb_mid
+                                    , community_rgb_light notification_rgb_light
                                     , community_rgb_warning notification_rgb_warning
                                     , community_name notification_community_name
                                     , question_id
@@ -78,19 +81,20 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                     , null::boolean
                                     , null::integer
                                     , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                               from (select question_id,question_title,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning
+                               from (select question_id,question_title,community_name,community_rgb_light,community_rgb_mid,community_rgb_dark,community_rgb_warning
                                           , max(question_flag_history_id) question_flag_history_id
                                           , max(question_flag_notification_at) question_flag_notification_at
                                           , count(distinct account_id) question_flag_count
                                      from question_flag_notification
-                                     group by question_id,question_title,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning) n )
+                                     group by question_id,question_title,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_warning) n )
                        , a as (select 'answer' notification_type
                                     , 1 notification_count
                                     , answer_history_id notification_id
                                     , answer_notification_at notification_at
                                     , to_char(answer_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
-                                    , community_rgb_mid notification_rgb_mid
                                     , community_rgb_dark notification_rgb_dark
+                                    , community_rgb_mid notification_rgb_mid
+                                    , community_rgb_light notification_rgb_light
                                     , community_rgb_warning notification_rgb_warning
                                     , community_name notification_community_name
                                     , question_id
@@ -105,8 +109,9 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                     , answer_flag_history_id notification_id
                                     , answer_flag_notification_at notification_at
                                     , to_char(answer_flag_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
-                                    , community_rgb_mid notification_rgb_mid
                                     , community_rgb_dark notification_rgb_dark
+                                    , community_rgb_mid notification_rgb_mid
+                                    , community_rgb_light notification_rgb_light
                                     , community_rgb_warning notification_rgb_warning
                                     , community_name notification_community_name
                                     , question_id
@@ -115,19 +120,20 @@ $notification_count = ccdb("select count(1) from chat_notification")
                                     , null::boolean
                                     , null::integer
                                     , null::integer, null::integer, null::text, null::integer, null::integer, null::boolean, null::boolean, null::text, null::text, null::text, null::boolean, null::boolean, null::boolean
-                               from (select answer_id,question_id,question_title,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning
+                               from (select answer_id,question_id,question_title,community_name,community_rgb_light,community_rgb_mid,community_rgb_dark,community_rgb_warning
                                           , max(answer_flag_history_id) answer_flag_history_id
                                           , max(answer_flag_notification_at) answer_flag_notification_at
                                           , count(distinct account_id) answer_flag_count
                                      from answer_flag_notification
-                                     group by answer_id,question_id,question_title,community_name,community_rgb_mid,community_rgb_dark,community_rgb_warning) n)
+                                     group by answer_id,question_id,question_title,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_warning) n)
                        , s as (select 'system' notification_type
                                     , 1 notification_count
                                     , system_notification_id notification_id
                                     , system_notification_at notification_at
                                     , to_char(system_notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
-                                    , community_rgb_mid notification_rgb_mid
                                     , community_rgb_dark notification_rgb_dark
+                                    , community_rgb_mid notification_rgb_mid
+                                    , community_rgb_light notification_rgb_light
                                     , community_rgb_warning notification_rgb_warning
                                     , community_name notification_community_name
                                     , null::integer question_id
@@ -143,7 +149,7 @@ $notification_count = ccdb("select count(1) from chat_notification")
                     select * from c union all select * from q union all select * from qf union all select * from a union all select * from af union all select * from s
                     order by notification_at desc limit 50") as $r){ extract($r);?>
         <div id="n<?=$notification_id?>" class="notification<?=in_array($notification_type,['chat','system'])?' message':''?>"
-             style="background: rgb(<?=$notification_rgb_mid?>); --rgb-dark: <?=$notification_rgb_dark?>; --rgb-warning: <?=$notification_rgb_warning?>;"
+             style="background: rgb(<?=$notification_rgb_mid?>); --rgb-dark: <?=$notification_rgb_dark?>; --rgb-mid: <?=$notification_rgb_mid?>; --rgb-light: <?=$notification_rgb_light?>; --rgb-warning: <?=$notification_rgb_warning?>;"
              data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$chat_from_account_name?>" data-reply-id="<?=$chat_reply_id?>"<?}?>>
           <?if($notification_type==='chat'){?>
             <span class="who" title="<?=$chat_from_account_name?><?=$chat_reply_id?' replying to '.($chat_reply_account_is_me?'Me':$chat_reply_account_name):''?> in <?=$chat_room_name?>">
