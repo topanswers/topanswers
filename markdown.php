@@ -129,6 +129,22 @@
       return 'heading-'+(prefix?prefix+'-':'')+s;
     }
 
+    function shortcuts(tokens,idx){
+      if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DBA.SE') tokens[idx].attrSet('href','https://dba.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://TEX.SE') tokens[idx].attrSet('href','https://tex.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://M.SE') tokens[idx].attrSet('href','https://meta.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://META.SE') tokens[idx].attrSet('href','https://meta.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://UNIX.SE') tokens[idx].attrSet('href','https://unit.stackexchange.com');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DBA.TA') tokens[idx].attrSet('href','/databases');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DATABASES.TA') tokens[idx].attrSet('href','/databases');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://TEX.TA') tokens[idx].attrSet('href','/tex');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://UNIX.TA') tokens[idx].attrSet('href','/nix');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://NIX.TA') tokens[idx].attrSet('href','/nix');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://META.TA') tokens[idx].attrSet('href','/meta');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://CODEGOLF.TA') tokens[idx].attrSet('href','/codegolf');
+    };
+
     md = window.markdownIt({ linkify: true
                            , highlight: function(str,lang){ lang = lang||'<?=$community_code_language?>'; if(lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; } })
                .use(window.markdownitSup)
@@ -160,22 +176,7 @@
                <?}?>
                .use(window.markdownItAnchor, { slugify: myslugify })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
-               .use(window.markdownitForInline,'url-fix','link_open',function(tokens,idx)
-    {
-      if((tokens[idx+2].type!=='link_close') || (tokens[idx+1].type!=='text')) return;
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DBA.SE') tokens[idx].attrSet('href','https://dba.stackexchange.com');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://TEX.SE') tokens[idx].attrSet('href','https://tex.stackexchange.com');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://M.SE') tokens[idx].attrSet('href','https://meta.stackexchange.com');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://META.SE') tokens[idx].attrSet('href','https://meta.stackexchange.com');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://UNIX.SE') tokens[idx].attrSet('href','https://unit.stackexchange.com');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DBA.TA') tokens[idx].attrSet('href','/databases');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DATABASES.TA') tokens[idx].attrSet('href','/databases');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://TEX.TA') tokens[idx].attrSet('href','/tex');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://UNIX.TA') tokens[idx].attrSet('href','/nix');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://NIX.TA') tokens[idx].attrSet('href','/nix');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://META.TA') tokens[idx].attrSet('href','/meta');
-      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://CODEGOLF.TA') tokens[idx].attrSet('href','/codegolf');
-    });
+               .use(window.markdownitForInline,'url-fix','link_open',shortcuts);
 
     md.renderer.rules.code_block = function(tokens, idx, options, env, slf){
       var token = tokens[idx], langName = '<?=$community_code_language?>', highlighted, i, tmpAttrs, tmpToken;
@@ -192,8 +193,9 @@
 
     md.linkify.tlds('kiwi',true).tlds('xyz',true).tlds('ta',true);
     mdsummary = window.markdownIt('zero').enable(['replacements','smartquotes','autolink','backticks','entity','escape','linkify','reference','emphasis','link','strikethrough','backticks'])
-                      .use(window.markdownitSup).use(window.markdownitSub);
-    mdsummary.options.linkify =true;
+                      .use(window.markdownitSup).use(window.markdownitSub)
+                      .use(window.markdownitForInline,'url-fix','link_open',shortcuts);
+    mdsummary.options.linkify = true;
     mdsummary.linkify.tlds('kiwi',true).tlds('xyz',true);
  
     $.fn.renderMarkdown = function(callback){
