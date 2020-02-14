@@ -54,6 +54,7 @@ extract(cdb("select account_id from one"));
           });
         }
       });
+      $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'link', link: pin }, async: false, xhrFields: { withCredentials: true } }).fail(function(r){ alert(r.responseText); }).done(function(){ location.reload(true); }); } });
       $('#community').change(function(){ window.location = '/'+$(this).find(':selected').attr('data-name'); });
     });
   </script>
