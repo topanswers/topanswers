@@ -32,7 +32,7 @@ end$$;
 create function change_name(nname text) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('not authorised') from room.one where not account_is_dev;
-  select _error(400,'invalid room name') where nname is not null and not nname~'^[0-9[:alpha:]/][-'' ,.0-9[:alpha:]/]{1,25}[0-9[:alpha:]/]$';
+  select _error(400,'invalid room name') where nname is not null and not nname~'^[0-9[:alpha:]/][-'' ,.0-9[:alpha:]/<>+]{1,25}[0-9[:alpha:]/<>]$';
   update room set room_name = nname where room_id=get_room_id();
 $$;
 --

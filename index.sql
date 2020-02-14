@@ -4,9 +4,11 @@ set local search_path to indx,api,pg_temp;
 --
 --
 create view community with (security_barrier) as
-select community_id,community_name,community_room_id,community_display_name
-from db.community natural left join (select community_id, account_id from db.login natural join db.member where login_uuid=get_login_uuid()) m
-where community_type='public' or account_id is not null;
+select community_name,community_display_name,community_type
+     , get_byte(community_dark_shade,0)||','||get_byte(community_dark_shade,1)||','||get_byte(community_dark_shade,2) community_rgb_dark
+     , get_byte(community_mid_shade,0)||','||get_byte(community_mid_shade,1)||','||get_byte(community_mid_shade,2) community_rgb_mid
+     , get_byte(community_light_shade,0)||','||get_byte(community_light_shade,1)||','||get_byte(community_light_shade,2) community_rgb_light
+from db.community where community_type='public' or community_is_coming_soon;
 --
 create view one with (security_barrier) as
 select (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) account_id;

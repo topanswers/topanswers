@@ -1,38 +1,39 @@
 <?
 include '../db.php';
-include '../locache.php';
+include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to indx,pg_temp");
 $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
 extract(cdb("select account_id from one"));
 ?>
 <!doctype html>
-<html>
+<html style="--rgb-dark: 211,211,211;
+             --rgb-mid: 211,211,211;
+             --rgb-light: 120,120,120;
+             --regular-font-family: 'source-sans-pro', serif;
+             ">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/source-sans-pro.css">
   <link rel="stylesheet" href="/fonts/source-code-pro.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/global.css">
+  <link rel="stylesheet" href="/header.css">
   <style>
-    *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: source-sans-pro, serif; font-size: 16px; }
     body { display: flex; flex-direction: column; background: lightgrey; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    header, header>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
     footer, footer>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
-    header { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: lightgrey; border-bottom: 2px solid black; }
     footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: lightgrey; border-top: 2px solid black; }
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 3px; }
 
-    .frame { display: inline-block; border: 1px solid black; margin: 2px; outline: 1px solid #00000040; background-color: white; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .element { margin: 0 4px; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-dark)); }
 
-    h3 { font-size: 20px; }
-    h2 { font-size: 24px; }
-    h1 { font-size: 28px; font-weight: normal; }
+    .communities { display: flex; flex-wrap: wrap; margin: 16px 0; margin-top: -24px; }
+    .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; }
+
     @media (max-width: 576px){
       main>div { margin: 16px 16px; }
     }
@@ -62,28 +63,35 @@ extract(cdb("select account_id from one"));
   <header>
     <div>
       <span class='element'>TopAnswers</span>
-      <select id="community" class="element">
-        <option selected>Home</option>
-        <?foreach(db("select community_name,community_room_id,community_display_name from community order by community_name desc") as $r){ extract($r,EXTR_PREFIX_ALL,'s');?>
-          <option value="<?=$s_community_room_id?>" data-name="<?=$s_community_name?>"><?=$s_community_display_name?></option>
-        <?}?>
-      </select>
     </div>
-    <div>
+    <div style="display: flex; align-items: center; height: 100%;">
       <?if($auth){?>
         <a class="frame" href="/profile?community=meta"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
       <?}else{?>
         <span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span>
-        <a class="frame" href="/meta"><img class="icon" src="/image?hash=bf9d945e0263481d82dfe42837c31a19bfdadd03f120665be23a3f09c34c0cc4"></a>
       <?}?>
     </div>
   </header>
   <main>
     <div>
-    <h1>Join TopAnswers, and help build a library of knowledge that lasts.</h1>
+      <h1>TopAnswers Communities:</h1>
+      <div class="communities">
+        <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='public' order by random()") as $r){ extract($r);?>
+          <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
+        <?}?>
+      </div>
+      <h1>Coming Soon:</h1>
+      <div class="communities">
+        <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private' order by random()") as $r){ extract($r);?>
+          <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
+        <?}?>
+      </div>
+    </div>
+    <div>
+    <h1>Join TopAnswers, and help build a lasting library of knowledge.</h1>
     <p>TopAnswers is what Stack Overflow should be: focused on communities and knowledge sharing, not profit. We share some of the same aims:</p>
     <ul>
-      <li>Focus on questions and answers. Everything else we do is to <em>help</em> us produce useful questions and answers.</li>
+      <li>Focus on questions and answers. Everything else we do is to <em>help</em> us produce useful answers to good questions.</li>
       <li>Keep the signal:noise ratio high with a voting system that helps good answers float to the top.</li>
       <li>Build communities of experts across a diverse range of subjects.</li>
     </ul>
@@ -95,7 +103,7 @@ extract(cdb("select account_id from one"));
       <li>As much as possible of our platform is published <a href="/meta?q=28">as open source</a> <a href="/meta?q=221#a580">on GitHub</a>.</li>
       <li>You are <a href="/meta?q=18#a8">free to decide how to license your contributions</a>.</li>
     </ul>
-    <p>We are growing steadily, and starting to register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">databases</a> in October 2019 and <a href="/tex">TeX</a> in January 2020, and have <a href="/meta?q=530">*nix</a> and <a href="/meta?q=624">Code Golf</a> communites in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a>.</p>
+    <p>We are growing steadily, and starting to register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">databases</a> in October 2019, <a href="/tex">TeX</a> in January 2020 and an experimental <a href="/cplusplus">C++</a> community in February. We also have <a href="/meta?q=530">*nix</a> and <a href="/meta?q=624">Code Golf</a> communites in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a>.</p>
     <p>There is a lot more detailed information on our <a href="/meta">meta</a> community (a place for questions and answers about TopAnswers itself), for example:</p>
     <ul>
       <li><a href="/meta?q=1">Why we are building TopAnswers</a></li>
