@@ -10,8 +10,7 @@ header .select>span:first-child { grid-column-start: 2; grid-row-start: 1; }
 header .select>span:not(:first-child) { grid-column-start: 4; grid-row-start: 1; }
 header .select>i { grid-column-start: 6; grid-row-start: 1; opacity: 0.5; font-size: 10px; }
 header .select>div { grid-column: 3 / 7; grid-row-start: 2; }
-header .select>div>div { position: absolute; z-index: 2; display: none; flex-direction: column; border: 1px solid black; border-top-width: 2px; background: white;
-                         box-shadow: 0px 4px 4px rgb(var(--rgb-dark)), 0px 8px 8px rgb(var(--rgb-dark)); }
+header .select>div>div { position: absolute; z-index: 2; display: none; flex-direction: column; border-top: 2px solid black; background: white; box-shadow: 1px 4px 4px black; }
 header .select.open>div>div { display: flex; }
 header .select>div>div>div { display: flex; }
 header .select>div>div>div:hover { background: rgb(var(--rgb-light)); }
