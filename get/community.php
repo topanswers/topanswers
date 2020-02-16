@@ -937,6 +937,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 </div>
               <?}?>
               <?if($dev){?>
+                <hr>
                 <select id="environment" class="element">
                   <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
                     <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
@@ -947,11 +948,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         </div>
       </div>
-      <div>
-        <input class="panecontrol element" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
-      </div>
       <?if(!$question){?><div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍search"></div><?}?>
       <div style="display: flex; align-items: center; height: 100%;">
+        <input class="panecontrol element" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
           <form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask"></form>
