@@ -8,8 +8,9 @@ create view codelicense with (security_barrier) as select codelicense_id,codelic
 create view font with (security_barrier) as select font_id,font_name,font_is_monospace from db.font;
 --
 create view community with (security_barrier) as
-select community_id,community_name,community_room_id,community_display_name
-from db.community natural left join (select community_id, account_id from db.login natural join db.member where login_uuid=get_login_uuid()) m
+select community_id,community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_my_votes,community_ordinal,community_about_question_id
+from api._community natural join db.community
+     natural left join (select community_id,account_id from db.login natural join db.member where login_uuid=get_login_uuid()) m
 where community_type='public' or account_id is not null;
 --
 create view question with (security_barrier) as

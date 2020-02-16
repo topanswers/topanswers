@@ -67,6 +67,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
+  <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/datatables/datatables.min.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -120,19 +121,34 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#community').change(function(){ window.location = '/profile?community='+$(this).find(':selected').attr('data-name'); });
       $('input[value=save]').css('visibility','hidden');
       $('table').DataTable({ select: true, dom: 'Pfrtip' });
+      $('.select').click(function(e){ $(this).toggleClass('open'); e.stopPropagation(); });
+      $('main').click(function(){ $('.select').removeClass('open'); });
     });
   </script>
   <title>Profile | TopAnswers</title>
 </head>
 <body>
   <header>
-    <div>
-      <a class="element" href="/<?=$community_name?>">TopAnswers</a>
-      <select id="community" class="element">
-        <?foreach(db("select community_name,community_room_id,community_display_name from community order by community_name desc") as $r){ extract($r,EXTR_PREFIX_ALL,'s');?>
-          <option value="<?=$s_community_room_id?>" data-name="<?=$s_community_name?>"<?=($community_name===$s_community_name)?' selected':''?>><?=$s_community_display_name?></option>
-        <?}?>
-      </select>
+    <div class="container">
+      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
+      <div class="select element">
+        <span>TopAnswers</span>
+        <span><?=$community_display_name?></span>
+        <i class="fa fa-chevron-down"></i>
+        <div>
+          <div>
+            <?foreach(db("select community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light
+                          from community
+                          order by community_my_votes desc nulls last, community_ordinal, community_name") as $r){ extract($r,EXTR_PREFIX_ALL,'s');?>
+              <div style="--rgb-dark: <?=$s_community_rgb_dark?>; --rgb-mid: <?=$s_community_rgb_mid?>; --rgb-light: <?=$s_community_rgb_light?>;">
+                <div></div>
+                <a href="/<?=$s_community_name?>"><?=$s_community_display_name?></a>
+                <a href="/profile?community=<?=$s_community_name?>">profile</a>
+              </div>
+            <?}?>
+          </div>
+        </div>
+      </div>
     </div>
     <div>
       <a class="frame"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>

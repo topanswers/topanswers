@@ -7,7 +7,7 @@
 .post .title { display: flex; border-bottom: 1px solid rgb(var(--rgb-dark)); font-size: 18px; }
 .post .title > div { flex: 0 0 auto; padding: 8px; background: rgb(var(--rgb-mid)); border-right: 1px solid rgb(var(--rgb-dark)); box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
 .post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
-.post .bar { height: 22px; background: rgb(var(--rgb-light)); font-size: 12px; }
+.post .bar { position: relative; height: 22px; background: rgb(var(--rgb-light)); font-size: 12px; }
 .post .bar .fa { text-decoration: none; }
 .post .bar .fa:not(.highlight) { color: rgb(var(--rgb-dark)); }
 .post .bar .icon+.icon { margin-left: 0; }

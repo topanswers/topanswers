@@ -66,6 +66,7 @@ from db.account;
 create view _community with (security_barrier) as
 select community_id
      , 1+trunc(log(greatest(communicant_votes,1))) community_my_power
+     , communicant_votes community_my_votes
      , get_byte(community_dark_shade,0)||','||get_byte(community_dark_shade,1)||','||get_byte(community_dark_shade,2) community_rgb_dark
      , get_byte(community_mid_shade,0)||','||get_byte(community_mid_shade,1)||','||get_byte(community_mid_shade,2) community_rgb_mid
      , get_byte(community_light_shade,0)||','||get_byte(community_light_shade,1)||','||get_byte(community_light_shade,2) community_rgb_light

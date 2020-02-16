@@ -36,6 +36,9 @@ create table community(
 , community_monospace_font_is_locked boolean default false not null
 , community_tables_are_monospace boolean default false not null
 , community_is_coming_soon boolean default false not null
+, community_ordinal integer
+, community_about_question_id integer references question
+, foreign key (community_id,community_about_question_id) references question(community_id,question_id)
 );
 
 create type room_type_enum as enum ('public','gallery','private');
