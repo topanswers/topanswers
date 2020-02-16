@@ -1,7 +1,16 @@
-header { min-height: 30px; border-bottom: 2px solid black; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
-header select, header input { margin: 0 4px; }
+header { min-height: 30px; border-bottom: 2px solid black; display: grid; grid-auto-rows: 28px; grid-template-columns: max-content auto max-content; grid-column-gap: 5vw; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
 header a { color: rgb(var(--rgb-light)); }
 header label { color: rgb(var(--rgb-light)); }
+header>div { display: flex; justify-self: stretch; }
+header>div:first-child { grid-area: 1 / 1 / 2 / 2; justify-content: start; }
+header>div:not(:first-child):not(:last-child) { grid-area: 1 / 2 / 2 / 3; justify-content: center; }
+header>div:last-child { grid-area: 1 / 3 / 2 / 4; justify-content: end; }
+
+@media (max-width: 576px){
+  header { grid-column-gap: 0; grid-row-gap: 2px; }
+  header>div:not(:first-child):not(:last-child) { grid-area: 2 / 1 / 3 / 4; }
+  header .wideonly { display: none; }
+}
 
 header .select { height: 100%; display: grid; grid-template: 27px auto / 4px auto 4px auto 4px auto 4px; align-items: center; cursor: pointer; }
 header .select:hover { background: rgba(var(--rgb-light),0.2); }

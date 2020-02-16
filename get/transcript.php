@@ -147,6 +147,8 @@ if(isset($_GET['month'])){
     <div>
       <a href="/<?=$community_name?>">TopAnswers <?=ucfirst($community_name)?></a>
       <span>transcript for <a href="/<?=$community_name?>?<?=$room_question_id?'q='.$room_question_id:'room='.$room_id?>"><?=$room_derived_name?></a></span>
+    </div>
+    <div>
       <form action="/transcript" method="get" style="display: inline;"><input type="search" name="search" placeholder="search"><input type="hidden" name="room" value="<?=$_GET['room']?>"></form>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">

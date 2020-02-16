@@ -221,20 +221,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
     .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
 
+    #search { width: 100%; max-width: 570px; }
+
     #dummyresizerx { background-color: black; flex: 0 0 2px; }
     #dummyresizery { flex: 0 0 2px; }
 
     .pane { display: flex; }
-    .panecontrol { display: none; }
+    .panecontrol { display: none; width: 28px; font-size: 24px; text-align: center; }
     @media (max-width: 576px){
       .hidepane { display: none; }
       .panecontrol { display: unset; }
       textarea,select,input { font-size: 16px; }
       #chattext-wrapper:not(:hover) button { display: unset; }
-      header { flex-direction: unset; white-space: unset; }
       #poll { display: none; }
       #se { display: none; }
       #chat-panels { margin: 0; }
+      #notification-wrapper { margin: 0; }
       #messages-wrapper { margin: 0; }
       .simple-pagination li>* { height: 22px; width: 22px; line-height: 22px; font-size: 12px; }
     }
@@ -922,7 +924,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div class="container">
         <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
         <div class="select element">
-          <span>TopAnswers</span>
+          <span class="wideonly">TopAnswers</span>
           <span><?=$community_display_name?></span>
           <i class="fa fa-chevron-down"></i>
           <div>
@@ -948,14 +950,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         </div>
       </div>
-      <?if(!$question){?><div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍search"></div><?}?>
+      <?if(!$question){?><div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍"></div><?}?>
       <div style="display: flex; align-items: center; height: 100%;">
-        <input class="panecontrol element" type="button" value="chat" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();">
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
           <form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask"></form>
           <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
         <?}?>
+        <div class="panecontrol fa fa-angle-double-right" onclick="localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur();"></div>
       </div>
     </header>
     <div id="qa">
@@ -1196,6 +1198,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <div id="chat-wrapper" class="pane hidepane">
     <header>
       <div style="display: flex; align-items: center; height: 100%;">
+        <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
         <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?>><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
         <?if(!$question){?>
           <select id="room" class="element">
@@ -1209,7 +1212,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?}?>
       </div>
       <div>
-        <input class="panecontrol element" type="button" value="questions" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');">
         <?if($auth) if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
       </div>
     </header>
