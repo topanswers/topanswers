@@ -91,7 +91,7 @@ create function activeusers() returns table (account_id integer, account_name te
        , account_id=get_account_id() account_is_me
        , coalesce(communicant_votes,0) communicant_votes
   from room natural join participant natural join api._account natural join communicant
-  where room_id=get_room_id() and participant_latest_chat_at>(current_timestamp-'7d'::interval)
+  where room_id=get_room_id() and participant_latest_chat_at>(current_timestamp-'14d'::interval)
   order by participant_latest_chat_at desc;
 $$;
 --
