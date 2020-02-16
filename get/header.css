@@ -23,7 +23,7 @@ header .select>div>div { position: absolute; z-index: 2; display: none; flex-dir
 header .select.open>div>div { display: flex; }
 header .select>div>div>div { display: flex; }
 header .select>div>div>div:hover { background: rgb(var(--rgb-light)); }
-header .select>div>div>div>div { width: 6px; background: linear-gradient(to right,rgb(var(--rgb-light)),rgb(var(--rgb-mid)),rgb(var(--rgb-dark))); }
+header .select>div>div>div>div { width: 6px; margin: 1px; margin-left: 2px; background: linear-gradient(to right,rgb(var(--rgb-light)),rgb(var(--rgb-mid)),rgb(var(--rgb-dark))); }
 header .select>div>div>div>a { color: black; padding: 4px; }
 header .select>div>div>div>div+a { flex: 1 0 auto; padding-right: 75px; }
 header .select>div>div>div>div+a+a { font-size: 12px; }
