@@ -9,13 +9,19 @@ $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
 extract(cdb("select account_id, (select community_display_name from community where community_name=$1) community_display_name from one",$_GET['community']));
 ?>
 <!doctype html>
-<html>
+<html style="--rgb-dark: 211,211,211;
+             --rgb-mid: 211,211,211;
+             --rgb-light: 120,120,120;
+             --regular-font-family: 'source-sans-pro', serif;
+             ">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/source-sans-pro.css">
   <link rel="stylesheet" href="/fonts/source-code-pro.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/global.css">
+  <link rel="stylesheet" href="/header.css">
   <style>
     *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: source-sans-pro, serif; font-size: 16px; }
@@ -28,9 +34,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 5px; }
 
-    .frame { display: inline-block; border: 1px solid black; margin: 2px; outline: 1px solid #00000040; background-color: white; }
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .element { margin: 0 4px; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; background: white; }
 
     h3 { font-size: 20px; }
     h2 { font-size: 24px; }
@@ -62,7 +66,8 @@ extract(cdb("select account_id, (select community_display_name from community wh
 </head>
 <body>
   <header>
-    <div>
+    <div class="container">
+      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div>

@@ -81,8 +81,9 @@ extract(cdb("select account_id
 </head>
 <body style="font-size: larger; background-color: rgb(var(--rgb-light));">
   <header>
-    <div>
-      <a href="/<?=$community?>">TopAnswers <?=ucfirst($community)?></a>
+    <div class="container">
+      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
+      <a class="element" href="/<?=$community?>">TopAnswers <?=ucfirst($community)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>

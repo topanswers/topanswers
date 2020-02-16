@@ -202,7 +202,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 </head>
 <body>
   <header>
-    <div>
+    <div class="container">
+      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
       <a class="element" href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">

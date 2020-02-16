@@ -172,8 +172,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: rgb(var(--rgb-light)); height: 100%;">
   <header>
-    <div>
-      <a href="/<?=$community_name?>">TopAnswers <?=ucfirst($community_name)?></a>
+    <div class="container">
+      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
+      <a class="element" href="/<?=$community_name?>">TopAnswers <?=ucfirst($community_name)?></a>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
       <?if(!$answer_id){?>
@@ -194,7 +195,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <label><input type="checkbox" name="codelicense-orlater" form="form"<?=$account_permit_later_codelicense?'checked':''?>>or later</label>
         </span>
       <?}?>
-      <input id="submit" type="submit" form="form" value="<?=$answer_id?'update answer under '.$answer_license:'post answer'?>">
+      <input class="element" id="submit" type="submit" form="form" value="<?=$answer_id?'update answer under '.$answer_license:'post answer'?>">
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>

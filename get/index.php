@@ -62,7 +62,8 @@ extract(cdb("select account_id from one"));
 </head>
 <body>
   <header>
-    <div>
+    <div class="container">
+      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" style="background: white;" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div style="display: flex; align-items: center; height: 100%;">
