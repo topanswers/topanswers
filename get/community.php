@@ -915,8 +915,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         processStarboard(true);
         return false;
       });
-      $('.select').click(function(e){ $(this).toggleClass('open'); e.stopPropagation(); });
-      $('main').click(function(){ $('.select').removeClass('open'); });
+      $('.select>div:first-child').click(function(e){ $(this).parent().toggleClass('open'); e.stopPropagation(); });
+      $('.select>div:last-child a').click(function(e){ e.stopPropagation(); return true; });
+      $('.select>div:last-child').click(function(e){ return false; });
+      $('body').click(function(){ $('.select').removeClass('open'); });
     });
   </script>
   <title><?=$room_name?> - TopAnswers</title>
@@ -926,10 +928,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <header>
       <div class="container">
         <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
+        <span class="wideonly element">TopAnswers</span>
         <div class="select element">
-          <span class="wideonly">TopAnswers</span>
-          <span><?=$community_display_name?></span>
-          <i class="fa fa-chevron-down"></i>
+          <div>
+            <span><?=$community_display_name?></span>
+            <i class="fa fa-chevron-down"></i>
+          </div>
           <div>
             <div>
               <?foreach(db("select community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_about_question_id
