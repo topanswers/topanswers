@@ -19,7 +19,7 @@ where room_id=get_room_id();
 --
 create function login_room(uuid,integer) returns boolean language sql security definer as $$select * from api.login_room($1,$2);$$;
 --
-create function range2(startid bigint, endid bigint)
+create function range(startid bigint, endid bigint)
                      returns table (chat_id bigint
                                   , account_id integer
                                   , chat_reply_id integer
@@ -67,7 +67,7 @@ create function range2(startid bigint, endid bigint)
   where chat_id>startid or endid is not null
   order by chat_at desc;
 $$;
-create function range(startid bigint, endid bigint) 
+create function range2(startid bigint, endid bigint)
                      returns table (chat_id bigint
                                   , account_id integer
                                   , chat_reply_id integer
@@ -93,18 +93,18 @@ create function range(startid bigint, endid bigint)
                                    ) language sql security definer set search_path=db,api,chat,pg_temp as $$
   with g as (select get_account_id() account_id)
   select *, row_number() over(order by chat_at desc) rn
-  from (select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
+  from (select *, (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
         from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id
                    , account_id=(select account_id from g) account_is_me
                    , coalesce(nullif(account_name,''),'Anonymous') account_name
                    , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
                    , (select account_id=(select account_id from g) from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                   , round(extract('epoch' from chat_at-(lag(chat_at) over (order by chat_at))))::integer chat_gap
+                   , round(extract('epoch' from chat_at-(lead(chat_at) over (order by chat_at desc))))::integer chat_gap
                    , coalesce(communicant_votes,0) communicant_votes
                    , extract('epoch' from current_timestamp-chat_at)<240 chat_editable_age
                    , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=(select account_id from g)) i_flagged
                    , exists(select 1 from chat_star where chat_id=c.chat_id and account_id=(select account_id from g)) i_starred
-                   , (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and (lag(chat_reply_id) over (order by chat_at)) is null chat_account_will_repeat
+                   , (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and (lead(chat_reply_id) over (order by chat_at desc)) is null chat_account_will_repeat
                    , (select count(1)::integer from chat_flag where chat_id=c.chat_id) chat_flag_count
                    , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
                    , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
@@ -113,7 +113,7 @@ create function range(startid bigint, endid bigint)
               where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
         where (select account_id from g) is not null or chat_flag_count=0) z
   where chat_id>startid or endid is not null
-  order by chat_at;
+  order by chat_at desc;
 $$;
 --
 create function activerooms() returns table (room_id integer, question_id integer, room_name text, community_name text, room_account_unread_messages bigint, room_account_latest_read_chat_id bigint)

@@ -28,7 +28,7 @@ $id = $_GET['id']??ccdb("select recent()");
 <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,communicant_votes,chat_editable_age
                     ,i_flagged,i_starred,chat_account_will_repeat,chat_flag_count,chat_star_count,chat_has_history,chat_pings,chat_account_is_repeat,rn
                    , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
-              from range2($1,nullif($2,'')::bigint)",$id,isset($_GET['one'])?$id:'') as $r){ extract($r);?>
+              from range($1,nullif($2,'')::bigint)",$id,isset($_GET['one'])?$id:'') as $r){ extract($r);?>
   <div id="c<?=$chat_id?>"
        class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?>"
        data-id="<?=$chat_id?>"
