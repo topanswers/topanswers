@@ -20,7 +20,7 @@ if($search){
                       , extract('epoch' from current_timestamp-question_change_at)::bigint question_change_when
                       , question_account_id=$2 account_is_me
                  from search($1) natural join question
-                 order by rn",$_GET['search'],$account_id);
+                 order by rn",strtolower($_GET['search']),$account_id);
 }else{
   if(isset($_GET['page'])){
     extract(cdb("select startid,endid from recent($1)",$_GET['page']));

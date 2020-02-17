@@ -221,7 +221,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
     .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
 
-    #search { width: 100%; max-width: 570px; }
+    #search { flex: 0 1 570px; min-width: 0; }
+    #search+div { display: none; }
 
     #dummyresizerx { background-color: black; flex: 0 0 2px; }
     #dummyresizery { flex: 0 0 2px; }
@@ -352,11 +353,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         },'html').fail(setChatPollTimeout);
       }
       function searchQuestions(){
+        $('#search+div').show();
         $.get('/questions?community=<?=$community_name?>&search='+$('#search').val(),function(data) {
           $('#questions>.question').remove();
           $(data).filter('.question').prependTo($('#questions'));
           processNewQuestions();
           $('#more').hide();
+          $('#search+div').hide();
         },'html');
       }
       function processStarboard(){
@@ -950,7 +953,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         </div>
       </div>
-      <?if(!$question){?><div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍"></div><?}?>
+      <?if(!$question){?>
+        <div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍 {type} [tag] &quot;exact phrase&quot; fuzzy"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
+      <?}?>
       <div style="display: flex; align-items: center; height: 100%;">
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
