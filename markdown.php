@@ -49,6 +49,10 @@
                         border: 1px solid rgb(var(--rgb-mid)); border-style: none solid;
                         background: linear-gradient(to bottom, rgba(var(--rgb-light),0) 0%, rgb(var(--rgb-light)) 40%, rgb(var(--rgb-light)) 25%); }
   .markdown .expander:hover { text-decoration: underline; cursor: pointer; }
+  .markdown .table-of-contents ol { counter-reset: list-item-toc; }
+  .markdown .table-of-contents li { display: block; counter-increment: list-item-toc; }
+  .markdown .table-of-contents li:before { content: counters(list-item-toc,'.') ' '; }
+
   .dbfiddle { padding: 0.5rem; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
