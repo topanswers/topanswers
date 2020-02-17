@@ -141,7 +141,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #notification-wrapper .label { border-bottom: 1px solid rgb(var(--rgb-dark)); flex: 0 0 auto; }
     #notifications { overflow-x: hidden; overflow-y: auto; }
     #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: rgb(var(--rgb-light)); margin: 0 16px; }
-    #messages { flex: 1 1 0; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); padding: 4px; }
+    #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); padding: 4px; }
+    #messages.newscroll:not(.firefox) { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
+    #messages.newscroll.firefox { border-top: 3px solid rgb(var(--rgb-highlight)); }
+    #messages.firefox { flex-direction: column; transform: scaleY(-1); }
+    #messages.firefox>* { transform: scaleY(-1); }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { display: none; }
     #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark));  }
@@ -273,14 +277,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
 
       function setFinalSpacer(){
-        var scroll, last = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:last-child');
-        if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
-        if(last>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log10(1+last)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(last,'seconds').humanize()+' later');
-        if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },0);
+        var scroll, frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child');
+        if(frst>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log10(1+frst)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(frst,'seconds').humanize()+' later');
       }
       function setChatPollTimeout(){
         <?if($auth){?>
-          var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').last().data('at'))))/1000) || 300;
+          var chatPollInterval, chatLastChange = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300;
           if(chatLastChange<10) chatPollInterval = 1000;
           else if(chatLastChange<30) chatPollInterval = 3000;
           else if(chatLastChange<120) chatPollInterval = 5000;
@@ -379,23 +381,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function renderChat(){
         $(this).find('.markdown').renderMarkdown();
       }
-      function processNewChat(scroll){
+      function processNewChat(){
         var newchat = $('#messages>*:not(.processed)');
-        if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
-        if(!maxChatChangeID) $('#messages').css('scroll-behavior','auto');
+        scroll = $('#messages').hasClass('firefox') ? $('#messages').scrollTop()===0 : (($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight"));
         newchat.filter('.message').each(renderChat).find('.when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
         if(newchat.find('img').length===0){
-          if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); },0);
-          else $('#messages').css('scroll-behavior','smooth');
           newchat.addClass('processed');
         }else{
           newchat.find('img').waitForImages(true).done(function(){
             if(scroll){
-              setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")).css('scroll-behavior','smooth'); newchat.addClass('processed'); },0);
+              newchat.addClass('processed');
             }else{
-              $('#messages').css('scroll-behavior','smooth').css('border-bottom','3px solid rgb(var(--rgb-highlight))').scroll(_.debounce(function(){ $('#messages').css('border-bottom','none'); }));
+              $('#messages').addClass('newscroll');
+              setTimeout(function(){ $('#messages').scroll(_.debounce(function(){ $('#messages').removeClass('newscroll'); })); },1000);
               newchat.addClass('processed');
             }
           });
@@ -415,8 +415,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           var id = $(this).attr('href').substring(2);
           $(this).attr('href','/transcript?room=<?=$room?>&id='+id+'#c'+id);
         });
-        if(!maxChatChangeID) $('#messages').children().first().next().filter('.spacer').remove();
-        if(!maxChatChangeID) $('#messages>.message').first().removeClass('merged');
+        if(!maxChatChangeID) $('#messages').children().last().next().filter('.spacer').remove();
+        if(!maxChatChangeID) $('#messages>.message').last().removeClass('merged');
         $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
       }
       function updateRoomLatest(){
@@ -447,17 +447,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
-      function updateChat(scroll){
-        var maxChat = $('#messages>.message').last().data('id');
-        if(($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight")) scroll = true;
+      function updateChat(){
+        var maxChat = $('#messages>.message').first().data('id');
         $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
-          if($('#messages>.message').last().data('id')===maxChat){
+          if($('#messages>.message').first().data('id')===maxChat){
             var newchat;
-            $('#messages>.spacer:last-child').remove();
-            newchat = $(data).appendTo($('#messages'));
+            $('#messages>.spacer:first-child').remove();
+            newchat = $(data).prependTo($('#messages'));
             if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
             if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
-            processNewChat(scroll);
+            processNewChat();
             <?if($auth){?>
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
@@ -521,7 +520,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function checkChat(){
         $.get('/poll?room=<?=$room?>').done(function(r){
           var j = JSON.parse(r);
-          if(j.c>+$('#messages>.message').last().data('id')){
+          if(j.c>+$('#messages>.message').first().data('id')){
             <?if($dev){?>console.log('updating chat');<?}?>
             updateChat();
           }else if(j.n>maxNotificationID){
@@ -538,8 +537,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             updateChatChangeIDs();
             maxChatChangeID = j.cc;
           }else if($('.message.changed').length){
-            <?if($dev){?>console.log('updating chat '+$('.message.changed').last().data('id'));<?}?>
-            actionChatChange($('.message.changed').last().data('id'));
+            <?if($dev){?>console.log('updating chat '+$('.message.changed').first().data('id'));<?}?>
+            actionChatChange($('.message.changed').first().data('id'));
           <?if(!$question){?>
             }else if((j.q>maxQuestionPollMinorID)&&($('#search').val()==='')){
               <?if($dev){?>console.log('updating guestion change flag statuses');<?}?>
@@ -686,17 +685,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $.get({ url: '/chat?quote&room=<?=$room?>&id='+s[2], async: !sync }).done(function(r){
             if($('#chattext').val()===m){
               $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return ' *— '+(moment(match).fromNow())+'*'; })).renderMarkdown();
-              if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
             }
           }).fail(function(){
             if($('#chattext').val()===m){
               $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
-              if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
             }
           });
         }else{
           $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
-          if(scroll) setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
         }
       }
       var renderPreviewThrottle;
@@ -704,9 +700,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chattext').on('input', function(){
         if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
         if(this.scrollHeight>$(this).outerHeight()) $(this).css('height',this.scrollHeight);
-        //_.debounce(renderPreview,5000,{ 'leading': true, 'maxWait': 1000, 'trailing': false })();
         renderPreviewThrottle();
-        if($('#status').attr('data-replyid')==='') setTimeout(function(){ $('#messages').scrollTop($('#messages').prop("scrollHeight")); },500);
       }).trigger('input');
       $('#chattext').keydown(function(e){
         var t = $(this), msg = t.val(),  replyid = $('#status').attr('data-replyid'), c = $('#c'+replyid), edit = $('#status').attr('data-editid')!=='', editid = $('#status').attr('data-editid'), post, arr = [];
@@ -751,7 +745,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           }
         }else if(e.which===38){
           if(msg===''){
-            $('#messages .message.mine').last().find('.fa-edit').click()
+            $('#messages .message.mine').first().find('.fa-edit').click()
             return false;
           }
         }else if(e.which===27){
@@ -919,6 +913,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('.select>div:last-child a').click(function(e){ e.stopPropagation(); return true; });
       $('.select>div:last-child').click(function(e){ return false; });
       $('body').click(function(){ $('.select').removeClass('open'); });
+      if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
+        $('#messages').addClass('firefox');
+      }
     });
   </script>
   <title><?=$room_name?> - TopAnswers</title>
@@ -958,7 +955,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </div>
       </div>
       <?if(!$question){?>
-        <div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍 {type} [tag] &quot;exact phrase&quot; fuzzy"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
+        <div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍&#xFE0E; {type} [tag] &quot;exact phrase&quot; fuzzy"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
       <?}?>
       <div style="display: flex; align-items: center; height: 100%;">
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
@@ -1243,8 +1240,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <?}?>
           <div id="messages">
             <?if($room_has_chat){?>
-              <div style="flex: 1 0 10px;"></div>
               <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+              <div style="flex: 1 0 10px;"></div>
             <?}elseif($question){?>
               <div style="flex: 1 0 10px;">
                 <div style="padding: 10vh 20%;">
