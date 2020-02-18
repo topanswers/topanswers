@@ -5,7 +5,6 @@
 <?}?>
 <style>
   .summary code { padding: 0 0.2em; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 1px; overflow-wrap: break-word; }
-  .markdown pre, .markdown code { -webkit-transform: translate3d(0, 0, 0); }
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>pre { white-space: pre; }
   .markdown>:first-child { margin-top: 0; }

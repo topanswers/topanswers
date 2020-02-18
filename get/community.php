@@ -101,6 +101,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa { overflow: auto; scroll-behavior: smooth; }
     #qa .banner { display: flex; margin: 16px 16px 0 16px; align-items: center; }
     #qa .banner h1, #qa .banner h3 { color: rgb(var(--rgb-light)); font-weight: normal; margin: 0; }
+    @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
     #chat-wrapper header { border-top: 2px solid black; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
