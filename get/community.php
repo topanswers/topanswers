@@ -146,6 +146,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages.newscroll.firefox { border-top: 3px solid rgb(var(--rgb-highlight)); }
     #messages.firefox { flex-direction: column; transform: scaleY(-1); border-top: none; border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #messages.firefox>* { transform: scaleY(-1); }
+    #firefoxwrapper { overflow-y: auto; overflow-x: hidden; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { display: none; }
     #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark));  }
@@ -267,6 +268,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
+      var firefox = false;
 
       $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
 
@@ -457,6 +459,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
             if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
             processNewChat();
+            $('#firefoxwrapper').scrollTop(1000000);
             <?if($auth){?>
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
@@ -914,7 +917,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('.select>div:last-child').click(function(e){ return false; });
       $('body').click(function(){ $('.select').removeClass('open'); });
       if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
-        $('#messages').addClass('firefox');
+        firefox -= true;
+        $('#messages').addClass('firefox').wrap('<div id="firefoxwrapper"></div>');
+        $('#firefoxwrapper').scrollTop(1000000);
       }
     });
   </script>
