@@ -1,6 +1,24 @@
+drop schema public;
+
+create schema db;
+
+create schema x_uuid_ossp;
+create extension "uuid-ossp" schema x_uuid_ossp;
+
+create schema x_pg_trgm;
+create extension "pg_trgm" schema x_pg_trgm;
+
+create schema x_btree_gin;
+create extension "btree_gin" schema x_btree_gin;
+
+create schema x_pgcrypto;
+create extension "pgcrypto" schema x_pgcrypto;
+
+alter database postgres set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
+
 create table one(
   one_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
-  one_stackapps_secret text default '' not null
+, one_stackapps_secret text default '' not null
 );
 create unique index one_only_ind on one((1));
 
@@ -20,7 +38,7 @@ create type community_type_enum as enum ('public','private');
 create table community(
   community_id integer generated always as identity primary key
 , community_name text not null
-, community_room_id integer not null references room deferrable initially deferred
+, community_room_id integer not null
 , community_dark_shade bytea not null default decode('4d7ebb','hex') check(length(community_dark_shade)=3)
 , community_mid_shade bytea not null default decode('d4dfec','hex') check(length(community_mid_shade)=3)
 , community_light_shade bytea not null default decode('e7edf4','hex') check(length(community_light_shade)=3)
@@ -37,8 +55,7 @@ create table community(
 , community_tables_are_monospace boolean default false not null
 , community_is_coming_soon boolean default false not null
 , community_ordinal integer
-, community_about_question_id integer references question
-, foreign key (community_id,community_about_question_id) references question(community_id,question_id)
+, community_about_question_id integer
 );
 
 create type room_type_enum as enum ('public','gallery','private');
@@ -51,6 +68,8 @@ create table room(
 , room_image bytea check(length(room_image)>0)
 , unique (community_id,room_id)
 );
+
+alter table community add foreign key(community_room_id) references room deferrable initially deferred;
 
 create table license(
   license_id integer generated always as identity primary key
@@ -165,7 +184,7 @@ create table writer(
 );
 
 create table participant(
-, room_id integer references room
+  room_id integer references room
 , account_id integer references account
 , participant_latest_chat_at timestamptz not null default current_timestamp
 , participant_latest_read_chat_id bigint not null
@@ -285,6 +304,9 @@ create unique index question_poll_major_id_ind on question(community_id,question
 create index question_search_title_ind on question using gin (community_id, question_title gin_trgm_ops);
 create index question_search_markdown_ind on question using gin (community_id, question_markdown gin_trgm_ops);
 create index question_room_id_fk_ind on question(question_room_id);
+
+alter table community add foreign key (community_about_question_id) references question;
+alter table community add foreign key (community_id,community_about_question_id) references question(community_id,question_id);
 
 create table question_history(
   question_history_id bigint generated always as identity primary key
