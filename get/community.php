@@ -146,7 +146,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages.newscroll.firefox { border-top: 3px solid rgb(var(--rgb-highlight)); }
     #messages.firefox { flex-direction: column; transform: scaleY(-1); border-top: none; border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #messages.firefox>* { transform: scaleY(-1); }
-    #firefoxwrapper { overflow-y: auto; overflow-x: hidden; }
+    #firefoxwrapper { overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; height: 100%; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { display: none; }
     #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark));  }
@@ -400,6 +400,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               setTimeout(function(){ $('#messages').scroll(_.debounce(function(){ $('#messages').removeClass('newscroll'); })); },1000);
               newchat.addClass('processed');
             }
+            $('#firefoxwrapper').scrollTop(1000000);
           });
         }
         $('.message').each(function(){
@@ -920,6 +921,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         firefox -= true;
         $('#messages').addClass('firefox').wrap('<div id="firefoxwrapper"></div>');
         $('#firefoxwrapper').scrollTop(1000000);
+        setTimeout(function(){ $('#firefoxwrapper').scrollTop(1000000); },500);
       }
     });
   </script>
