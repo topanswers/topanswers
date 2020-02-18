@@ -145,9 +145,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); padding: 4px; }
     #messages.newscroll:not(.firefox) { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
     #messages.newscroll.firefox { border-top: 3px solid rgb(var(--rgb-highlight)); }
-    #messages.firefox { flex-direction: column; transform: scaleY(-1); border-top: none; border-bottom: 1px solid rgb(var(--rgb-dark)); }
+    #messages.firefox { flex-direction: column; transform: scaleY(-1); border-top: none; border-bottom: 1px solid rgb(var(--rgb-dark)); min-height: 100%; }
     #messages.firefox>* { transform: scaleY(-1); }
-    #firefoxwrapper { overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; height: 100%; }
+    #firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { display: none; }
     #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark));  }
