@@ -95,7 +95,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       var map;
 
       function render(){
-        $('#answer').attr('data-markdown',cm.getValue()).renderMarkdown(function(){
+        $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown(function(){
           $('.post:not(.processed) .when').each(function(){
             $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
             $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
@@ -103,7 +103,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('.post').addClass('processed');
         });
         map = [];
-        $('#answer [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
+        $('#markdown [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
         <?if(!$answer_id){?>localStorage.setItem('<?=$community_name?>.answer.<?=$question_id?>',cm.getValue());<?}?>
       }
 
@@ -116,9 +116,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       cm.on('scroll', _.throttle(function(){
         var rect = cm.getWrapperElement().getBoundingClientRect();
         var m = Math.round(cm.lineAtHeight(rect.top,"window")+cm.lineAtHeight(rect.bottom,"window"))/2;
-        if(cm.getScrollInfo().top<10) $('#answer').animate({ scrollTop: 0 });
-        else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#answer').animate({ scrollTop: $('#answer').prop("scrollHeight")-$('#answer').height() });
-        else $('#answer [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if(cm.getScrollInfo().top<10) $('#markdown').animate({ scrollTop: 0 });
+        else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#markdown').animate({ scrollTop: $('#markdown').prop("scrollHeight")-$('#markdown').height() });
+        else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
       },200));
       <?if(!$answer_id){?>
         if(localStorage.getItem('<?=$community_name?>.answer.<?=$question_id?>')) cm.setValue(localStorage.getItem('<?=$community_name?>.answer.<?=$question_id?>'));
