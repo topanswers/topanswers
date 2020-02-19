@@ -56,6 +56,7 @@ create table community(
 , community_is_coming_soon boolean default false not null
 , community_ordinal integer
 , community_about_question_id integer
+, community_image bytea check(length(community_image)>0)
 );
 
 create type room_type_enum as enum ('public','gallery','private');

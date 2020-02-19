@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists communityicon cascade;
 drop schema if exists duplicate cascade;
 drop schema if exists private cascade;
 drop schema if exists poll cascade;
@@ -210,5 +211,6 @@ end$$;
 \i ~/git/poll.sql
 \i ~/git/private.sql
 \i ~/git/duplicate.sql
+\i ~/git/communityicon.sql
 --
 commit;
