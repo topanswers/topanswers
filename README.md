@@ -15,7 +15,8 @@ We aren't a clone though; we diverge in important areas:
 -   We've improved the focus on Q&A by moving comments to the side.
 -   You are [free to decide how to license your contributions](https://topanswers.xyz/meta?q=18#a8).
 
-We are small right now --- we launched [databases](/databases) in October 2019 and have a TeX community in private beta. If you would like to help build a community here, [you can](https://topanswers.xyz/meta?q=211). If you are coming from an existing Stack Exchange community you will be able to [import your content](https://topanswers.xyz/meta?q=236#a176) from there.
+We are small right now --- we already launched [databases](/databases) and [TeX](/tex) and have communities for \*unix and code golf in private beta.
+If you would like to help build a community here, [you can](https://topanswers.xyz/meta?q=211). If you are coming from an existing Stack Exchange community you will be able to [import your content](https://topanswers.xyz/meta?q=236#a176) from there.
 
 There is a lot more detailed information on our [meta](https://topanswers.xyz/meta) community (a place for questions and answers about TopAnswers itself), for example:
 
