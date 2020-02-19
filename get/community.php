@@ -898,15 +898,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           return false;
         }
       });
-      $('#environment').change(function(){
-        var v = $(this).val();
-        if(v==='prod'){
-          Cookies.remove('environment',{ secure: true, domain: '.topanswers.xyz' });
-        }else{
-          Cookies.set('environment',v,{ secure: true, domain: '.topanswers.xyz' });
-        }
-        window.location.reload(true);
-      });
       $('#chatorstarred').click(function(){
         $(this).children('a').each(function(){ $(this).attr('href',function(i,a){ return a===undefined?'.':null; }); });
         $('#starboard,#messages').each(function(){ $(this).css('display',function(i,s){ return s==='none'?'flex':'none'; }); })
@@ -914,10 +905,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         processStarboard(true);
         return false;
       });
-      $('.select>div:first-child').click(function(e){ $(this).parent().toggleClass('open'); e.stopPropagation(); });
-      $('.select>div:last-child a').click(function(e){ e.stopPropagation(); return true; });
-      $('.select>div:last-child').click(function(e){ return false; });
-      $('body').click(function(){ $('.select').removeClass('open'); });
       if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
         firefox -= true;
         $('#messages').addClass('firefox').wrap('<div id="firefoxwrapper"></div>');
@@ -931,41 +918,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <body>
   <main class="pane">
     <header>
-      <div class="container">
-        <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
-        <span class="wideonly element">TopAnswers</span>
-        <div class="select element">
-          <div>
-            <span><?=$community_display_name?></span>
-            <i class="fa fa-chevron-down"></i>
-          </div>
-          <div>
-            <div>
-              <?foreach(db("select community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_about_question_id
-                            from community
-                            order by community_my_votes desc nulls last, community_ordinal, community_name") as $r){ extract($r,EXTR_PREFIX_ALL,'s');?>
-                <div style="--rgb-dark: <?=$s_community_rgb_dark?>; --rgb-mid: <?=$s_community_rgb_mid?>; --rgb-light: <?=$s_community_rgb_light?>;">
-                  <div></div>
-                  <a href="/<?=$s_community_name?>"><?=$s_community_display_name?></a>
-                  <?if($s_community_about_question_id){?><a href="/<?=$s_community_name?>?q=<?=$s_community_about_question_id?>">about</a><?}?>
-                </div>
-              <?}?>
-              <?if($dev){?>
-                <hr>
-                <select id="environment" class="element">
-                  <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
-                    <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
-                  <?}?>
-                </select>
-              <?}?>
-            </div>
-          </div>
-        </div>
-      </div>
+      <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
       <?if(!$question){?>
         <div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍&#xFE0E; {type} [tag] &quot;exact phrase&quot; fuzzy"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
       <?}?>
-      <div style="display: flex; align-items: center; height: 100%;">
+      <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
           <form method="get" action="/question"><input type="hidden" name="community" value="<?=$community_name?>"><input id="ask" class="element" type="submit" value="ask"></form>

@@ -6,10 +6,11 @@ db("set search_path to question_history,pg_temp");
 ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
 extract(cdb("select account_id
                    ,question_id,question_title,question_is_imported
-                   ,community_name,community_display_name,community_code_language
+                   ,community_name,community_display_name,community_code_language,community_tables_are_monospace
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
              from one"));
+$cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>
 <!doctype html>
 <html style="--rgb-dark: <?=$community_rgb_dark?>;
@@ -33,7 +34,6 @@ extract(cdb("select account_id
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
-    *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
@@ -54,6 +54,7 @@ extract(cdb("select account_id
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
+  <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/codemirror/codemirror.js"></script>
@@ -88,10 +89,9 @@ extract(cdb("select account_id
 </head>
 <body style="font-size: larger; background: rgb(var(--rgb-light));">
   <header>
+    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div class="container">
-      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
-      <a class="element" href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>
-      <span class="element">Question History for: "<a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a>"</span>
+      <span class="element">question history for: <a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></span>
     </div>
     <div style="display: flex; align-items: center;">
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>

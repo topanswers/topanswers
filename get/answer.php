@@ -11,9 +11,10 @@ if(isset($_GET['id'])){
 extract(cdb("select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
                    ,answer_id,answer_markdown,answer_license
                    ,question_id,question_title,question_markdown
-                   ,community_name,community_code_language,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,community_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
+$cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
@@ -54,6 +55,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
+  <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/codemirror/codemirror.js"></script>
@@ -172,11 +174,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 </head>
 <body style="display: flex; flex-direction: column; font-size: larger; background-color: rgb(var(--rgb-light)); height: 100%;">
   <header>
-    <div class="container">
-      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
-      <a class="element" href="/<?=$community_name?>">TopAnswers <?=ucfirst($community_name)?></a>
+    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+    <div>
+      <?if($answer_id){?>
+        <span class="element">editing <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>">an answer</a> on <a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></span>
+      <?}else{?>
+        <span class="element"><a href="/<?=$community_name?>?q=<?=$question_id?>">back to question</a></span>
+      <?}?>
     </div>
-    <div style="display: flex; align-items: center; height: 100%;">
+    <div>
       <?if(!$answer_id){?>
         <span class="element">
           <select name="license" form="form">
@@ -211,7 +217,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
       <div style="flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden;">
         <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow: hidden;">
-          <div style="flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark));"><?=$question_title?></div>
+          <div style="flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark));"><a style="color: black; text-decoration: none;" href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></div>
           <div class="markdown" data-markdown="<?=$question_markdown?>" style="flex: 1 0 auto; overflow-y: auto; padding: 0.6em;"></div>
         </div>
       </div>

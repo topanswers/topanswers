@@ -52,6 +52,7 @@ if(isset($_GET['action'])){
 }
 
 $pin = str_pad(rand(0,pow(10,12)-1),12,'0',STR_PAD_LEFT);
+$cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
@@ -62,7 +63,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
              --rgb-warning: <?=$community_rgb_warning?>;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
-             --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
              ">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
@@ -74,19 +74,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <style>
-    *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
     body { display: flex; flex-direction: column; background: rgb(var(--rgb-dark)); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    header, header>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; }
-    header { min-height: 30px; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: rgb(var(--rgb-dark)); white-space: nowrap; border-bottom: 2px solid black; }
-    header a { color: rgb(var(--rgb-light)); }
     main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
     main>fieldset { display: flex; flex-direction: column; align-items: flex-start; }
 
-    .frame { display: inline-block; border: 1px solid rgb(var(--rgb-dark)); margin: 2px; outline: 1px solid rgb(var(--rgb-light)); background-color: rgb(var(--rgb-light)); }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .element { margin: 0 4px; }
 
     fieldset { display: inline-block; margin: 16px; border-radius: 3px; }
     :not(main)>fieldset { background-color: white; border: none; }
@@ -97,6 +91,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     table { border-collapse: collapse; }
     td,th { border: 1px solid black; white-space: nowrap; }
   </style>
+  <script src="/lib/js.cookie.js"></script>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/datatables/datatables.min.js"></script>
   <script>
@@ -121,35 +116,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#community').change(function(){ window.location = '/profile?community='+$(this).find(':selected').attr('data-name'); });
       $('input[value=save]').css('visibility','hidden');
       $('table').DataTable({ select: true, dom: 'Pfrtip' });
-      $('.select').click(function(e){ $(this).toggleClass('open'); e.stopPropagation(); });
-      $('main').click(function(){ $('.select').removeClass('open'); });
+      $('.select>div:last-child>div>div').each(function(){
+        $(this).append('<a href="/profile?community='+$(this).data('community')+'">profile</a>');
+      });
     });
   </script>
   <title>Profile | TopAnswers</title>
 </head>
 <body>
   <header>
-    <div class="container">
-      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
-      <div class="select element">
-        <span>TopAnswers</span>
-        <span><?=$community_display_name?></span>
-        <i class="fa fa-chevron-down"></i>
-        <div>
-          <div>
-            <?foreach(db("select community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light
-                          from community
-                          order by community_my_votes desc nulls last, community_ordinal, community_name") as $r){ extract($r,EXTR_PREFIX_ALL,'s');?>
-              <div style="--rgb-dark: <?=$s_community_rgb_dark?>; --rgb-mid: <?=$s_community_rgb_mid?>; --rgb-light: <?=$s_community_rgb_light?>;">
-                <div></div>
-                <a href="/<?=$s_community_name?>"><?=$s_community_display_name?></a>
-                <a href="/profile?community=<?=$s_community_name?>">profile</a>
-              </div>
-            <?}?>
-          </div>
-        </div>
-      </div>
-    </div>
+    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div>
       <a class="frame"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>

@@ -23,7 +23,6 @@ extract(cdb("select account_id, (select community_display_name from community wh
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <style>
-    *:not(hr) { box-sizing: inherit; }
     html { box-sizing: border-box; font-family: source-sans-pro, serif; font-size: 16px; }
     body { display: flex; flex-direction: column; background: lightgrey; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }

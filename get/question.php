@@ -11,7 +11,7 @@ if(isset($_GET['id'])){
   $auth||(($_GET['community']==='databases')&&isset($_GET['rdbms'])&&isset($_GET['fiddle'])) || fail(403,'need to be logged in to visit this page unless from a fiddle');
 }
 extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
-                   ,community_id,community_name,community_display_name,community_code_language,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
                   , question_license_name||(case when question_has_codelicense then ' + '||question_codelicense_name else '' end) license
@@ -20,6 +20,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_license_href,question_has_codelicense,question_codelicense_name
              from one"));
+$cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
@@ -63,6 +64,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
+  <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/codemirror/codemirror.js"></script>
@@ -202,11 +204,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 </head>
 <body>
   <header>
-    <div class="container">
-      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
-      <a class="element" href="/<?=$community_name?>">TopAnswers <?=$community_display_name?></a>
-    </div>
-    <div style="display: flex; align-items: center; height: 100%;">
+    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+    <div>
       <?if($auth){?>
         <?if(!$question_id){?>
           <select class="element" name="kind" form="form">
