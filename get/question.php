@@ -45,20 +45,27 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
-    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     body { display: flex; flex-direction: column; background-color: rgb(var(--rgb-light)); }
-    #form { display: flex; justify-content: center; flex: 1 0 0; padding: 16px; overflow-y: hidden; }
     main { display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column; }
+    main>input { flex 0 0 auto; border: 1px solid rgb(var(--rgb-dark)); padding: 3px; border-radius: 2px; }
+    main>div:last-child { display: flex; flex: 1 0 0; overflow: hidden; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
+    .gap { flex: 0 0 2vmin;  }
 
-    #markdown-editor-buttons { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
-    #markdown-editor-buttons i { padding: 4px; font-size: 15px; text-align: center; }
-    #markdown-editor-buttons i:hover { color: rgb(var(--rgb-highlight)); cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 4px; }
-    #markdown-editor-buttons i:last-child { margin-bottom: 0; }
+    #codemirror-container { flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); }
+    #markdown { flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
+    #form { display: flex; justify-content: center; flex: 1 0 0; padding: 16px; overflow-y: hidden; }
+    #imageupload { display: none; }
+
+    #editor-buttons { flex: 0 0 1.6em; }
+    #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
+    #editor-buttons>div i { padding: 4px; font-size: 15px; text-align: center; }
+    #editor-buttons>div i:hover { color: rgb(var(--rgb-highlight)); cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 4px; }
+    #editor-buttons>div i:last-child { margin-bottom: 0; }
+    #editor-buttons>div br { margin-bottom: 15px; }
 
     .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 15px; border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
@@ -205,6 +212,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <body>
   <header>
     <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+    <?if($question_id){?>
+      <div>
+        <span class="element">editing the question <a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></span>
+      </div>
+    <?}?>
     <div>
       <?if($auth){?>
         <?if(!$question_id){?>
@@ -246,35 +258,35 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <input type="hidden" name="community" value="<?=$community_name?>">
     <?}?>
     <main>
-      <input name="title" style="flex 0 0 auto; border: 1px solid rgb(var(--rgb-dark)); padding: 3px; border-radius: 2px;" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
-      <div style="flex: 0 0 2vmin;"></div>
-      <div style="display: flex; flex: 1 0 0; overflow: hidden;">
-        <div style="flex: 0 0 1.6em;">
-          <div id="markdown-editor-buttons">
+      <input name="title" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
+      <div class="gap"></div>
+      <div>
+        <div id="editor-buttons">
+          <div>
             <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
             <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
-            <br style="margin-bottom: 15px;">
+            <br>
             <i title="Hyperlink (Ctrl + L)" class="button fa fw fa-link"></i>
             <i title="Blockquote (Ctrl + Q)" class="button fa fw fa-quote-left"></i>
             <i title="Code (Ctrl + K)" class="button fa fw fa-code"></i>
             <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
-        <!--<br style="margin-bottom: 1em;">
+        <!--<br>
             <i title="Ordered List (Ctrl + O)" class="button fa fw fa-list-ol"></i>
             <i title="Unordered List (Ctrl + U)" class="button fa fw fa-list-ul"></i>-->
-            <br style="margin-bottom: 15px;">
+            <br>
             <i title="Undo (Ctrl + Z)" class="button fa fw fa-undo"></i>
             <i title="Redo (Ctrl + Y)" class="button fa fw fa-repeat"></i>
           </div>
         </div>
-        <div style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin);">
+        <div id="codemirror-container">
           <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
         </div>
-        <div style="flex: 0 0 2vmin;"></div>
-        <div id="markdown" class="markdown noexpander" style="flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto;"></div>
+        <div class="gap"></div>
+        <div id="markdown" class="markdown noexpander"></div>
       </div>
     </main>
   </form>
-  <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
+  <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*"></form>
 </body>   
 </html>   
 <?ob_end_flush();

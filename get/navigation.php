@@ -21,6 +21,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }else{
           Cookies.set('environment',v,{ secure: true, domain: '.topanswers.xyz' });
         }
+        $(this).attr('disabled',true);
         window.location.reload(true);
       });
       $('.select>div:first-child').click(function(e){ $(this).parent().toggleClass('open'); e.stopPropagation(); });

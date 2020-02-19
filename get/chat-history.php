@@ -35,8 +35,10 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
-    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { margin: 0; padding: 0; }
+    body { background-color: rgb(var(--rgb-light)); }
+    main { width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
@@ -80,17 +82,17 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   </script>
   <title>Chat Message History - TopAnswers</title>
 </head>
-<body style="font-size: larger; background-color: rgb(var(--rgb-light));">
+<body>
   <header>
     <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div class="container">
       <span class="element">history of <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>">a chat message</a> in <a href="/<?=$community_name?>?room=<?=$room_id?>"><?=$room_name?></a></span>
     </div>
-    <div style="display: flex; align-items: center; height: 100%;">
+    <div>
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
-  <div style="width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem;">
+  <main>
     <?foreach(db("select chat_history_markdown,chat_history_at,prev_markdown,rn from history order by rn desc") as $i=>$r){ extract($r);?>
       <?$rowspan = ($rn>1)?2:1;?>
       <?$rowoffset = 3*$i;?>
@@ -104,6 +106,6 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       <?}?>
       <div style="grid-area: <?=(1+$rowspan+$rowoffset)?> / 1 / span 1 / 4;" class="separator"></div>
     <?}?>
-  </div>
+  </main>
 </body>   
 </html>   

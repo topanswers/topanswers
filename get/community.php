@@ -939,7 +939,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                                              ?><?=$question_is_deleted?' deleted':''?>">
           <div class="title">
             <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
-            <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
+            <a title="<?=$question_title?>"><?=$question_title?></a>
           </div>
           <div class="bar">
             <div>

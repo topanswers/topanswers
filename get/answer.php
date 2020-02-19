@@ -39,17 +39,29 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <style>
-    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
+    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+    body { display: flex; flex-direction: column; background-color: rgb(var(--rgb-light)); }
+    main { display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
+    .gap { flex: 0 0 2vmin; }
 
-    #markdown-editor-buttons { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
-    #markdown-editor-buttons i { padding: 4px; font-size: 15px; text-align: center; }
-    #markdown-editor-buttons i:hover { color: rgb(var(--rgb_highlight)); cursor: pointer; background-color: rgb(var(--rgb_light)); border-radius: 4px; }
-    #markdown-editor-buttons i:last-child { margin-bottom: 0; }
+    #question { flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden; }
+    #question>div { display: flex; flex-direction: column; background-color: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow: hidden; }
+    #question>div>.title { flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark)); }
+    #question>div>.title>a { color: black; text-decoration: none; }
+    #question>div>.markdown { flex: 1 0 auto; overflow-y: auto; padding: 0.6em; }
+    #codemirror-container { flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); position: relative; }
+    #markdown { flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
+    #form { display: flex; flex-direction: column; flex: 1 0 0; padding: 16px; overflow-y: hidden; }
+
+    #editor-buttons { flex: 0 0 1.6em; }
+    #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
+    #editor-buttons>div i { padding: 4px; font-size: 15px; text-align: center; }
+    #editor-buttons>div i:hover { color: rgb(var(--rgb-highlight)); cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 4px; }
+    #editor-buttons>div i:last-child { margin-bottom: 0; }
+    #editor-buttons>div br { margin-bottom: 15px; }
 
     .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 15px; border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
@@ -172,7 +184,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </script>
   <title><?=$answer_id?'Edit Answer':'Answer Question'?> - TopAnswers</title>
 </head>
-<body style="display: flex; flex-direction: column; font-size: larger; background-color: rgb(var(--rgb-light)); height: 100%;">
+<body>
   <header>
     <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div>
@@ -205,7 +217,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
-  <form id="form" method="POST" action="//post.topanswers.xyz/answer" style="display: flex; flex-direction: column; flex: 1 0 0; padding: 16px; overflow-y: hidden;">
+  <form id="form" method="POST" action="//post.topanswers.xyz/answer">
     <?if($answer_id){?>
       <input type="hidden" name="action" value="change">
       <input type="hidden" name="id" value="<?=$answer_id?>">
@@ -214,33 +226,33 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <input type="hidden" name="community" value="<?=$community_name?>">
       <input type="hidden" name="question" value="<?=$question_id?>">
     <?}?>
-    <main style="display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto;">
-      <div style="flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden;">
-        <div id="question" style="display: flex; flex-direction: column; background-color: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow: hidden;">
-          <div style="flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark));"><a style="color: black; text-decoration: none;" href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></div>
-          <div class="markdown" data-markdown="<?=$question_markdown?>" style="flex: 1 0 auto; overflow-y: auto; padding: 0.6em;"></div>
+    <main>
+      <div id="question">
+        <div>
+          <div class="title"><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></div>
+          <div class="markdown" data-markdown="<?=$question_markdown?>"></div>
         </div>
       </div>
-      <div style="flex: 0 0 2vmin;"></div>
-      <div style="flex: 0 0 1.6em;">
-        <div id="markdown-editor-buttons">
+      <div class="gap"></div>
+      <div id="editor-buttons">
+        <div>
           <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
           <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
-          <br style="margin-bottom: 15px;">
+          <br>
           <i title="Hyperlink (Ctrl + L)" class="button fa fw fa-link"></i>
           <i title="Blockquote (Ctrl + Q)" class="button fa fw fa-quote-left"></i>
           <i title="Code (Ctrl + K)" class="button fa fw fa-code"></i>
           <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
-          <br style="margin-bottom: 15px;">
+          <br>
           <i title="Undo (Ctrl + Z)" class="button fa fw fa-undo"></i>
           <i title="Redo (Ctrl + Y)" class="button fa fw fa-repeat"></i>
         </div>
       </div>
-      <div style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); position: relative;">
+      <div id="codemirror-container">
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
       </div>
-      <div style="flex: 0 0 2vmin;"></div>
-      <div id="answer" class="markdown noexpander" style="flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto;"></div>
+      <div class="gap"></div>
+      <div id="markdown" class="markdown noexpander"></div>
     </main>
   </form>
   <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
