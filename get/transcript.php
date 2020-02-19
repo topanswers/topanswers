@@ -91,7 +91,7 @@ if(isset($_GET['month'])){
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
-    .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid rgb(var(--rgb-dark))99; border-radius: 3px; background: white; overflow: auto; }
+    .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: white; overflow: auto; }
 
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
@@ -106,7 +106,7 @@ if(isset($_GET['month'])){
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .icon { visibility: hidden; }
-    .message.thread .markdown { background: rgb(var(--rgb-highlight))40; }
+    .message.thread .markdown { background: rgba(var(--rgb-highlight),0.25); }
     .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
   </style>
   <script src="/lib/lodash.js"></script>
