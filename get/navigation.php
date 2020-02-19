@@ -44,7 +44,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                       from community
                       order by community_my_votes desc nulls last, community_ordinal, community_name") as $r){ extract($r,EXTR_PREFIX_ALL,'s');?>
           <div data-community="<?=$s_community_name?>" style="--rgb-dark: <?=$s_community_rgb_dark?>; --rgb-mid: <?=$s_community_rgb_mid?>; --rgb-light: <?=$s_community_rgb_light?>;">
-            <div></div>
+            <div class="frame"><img class="icon" src="/communityicon?community=<?=$s_community_name?>"></div>
             <a href="/<?=$s_community_name?>"><?=$s_community_display_name?></a>
             <?if($s_community_about_question_id){?><a href="/<?=$s_community_name?>?q=<?=$s_community_about_question_id?>">about</a><?}?>
           </div>
