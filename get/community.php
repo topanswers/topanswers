@@ -134,6 +134,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
     #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #chat-wrapper .label a[href="."] { text-decoration: none; }
+    #chat-wrapper .roomtitle { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
     #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px 0; }
 
@@ -1170,16 +1171,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <header>
       <div style="display: flex; align-items: center; height: 100%;">
         <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
-        <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?>><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
-        <?if(!$question){?>
-          <select id="room" class="element">
-            <?foreach(db("select room_id,room_name
-                          from room natural join community
-                          where community_name=$1
-                          order by room_name desc",$community_name) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
-              <option<?=($r_room_id===$room)?' selected':''?> value="<?=$r_room_id?>"><?=$r_room_name?></option>
-            <?}?>
-          </select>
+        <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
+        <div></div>
+        <?foreach(db("select room_id,room_name
+                      from room natural join community
+                      where community_name=$1 and room_id<>$2
+                      order by room_name desc",$community_name,$room) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
+          <a class="frame" href="/<?=$community_name?>?room=<?=$r_room_id?>" title="<?=$r_room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$r_room_id?>"></a>
         <?}?>
       </div>
       <div>
@@ -1195,6 +1193,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div id="messages-wrapper">
           <div class="label container">
             <div id="chatorstarred" class="element"><a><?=$question?'Comments':'Chat'?></a><?=($auth)?' / <a href=".">Starred</a>':''?></div>
+            <?if(!$question){?><div class="element roomtitle" title="<?=$room_name?>">&#8220;<?=$room_name?>&#8221;</div><?}?>
             <div class="element"><a class="element" href="/transcript?room=<?=$room?>">transcript</a></div>
           </div>
           <?if($auth){?>
