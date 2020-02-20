@@ -383,7 +383,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }).fail(setChatPollTimeout);
       }
       function renderChat(){
-        $(this).find('.markdown').renderMarkdown();
+        var t = $(this);
+        t.find('.markdown').renderMarkdown(function(){ t.find('.question:not(.processed)').each(renderQuestion).addClass('processed'); });
       }
       function processNewChat(){
         var newchat = $('#messages>*:not(.processed)');
@@ -698,7 +699,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             }
           });
         }else{
-          $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
+          $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(function(){ $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed'); });
         }
       }
       var renderPreviewThrottle;
