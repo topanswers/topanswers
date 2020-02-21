@@ -149,6 +149,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages.firefox { flex-direction: column; transform: scaleY(-1); min-height: 100%; }
     #messages.firefox>* { transform: scaleY(-1); }
     #firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
+    #firefoxwrapper .message .markdown { min-width: 2em; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { display: none; }
     #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark));  }
@@ -998,7 +999,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             </div>
             <?if($auth){?>
               <div class="shrink">
-                <?if(!$question_account_is_me&&(($question_crew_flags===0)||$communicant_is_post_flag_crew)){?>
+                <?if(($question_crew_flags===0)||$communicant_is_post_flag_crew){?>
                   <?if($question_active_flags<>0){?>
                     <div class="element container shrink">
                       <span>flagged by:</span>
@@ -1116,7 +1117,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               </div>
               <?if($auth){?>
                 <div class="shrink">
-                  <?if(!$answer_account_is_me&&(($answer_crew_flags===0)||$communicant_is_post_flag_crew)){?>
+                  <?if(($answer_crew_flags===0)||$communicant_is_post_flag_crew){?>
                     <?if($answer_other_flags){?>
                       <div class="element container shrink">
                         <span>flagged by:</span>

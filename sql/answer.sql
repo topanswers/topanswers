@@ -87,7 +87,6 @@ create function flag(direction integer) returns void language sql security defin
   select _error('access denied') where get_account_id() is null;
   select _error('invalid answer') where get_answer_id() is null;
   select _error('invalid flag direction') where direction not in(-1,0,1);
-  select _error('cant flag own answer') from answer.one where account_id=answer_account_id;
   select _error(429,'rate limit') where (select count(1) from answer_flag_history where account_id=current_setting('custom.account_id',true)::integer and answer_flag_history_at>current_timestamp-'1m'::interval)>6;
   --
   select _ensure_communicant(get_account_id(),get_community_id());
