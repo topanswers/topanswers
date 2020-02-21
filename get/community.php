@@ -1175,15 +1175,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
         <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
         <div></div>
+      </div>
+      <div>
+        <?if($auth) if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
+      </div>
+      <div style="display: flex; align-items: center; height: 100%;">
         <?foreach(db("select room_id,room_name
                       from room natural join community
                       where community_name=$1 and room_id<>$2
                       order by room_name desc",$community_name,$room) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
           <a class="frame" href="/<?=$community_name?>?room=<?=$r_room_id?>" title="<?=$r_room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$r_room_id?>"></a>
         <?}?>
-      </div>
-      <div>
-        <?if($auth) if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
       </div>
     </header>
     <div id="chat">
