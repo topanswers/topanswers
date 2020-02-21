@@ -23,7 +23,8 @@ header .select>div:last-child>div>hr { width: 100%; }
 header .select>div:last-child>div>div { display: flex; }
 header .select>div:last-child>div>div:not(:last-child) { border-bottom: 1px solid lightgray; }
 header .select>div:last-child>div>div:hover { background: rgb(var(--rgb-light)); }
-header .select>div:last-child>div>div>a { color: black; line-height: 28px; }
+header .select>div:last-child>div>div>a { display: flex; color: black; line-height: 28px; }
+header .select>div:last-child>div>div>a>div { margin-right: 6px; }
 header .select>div:last-child>div>div>a:not(:first-of-type) { font-size: 12px; padding-right: 4px; }
-header .select>div:last-child>div>div>div+a { flex: 1 0 auto; padding-right: 75px; padding-left: 4px; text-decoration: none; }
+header .select>div:last-child>div>div>a:first-child { flex: 1 0 auto; padding-right: 75px; text-decoration: none; }
 header .select>div:last-child>div>div:not(:hover)>a:not(:first-of-type) { visibility: hidden; }
