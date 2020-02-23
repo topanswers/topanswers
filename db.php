@@ -11,7 +11,7 @@ function fail($code = 500,$msg = ''){
   }
   exit($msg);
 }
-$user = '';
+$user = 'get';
 if($_SERVER['SERVER_NAME']==='127.0.0.1') $user = 'get';
 if($_SERVER['SERVER_NAME']==='topanswers.xyz') $user = 'get';
 if($_SERVER['SERVER_NAME']==='post.topanswers.xyz') $user = 'post';
