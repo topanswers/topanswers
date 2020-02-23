@@ -1,7 +1,7 @@
 .post { background-color: white; border-radius: 3px; margin: 16px 16px 32px 16px; overflow: hidden; }
 .post:not(.processed) { opacity: 0; }
 .post:not(:hover) .hover { display: none; }
-.post.deleted>.title>a, .post.deleted>.markdown, .post .answers>.deleted { background: rgba(var(--rgb-warning),0.13); }
+.post.deleted>.title>a, .post.deleted>.markdown, .post .answers .bar.deleted { background: rgba(var(--rgb-warning),0.13); }
 .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; }
 .post .title { display: flex; border-bottom: 1px solid rgb(var(--rgb-dark)); font-size: 18px; }
 .post .title > div { flex: 0 0 auto; padding: 8px; background: rgb(var(--rgb-mid)); border-right: 1px solid rgb(var(--rgb-dark)); box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
