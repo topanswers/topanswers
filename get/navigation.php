@@ -33,7 +33,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
   <a class="frame" href="/<?=$community_name?>" title="<?=$community_display_name?> home"><img class="icon" src="/communityicon?community=<?=$community_name?>"></a>
   <div class="select element">
-    <div accesskey="t" tabindex="0">
+    <div accesskey="t">
       <span class="wideonly">TopAnswers&nbsp;</span>
       <span><?=$community_display_name?></span>
       <i class="fa fa-chevron-down"></i>
