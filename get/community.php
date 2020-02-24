@@ -145,8 +145,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #notifications { overflow-x: hidden; overflow-y: auto; }
     #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: rgb(var(--rgb-light)); margin: 0 16px; }
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
-    #messages.newscroll:not(.firefox) { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
-    #messages.newscroll.firefox { border-top: 3px solid rgb(var(--rgb-highlight)); }
+    .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
     #messages.firefox { flex-direction: column; transform: scaleY(-1); min-height: 100%; }
     #messages.firefox>* { transform: scaleY(-1); }
     #firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
@@ -389,8 +388,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         t.find('.markdown').renderMarkdown(function(){ t.find('.question:not(.processed)').each(renderQuestion).addClass('processed'); });
       }
       function processNewChat(){
-        var newchat = $('#messages>*:not(.processed)');
-        scroll = $('#messages').hasClass('firefox') ? $('#messages').scrollTop()===0 : (($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight"));
+        var newchat = $('#messages>*:not(.processed)')
+          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
+          , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight");
         newchat.filter('.message').each(renderChat).find('.when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
@@ -400,12 +400,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           newchat.find('img').waitForImages(true).done(function(){
             if(scroll){
               newchat.addClass('processed');
+              scroller.scrollTop(1000000);
             }else{
-              $('#messages').addClass('newscroll');
-              setTimeout(function(){ $('#messages').scroll(_.debounce(function(){ $('#messages').removeClass('newscroll'); })); },1000);
+              scroller.addClass('newscroll');
+              setTimeout(function(){ scroller.scroll(_.debounce(function(){ scroller.removeClass('newscroll'); })); },500);
               newchat.addClass('processed');
             }
-            $('#firefoxwrapper').scrollTop(1000000);
           });
         }
         $('.message').each(function(){
@@ -456,7 +456,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }).fail(setChatPollTimeout);
       }
       function updateChat(){
-        var maxChat = $('#messages>.message').first().data('id');
+        var maxChat = $('#messages>.message').first().data('id')
+          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
+          , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight");
         $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message').first().data('id')===maxChat){
             var newchat;
@@ -465,7 +467,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
             if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
             processNewChat();
-            $('#firefoxwrapper').scrollTop(1000000);
+            if(scroll) scroller.scrollTop(1000000);
             <?if($auth){?>
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
@@ -687,13 +689,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         window.location = '/<?=$community_name?>?room='+$(this).val();
       });
       function renderPreview(sync){
-        var m = $('#chattext').val(), s, scroll = ($('#messages').scrollTop()+$('#messages').innerHeight()+4)>$('#messages').prop("scrollHeight");
+        var m = $('#chattext').val(), s
+          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
+          , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight");
         sync = typeof sync !== 'undefined' ? sync : false;
         s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
         if(s&&(s[2]===s[4])){
           $.get({ url: '/chat?quote&room=<?=$room?>&id='+s[2], async: !sync }).done(function(r){
             if($('#chattext').val()===m){
               $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return ' *— '+(moment(match).fromNow())+'*'; })).renderMarkdown();
+              if(scroll) scroller.scrollTop(1000000);
             }
           }).fail(function(){
             if($('#chattext').val()===m){
@@ -702,6 +707,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           });
         }else{
           $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(function(){ $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed'); });
+          if(scroll) scroller.scrollTop(1000000);
         }
       }
       var renderPreviewThrottle;
@@ -737,6 +743,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 }else{
                   if(replyid) $('#notifications .message[data-id='+replyid+']').remove();
                   if($('#notifications .message').children().length===0) $('#notification-wrapper').children().remove();
+                  $('#messages').scrollTop(1000000);
+                  $('#firefoxwrapper').scrollTop(1000000);
                   updateChat();
                 }
                 $('#cancel').click();
