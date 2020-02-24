@@ -14,7 +14,7 @@
 .post .bar>div:not(.shrink) { flex: 0 0 auto; }
 .post .bar.shrink { flex: 0 1 auto; }
 .post .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 4px; }
-.post .tag::after { position: absolute; border-radius: 50%; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-dark)); height: 6px; width: 6px; content: ''; top: 5px; right: 5px; box-sizing: border-box; }
+.post .tag::after { position: absolute; border-radius: 50%; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
 .post .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); border-radius: 50%; }
 .post .tag i::before { border-radius: 50%; }
 .post .answers:not(:empty) { border-top: 1px solid rgb(var(--rgb-dark)); }

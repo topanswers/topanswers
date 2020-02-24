@@ -93,7 +93,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px rgb(var(--rgb-dark)); cursor: pointer; }
     .icon.ping { box-shadow: 0 0 0 1px rgb(var(--rgb-highlight)); }
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
-    .button { background: none; border: none; padding: 0; cursor: pointer; outline: inherit; margin: 0; }
     .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: rgba(var(--rgb-dark),0.6); pointer-events: none; }
 
     .select2-dropdown { border: 1px solid rgb(var(--rgb-dark)) !important; box-shadow: 0 0 0.2rem 0.3rem white; }
@@ -941,7 +940,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
-          <?if($community_about_question_id){?><a href="/<?=$community_name?>?q=<?=$community_about_question_id?>" class="button">About</a><?}?>
+          <?if($community_about_question_id){?><a href="/<?=$community_name?>?q=<?=$community_about_question_id?>" class="button wideonly">About</a><?}?>
           <a href="/question?community=<?=$community_name?>" class="button">Ask</a>
           <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
         <?}?>
