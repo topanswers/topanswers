@@ -514,7 +514,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }).fail(setChatPollTimeout);
       }
       function processNotifications(){
-        $('#notification-wrapper .markdown').renderMarkdown();
+        $('#notification-wrapper .markdown').renderMarkdown(function(){ $('#notification-wrapper .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed'); });
         $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
         $('#notifications>.notification').addClass('processed');
       }

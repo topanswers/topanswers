@@ -12,7 +12,7 @@ create view answer with (security_barrier) as select answer_id, community_name f
 --
 create view one with (security_barrier) as
 select get_account_id() account_id
-      ,community_name,community_my_power
+      ,community_name,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,question_id,question_at,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,kind_short_description
      , coalesce(question_vote_votes,0) question_votes_from_me
       ,answer_id,answer_at,answer_markdown,answer_account_id,answer_account_name,answer_votes,answer_communicant_votes

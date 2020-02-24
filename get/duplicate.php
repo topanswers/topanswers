@@ -3,14 +3,12 @@ include '../db.php';
 include '../locache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 isset($_GET['id']) || fail(400,'id must be set');
-isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to duplicate,pg_temp");
 db("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
 ccdb("select count(1) from answer where answer_id=$1",$_GET['id'])===1 || fail(400,'not a valid id');
-ccdb("select count(1) from answer where answer_id=$1 and community_name=$2",$_GET['id'],$_GET['community'])===1 || fail(400,'wrong community');
 $auth = ccdb("select login_answer(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['id']);
 extract(cdb("select account_id
-                   ,community_name,community_my_power
+                   ,community_name,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me,kind_short_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                   , extract('epoch' from current_timestamp-question_at)::bigint question_when
@@ -19,7 +17,7 @@ extract(cdb("select account_id
                   , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
              from one"));
 ?>
-<div class="question post" data-id="<?=$question_id?>">
+<div class="question post" data-id="<?=$question_id?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>; --rgb-highlight: <?=$community_rgb_highlight?>; --rgb-warning: <?=$community_rgb_warning?>;">
   <div class="title">
     <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
     <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
