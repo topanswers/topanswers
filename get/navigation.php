@@ -33,14 +33,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
   <a class="frame" href="/<?=$community_name?>" title="<?=$community_display_name?> home"><img class="icon" src="/communityicon?community=<?=$community_name?>"></a>
   <div class="select element">
-    <div>
+    <div accesskey="t" tabindex="0">
       <span class="wideonly">TopAnswers&nbsp;</span>
       <span><?=$community_display_name?></span>
       <i class="fa fa-chevron-down"></i>
     </div>
     <div>
       <div>
-        <?foreach(db("select community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_about_question_id
+        <?foreach(db("select community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light
                       from community
                       order by community_my_votes desc nulls last, community_ordinal, community_name") as $r){ extract($r,EXTR_PREFIX_ALL,'s');?>
           <div data-community="<?=$s_community_name?>" style="--rgb-dark: <?=$s_community_rgb_dark?>; --rgb-mid: <?=$s_community_rgb_mid?>; --rgb-light: <?=$s_community_rgb_light?>;">
@@ -52,8 +52,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         <?}?>
         <?if($dev){?>
-          <hr>
-          <select id="environment" class="element">
+          <select id="environment" class="element" style="margin: 6px;">
             <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
               <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
             <?}?>

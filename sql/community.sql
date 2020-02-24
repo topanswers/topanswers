@@ -67,7 +67,8 @@ where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
 select account_id
-      ,community_id,community_name,community_display_name,community_my_power,community_code_language,room_id,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+      ,community_id,community_name,community_display_name,community_my_power,community_code_language,room_id,community_tables_are_monospace,community_about_question_id
+      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported

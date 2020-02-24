@@ -20,3 +20,7 @@ h6 { font-size: 16px; margin: 16px 0; }
 .highlight { color: rgb(var(--rgb-highlight)); }
 .frame { display: inline-block; border: 1px solid rgb(var(--rgb-dark)); margin: 2px; outline: 1px solid rgb(var(--rgb-light)); background: rgb(var(--rgb-light)); }
 .frame + .frame { margin-left: -1px; }
+
+a.button { height: 24px; background: rgb(var(--rgb-dark)); border: 2px solid rgb(var(--rgb-light)); border-radius: 3px; color: white; margin: 4px; padding: 0 6px; text-decoration: none; line-height: 20px; xfont-weight: bold; }
+a.button:hover { border-color: rgb(var(--rgb-highlight)); }
+a.button+a.button { margin-left: 1px; }
