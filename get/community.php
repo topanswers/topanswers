@@ -146,10 +146,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: rgb(var(--rgb-light)); margin: 0 16px; }
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
-    #messages.firefox { flex-direction: column; transform: scaleY(-1); min-height: 100%; }
-    #messages.firefox>* { transform: scaleY(-1); }
     #firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
-    #firefoxwrapper .message .markdown { min-width: 2em; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { display: none; }
     #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark));  }
@@ -925,8 +922,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
         firefox -= true;
-        $('#messages').addClass('firefox').wrap('<div id="firefoxwrapper"></div>');
-        $('#firefoxwrapper').scrollTop(1000000);
+        $('#messages').wrap('<div id="firefoxwrapper"></div>');
+        $('#firefoxwrapper').scrollTop(1000000).closest('#messages-wrapper').css('border-radius','0');
         setTimeout(function(){ $('#firefoxwrapper').scrollTop(1000000); },500);
       }
     });
