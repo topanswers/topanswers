@@ -106,7 +106,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     <?if($question){?>
       <?if($auth){?>.tag:hover i { visibility: visible; }<?}?>
-      .newtag { position: relative; cursor: pointer; }
+      .newtag { position: relative; cursor: pointer; margin-left: 0; }
       .newtag .tag { opacity: 0.4; margin: 0; }
       .newtag:hover .tag { opacity: 1; }
       .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
@@ -979,7 +979,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div>
               <div class="element container">
                 <?if($auth){?>
-                  <span class="newtag">
+                  <span class="newtag element">
                     <div>
                       <select id="tags" data-question-id="<?=$question?>">
                         <option></option>
@@ -992,7 +992,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   </span>
                 <?}?>
                 <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
-                  <span class="tag" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+                  <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
                 <?}?>
               </div>
             </div>
