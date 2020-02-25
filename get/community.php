@@ -160,10 +160,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #preview { display: block; width: 100%; background: rgb(var(--rgb-light)); border-top: 1px solid rgb(var(--rgb-dark)); padding: 4px; }
     #preview .markdown:empty { visibility: hidden; }
     #canchat-wrapper { flex: 0 0 auto; }
-    #chattext-wrapper { position: relative; display: flex; border-top: 1px solid rgb(var(--rgb-dark)); }
+    #chattext-wrapper { position: relative; display: flex; border-top: 1px solid rgb(var(--rgb-dark)); align-items: center; }
     #chatuploadfile { display: none; }
-    #chatupload { position: absolute; right: 4px; top: 0; bottom: 0; font-size: 18px; color: rgb(var(--rgb-dark)); }
-    #chatupload:active>div { color: rgb(var(--rgb-mid)); }
+    #chatupload { position: absolute; right: 4px; font-size: 18px; color: rgb(var(--rgb-dark)); cursor: pointer; }
+    #chatupload:active { color: rgb(var(--rgb-mid)); }
     #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 26px; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; }
 
     #chatorstarred { pointer-events: none; }
@@ -1253,7 +1253,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div id="canchat-wrapper">
               <div id="chattext-wrapper">
                 <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
-                <button id="chatupload" class="button" title="embed image"><div class="fa fa-picture-o"></div></button>
+                <i id="chatupload" class="fa fa-fw fa-picture-o" title="embed image"></i>
                 <textarea id="chattext" rows="1" placeholder="type message here" maxlength="5000"></textarea>
               </div>
             </div>
