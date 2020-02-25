@@ -267,9 +267,11 @@ create table sanction(
   kind_id integer references kind not null
 , community_id integer not null references community
 , sanction_ordinal integer not null
+, sanction_is_default boolean default false
 , primary key (kind_id,community_id)
 );
 create unique index sanction_ind on sanction(community_id,sanction_ordinal);
+create unique index sanction_default_ind on sanction(community_id) where sanction_is_default;
 
 create table question(
   question_id integer generated always as identity primary key

@@ -219,9 +219,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <div>
       <?if($auth){?>
         <?if(!$question_id){?>
-          <select class="element" name="kind" form="form">
-            <?foreach(db("select kind_id,kind_description from kind order by sanction_ordinal") as $i=>$r){ extract($r);?>
-              <option value="<?=$kind_id?>"<?=($i===0)?' selected':''?>><?=$kind_description?></option>
+          <select class="element" name="kind" form="form" required>
+            <option value="" disabled selected>choose post type</option>
+            <?foreach(db("select kind_id,kind_description,sanction_is_default from kind order by sanction_ordinal") as $r){ extract($r);?>
+              <option value="<?=$kind_id?>"<?=$sanction_is_default?' selected':''?>><?=$kind_description?></option>
             <?}?>
           </select>
           <span class="element">
