@@ -59,10 +59,8 @@ if($search){
           </span>
         <?}?>
         <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"><?=$question_account_name?></span>
-        <?if($question_change==='asked'){?>
-          <span class="element hover">(asked)</span>
-        <?}else{?>
-          <span class="element hover when" data-prefix="(<?=$question_change?>, " data-postfix=")" data-seconds="<?=$question_change_when?>" data-at="<?=$question_change_at_iso?>"></span>
+        <?if($question_change!=='asked'){?>
+          <span class="element hover wideonly when" data-prefix="(<?=$question_change?>, " data-postfix=")" data-seconds="<?=$question_change_when?>" data-at="<?=$question_change_at_iso?>"></span>
         <?}?>
       </div>
       <div class="element container">
@@ -83,9 +81,7 @@ if($search){
         <div class="bar<?=$answer_is_deleted?' deleted':''?>">
           <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element summary shrink"><?=($i===0)?'Top ':''?>Answer<?=($i>0)?' #'.($i+1):''?>: <span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
           <div>
-            <?if($answer_change==='answered'){?>
-              <span class="element hover">(answered)</span>
-            <?}else{?>
+            <?if($answer_change!=='answered'){?>
               <span class="element hover when" data-prefix="(<?=$answer_change?>, " data-postfix=")" data-seconds="<?=$answer_change_when?>" data-at="<?=$answer_change_at_iso?>"></span>
             <?}?>
             <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>

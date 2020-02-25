@@ -84,12 +84,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     textarea, pre, code, .CodeMirror { font-family: var(--monospace-font-family); }
     textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
-    [data-rz-handle='horizontal'] { margin: 7px 0; }
-    [data-rz-handle='horizontal']:not(:hover):not(:active) { background: transparent !important; }
+    [data-rz-handle='horizontal'] { margin: 7px 0; transition: opacity 0.1s linear 0s; }
+    [data-rz-handle='horizontal']:not(:hover):not(:active) { opacity: 0; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
     .icon:not(.roomicon) { border-radius: 2px; }
-    .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px rgb(var(--rgb-dark)); cursor: pointer; }
+    .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px rgb(var(--rgb-dark)); cursor: pointer; transition: box-shadow linear 0.1s; }
     .icon.ping { box-shadow: 0 0 0 1px rgb(var(--rgb-highlight)); }
     <?if($dev){?>.changed { outline: 2px solid orange; }<?}?>
     .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: rgba(var(--rgb-dark),0.6); pointer-events: none; }
@@ -147,8 +147,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
     #firefoxwrapper #messages { min-height: 100%; }
     #messages .message .who { top: -1.3em; }
-    #messages .message:not(:hover) .when { display: none; }
-    #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; border-top: 1px solid rgb(var(--rgb-dark));  }
+    #messages .message:not(:hover) .when { opacity: 0; }
+    #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; }
     #starboard .message { padding: 4px; padding-top: 1.3em; border-top: 1px solid rgba(var(--rgb-dark),0.6); }
     #starboard .message .who { top: 0.2rem; font-size: 12px; }
     #starboard .message .button-group:not(:first-child) .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
@@ -173,8 +173,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
     .message .who>a { color: rgb(var(--rgb-dark)); }
     .message .who>a[href^='#'] { text-decoration: none; }
-    .message .when { color: rgb(var(--rgb-dark)); }
-    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: white; overflow: auto; }
+    .message .when { color: rgb(var(--rgb-dark)); transition: opacity linear 0.1s; }
+    .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: white; overflow: auto; transition: background linear 0.1s; }
     .message .markdown img { max-height: 7rem; }
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-top: 1px; margin-left: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
