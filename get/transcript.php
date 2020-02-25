@@ -70,8 +70,7 @@ if(isset($_GET['month'])){
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/post.css">
-  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
   <style>
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }

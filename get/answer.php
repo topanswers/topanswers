@@ -36,8 +36,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/post.css">
-  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
   <style>
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
