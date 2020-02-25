@@ -1,0 +1,7 @@
+RewriteRule ^/sitemap.xml$ /sitemap.php [nocase]
+RewriteRule ^/robots.txt$ /robots.php [nocase]
+RewriteRule ^/$ /index.php [nocase]
+
+RewriteRule ^/(meta|databases|test|tex|heart|nix|codegolf|cplusplus)$ /community.php?community=$1 [qsappend,nocase]
+
+RewriteRule ^/([^.]+)$ /$1.php [nocase]
