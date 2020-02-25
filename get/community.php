@@ -341,6 +341,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 , displayedPages: d
                 , onPageClick: function(n){ questionPage = n; $('#questions').children('.question').remove(); updateQuestions(true); return false; } };
         $('#more').show().pagination(o);
+        $('#qa>div.banner').show();
       }
       function updateQuestions(scroll){
         var maxQuestion = $('#questions>:first-child').data('poll-major-id'), full = $('#questions').children('.question').length===0;
@@ -363,6 +364,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $(data).filter('.question').prependTo($('#questions'));
           processNewQuestions();
           $('#more').hide();
+          $('#qa>div.banner').hide();
           $('#search+div').hide();
         },'html');
       }
@@ -1163,7 +1165,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?}?>
       <?}else{?>
         <div class="banner">
-          <h1>Questions</h1>
+          <h1>Latest:</h1>
           <div style="flex: 1 1 0;"></div>
           <?if($auth&&$communicant_can_import&&$sesite_url&&!$question){?>
             <form method="post" action="//post.topanswers.xyz/import">
