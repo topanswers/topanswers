@@ -149,7 +149,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { opacity: 0; }
     #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; }
-    #starboard .message { padding: 4px; padding-top: 1.3em; border-top: 1px solid rgba(var(--rgb-dark),0.6); }
+    #starboard .message { padding: 4px; padding-top: 1.3em; }
+    #starboard .message:not(:first-child) { border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
     #starboard .message .who { top: 0.2rem; font-size: 12px; }
     #starboard .message .button-group:not(:first-child) .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
     #starboard .message .button-group:first-child { display: none; }
@@ -921,7 +922,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
         firefox -= true;
-        $('#messages').wrap('<div id="firefoxwrapper"></div>');
+        $('#starboard').next('#messages').addBack().wrapAll('<div id="firefoxwrapper"></div>');
         $('#firefoxwrapper').scrollTop(1000000).closest('#messages-wrapper').css('border-radius','0');
         setTimeout(function(){ $('#firefoxwrapper').scrollTop(1000000); },500);
       }
