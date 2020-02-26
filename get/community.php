@@ -386,10 +386,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var t = $(this);
         t.find('.markdown').renderMarkdown(function(){ t.find('.question:not(.processed)').each(renderQuestion).addClass('processed'); });
       }
-      function processNewChat(){
+      function processNewChat(scroll){
         var newchat = $('#messages>*:not(.processed)')
-          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
-          , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight");
+          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages');
         newchat.filter('.message').each(renderChat).find('.when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
@@ -401,9 +400,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               newchat.addClass('processed');
               scroller.scrollTop(1000000);
             }else{
-              scroller.addClass('newscroll');
-              setTimeout(function(){ scroller.scroll(_.debounce(function(){ scroller.removeClass('newscroll'); })); },500);
               newchat.addClass('processed');
+              scroller.addClass('newscroll').scroll(_.debounce(function(){ if((scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5){ scroller.removeClass('newscroll'); scroller.off('scroll'); } }));
             }
           });
         }
@@ -454,10 +452,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
       }
-      function updateChat(){
+      function updateChat(scroll){
         var maxChat = $('#messages>.message').first().data('id')
-          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
-          , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight");
+          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages');
+        if(typeof scroll==='undefined') scroll = (scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5;
         $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message').first().data('id')===maxChat){
             var newchat;
@@ -465,8 +463,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             newchat = $(data).prependTo($('#messages'));
             if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
             if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
-            processNewChat();
-            if(scroll) scroller.scrollTop(1000000);
+            processNewChat(scroll);
             <?if($auth){?>
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
                 var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
@@ -742,9 +739,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 }else{
                   if(replyid) $('#notifications .message[data-id='+replyid+']').remove();
                   if($('#notifications .message').children().length===0) $('#notification-wrapper').children().remove();
-                  $('#messages').scrollTop(1000000);
-                  $('#firefoxwrapper').scrollTop(1000000);
-                  updateChat();
+                  updateChat(true);
                 }
                 $('#cancel').click();
                 t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
@@ -844,6 +839,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
         $('#qa .post').addClass('processed');
       });
+      if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
+        firefox -= true;
+        $('#starboard').next('#messages').addBack().wrapAll('<div id="firefoxwrapper"></div>');
+        $('#firefoxwrapper').closest('#messages-wrapper').css('border-radius','0');
+        setTimeout(function(){ $('#firefoxwrapper').css('scroll-behavior','smooth'); },2000);
+      }
       processNewChat(true);
       updateRoomLatest();
       processNotifications();
@@ -922,12 +923,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         processStarboard(true);
         return false;
       });
-      if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
-        firefox -= true;
-        $('#starboard').next('#messages').addBack().wrapAll('<div id="firefoxwrapper"></div>');
-        $('#firefoxwrapper').scrollTop(1000000).closest('#messages-wrapper').css('border-radius','0');
-        setTimeout(function(){ $('#firefoxwrapper').scrollTop(1000000); },500);
-      }
     });
   </script>
   <title><?=$room_name?> - TopAnswers</title>
