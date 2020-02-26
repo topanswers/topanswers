@@ -938,6 +938,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
           <?if($community_about_question_id){?><a href="/<?=$community_name?>?q=<?=$community_about_question_id?>" class="button wideonly">About</a><?}?>
+          <?if($auth&&$communicant_can_import&&$sesite_url){?>
+            <form method="post" action="//post.topanswers.xyz/import">
+              <input type="hidden" name="action" value="new">
+              <input type="hidden" name="community" value="<?=$community_name?>">
+              <input type="hidden" name="seids" value="">
+              <a id="se" href="." class="button">Import</a>
+            </form>
+          <?}?>
           <a href="/question?community=<?=$community_name?>" class="button"><?=$community_ask_button_text?></a>
           <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
         <?}?>
@@ -1072,7 +1080,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?$answer_count = ccdb("select count(1) from answer");?>
             <h3><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h3>
             <div style="flex: 1 1 0;"></div>
-            <form method="GET" action="/answer"> <input type="hidden" name="question" value="<?=$question?>"> <input id="provide" type="submit" value="provide <?=$question_answered_by_me?'another':'an'?> answer"<?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'':' title="requires '.($kind_minimum_votes_to_answer-$question_votes).' more stars" disabled'?>> </form>
+            <a <?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'href="/answer?question='.$question.'"':'title="requires '.($kind_minimum_votes_to_answer-$question_votes).' more stars"'?> class="button">Provide <?=$question_answered_by_me?'another':'an'?> answer</a>
           </div>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
@@ -1162,14 +1170,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div class="banner">
           <h1>Latest:</h1>
           <div style="flex: 1 1 0;"></div>
-          <?if($auth&&$communicant_can_import&&$sesite_url&&!$question){?>
-            <form method="post" action="//post.topanswers.xyz/import">
-              <input type="hidden" name="action" value="new">
-              <input type="hidden" name="community" value="<?=$community_name?>">
-              <input type="hidden" name="seids" value="">
-              <input id="se" class="element" type="submit" value="import from SE">
-            </form>
-          <?}?>
         </div>
         <div id="questions">
           <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&page=1'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
