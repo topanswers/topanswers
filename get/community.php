@@ -28,7 +28,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
-                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_i_subscribed,question_i_flagged,question_i_counterflagged
+                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged,question_i_counterflagged
                    ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_communicant_se_user_id,question_communicant_votes
@@ -1076,8 +1076,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </div>
         <?if($kind_has_answers){?>
           <div class="banner">
-            <?$answer_count = ccdb("select count(1) from answer");?>
-            <h3><?=$answer_count?> Answer<?=($answer_count!==1)?'s':''?></h3>
+            <h3><?=$question_answer_count?> Answer<?=($question_answer_count!==1)?'s':''?></h3>
             <div style="flex: 1 1 0;"></div>
             <a <?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'href="/answer?question='.$question.'"':'title="requires '.($kind_minimum_votes_to_answer-$question_votes).' more stars"'?> class="button">Provide <?=$question_answered_by_me?'another':'an'?> answer</a>
           </div>

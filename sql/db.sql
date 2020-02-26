@@ -14,6 +14,9 @@ create extension "btree_gin" schema x_btree_gin;
 create schema x_pgcrypto;
 create extension "pgcrypto" schema x_pgcrypto;
 
+create schema x_pg_stat_statements;
+create extension "pg_stat_statements" schema x_pg_stat_statements;
+
 alter database postgres set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
 
 create table one(
@@ -343,6 +346,7 @@ create table answer(
 , answer_permit_later_codelicense boolean default false not null
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
+create index answer_question_id_ind on answer(question_id);
 
 create table answer_history(
   answer_history_id bigint generated always as identity primary key
