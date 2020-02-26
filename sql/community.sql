@@ -70,7 +70,7 @@ select account_id
       ,community_id,community_name,community_display_name,community_my_power,community_code_language,room_id,community_tables_are_monospace,community_about_question_id,community_ask_button_text
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
-      ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
+      ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,kind_show_answer_summary_toc
@@ -109,6 +109,7 @@ from db.room r natural join db.community natural join api._community
                              , communicant_se_user_id question_communicant_se_user_id
                              , coalesce(question_vote_votes,0) question_votes_from_me
                              , exists(select 1 from db.answer a natural join db.login where login_uuid=get_login_uuid() and a.question_id=q.question_id) question_answered_by_me
+                             , exists(select 1 from api._answer a where a.question_id=q.question_id) question_is_answered
                              , question_at<>question_change_at question_has_history
                              , exists(select 1 from db.subscription s natural join db.login where login_uuid=get_login_uuid() and s.question_id=q.question_id) question_i_subscribed
                              , exists(select 1 from db.question_flag f natural join db.login where login_uuid=get_login_uuid() and f.question_id=q.question_id and question_flag_direction=1) question_i_flagged

@@ -1,4 +1,4 @@
-.post { background-color: white; border-radius: 3px; margin: 16px 16px 32px 16px; overflow: hidden; }
+.post { background-color: white; border-radius: 3px; margin: 0 16px 32px 16px; overflow: hidden; }
 .post:not(.processed) { opacity: 0; }
 .post:not(:hover) .hover { display: none; }
 .post.deleted>.title>a, .post.deleted>.markdown, .post .answers .bar.deleted { background: rgba(var(--rgb-warning),0.13); }

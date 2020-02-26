@@ -28,7 +28,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
-                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_i_subscribed,question_i_flagged,question_i_counterflagged
+                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_i_subscribed,question_i_flagged,question_i_counterflagged
                    ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_communicant_se_user_id,question_communicant_votes
@@ -98,7 +98,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     a[data-lightbox] img { cursor: zoom-in; }
 
     #qa { overflow: auto; scroll-behavior: smooth; }
-    #qa .banner { display: flex; margin: 16px 16px 0 16px; align-items: center; }
+    #qa .banner { display: flex; margin: 16px; align-items: center; }
     #qa .banner h1, #qa .banner h3 { color: rgb(var(--rgb-light)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
     #chat-wrapper header { border-top: 2px solid black; }
@@ -111,7 +111,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       .newtag:hover .tag { opacity: 1; }
       .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
 
-      #qa #question { margin-bottom: 16px; }
+      #qa #question { margin: 16px; }
       #qa .post:target { box-shadow: 0 0 1px 2px rgb(var(--rgb-highlight)); }
       #qa .markdown { border: 1px solid rgb(var(--rgb-dark)); border-width: 1px 0; padding: 8px; }
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
@@ -1040,7 +1040,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               </div>
             <?}?>
           </div>
-          <?if($kind_show_answer_summary_toc){?>
+          <?if($kind_show_answer_summary_toc&&$question_is_answered){?>
             <div style="height: 2px; background: rgb(var(--rgb-dark));"></div>
             <div class="answers">
               <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
