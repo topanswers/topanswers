@@ -73,20 +73,17 @@ create function regenerate_account_uuid() returns void language sql security def
   update account set account_uuid = default where account_id = get_account_id();
 $$;
 --
-create function change_fonts(regid integer, monoid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  update communicant set communicant_regular_font_id=regid, communicant_monospace_font_id=monoid where account_id=get_account_id() and community_id=get_community_id();
-$$;
---
 create function change_regular_font(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('regular font is locked for this community') from community where community_id=get_community_id() and community_regular_font_is_locked;
+  select _ensure_communicant(get_account_id(),get_community_id());
   update communicant set communicant_regular_font_id=id where account_id=get_account_id() and community_id=get_community_id();
 $$;
 --
 create function change_monospace_font(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('monospace font is locked for this community') from community where community_id=get_community_id() and community_monospace_font_is_locked;
+  select _ensure_communicant(get_account_id(),get_community_id());
   update communicant set communicant_monospace_font_id=id where account_id=get_account_id() and community_id=get_community_id();
 $$;
 --
