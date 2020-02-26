@@ -925,7 +925,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
     });
   </script>
-  <title><?=$room_name?> - TopAnswers</title>
+  <title><?=isset($_GET['room']) ? ($room_name.' - ') : (isset($_GET['q'])?$question_title.' - ':'')?><?=$community_display_name?> - TopAnswers</title>
 </head>
 <body>
   <main class="pane">
