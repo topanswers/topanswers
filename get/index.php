@@ -26,6 +26,7 @@ extract(cdb("select account_id from one"));
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     footer, footer>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
     footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: lightgrey; border-top: 2px solid black; }
+    footer a, footer .element a[href], footer a[href].element { color: rgb(var(--color-dark)); }
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 3px; }
 
@@ -82,12 +83,14 @@ extract(cdb("select account_id from one"));
           <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
         <?}?>
       </div>
-      <h1>Coming Soon:</h1>
-      <div class="communities">
-        <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private' order by random()") as $r){ extract($r);?>
-          <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
-        <?}?>
-      </div>
+      <?if(ccdb("select exists(select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private')")){?>
+        <h1>Coming Soon:</h1>
+        <div class="communities">
+          <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private' order by random()") as $r){ extract($r);?>
+            <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
+          <?}?>
+        </div>
+      <?}?>
     </div>
     <div>
     <h1>Join TopAnswers, and help build a lasting library of knowledge.</h1>
@@ -105,7 +108,7 @@ extract(cdb("select account_id from one"));
       <li>As much as possible of our platform is published <a href="/meta?q=28">as open source</a> <a href="/meta?q=221#a580">on GitHub</a>.</li>
       <li>You are <a href="/meta?q=18#a8">free to decide how to license your contributions</a>.</li>
     </ul>
-    <p>We are growing steadily, and starting to register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">databases</a> in October 2019, <a href="/tex">TeX</a> in January 2020 and an experimental <a href="/cplusplus">C++</a> community in February. We also have <a href="/meta?q=530">*nix</a> and <a href="/meta?q=624">Code Golf</a> communites in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a>.</p>
+    <p>We are growing steadily, and starting to register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">Databases</a> in October 2019, <a href="/tex">TeX</a> in January 2020, and an experimental <a href="/cplusplus">C++</a> community and <a href="/codegolf">Code Golf</a> in February. We also have a <a href="/meta?q=530">*nix</a> community in private beta. If you would like to help build a community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a>.</p>
     <p>There is a lot more detailed information on our <a href="/meta">meta</a> community (a place for questions and answers about TopAnswers itself), for example:</p>
     <ul>
       <li><a href="/meta?q=1">Why we are building TopAnswers</a></li>
