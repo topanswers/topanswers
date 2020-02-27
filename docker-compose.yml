@@ -6,7 +6,7 @@ services:
     networks:
       - backend
     volumes:
-      - ./get:/var/www/html/
+      - .:/var/www/
   apache:
     build:
       context: "./docker/apache/"
@@ -18,7 +18,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./get:/var/www/html/
+      - .:/var/www/
 networks:
   frontend:
   backend:
