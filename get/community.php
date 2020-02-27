@@ -21,7 +21,7 @@ if(!isset($_GET['room'])&&!isset($_GET['q'])){
 if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
 extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,account_id,account_is_dev,account_notification_id
-                   ,community_id,community_name,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text
+                   ,community_id,community_name,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text,community_banner_markdown
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
                    ,room_id,room_name,room_can_chat,room_has_chat
@@ -98,6 +98,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     a[data-lightbox] img { cursor: zoom-in; }
 
     #qa { overflow: auto; scroll-behavior: smooth; }
+    #qa #info { display: none; padding: 12px; background: rgb(var(--rgb-mid)); }
     #qa .banner { display: flex; margin: 16px; align-items: center; }
     #qa .banner h1, #qa .banner h3 { color: rgb(var(--rgb-light)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
@@ -848,6 +849,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       updateRoomLatest();
       processNotifications();
       setChatPollTimeout();
+      $('#info').find('.markdown[data-markdown]').renderMarkdown(function(){ $('#qa #info').slideDown(); });
       $('#se').click(function(){
         var t = $(this), f = t.closest('form')
           , ids = prompt('Enter question or answer id or url (and optionally further answer ids/urls from the same question) from <?=$sesite_url?>.\nSeparate each id/url with a space. No need to list your own answers; they will be imported automatically.');
@@ -1165,6 +1167,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </div>
         <?}?>
       <?}else{?>
+        <?if($community_banner_markdown){?>
+          <div id="info">
+            <div class="markdown" data-markdown="<?=$community_banner_markdown?>"></div>
+          </div>
+        <?}?>
         <div class="banner">
           <h1>Latest:</h1>
           <div style="flex: 1 1 0;"></div>
