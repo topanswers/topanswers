@@ -15,10 +15,10 @@ We aren't a clone though; we diverge in important areas:
 -   We've improved the focus on Q&A by moving comments to the side.
 -   You are [free to decide how to license your contributions](https://topanswers.xyz/meta?q=18#a8).
 
-We are small right now --- we already launched [databases](/databases) and [TeX](/tex) and have communities for \*unix and code golf in private beta.
+We are small right now --- we already launched [Databases](https://topanswers.xyz/databases), [TeX](https://topanswers.xyz/tex) and [Code Golf](https://topanswers.xyz/codegolf) and also have a \*nix community in private beta.
 If you would like to help build a community here, [you can](https://topanswers.xyz/meta?q=211). If you are coming from an existing Stack Exchange community you will be able to [import your content](https://topanswers.xyz/meta?q=236#a176) from there.
 
-There is a lot more detailed information on our [meta](https://topanswers.xyz/meta) community (a place for questions and answers about TopAnswers itself), for example:
+There is a lot more detailed information on our [Meta](https://topanswers.xyz/meta) community (a place for questions and answers about TopAnswers itself), for example:
 
 -   [Why we are building TopAnswers](https://topanswers.xyz/meta?q=1)
 -   [TopAnswers Code of Conduct](https://topanswers.xyz/meta?q=8)
