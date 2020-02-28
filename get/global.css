@@ -10,7 +10,7 @@ h4 { font-size: 19px; margin: 19px 0; }
 h5 { font-size: 16px; margin: 16px 0; }
 h6 { font-size: 16px; margin: 16px 0; }
 
-a { color: rgb(var(--rgb-dark)); }
+a[href] { color: rgb(var(--rgb-dark)); }
 
 .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
 .container:not(.shrink)  { flex: 0 0 auto; }

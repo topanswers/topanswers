@@ -21,6 +21,8 @@
 .post .answers .bar { background-color: white; }
 .post .answers .bar:not(:last-child) { border-bottom: 1px solid rgba(var(--rgb-dark),0.6); height: 23px; }
 .post .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post .answers .bar a.summary a { color: blue; }
+.post .answers .bar a.summary a:visited { color: purple; }
 .post .markdown .post { border: 3px solid rgb(var(--rgb-dark)); margin: 0; }
 .post .markdown .post .tag:hover i { visibility: hidden; }
 .post .answers .bar.more:not(:hover) a { text-decoration: none; }
