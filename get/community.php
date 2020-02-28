@@ -1169,7 +1169,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}else{?>
         <?if($community_banner_markdown){?>
           <div id="info">
-            <div class="markdown" data-markdown="<?=htmlspecialchars($community_banner_markdown)?>"></div>
+            <div class="markdown" data-markdown="<?=htmlspecialchars($community_banner_markdown)?>">&nbsp;</div>
           </div>
         <?}?>
         <div class="banner">
