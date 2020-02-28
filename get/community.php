@@ -456,7 +456,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var maxChat = $('#messages>.message').first().data('id')
           , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages');
         if(typeof scroll==='undefined') scroll = (scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5;
-        $.get('/chat?room=<?=$room?>'+(($('#messages').children().length===1)?'':'&id='+maxChat),function(data) {
+        $.get('/chat?room=<?=$room?>'+(($('#messages>.message').length===0)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message').first().data('id')===maxChat){
             var newchat;
             $('#messages>.spacer:first-child').remove();
