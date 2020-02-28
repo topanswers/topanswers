@@ -172,7 +172,7 @@ create function vote(votes integer) returns integer language sql security define
              returning account_id,community_id,communicant_votes)
      , n as (insert into system_notification(account_id,system_notification_message,system_notification_community_id)
              select account_id
-                  , 'Congratulations! You have reached the '||pow(10,trunc(log(greatest(communicant_votes,1))))||' star threshold, and can now award '||trunc(log(greatest(communicant_votes,1)))||' stars on '
+                  , 'Congratulations! You have reached the '||pow(10,trunc(log(greatest(communicant_votes,1))))||' star threshold, and can now award '||(1+trunc(log(greatest(communicant_votes,1))))||' stars on '
                        ||community_display_name||'.'
                    ,community_id
              from c natural join community
