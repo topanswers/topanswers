@@ -98,7 +98,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     a[data-lightbox] img { cursor: zoom-in; }
 
     #qa { overflow: auto; scroll-behavior: smooth; }
-    #qa #info { display: none; padding: 12px; background: rgb(var(--rgb-mid)); }
+    #qa #info { color: rgb(var(--rgb-mid)); padding: 6px; background: rgb(var(--rgb-mid)); font-size: 12px; }
     #qa .banner { display: flex; margin: 16px; align-items: center; }
     #qa .banner h1, #qa .banner h3 { color: rgb(var(--rgb-light)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
@@ -849,7 +849,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       updateRoomLatest();
       processNotifications();
       setChatPollTimeout();
-      $('#info').find('.markdown[data-markdown]').renderMarkdown(function(){ $('#qa #info').slideDown(); });
+      $('#info').find('.markdown[data-markdown]').renderMarkdown(function(){ $('#info').css('color','rgb(var(--rgb-dark)'); });
       $('#se').click(function(){
         var t = $(this), f = t.closest('form')
           , ids = prompt('Enter question or answer id or url (and optionally further answer ids/urls from the same question) from <?=$sesite_url?>.\nSeparate each id/url with a space. No need to list your own answers; they will be imported automatically.');
@@ -1169,7 +1169,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}else{?>
         <?if($community_banner_markdown){?>
           <div id="info">
-            <div class="markdown" data-markdown="<?=$community_banner_markdown?>"></div>
+            <div class="markdown" data-markdown="<?=htmlspecialchars($community_banner_markdown)?>"><?=htmlspecialchars($community_banner_markdown)?></div>
           </div>
         <?}?>
         <div class="banner">
