@@ -118,6 +118,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
       #qa .bar .element.fa-bell { color: rgb(var(--rgb-highlight)); }
       #qa .bar .element.fa-flag { color: rgb(var(--rgb-warning)); }
+      #qa .bar .starrr { display: flex; }
       #qa .bar .starrr a.fa-star { color: rgb(var(--rgb-highlight)); }
       #qa .bar .starrr a.fa-star-o { color: rgb(var(--rgb-dark)); }
       #qa .bar [data-total]::after { content: attr(data-total) ' stars'; }

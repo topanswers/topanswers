@@ -28,6 +28,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
              ">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
@@ -41,21 +42,19 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     body { display: flex; flex-direction: column; background-color: rgb(var(--rgb-light)); }
-    main { display: flex; position: relative; justify-content: center; flex: 1 0 0; overflow-y: auto; }
+    main { display: grid; grid-template-columns: 2fr 3fr 3fr; grid-template-rows: auto 1fr; grid-gap: 16px; padding: 16px; max-width: 3000px; margin: 0 auto; height: 100%; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .gap { flex: 0 0 2vmin; }
 
-    #question { flex: 0 1.5 50em; max-width: 20vw; overflow-x: hidden; }
-    #question>div { display: flex; flex-direction: column; background-color: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow: hidden; }
-    #question>div>.title { flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark)); }
-    #question>div>.title>a { color: black; text-decoration: none; }
-    #question>div>.markdown { flex: 1 0 auto; overflow-y: auto; padding: 0.6em; }
-    #codemirror-container { flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); position: relative; }
-    #markdown { flex: 0 1 60em; max-width: calc(40vw - 2.67vmin); background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
-    #form { display: flex; flex-direction: column; flex: 1 0 0; padding: 16px; overflow-y: hidden; }
+    #form { flex: 1 0 0; min-height: 0; }
+    #question { display: flex; flex-direction: column; background-color: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow: hidden; }
+    #question>.title { flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark)); }
+    #question>.title>a { color: black; text-decoration: none; }
+    #question>.markdown { overflow-y: auto; padding: 0.6em; min-height: 0; }
+    #codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; }
+    #markdown { grid-area: 1 / 3 / 3 / 4; background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
 
-    #editor-buttons { flex: 0 0 1.6em; }
+    #editor-buttons { grid-area: 1 / 2 / 2 / 3; justify-self: start; min-height: 0; }
     #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
     #editor-buttons>div i { padding: 4px; font-size: 15px; text-align: center; }
     #editor-buttons>div i:hover { color: rgb(var(--rgb-highlight)); cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 4px; }
@@ -65,6 +64,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 15px; border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
+
+    @media (max-width: 1500px){
+      main { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 2fr; }
+      #question { grid-area: 1 / 1 / 2 / 3; }
+      #codemirror-container { grid-area: 2 / 1 / 3 / 2; }
+      #markdown { grid-area: 2 / 2 / 3 / 3; }
+      #editor-buttons { grid-area: 2 / 1 / 3 / 2; }
+    }
+    @media (max-width: 576px){
+      main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr 1fr; padding: 2px; grid-gap: 2px; }
+      #question { grid-area: 1 / 1 / 2 / 2; }
+      #codemirror-container { grid-area: 2 / 1 / 3 / 2; }
+      #markdown { grid-area: 3 / 1 / 4 / 2; }
+      #editor-buttons { grid-area: 2 / 1 / 3 / 2; }
+      textarea,select,input,.CodeMirror { font-size: 16px; }
+    }
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
@@ -92,6 +107,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         'Ctrl-Y': function(){ $('.button.fa-repeat').click(); }
       } });
       var map;
+
+      $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
 
       function render(){
         $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown(function(){
@@ -195,7 +212,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </div>
     <div>
       <?if(!$answer_id){?>
-        <span class="element">
+        <span class="element wideonly">
           <select name="license" form="form">
             <?foreach(db("select license_id,license_name,license_is_versioned from license") as $r){ extract($r);?>
               <option value="<?=$license_id?>" data-versioned="<?=$license_is_versioned?'true':'false'?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
@@ -203,7 +220,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </select>
           <label><input type="checkbox" name="license-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
         </span>
-        <span class="element">
+        <span class="element wideonly">
           <select name="codelicense" form="form">
             <?foreach(db("select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense") as $r){ extract($r);?>
               <option value="<?=$codelicense_id?>" data-versioned="<?=$codelicense_is_versioned?'true':'false'?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
@@ -212,7 +229,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <label><input type="checkbox" name="codelicense-orlater" form="form"<?=$account_permit_later_codelicense?'checked':''?>>or later</label>
         </span>
       <?}?>
-      <input class="element" id="submit" type="submit" form="form" value="<?=$answer_id?'update answer under '.$answer_license:'post answer'?>">
+      <button class="element" id="submit" type="submit" form="form"><?=$answer_id?'update<span class="wideonly"> answer under '.$answer_license.'</span>':'post<span class="wideonly"> answer</span>'?></button>
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>
   </header>
@@ -227,12 +244,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <?}?>
     <main>
       <div id="question">
-        <div>
-          <div class="title"><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></div>
-          <div class="markdown" data-markdown="<?=$question_markdown?>"></div>
-        </div>
+        <div class="title"><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></div>
+        <div class="markdown" data-markdown="<?=$question_markdown?>"></div>
       </div>
-      <div class="gap"></div>
       <div id="editor-buttons">
         <div>
           <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
@@ -250,7 +264,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div id="codemirror-container">
         <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
       </div>
-      <div class="gap"></div>
       <div id="markdown" class="markdown noexpander"></div>
     </main>
   </form>
