@@ -11,6 +11,8 @@
   .markdown>:last-child { margin-bottom: 0; }
   .markdown ul { padding-left: 2em; }
   .markdown li { margin: 0.2rem 0; }
+  .markdown a { color: blue; }
+  .markdown a:visited { color: purple; }
   .markdown img { max-width: 100%; max-height: 30rem; margin: 1px; }
   .markdown hr { background-color: rgb(var(--rgb-mid)); border: 0; height: 2px; }
   .markdown table { border-collapse: collapse; table-layout: fixed; }

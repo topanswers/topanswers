@@ -10,6 +10,8 @@ h4 { font-size: 19px; margin: 19px 0; }
 h5 { font-size: 16px; margin: 16px 0; }
 h6 { font-size: 16px; margin: 16px 0; }
 
+a { color: rgb(var(--rgb-dark)); }
+
 .container { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
 .container:not(.shrink)  { flex: 0 0 auto; }
 .container.shrink { flex: 0 1 auto; }
@@ -17,7 +19,6 @@ h6 { font-size: 16px; margin: 16px 0; }
 .element:not(.shrink)  { flex: 0 0 auto; }
 .element.shrink { flex: 0 1 auto; }
 .element>.element:last-child { margin-right: 0; }
-.element a[href], a[href].element { color: rgb(var(--rgb-dark)); }
 .highlight { color: rgb(var(--rgb-highlight)); }
 .frame { display: inline-block; border: 1px solid rgb(var(--rgb-dark)); margin: 2px; outline: 1px solid rgb(var(--rgb-light)); background: rgb(var(--rgb-light)); }
 .frame + .frame { margin-left: -1px; }
