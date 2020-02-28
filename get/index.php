@@ -26,12 +26,12 @@ extract(cdb("select account_id from one"));
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     footer, footer>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
     footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: lightgrey; border-top: 2px solid black; }
-    footer a, footer .element a[href], footer a[href].element { color: rgb(var(--color-dark)); }
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 3px; }
+    a { color: blue; }
+    a:visited { color: purple; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-dark)); }
-
     .communities { display: flex; flex-wrap: wrap; margin: 16px 0; margin-top: -24px; }
     .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; }
 

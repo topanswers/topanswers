@@ -26,18 +26,13 @@ extract(cdb("select account_id, (select community_display_name from community wh
     html { box-sizing: border-box; font-family: source-sans-pro, serif; font-size: 16px; }
     body { display: flex; flex-direction: column; background: lightgrey; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    header, header>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
-    footer, footer>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
-    header { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: lightgrey; border-bottom: 2px solid black; }
-    footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: lightgrey; border-top: 2px solid black; }
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 5px; }
+    a { color: blue; }
+    a:visited { color: purple; }
 
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; background: white; }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-dark)); }
 
-    h3 { font-size: 20px; }
-    h2 { font-size: 24px; }
-    h1 { font-size: 28px; font-weight: normal; }
     @media (max-width: 576px){
       main>div { margin: 16px 16px; }
     }
@@ -58,6 +53,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
           });
         }
       });
+      $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'link', link: pin }, async: false, xhrFields: { withCredentials: true } }).fail(function(r){ alert(r.responseText); }).done(function(){ location.reload(true); }); } });
       $('#community').change(function(){ window.location = '/'+$(this).find(':selected').attr('data-name'); });
     });
   </script>
@@ -66,7 +62,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
 <body>
   <header>
     <div class="container">
-      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
+      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" style="background: white;" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div>
