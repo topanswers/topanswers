@@ -19,6 +19,13 @@ services:
       - "80:80"
     volumes:
       - .:/var/www/
+  postgres:
+    image: postgres
+    restart: always
+    networks:
+      - backend
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
 networks:
   frontend:
   backend:
