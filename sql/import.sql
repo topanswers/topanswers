@@ -3,6 +3,8 @@ grant usage on schema import to get,post;
 set local search_path to import,api,pg_temp;
 --
 --
+create view sesite with (security_barrier) as select sesite_id,sesite_url from db.source natural join db.sesite where community_id=get_community_id();
+--
 create view one with (security_barrier) as
 select communicant_se_user_id,sesite_url
 from (select community_id,community_sesite_id from db.community where community_id=get_community_id()) c
@@ -95,6 +97,9 @@ $$;
 --
 create function new_import(qid text, aids text) returns void language sql security definer set search_path=db,api,pg_temp as $$
   insert into import(account_id,community_id,import_qid,import_aids) values(get_account_id(),get_community_id(),coalesce(qid,''),coalesce(aids,''));
+$$;
+create function new_import(sid integer, qid text) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  insert into import(account_id,community_id,sesite_id,import_qid) values(get_account_id(),get_community_id(),sid,coalesce(qid,''));
 $$;
 --
 create function get_question(id integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$

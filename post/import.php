@@ -6,7 +6,7 @@ isset($_POST['action']) || fail(400,'must have an "action" parameter');
 isset($_COOKIE['uuid']) || fail(403,'only registered users can POST');
 db("set search_path to import,pg_temp");
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_POST['community']??'') || fail(403,'access denied');
-extract(cdb("select sesite_url,communicant_se_user_id from one"));
+extract(cdb("select (select sesite_url from sesite where sesite_id=$1) sesite_url,communicant_se_user_id from one",$_POST['sesiteid']));
 
 function file_get_contents_retry($url,$attempts=3) {
   $content = file_get_contents($url);
@@ -20,7 +20,7 @@ function file_get_contents_retry($url,$attempts=3) {
 
 switch($_POST['action']) {
   case 'new':
-    db("select new_import($1,'')",$_POST['seids']);
+    db("select new_import($1::integer,$2)",$_POST['sesiteid'],$_POST['seids']);
     libxml_use_internal_errors(true);
     // turn posted string into an array
     $seids = explode(' ',$_POST['seids']);
@@ -33,7 +33,7 @@ switch($_POST['action']) {
     // map urls/ids to integer ids
     $seids = array_map(function($id){
       $id = preg_replace('/.*\/([0-9]+)$/','$1',preg_replace('/.*\/([0-9]+)\/.*/','$1',preg_replace('/.*\/[0-9]+\/[^\/]+\/([0-9]+)$/','$1',preg_replace('/.*#([0-9]+)$/','$1',$id))));
-      if(!ctype_digit($id)) fail(400,'"'.$id.'" is not an integer or a recognized SE urls');
+      if(!ctype_digit($id)) fail(400,'"'.$id.'" is not an integer or a recognized SE url');
       $id=intval($id);
       return $id;
     },$seids);

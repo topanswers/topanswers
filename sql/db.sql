@@ -549,8 +549,9 @@ create table import(
 , import_at timestamptz not null default current_timestamp
 , account_id integer references account
 , community_id integer references community
+, sesite_id integer references sesite
 , import_qid text not null
-, import_aids text not null
+, import_aids text default '' not null
 );
 
 create table environment(
