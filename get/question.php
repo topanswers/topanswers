@@ -54,7 +54,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #form { flex: 1 0 0; min-height: 0; }
     #title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgb(var(--rgb-dark)); padding: 5px; font-size: 15px; }
-    #codemirror-container { grid-area: 2 / 1 / 3 / 2; position: relative; margin-left: 35px; }
+    #codemirror-container { grid-area: 2 / 1 / 3 / 2; position: relative; margin-left: 35px; min-height: 0; }
     #markdown { grid-area: 2 / 2 / 3 / 3; background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
 
     #editor-buttons { grid-area: 2 / 1 / 3 / 2; justify-self: start; min-height: 0; }

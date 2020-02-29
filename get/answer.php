@@ -51,7 +51,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #question>.title { flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #question>.title>a { color: black; text-decoration: none; }
     #question>.markdown { overflow-y: auto; padding: 0.6em; min-height: 0; }
-    #codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; }
+    #codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; min-height: 0; }
     #markdown { grid-area: 1 / 3 / 3 / 4; background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
 
     #editor-buttons { grid-area: 1 / 2 / 2 / 3; justify-self: start; min-height: 0; }
