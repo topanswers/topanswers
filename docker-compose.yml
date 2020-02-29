@@ -19,6 +19,14 @@ services:
       - "80:80"
     volumes:
       - .:/var/www/
+  postgres:
+    build:
+      context: "./docker/postgres/"
+    restart: always
+    networks:
+      - backend
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
 networks:
   frontend:
   backend:
