@@ -20,7 +20,8 @@ services:
     volumes:
       - .:/var/www/
   postgres:
-    image: postgres
+    build:
+      context: "./docker/postgres/"
     restart: always
     networks:
       - backend
