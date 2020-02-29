@@ -65,7 +65,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/lib/starrr.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
   <link rel="stylesheet" href="/lib/vex/vex.css">
-  <link rel="stylesheet" href="/lib/vex/vex-theme-default.css">
+  <link rel="stylesheet" href="/lib/vex/vex-theme-topanswers.css">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/post.css">
@@ -274,7 +274,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
       var firefox = false;
 
-      vex.defaultOptions.className = 'vex-theme-default';
+      vex.defaultOptions.className = 'vex-theme-topanswers';
 
       $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
 
@@ -857,14 +857,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       setChatPollTimeout();
       $('#info').find('.markdown[data-markdown]').renderMarkdown(function(){ $('#info').css('color','rgb(var(--rgb-dark)'); });
       $('#se').click(function(){
-        var t = $(this), f = t.closest('form')
-          , ids = prompt('Enter question or answer id or url (and optionally further answer ids/urls from the same question) from <?=$sesite_url?>.\nSeparate each id/url with a space. No need to list your own answers; they will be imported automatically.');
-        if(ids!==null) {
-          t.hide().after('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
-          f.find('[name=seids]').attr('value',ids);
-          f.submit();
-        }
-        /*
         var t = $(this), f = t.closest('form');
         vex.dialog.open({
           input: ['<p>Enter question or answer id or url (and optionally further answer ids/urls from the same question) from ',
@@ -874,7 +866,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   '<input name="ids">'].join('')
          ,callback: function(v){
             if(v){
-              console.log(v)
               t.hide().after('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
               f.find('[name=sesiteid]').attr('value',v.site);
               f.find('[name=seids]').attr('value',v.ids);
@@ -882,7 +873,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             }
           }
         });
-        */
         return false;
       });
       <?if($question){?>

@@ -1,0 +1,16 @@
+.vex-overlay { -webkit-animation: vex-fadein .3s; animation: vex-fadein .3s; }
+.vex-overlay.vex-closing { -webkit-animation: vex-fadeout .3s forwards; animation: vex-fadeout .3s forwards; }
+.vex-content { -webkit-animation: vex-fadein .3s; animation: vex-fadein .3s; }
+.vex.vex-closing .vex-content { -webkit-animation: vex-fadeout .3s forwards; animation: vex-fadeout .3s forwards; }
+
+.vex.vex-theme-topanswers { padding-top: 160px; padding-bottom: 160px; }
+.vex.vex-theme-topanswers .vex-content { font-family: var(--regular-font-family); background: #fff; color: #444; padding: 16px; position: relative; margin: 0 auto; max-width: 100%; width: 450px; line-height: 21px; border-radius: 3px; }
+.vex.vex-theme-topanswers .vex-content h1, .vex.vex-theme-topanswers .vex-content h2, .vex.vex-theme-topanswers .vex-content h3, .vex.vex-theme-topanswers .vex-content h4, .vex.vex-theme-topanswers .vex-content h5, .vex.vex-theme-topanswers .vex-content h6, .vex.vex-theme-topanswers .vex-content p, .vex.vex-theme-topanswers .vex-content ul, .vex.vex-theme-topanswers .vex-content li { color: inherit; }
+
+.vex.vex-theme-topanswers .vex-dialog-form .vex-dialog-input { margin-bottom: 16px; }
+.vex.vex-theme-topanswers .vex-dialog-form .vex-dialog-input p:first-child { margin-top: 0; }
+.vex.vex-theme-topanswers .vex-dialog-form .vex-dialog-input input { width: 100%; }
+
+.vex.vex-theme-topanswers .vex-dialog-form .vex-dialog-buttons:after { content: ""; display: table; clear: both; }
+.vex.vex-theme-topanswers .vex-dialog-button { -webkit-appearance: button; -moz-appearance: button; appearance: button; cursor: default; float: right; margin: 0 0 0 8px; }
+.vex.vex-theme-topanswers .vex-dialog-button.vex-last { margin-left: 0; }
