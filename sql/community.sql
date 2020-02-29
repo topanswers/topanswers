@@ -4,6 +4,7 @@ set local search_path to community,api,pg_temp;
 --
 --
 create view environment with (security_barrier) as select environment_name from db.environment;
+create view sesite with (security_barrier) as select sesite_id,sesite_url,source_is_default from db.source natural join db.sesite where community_id=get_community_id();
 --
 create view private with (security_barrier) as
 select community_name

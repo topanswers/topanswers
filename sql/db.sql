@@ -64,6 +64,14 @@ create table community(
 , community_banner_markdown text default '' not null
 );
 
+create table source(
+  community_id integer references community
+, sesite_id integer references sesite
+, source_is_default boolean default true not null
+, primary key (community_id,sesite_id)
+);
+create unique index source_default_ind on source(community_id) where source_is_default;
+
 create type room_type_enum as enum ('public','gallery','private');
 
 create table room(

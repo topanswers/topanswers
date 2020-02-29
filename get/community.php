@@ -64,6 +64,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/lib/select2.css">
   <link rel="stylesheet" href="/lib/starrr.css">
   <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
+  <link rel="stylesheet" href="/lib/vex/vex.css">
+  <link rel="stylesheet" href="/lib/vex/vex-theme-default.css">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/post.css">
@@ -254,6 +256,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/jquery.waitforimages.js"></script>
   <script src="/lib/codemirror/codemirror.js"></script>
   <script src="/lib/codemirror/sql.js"></script>
+  <script src="/lib/vex/vex.combined.min.js"></script>
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
@@ -270,6 +273,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
       var firefox = false;
+
+      vex.defaultOptions.className = 'vex-theme-default';
 
       $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
 
@@ -859,6 +864,25 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           f.find('[name=seids]').attr('value',ids);
           f.submit();
         }
+        /*
+        var t = $(this), f = t.closest('form');
+        vex.dialog.open({
+          input: ['<p>Enter question or answer id or url (and optionally further answer ids/urls from the same question) from ',
+                    '<select name="site"><?foreach(db("select sesite_id,sesite_url,source_is_default from sesite") as $r){extract($r);?><option value="<?=$sesite_id?>"<?=$source_is_default?" selected":""?>><?=$sesite_url?></option><?}?></select>.',
+                  '</p>',
+                  '<p>Separate each id/url with a space. No need to list your own answers; they will be imported automatically.</p>',
+                  '<input name="ids">'].join('')
+         ,callback: function(v){
+            if(v){
+              console.log(v)
+              t.hide().after('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
+              f.find('[name=sesiteid]').attr('value',v.site);
+              f.find('[name=seids]').attr('value',v.ids);
+              f.submit();
+            }
+          }
+        });
+        */
         return false;
       });
       <?if($question){?>
@@ -944,6 +968,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <form method="post" action="//post.topanswers.xyz/import">
               <input type="hidden" name="action" value="new">
               <input type="hidden" name="community" value="<?=$community_name?>">
+              <input type="hidden" name="sesiteid" value="">
               <input type="hidden" name="seids" value="">
               <a id="se" href="." class="button">Import</a>
             </form>
