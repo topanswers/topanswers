@@ -34,6 +34,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
              ">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
@@ -47,19 +48,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     body { display: flex; flex-direction: column; background-color: rgb(var(--rgb-light)); }
-    main { display: flex; position: relative; justify-content: center; flex: 0 1 120rem; overflow-y: auto; flex-direction: column; }
-    main>input { flex 0 0 auto; border: 1px solid rgb(var(--rgb-dark)); padding: 3px; border-radius: 2px; }
-    main>div:last-child { display: flex; flex: 1 0 0; overflow: hidden; }
+    main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 31px 1fr; grid-gap: 16px; padding: 16px; max-width: 3000px; margin: 0 auto; height: 100%; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .gap { flex: 0 0 2vmin;  }
 
-    #codemirror-container { flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); }
-    #markdown { flex: 1 0 0; overflow-x: hidden; max-width: calc(50vw - 3vmin); background-color: white; padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
-    #form { display: flex; justify-content: center; flex: 1 0 0; padding: 16px; overflow-y: hidden; }
-    #imageupload { display: none; }
+    #form { flex: 1 0 0; min-height: 0; }
+    #title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgb(var(--rgb-dark)); padding: 5px; font-size: 15px; }
+    #codemirror-container { grid-area: 2 / 1 / 3 / 2; position: relative; margin-left: 35px; }
+    #markdown { grid-area: 2 / 2 / 3 / 3; background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
 
-    #editor-buttons { flex: 0 0 1.6em; }
+    #editor-buttons { grid-area: 2 / 1 / 3 / 2; justify-self: start; min-height: 0; }
     #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
     #editor-buttons>div i { padding: 4px; font-size: 15px; text-align: center; }
     #editor-buttons>div i:hover { color: rgb(var(--rgb-highlight)); cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 4px; }
@@ -69,6 +67,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 15px; border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
+
+    @media (max-width: 576px){
+      main { grid-template-columns: 1fr; grid-template-rows: 31px 1fr 1fr; padding: 2px; grid-gap: 2px; }
+      #title { grid-area: 1 / 1 / 2 / 2; }
+      #codemirror-container { grid-area: 2 / 1 / 3 / 2; }
+      #markdown { grid-area: 3 / 1 / 4 / 2; }
+      #editor-buttons { grid-area: 2 / 1 / 3 / 2; }
+      textarea,select,input,.CodeMirror { font-size: 16px; }
+    }
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
@@ -96,6 +103,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         'Ctrl-Y': function(){ $('.button.fa-repeat').click(); }
       } });
       var map;
+
+      $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
 
       function render(){
         $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown(function(){
@@ -225,7 +234,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <option value="<?=$kind_id?>"<?=$sanction_is_default?' selected':''?>><?=$kind_description?></option>
             <?}?>
           </select>
-          <span class="element">
+          <span class="element wideonly">
             <select name="license" form="form">
               <?foreach(db("select license_id,license_name,license_is_versioned from license order by license_name") as $r){ extract($r);?>
                 <option value="<?=$license_id?>" data-versioned="<?=$license_is_versioned?'true':'false'?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
@@ -233,7 +242,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             </select>
             <label><input type="checkbox" name="license-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
           </span>
-          <span class="element">
+          <span class="element wideonly">
             <select name="codelicense" form="form">
               <?foreach(db("select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense order by codelicense_id<>1, codelicense_name") as $r){ extract($r);?>
                 <option value="<?=$codelicense_id?>" data-versioned="<?=$codelicense_is_versioned?'true':'false'?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
@@ -242,7 +251,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <label><input type="checkbox" name="codelicense-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
           </span>
         <?}?>
-        <input class="element" id="submit" type="submit" form="form" value="<?=$question_id?'update post under '.$license:'submit'?>">
+        <button class="element" id="submit" type="submit" form="form"><?=$question_id?'update<span class="wideonly"> post under '.$license.'</span>':'submit'?></button>
         <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
       <?}else{?>
         <input class="element" id="join" type="button" value="join">
@@ -258,35 +267,31 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <input type="hidden" name="community" value="<?=$community_name?>">
     <?}?>
     <main>
-      <input name="title" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
-      <div class="gap"></div>
-      <div>
-        <div id="editor-buttons">
-          <div>
-            <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
-            <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
-            <br>
-            <i title="Hyperlink (Ctrl + L)" class="button fa fw fa-link"></i>
-            <i title="Blockquote (Ctrl + Q)" class="button fa fw fa-quote-left"></i>
-            <i title="Code (Ctrl + K)" class="button fa fw fa-code"></i>
-            <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
-        <!--<br>
-            <i title="Ordered List (Ctrl + O)" class="button fa fw fa-list-ol"></i>
-            <i title="Unordered List (Ctrl + U)" class="button fa fw fa-list-ul"></i>-->
-            <br>
-            <i title="Undo (Ctrl + Z)" class="button fa fw fa-undo"></i>
-            <i title="Redo (Ctrl + Y)" class="button fa fw fa-repeat"></i>
-          </div>
+      <input id="title" name="title" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
+      <div id="editor-buttons">
+        <div>
+          <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
+          <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
+          <br>
+          <i title="Hyperlink (Ctrl + L)" class="button fa fw fa-link"></i>
+          <i title="Blockquote (Ctrl + Q)" class="button fa fw fa-quote-left"></i>
+          <i title="Code (Ctrl + K)" class="button fa fw fa-code"></i>
+          <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
+      <!--<br>
+          <i title="Ordered List (Ctrl + O)" class="button fa fw fa-list-ol"></i>
+          <i title="Unordered List (Ctrl + U)" class="button fa fw fa-list-ul"></i>-->
+          <br>
+          <i title="Undo (Ctrl + Z)" class="button fa fw fa-undo"></i>
+          <i title="Redo (Ctrl + Y)" class="button fa fw fa-repeat"></i>
         </div>
-        <div id="codemirror-container">
-          <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
-        </div>
-        <div class="gap"></div>
-        <div id="markdown" class="markdown noexpander"></div>
       </div>
+      <div id="codemirror-container">
+        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" required placeholder="your question"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:'.PHP_EOL.PHP_EOL.'<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
+      </div>
+      <div id="markdown" class="markdown noexpander"></div>
     </main>
   </form>
-  <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*"></form>
+  <form id="imageupload" action="//post.topanswers.xyz/upload" method="post" enctype="multipart/form-data"><input id="uploadfile" name="image" type="file" accept="image/*" style="display: none;"></form>
 </body>   
 </html>   
 <?ob_end_flush();
