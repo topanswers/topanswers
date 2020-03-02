@@ -21,7 +21,8 @@ services:
       - .:/var/www/
   postgres:
     build:
-      context: "./docker/postgres/"
+      context: ./
+      dockerfile: ./docker/postgres/Dockerfile
     restart: always
     networks:
       - backend
