@@ -190,29 +190,29 @@ begin
             where n.nspname='api' and proname!~'^_' );
 end$$;
 --
-\i /schema/transcript.sql
-\i /schema/chat.sql
-\i /schema/notification.sql
-\i /schema/community.sql
-\i /schema/questions.sql
-\i /schema/room.sql
-\i /schema/question.sql
-\i /schema/profile.sql
-\i /schema/answer.sql
-\i /schema/upload.sql
-\i /schema/sitemap.sql
-\i /schema/roomicon.sql
-\i /schema/identicon.sql
-\i /schema/question-history.sql
-\i /schema/answer-history.sql
-\i /schema/chat-history.sql
-\i /schema/starboard.sql
-\i /schema/import.sql
-\i /schema/index.sql
-\i /schema/poll.sql
-\i /schema/private.sql
-\i /schema/duplicate.sql
-\i /schema/communityicon.sql
-\i /schema/navigation.sql
+\i ~/git/sql/transcript.sql
+\i ~/git/sql/chat.sql
+\i ~/git/sql/notification.sql
+\i ~/git/sql/community.sql
+\i ~/git/sql/questions.sql
+\i ~/git/sql/room.sql
+\i ~/git/sql/question.sql
+\i ~/git/sql/profile.sql
+\i ~/git/sql/answer.sql
+\i ~/git/sql/upload.sql
+\i ~/git/sql/sitemap.sql
+\i ~/git/sql/roomicon.sql
+\i ~/git/sql/identicon.sql
+\i ~/git/sql/question-history.sql
+\i ~/git/sql/answer-history.sql
+\i ~/git/sql/chat-history.sql
+\i ~/git/sql/starboard.sql
+\i ~/git/sql/import.sql
+\i ~/git/sql/index.sql
+\i ~/git/sql/poll.sql
+\i ~/git/sql/private.sql
+\i ~/git/sql/duplicate.sql
+\i ~/git/sql/communityicon.sql
+\i ~/git/sql/navigation.sql
 --
 commit;

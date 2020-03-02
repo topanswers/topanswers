@@ -17,7 +17,7 @@ create extension "pgcrypto" schema x_pgcrypto;
 create schema x_pg_stat_statements;
 create extension "pg_stat_statements" schema x_pg_stat_statements;
 
-set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
+alter database postgres set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
 
 create table one(
   one_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
