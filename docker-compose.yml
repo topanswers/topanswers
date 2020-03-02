@@ -7,6 +7,8 @@ services:
       - backend
     volumes:
       - .:/var/www/
+    environment:
+      DB_HOST: postgres
   apache:
     build:
       context: "./docker/apache/"
