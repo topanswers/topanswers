@@ -707,10 +707,20 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
             }
           });
-        }else{
-          $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(function(){ $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed'); });
-          if(scroll) scroller.scrollTop(1000000);
+          return;
         }
+        s = m.match(/^https:\/\/www.youtube.com\/watch\?v=([0-9a-zA-Z]*)$/);
+        if(s){
+          $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'youtube', room: <?=$room?>, id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
+            if($('#chattext').val()===m){
+              $('#preview .markdown').css('visibility','visible').attr('data-markdown','[![YouTube Link](/image?hash='+r+')](https://www.youtube.com/watch?v='+s[1]+')').renderMarkdown();
+              if(scroll) scroller.scrollTop(1000000);
+            }
+          });
+          return;
+        }
+        $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(function(){ $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed'); });
+        if(scroll) scroller.scrollTop(1000000);
       }
       var renderPreviewThrottle;
       renderPreviewThrottle = _.throttle(renderPreview,100);

@@ -18,5 +18,14 @@ switch($_POST['action']){
   case 'star': exit(ccdb("select set_star($1)",$_POST['id']));
   case 'unstar': exit(ccdb("select remove_star($1)",$_POST['id']));
   case 'dismiss': exit(ccdb("select dismiss_notification($1)",$_POST['id']));
+  case 'youtube':
+    $thumb = file_get_contents('https://img.youtube.com/vi/'.$_POST['id'].'/mqdefault.jpg');
+    if(!getimagesizefromstring($thumb)) fail(400,'no YouTube image found');
+    $hash = hash('sha256',$thumb);
+    $path = '/srv/uploads/'.substr($hash,0,2).'/'.substr($hash,2,2).'/'.substr($hash,4,2);
+    $fname = $path.'/'.$hash;
+    is_dir($path) || mkdir($path,0777,true);
+    if(!file_exists($fname)) file_put_contents($fname,$thumb);
+    exit($hash);
   default: fail(400,'unrecognized action');
 }
