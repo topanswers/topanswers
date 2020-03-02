@@ -6,7 +6,7 @@ isset($_POST['action']) || fail(400,'must have an "action" parameter');
 isset($_COOKIE['uuid']) || fail(403,'only registered users can POST');
 db("set search_path to import,pg_temp");
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_POST['community']??'') || fail(403,'access denied');
-extract(cdb("select (select sesite_url from sesite where sesite_id=$1) sesite_url,communicant_se_user_id from one",$_POST['sesiteid']));
+extract(cdb("select sesite_url,selink_user_id from sesite where sesite_id=$1",$_POST['sesiteid']));
 
 function file_get_contents_retry($url,$attempts=3) {
   $content = file_get_contents($url);
@@ -109,13 +109,13 @@ switch($_POST['action']) {
       foreach($elements as $element) array_push($aids,explode('-',$element->getAttribute('id'))[1]);
     }else{
       if($seaids) $aids = $seaids;
-      if($communicant_se_user_id){
+      if($selink_user_id){
         $doc = new DOMDocument();
         $doc->loadHTML('<meta http-equiv="Content-Type" content="charset=utf-8" />'.file_get_contents_retry($sesite_url.'/questions/'.$seqid));
         $xpath = new DOMXpath($doc);
         $elements = $xpath->query("//div[contains(concat(' ', @class, ' '), ' answer ') and "
                                  ."boolean(.//div[contains(concat(' ', @class, ' '), ' post-signature ') and not(following-sibling::div[contains(concat(' ', @class, ' '), ' post-signature ')])]"
-                                 ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$communicant_se_user_id."/')])]");
+                                 ."//div[contains(concat(' ', @class, ' '), ' user-details ')]/a[contains(@href,'/".$selink_user_id."/')])]");
         foreach($elements as $element){
           $aid = explode('-',$element->getAttribute('id'))[1];
           if(!in_array($aid,$aids,true)) array_push($aids,$aid);

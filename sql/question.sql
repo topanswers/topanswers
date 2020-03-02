@@ -25,8 +25,8 @@ from db.community
      natural join api._community
      natural left join (select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) a
      natural left join db.communicant
-     natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
      natural left join (select question_id,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,kind_allows_question_multivotes
+                             , sesite_url
                              , license_name||(case when question_permit_later_license then ' or later' else '' end) question_license_name
                              , license_href question_license_href
                              , codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) question_codelicense_name
@@ -38,6 +38,7 @@ from db.community
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at) question_when
                         from db.question q natural join db.kind natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
+                             natural left join (select sesite_id question_sesite_id, sesite_url from db.sesite) s
                         where question_id=get_question_id()) q
 where community_id=get_community_id();
 --
