@@ -49,7 +49,6 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , codelicense_description answer_codelicense_description
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
-     , selink_user_id answer_communicant_se_user_id
      , selink_user_id answer_selink_user_id
      , coalesce(communicant_votes,0) answer_communicant_votes
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=1) answer_i_flagged
@@ -77,7 +76,6 @@ select account_id
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,kind_show_answer_summary_toc
-     , selink_user_id question_communicant_se_user_id
      , selink_user_id question_selink_user_id
       ,question_communicant_votes
       ,question_license_href,question_has_codelicense,question_codelicense_name,question_codelicense_description

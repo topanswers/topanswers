@@ -68,7 +68,7 @@ select system_notification_id,system_notification_at,system_notification_message
      , coalesce(community_rgb_mid,'248,248,248') community_rgb_mid
      , coalesce(community_rgb_light,'255,255,255') community_rgb_light
      , coalesce(community_rgb_warning,'153,0,0') community_rgb_warning
-from db.system_notification n left join (select * from api._community natural join db.community) c on c.community_id = n.system_notification_community_id
+from db.system_notification n left join (select community_id,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_warning from api._community natural join db.community) c on c.community_id = n.system_notification_community_id
 where system_notification_dismissed_at is null and account_id=get_account_id();
 --
 create view one with (security_barrier) as

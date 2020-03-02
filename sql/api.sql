@@ -163,8 +163,8 @@ begin
   insert into room(community_id) values(0) returning room_id into rid;
   insert into community(community_name,community_room_id,community_display_name) values(cname,rid,initcap(cname)) returning community_id into cid;
   --
-  insert into communicant(account_id,community_id,communicant_se_user_id,communicant_regular_font_id,communicant_monospace_font_id)
-  select 208,cid,0,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
+  --insert into communicant(account_id,community_id,communicant_se_user_id,communicant_regular_font_id,communicant_monospace_font_id)
+  --select 208,cid,0,community_regular_font_id,community_monospace_font_id from community where community_id=cid;
   --
   update room set community_id=cid where room_id=rid;
   return cid;

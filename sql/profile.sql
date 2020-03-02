@@ -30,12 +30,17 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
      , (select font_id from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_id
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-      ,communicant_se_user_id
+      , selink_user_id, selink_user_id communicant_se_user_id
       ,one_stackapps_secret
 from (select account_id,account_name,account_image,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) a
      cross join db.one
-     natural left join (select * from api._community natural join db.community left join db.sesite on community_sesite_id=sesite_id where community_id=get_community_id()) c
-     natural left join db.communicant;
+     natural left join (select community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_regular_font_id,community_monospace_font_id
+                              ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                              ,sesite_url
+                        from api._community natural join db.community natural left join (select community_id,sesite_url from db.source natural join db.sesite where source_is_default) s
+                        where community_id=get_community_id()) c
+     natural left join db.communicant
+     natural left join (select account_id,community_id,selink_user_id from db.selink natural join db.source where source_is_default) s;
 --
 --
 create function login(uuid) returns boolean language sql security definer as $$select api.login($1);$$;
@@ -117,14 +122,13 @@ create function set_se_user_id(id integer) returns void language sql security de
   select _ensure_communicant(get_account_id(),get_community_id());
   --
   with se as (update communicant
-              set communicant_se_user_id = null, communicant_votes = 0
-              where community_id=get_community_id() and communicant_se_user_id=id
+              set communicant_votes = 0
+              where community_id=get_community_id() and exists(select 1 from selink where community_id=get_community_id() and selink_user_id=id)
               returning account_id)
       , d as (delete from selink where account_id=(select account_id from se) and community_id=get_community_id())
-      , i as (insert into selink(account_id,community_id,sesite_id,selink_user_id) select account_id,community_id,community_sesite_id,id from community natural join communicant where community_id=get_community_id() and account_id=get_account_id())
+      , i as (insert into selink(account_id,community_id,sesite_id,selink_user_id) select account_id,community_id,sesite_id,id from community natural join (select community_id,sesite_id from source where source_is_default) s natural join communicant where community_id=get_community_id() and account_id=get_account_id())
      , ta as (update communicant
-              set communicant_se_user_id = id
-                , communicant_votes = communicant_votes+coalesce((select communicant_votes from communicant where community_id=get_community_id() and account_id=(select account_id from se)),0)
+              set communicant_votes = communicant_votes+coalesce((select communicant_votes from communicant where community_id=get_community_id() and account_id=(select account_id from se)),0)
               where community_id=get_community_id() and account_id=get_account_id())
       , q as (update question set account_id=get_account_id() where account_id=(select account_id from se))
       , a as (update answer set account_id=get_account_id() where account_id=(select account_id from se))

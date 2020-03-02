@@ -130,13 +130,11 @@ create table communicant(
 , community_id integer references community
 , communicant_votes integer default 0 not null
 , communicant_can_import boolean default false not null
-, communicant_se_user_id integer
 , communicant_regular_font_id integer not null references font
 , communicant_monospace_font_id integer not null references font
 , communicant_is_post_flag_crew boolean default false not null
 , primary key (account_id,community_id)
 );
-create unique index communicant_se_user_ind on communicant(community_id,communicant_se_user_id);
 
 create table selink(
   account_id integer
@@ -147,6 +145,7 @@ create table selink(
 , foreign key (account_id,community_id) references communicant
 , foreign key (community_id,sesite_id) references source
 );
+create unique index selink_user_id_ind on selink(community_id,sesite_id,selink_user_id);
 
 create table account_history(
   account_history_id integer generated always as identity primary key

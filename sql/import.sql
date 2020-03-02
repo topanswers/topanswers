@@ -6,8 +6,6 @@ set local search_path to import,api,pg_temp;
 create view sesite with (security_barrier) as
 select sesite_id,sesite_url,selink_user_id from db.source natural join db.sesite natural left join (select * from db.selink where account_id=get_account_id()) s where community_id=get_community_id();
 --
-create view one with (security_barrier) as select -1 communicant_se_user_id;
---
 --
 create function login_community(uuid,text) returns boolean language sql security definer as $$select api.login_community($1,(select community_id from db.community where community_name=$2));$$;
 create function login_question(uuid,integer) returns boolean language sql security definer as $$select api.login_question($1,$2);$$;
@@ -69,7 +67,7 @@ create function new_question(title text, markdown text, tags text, sesid integer
 $$;
 --
 create function new_questionanon(title text, markdown text, tags text, sesid integer, seqid integer, seat timestamptz) returns integer language sql security definer set search_path=db,api,import,pg_temp as $$
-  with u as (select account_id from communicant where community_id=get_community_id() and communicant_se_user_id=0) select _new_question(account_id,title,markdown,tags,sesid,seqid,seat) question_id from u;
+  with u as (select account_id from communicant natural join selink where community_id=get_community_id() and sesite_id=sesid and selink_user_id=0) select _new_question(account_id,title,markdown,tags,sesid,seqid,seat) question_id from u;
 $$;
 --
 create function _new_answer(aid integer, markdown text, seaid integer, seat timestamptz) returns integer language sql security definer set search_path=db,api,import,pg_temp as $$

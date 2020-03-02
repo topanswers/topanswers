@@ -38,7 +38,9 @@ select account_id,community_id,community_name,community_code_language,community_
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , (select count(*) from api._question where community_id=get_community_id()) num_questions
 from api._community natural join db.community
-     natural left join (select * from db.login natural join db.account natural join db.communicant where login_uuid=get_login_uuid()) a
+     natural left join (select account_id,account_is_dev,communicant_is_post_flag_crew,communicant_regular_font_id,communicant_monospace_font_id
+                        from db.login natural join db.account natural join db.communicant
+                        where login_uuid=get_login_uuid()) a
 where community_id=get_community_id();
 --
 --
