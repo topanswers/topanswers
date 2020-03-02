@@ -31,7 +31,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged,question_i_counterflagged
                    ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
-                   ,question_communicant_se_user_id,question_communicant_votes
+                   ,question_selink_user_id,question_communicant_votes
                    ,question_license_href,question_has_codelicense,question_codelicense_name,question_license_description,question_codelicense_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                    ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
@@ -860,7 +860,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var t = $(this), f = t.closest('form');
         vex.dialog.open({
           input: ['<p>Enter question or answer id or url (and optionally further answer ids/urls from the same question) from ',
-                    '<select name="site"><?foreach(db("select sesite_id,sesite_url,source_is_default from sesite") as $r){extract($r);?><option value="<?=$sesite_id?>"<?=$source_is_default?" selected":""?>><?=$sesite_url?></option><?}?></select>.',
+                    '<select name="site"><?foreach(db("select sesite_id,sesite_url,source_is_default from sesite") as $r){extract($r,EXTR_PREFIX_ALL,'s');?><option value="<?=$s_sesite_id?>"<?=$s_source_is_default?" selected":""?>><?=$s_sesite_url?></option><?}?></select>.',
                   '</p>',
                   '<p>Separate each id/url with a space. No need to list your own answers; they will be imported automatically.</p>',
                   '<input name="ids">'].join('')
@@ -954,7 +954,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
           <?if($community_about_question_id){?><a href="/<?=$community_name?>?q=<?=$community_about_question_id?>" class="button wideonly">About</a><?}?>
-          <?if($auth&&$communicant_can_import&&$sesite_url){?>
+          <?if($auth&&$communicant_can_import){?>
             <form method="post" action="//post.topanswers.xyz/import">
               <input type="hidden" name="action" value="new">
               <input type="hidden" name="community" value="<?=$community_name?>">
@@ -984,7 +984,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
               <span class="element">
                 <?if($question_account_is_imported){?>
-                  <span><?if($question_communicant_se_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_communicant_se_user_id?>"><?=$question_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                  <span><?if($question_selink_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_selink_user_id?>"><?=$question_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
                 <?}else{?>
                   <span><?=$question_account_name?></span>
                 <?}?>
@@ -1101,7 +1101,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
                             ,answer_license_href,answer_license_name,answer_codelicense_name,answer_license_description,answer_codelicense_description,answer_account_name,answer_account_is_imported
-                            ,answer_communicant_votes,answer_communicant_se_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
+                            ,answer_communicant_votes,answer_selink_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
                            , answer_account_id=$1 answer_account_is_me
                            , answer_crew_flags>0 answer_is_deleted
                            , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
@@ -1126,7 +1126,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 </span>
                 <span class="element">
                   <?if($answer_account_is_imported){?>
-                    <span><?if($answer_communicant_se_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_communicant_se_user_id?>"><?=$answer_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'//'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                    <span><?if($answer_selink_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_selink_user_id?>"><?=$answer_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'/'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
                   <?}else{?>
                     <span><?=$answer_account_name?></span>
                   <?}?>

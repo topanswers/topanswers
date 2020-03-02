@@ -92,9 +92,9 @@ switch($_POST['action']) {
      //error_log('length: '.strlen($markdown));
       // add the question
       if($qanon){
-        $id=ccdb("select new_questionanon($1,$2,$3,$4,$5::timestamptz)",$title,$markdown,$tags,$seqid,$at);
+        $id=ccdb("select new_questionanon($1,$2,$3,$4,$5,$6::timestamptz)",$title,$markdown,$_POST['sesiteid'],$tags,$seqid,$at);
       }else{
-        $id=ccdb("select new_question($1,$2,$3,$4,$5,$6,$7::timestamptz)",$title,$markdown,$tags,$seqid,$seuid,$seuname,$at);
+        $id=ccdb("select new_question($1,$2,$3,$4,$5,$6,$7,$8::timestamptz)",$title,$markdown,$tags,$_POST['sesiteid'],$seqid,$seuid,$seuname,$at);
       }
     }
    //echo '<pre>'; var_dump($id); echo '</pre>'; exit;
@@ -136,9 +136,9 @@ switch($_POST['action']) {
         $markdown = preg_replace('/^(#+)([^\n# ])/m','$1 $2',$markdown);
         $markdown = preg_replace('/http:\/\/i.stack.imgur.com\//','https://i.stack.imgur.com/',$markdown);
         if($answers[$aid]['anon']){
-          db("select new_answeranon($1,$2,$3)",$markdown,$aid,$answers[$aid]['at']);
+          db("select new_answeranon($1,$2,$3,$4)",$markdown,$_POST['sesiteid'],$aid,$answers[$aid]['at']);
         }else{
-          db("select new_answer($1,$2,$3,$4,$5)",$markdown,$aid,$answers[$aid]['uid'],$answers[$aid]['uname'],$answers[$aid]['at']);
+          db("select new_answer($1,$2,$3,$4,$5,$6)",$markdown,$_POST['sesiteid'],$aid,$answers[$aid]['uid'],$answers[$aid]['uname'],$answers[$aid]['at']);
         }
       }
     }

@@ -102,7 +102,7 @@ create table codelicense(
 
 create table account(
   account_id integer generated always as identity primary key
-, account_name text check (account_name~'^[0-9[:alpha:]][-'' .0-9[:alpha:]]{1,25}[0-9[:alpha:]]$')
+, account_name text check (account_name~'^[-'' ._0-9[:alpha:]]{1,40}$')
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea check(length(account_image)>0)
@@ -137,6 +137,16 @@ create table communicant(
 , primary key (account_id,community_id)
 );
 create unique index communicant_se_user_ind on communicant(community_id,communicant_se_user_id);
+
+create table selink(
+  account_id integer
+, community_id integer
+, sesite_id integer references sesite
+, selink_user_id integer not null
+, primary key (account_id,community_id,sesite_id)
+, foreign key (account_id,community_id) references communicant
+, foreign key (community_id,sesite_id) references source
+);
 
 create table account_history(
   account_history_id integer generated always as identity primary key

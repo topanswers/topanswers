@@ -49,12 +49,14 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , codelicense_description answer_codelicense_description
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , answer_at<>answer_change_at answer_has_history
-     , communicant_se_user_id answer_communicant_se_user_id
+     , selink_user_id answer_communicant_se_user_id
+     , selink_user_id answer_selink_user_id
      , coalesce(communicant_votes,0) answer_communicant_votes
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=1) answer_i_flagged
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=-1) answer_i_counterflagged
      , case when answer_se_imported_at=answer_change_at then 'imported' when answer_change_at>answer_at then 'edited' else 'answered' end answer_change
 from api._answer natural join db.answer a natural join api._account natural join db.account natural join (select question_id,community_id from db.question) q natural join db.license natural join db.codelicense natural join db.communicant
+     natural left join (select account_id,community_id,sesite_id question_sesite_id,selink_user_id from db.selink) s
      natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v
 where question_id=get_question_id()
 order by answer_votes desc, communicant_votes desc, answer_id desc;
@@ -75,7 +77,9 @@ select account_id
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,kind_show_answer_summary_toc
-      ,question_communicant_se_user_id,question_communicant_votes
+     , selink_user_id question_communicant_se_user_id
+     , selink_user_id question_selink_user_id
+      ,question_communicant_votes
       ,question_license_href,question_has_codelicense,question_codelicense_name,question_codelicense_description
      , question_account_id is not distinct from account_id question_account_is_me
      , coalesce(login_resizer_percent,70) login_resizer_percent
@@ -94,8 +98,8 @@ from db.room r natural join db.community natural join api._community
      natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
      natural left join db.writer x
-     natural left join (select sesite_id community_sesite_id, sesite_url from db.sesite) s
      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,question_is_deleted
+                              ,sesite_url,selink_user_id
                               ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
                               ,kind_show_answer_summary_toc
                              , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
@@ -107,7 +111,6 @@ from db.room r natural join db.community natural join api._community
                              , account_id question_account_id
                              , account_derived_name question_account_name
                              , account_is_imported question_account_is_imported
-                             , communicant_se_user_id question_communicant_se_user_id
                              , coalesce(question_vote_votes,0) question_votes_from_me
                              , exists(select 1 from db.answer a natural join db.login where login_uuid=get_login_uuid() and a.question_id=q.question_id) question_answered_by_me
                              , exists(select 1 from api._answer a where a.question_id=q.question_id) question_is_answered
@@ -120,6 +123,7 @@ from db.room r natural join db.community natural join api._community
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at)::bigint question_when
                         from api._question natural join db.question q natural join db.kind natural join api._account natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
+                             natural left join (select account_id,community_id,sesite_id question_sesite_id,selink_user_id,sesite_url from db.selink natural join db.sesite) s
                              natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
                         where question_id=get_question_id()) q
 where room_id=get_room_id();

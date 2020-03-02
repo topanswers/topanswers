@@ -112,14 +112,16 @@ $$;
 --
 create function set_se_user_id(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null or get_community_id() is null;
-  select _error('SE user id is already linked to an account') where exists(select 1 from communicant natural join account where community_id=get_community_id() and communicant_se_user_id=id and not account_is_imported);
-  select _error('SE user id is already set for this account') where exists(select 1 from communicant where community_id=get_community_id() and account_id=get_account_id() and communicant_se_user_id is not null);
+  select _error('SE user id is already linked to an account') where exists(select 1 from communicant natural join account natural join selink where community_id=get_community_id() and selink_user_id=id and not account_is_imported);
+  select _error('SE user id is already set for this account') where exists(select 1 from communicant natural join selink where community_id=get_community_id() and account_id=get_account_id() and selink_user_id is not null);
   select _ensure_communicant(get_account_id(),get_community_id());
   --
   with se as (update communicant
               set communicant_se_user_id = null, communicant_votes = 0
               where community_id=get_community_id() and communicant_se_user_id=id
               returning account_id)
+      , d as (delete from selink where account_id=(select account_id from se) and community_id=get_community_id())
+      , i as (insert into selink(account_id,community_id,sesite_id,selink_user_id) select account_id,community_id,community_sesite_id,id from community natural join communicant where community_id=get_community_id() and account_id=get_account_id())
      , ta as (update communicant
               set communicant_se_user_id = id
                 , communicant_votes = communicant_votes+coalesce((select communicant_votes from communicant where community_id=get_community_id() and account_id=(select account_id from se)),0)
