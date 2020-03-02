@@ -1,4 +1,7 @@
 <?
+
+require __DIR__ . "/config.php";
+
 function fail($code = 500,$msg = ''){
   switch($code){
     case 400: header('HTTP/1.1 400 Bad Request'); break;
@@ -15,7 +18,7 @@ $user = '';
 if($_SERVER['SERVER_NAME']==='127.0.0.1') $user = 'get';
 if($_SERVER['SERVER_NAME']==='topanswers.xyz') $user = 'get';
 if($_SERVER['SERVER_NAME']==='post.topanswers.xyz') $user = 'post';
-$connection = pg_connect('dbname=postgres user='.$user) or fail(403);
+$connection = pg_connect('host=' . config("DB_HOST"). ' dbname=postgres user='.$user) or fail(403);
 function db($query,...$params) {
   global $connection;
   pg_send_query_params($connection, $query, $params);
