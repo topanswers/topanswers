@@ -19,6 +19,7 @@ SET row_security = off;
 \i /seeds/font.sql
 \i /seeds/sesite.sql
 \i /seeds/communityRoom.sql
+\i /seeds/source.sql
 \i /seeds/codelicense.sql
 \i /seeds/kind.sql
 \i /seeds/license.sql
