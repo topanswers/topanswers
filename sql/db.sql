@@ -47,7 +47,6 @@ create table community(
 , community_mid_shade bytea not null default decode('d4dfec','hex') check(length(community_mid_shade)=3)
 , community_light_shade bytea not null default decode('e7edf4','hex') check(length(community_light_shade)=3)
 , community_highlight_color bytea not null default decode('f79804','hex') check(length(community_highlight_color)=3)
-, community_sesite_id integer references sesite
 , community_code_language text 
 , community_regular_font_id integer default 3 not null references font
 , community_monospace_font_id integer default 2 not null references font
