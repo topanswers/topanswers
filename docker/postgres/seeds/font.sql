@@ -1,5 +1,5 @@
 --
--- Data for Name: font; Type: TABLE DATA; Schema: out; Owner: postgres
+-- Data for Name: font; Type: TABLE DATA; Schema: db; Owner: postgres
 --
 
 COPY "db".font (font_id, font_name, font_is_monospace) FROM stdin;

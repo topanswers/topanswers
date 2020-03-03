@@ -1,5 +1,5 @@
 --
--- Data for Name: codelicense; Type: TABLE DATA; Schema: out; Owner: postgres
+-- Data for Name: codelicense; Type: TABLE DATA; Schema: db; Owner: postgres
 --
 
 COPY "db".codelicense (codelicense_id, codelicense_name, codelicense_is_versioned, codelicense_description) FROM stdin;
