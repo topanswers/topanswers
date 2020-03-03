@@ -11,7 +11,8 @@ select question_id,question_at,question_change_at,question_votes,question_poll_m
      , coalesce(question_vote_votes,0) question_votes_from_me
      , coalesce(communicant_votes,0) question_communicant_votes
      , case when question_se_imported_at=question_change_at then 'imported' when question_change_at>question_at then 'edited' else 'asked' end question_change
-from api._question natural join db.question natural join api._account natural join db.community natural join db.communicant natural join db.kind
+     , exists(select 1 from api._answer a where a.question_id=q.question_id) question_is_answered
+from api._question natural join db.question q natural join api._account natural join db.community natural join db.communicant natural join db.kind
      natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
 where community_id=get_community_id();
 --
