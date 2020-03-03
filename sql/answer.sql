@@ -10,7 +10,13 @@ create view one with (security_barrier) as
 select *
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-from (select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) ac
+from (select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
+           , account_license_name||(case when account_permit_later_license then ' or later' else '' end)
+                                 ||(case when account_codelicense_id<>1 then ' + '||account_codelicense_name||(case when account_permit_later_codelicense then ' or later' else '' end) else '' end) account_license
+      from db.account
+           natural join (select license_id account_license_id, license_name account_license_name from db.license) l
+           natural join (select codelicense_id account_codelicense_id, codelicense_name account_codelicense_name from db.codelicense) c
+      where account_id=get_account_id()) ac
      cross join (select community_id,question_id,question_title,question_markdown,kind_allows_answer_multivotes from db.question natural join db.kind where question_id=get_question_id()) q
      natural join (select community_id,community_name,community_code_language
                          ,community_regular_font_id,community_monospace_font_id,community_my_power,community_tables_are_monospace
@@ -18,7 +24,8 @@ from (select account_id,account_license_id,account_codelicense_id,account_permit
                    from db.community natural join api._community) c
      natural left join (select account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id,communicant_votes from db.communicant) co
      natural left join (select question_id,answer_id,answer_markdown
-                             , license_name||(case when answer_permit_later_license then ' or later' else '' end)||(case when codelicense_id<>1 then ' + '||codelicense_name||(case when answer_permit_later_codelicense then ' or later' else '' end) else '' end) answer_license
+                             , license_name||(case when answer_permit_later_license then ' or later' else '' end)
+                                 ||(case when codelicense_id<>1 then ' + '||codelicense_name||(case when answer_permit_later_codelicense then ' or later' else '' end) else '' end) answer_license
                              , account_id answer_account_id
                         from db.answer natural join db.license natural join db.codelicense
                         where answer_id=get_answer_id()) a;

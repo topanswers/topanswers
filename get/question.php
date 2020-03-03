@@ -11,10 +11,13 @@ if(isset($_GET['id'])){
   $auth||(($_GET['community']==='databases')&&isset($_GET['rdbms'])&&isset($_GET['fiddle'])) || fail(403,'need to be logged in to visit this page unless from a fiddle');
 }
 extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
+                  , account_license_name||(case when account_permit_later_license then ' or later' else '' end)
+                       ||(case when account_has_codelicense then ' + '||account_codelicense_name||(case when account_permit_later_codelicense then ' or later' else '' end) else '' end) account_license
                    ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
-                  , question_license_name||(case when question_has_codelicense then ' + '||question_codelicense_name else '' end) license
+                  , question_license_name||(case when question_permit_later_license then ' or later' else '' end)
+                       ||(case when question_has_codelicense then ' + '||question_codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) else '' end) license
                    ,question_is_deleted,question_answered_by_me
                    ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
@@ -228,21 +231,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <div>
       <?if($auth){?>
         <?if(!$question_id){?>
-          <select class="element" name="kind" form="form" required>
-            <option value="" disabled selected>choose post type</option>
-            <?foreach(db("select kind_id,kind_description,sanction_is_default from kind order by sanction_ordinal") as $r){ extract($r);?>
-              <option value="<?=$kind_id?>"<?=$sanction_is_default?' selected':''?>><?=$kind_description?></option>
-            <?}?>
-          </select>
-          <span class="element wideonly">
+          <span class="element"><?=$account_license?> (<a href="." onclick="$(this).parent().hide().next('.element').show(); return false;">change</a>)</span>
+          <span class="element wideonly" style="display: none">
             <select name="license" form="form">
               <?foreach(db("select license_id,license_name,license_is_versioned from license order by license_name") as $r){ extract($r);?>
                 <option value="<?=$license_id?>" data-versioned="<?=$license_is_versioned?'true':'false'?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
               <?}?>
             </select>
-            <label><input type="checkbox" name="license-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
-          </span>
-          <span class="element wideonly">
+            <label><input type="checkbox" name="license-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later </label>
             <select name="codelicense" form="form">
               <?foreach(db("select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense order by codelicense_id<>1, codelicense_name") as $r){ extract($r);?>
                 <option value="<?=$codelicense_id?>" data-versioned="<?=$codelicense_is_versioned?'true':'false'?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
@@ -250,6 +246,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             </select>
             <label><input type="checkbox" name="codelicense-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
           </span>
+          <select class="element" name="kind" form="form" required>
+            <option value="" disabled selected>choose post type</option>
+            <?foreach(db("select kind_id,kind_description,sanction_is_default from kind order by sanction_ordinal") as $r){ extract($r);?>
+              <option value="<?=$kind_id?>"<?=$sanction_is_default?' selected':''?>><?=$kind_description?></option>
+            <?}?>
+          </select>
         <?}?>
         <button class="element" id="submit" type="submit" form="form"><?=$question_id?'update<span class="wideonly"> post under '.$license.'</span>':'submit'?></button>
         <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>

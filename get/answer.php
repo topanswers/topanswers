@@ -8,7 +8,7 @@ if(isset($_GET['id'])){
 }else{
   ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['question']??'') || fail(403,'access denied');
 }
-extract(cdb("select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
+extract(cdb("select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license
                    ,answer_id,answer_markdown,answer_license
                    ,question_id,question_title,question_markdown
                    ,community_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
@@ -212,15 +212,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </div>
     <div>
       <?if(!$answer_id){?>
-        <span class="element wideonly">
+        <span class="element"><?=$account_license?> (<a href="." onclick="$(this).parent().hide().next('.element').show(); return false;">change</a>)</span>
+        <span class="element wideonly" style="display: none;">
           <select name="license" form="form">
             <?foreach(db("select license_id,license_name,license_is_versioned from license") as $r){ extract($r);?>
               <option value="<?=$license_id?>" data-versioned="<?=$license_is_versioned?'true':'false'?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
             <?}?>
           </select>
-          <label><input type="checkbox" name="license-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
-        </span>
-        <span class="element wideonly">
+          <label><input type="checkbox" name="license-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later </label>
           <select name="codelicense" form="form">
             <?foreach(db("select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense") as $r){ extract($r);?>
               <option value="<?=$codelicense_id?>" data-versioned="<?=$codelicense_is_versioned?'true':'false'?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
