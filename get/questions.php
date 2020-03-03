@@ -32,7 +32,7 @@ if($search){
     $startid = intval($_GET['id'])+1;
     $endid = '';
   }
-  $results = db("select question_id,question_change,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name
+  $results = db("select question_id,question_change,question_is_answered,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name
                        ,question_is_deleted,question_communicant_votes
                        ,kind_short_description
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
