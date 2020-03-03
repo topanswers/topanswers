@@ -44,6 +44,7 @@
   .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
   .markdown .post { border: 3px solid rgb(var(--rgb-dark)); margin: 0; }
   .markdown .post .tag:hover i { visibility: hidden; }
+  .markdown .post .title > a { color: black; }
   .markdown .expandable { overflow: hidden; position: relative; border-bottom: 1px dashed rgb(var(--rgb-mid)); }
   .markdown .expandable>code { overflow: hidden; }
   .markdown .expander { position: absolute; z-index: 1; height: 50px; top: 250px; padding-top: 34px; left: 0; right: 0; font-family: var(--regular-font-family); font-size: 12px; text-align: center; color: rgb(var(--rgb-dark));

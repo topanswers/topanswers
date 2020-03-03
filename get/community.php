@@ -115,6 +115,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       .newtag:hover .tag { opacity: 1; }
       .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
 
+      #qa #question { margin-bottom: 16px; }
       #qa .post:target { box-shadow: 0 0 1px 2px rgb(var(--rgb-highlight)); }
       #qa .markdown { border: 1px solid rgb(var(--rgb-dark)); border-width: 1px 0; padding: 8px; }
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
