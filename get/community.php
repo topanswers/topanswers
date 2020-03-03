@@ -1000,13 +1000,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <span><?=$question_account_name?></span>
                 <?}?>
               </span>
-              <span class="element">
-                <a href="<?=$question_license_href?>" title="<?=$question_license_description?>"><?=$question_license_name?></a>
-                <?if($question_has_codelicense){?>
-                  <span> + </span>
-                  <a href="/meta?q=24" title="<?=$question_codelicense_description?>"><?=$question_codelicense_name?> for original code</a>
-                <?}?>
-              </span>
               <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"></span>
             </div>
             <div>
@@ -1040,7 +1033,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <?if($auth){?>
                 <?if($question_account_is_me||$kind_can_all_edit){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
                 <?if($question_has_history){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
-                <?if(!$question_account_is_me){?><a class="element" href='.' onclick="$('#question .icon').click(); return false;">comment</a><?}?>
+                <?if(!$question_account_is_me){?><a class="element" href="." onclick="$('#question .icon').click(); return false;">comment</a><?}?>
+                <a class="element" href="." onclick="$(this).hide().next('.element').show(); return false;">license</a>
+                <span class="element" style="display: none;">
+                  <a href="<?=$question_license_href?>" title="<?=$question_license_description?>"><?=$question_license_name?></a>
+                  <?if($question_has_codelicense){?>
+                    <span> + </span>
+                    <a href="/meta?q=24" title="<?=$question_codelicense_description?>"><?=$question_codelicense_name?> for original code</a>
+                  <?}?>
+                </span>
               <?}?>
             </div>
             <?if($auth){?>
@@ -1129,13 +1130,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <div>
                 <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
                 <span class="element">
-                  <a href="<?=$answer_license_href?>" title="<?=$answer_license_description?>"><?=$answer_license_name?></a>
-                  <?if($answer_has_codelicense){?>
-                    <span> + </span>
-                    <a href="/meta?q=24" title="<?=$answer_codelicense_description?>"><?=$answer_codelicense_name?> for original code</a></span>
-                  <?}?>
-                </span>
-                <span class="element">
                   <?if($answer_account_is_imported){?>
                     <span><?if($answer_selink_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_selink_user_id?>"><?=$answer_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'/'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
                   <?}else{?>
@@ -1157,7 +1151,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <?if($auth){?>
                   <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
                   <?if($answer_has_history){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
-                  <?if(!$answer_account_is_me){?><a class="element" href='.' onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
+                  <?if(!$answer_account_is_me){?><a class="element" href="." onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
+                  <a class="element" href="." onclick="$(this).hide().next('.element').show(); return false;">license</a>
+                  <span class="element" style="display: none;">
+                    <a href="<?=$answer_license_href?>" title="<?=$answer_license_description?>"><?=$answer_license_name?></a>
+                    <?if($answer_has_codelicense){?>
+                      <span> + </span>
+                      <a href="/meta?q=24" title="<?=$answer_codelicense_description?>"><?=$answer_codelicense_name?> for original code</a></span>
+                    <?}?>
+                  </span>
                 <?}?>
               </div>
               <?if($auth){?>
