@@ -51,33 +51,34 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     body { display: flex; flex-direction: column; background-color: rgb(var(--rgb-light)); }
-    main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 31px 1fr; grid-gap: 16px; padding: 16px; max-width: 3000px; margin: 0 auto; height: 100%; }
+    main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 32px 1fr; grid-gap: 16px; padding: 16px; max-width: 3000px; margin: 0 auto; height: 100%; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
     #form { flex: 1 0 0; min-height: 0; }
-    #title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgb(var(--rgb-dark)); padding: 5px; font-size: 15px; }
+    #title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgb(var(--rgb-dark)); padding: 5px; font-size: 16px; }
     #codemirror-container { grid-area: 2 / 1 / 3 / 2; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
-    #markdown { grid-area: 2 / 2 / 3 / 3; background-color: white;  padding: 7px; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
+    #markdown { grid-area: 2 / 2 / 3 / 3; background-color: white; padding: 7px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
 
     #editor-buttons { grid-area: 2 / 1 / 3 / 2; justify-self: start; min-height: 0; }
-    #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; border-right: none; padding: 5px; }
-    #editor-buttons>div i { padding: 4px; font-size: 15px; text-align: center; }
-    #editor-buttons>div i:hover { color: rgb(var(--rgb-highlight)); cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 4px; }
+    #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; padding: 5px; }
+    #editor-buttons>div i { padding: 4px; text-align: center; width: 24px; height: 24px; text-align: center; }
+    #editor-buttons>div i:hover { box-shadow: 0 0 0 1px rgba(var(--rgb-dark),0.6) inset; cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
     #editor-buttons>div i:last-child { margin-bottom: 0; }
-    #editor-buttons>div br { margin-bottom: 15px; }
+    #editor-buttons>div br { margin-bottom: 12px; }
 
-    .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 15px; border-radius: 0 3px 3px 3px; }
+    .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
 
     @media (max-width: 576px){
-      main { grid-template-columns: 1fr; grid-template-rows: 31px 1fr 1fr; padding: 2px; grid-gap: 2px; }
+      main { grid-template-columns: 1fr; grid-template-rows: 32px 1fr 1fr; padding: 2px; grid-gap: 2px; }
       #title { grid-area: 1 / 1 / 2 / 2; }
-      #codemirror-container { grid-area: 2 / 1 / 3 / 2; }
+      #codemirror-container { grid-area: 2 / 1 / 3 / 2; margin: 35px 0 0 0; }
       #markdown { grid-area: 3 / 1 / 4 / 2; }
       #editor-buttons { grid-area: 2 / 1 / 3 / 2; }
-      textarea,select,input,.CodeMirror { font-size: 16px; }
+      #editor-buttons>div { flex-direction: row; border-radius: 3px 3px 0 0; }
+      #editor-buttons>div br { margin: 0 12px 0 0; }
     }
   </style>
   <script src="/lib/js.cookie.js"></script>
@@ -102,6 +103,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         'Ctrl-Q': function(){ $('.button.fa-quote-left').click(); },
         'Ctrl-K': function(){ $('.button.fa-code').click(); },
         'Ctrl-G': function(){ $('.button.fa-picture-o').click(); },
+        'Ctrl-D': function(){ $('.button.fa-database').click(); },
+        'Ctrl-O': function(){ $('.button.fa-list-ol').click(); },
+        'Ctrl-U': function(){ $('.button.fa-list-ul').click(); },
         'Ctrl-Z': function(){ $('.button.fa-undo').click(); },
         'Ctrl-Y': function(){ $('.button.fa-repeat').click(); }
       } });
@@ -192,8 +196,31 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }else{ cm.replaceSelection('`code`'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionStart.ch+5),line:selectionStart.line}); }
       });
       $('.button.fa-picture-o').click(function(){ $('#uploadfile').click(); cm.focus(); });
-      $('.button.fa-list-ol').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
-      $('.button.fa-list-ul').click(function(){ var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false); });
+      $('.button.fa-database').click(function(){
+        var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
+        if(cm.somethingSelected()){ cm.replaceSelection(cm.getSelection()+'\n\n<> dbfiddle url\n'); cm.focus(); cm.setSelection({ch:3,line:(selectionStart.line+2)},{ch:15,line:(selectionStart.line+2)});
+        }else{ cm.replaceSelection('\n\n<> dbfiddle url\n\n'); cm.focus(); cm.setSelection({ch:3,line:(selectionStart.line+2)},{ch:15,line:(selectionStart.line+2)}); }
+      });
+      $('.button.fa-list-ol').click(function(){
+        var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
+        if(cm.somethingSelected()){
+          if(selectionStart.ch===0){ cm.replaceSelection('1. '+cm.getSelection()); cm.focus(); cm.setSelection({ch:3,line:selectionStart.line},{ch:(selectionEnd.ch+3),line:selectionStart.line});
+          }else{ cm.replaceSelection('\n1. '+cm.getSelection()); cm.focus(); cm.setSelection({ch:3,line:(selectionStart.line+1)},{ch:(selectionEnd.ch+3),line:(selectionStart.line+1)}); }
+        }else{
+          if(selectionStart.ch===0){ cm.replaceSelection('1. ordered list item'); cm.focus(); cm.setSelection({ch:3,line:selectionStart.line},{ch:20,line:selectionStart.line});
+          }else{ cm.replaceSelection('\n1. ordered list item\n\n'); cm.focus(); cm.setSelection({ch:3,line:(selectionStart.line+1)},{ch:20,line:(selectionStart.line+1)}); }
+        }
+      });
+      $('.button.fa-list-ul').click(function(){
+        var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
+        if(cm.somethingSelected()){
+          if(selectionStart.ch===0){ cm.replaceSelection('* '+cm.getSelection()); cm.focus(); cm.setSelection({ch:2,line:selectionStart.line},{ch:(selectionEnd.ch+2),line:selectionStart.line});
+          }else{ cm.replaceSelection('\n* '+cm.getSelection()); cm.focus(); cm.setSelection({ch:2,line:(selectionStart.line+1)},{ch:(selectionEnd.ch+2),line:(selectionStart.line+1)}); }
+        }else{
+          if(selectionStart.ch===0){ cm.replaceSelection('* unordered list item'); cm.focus(); cm.setSelection({ch:2,line:selectionStart.line},{ch:21,line:selectionStart.line});
+          }else{ cm.replaceSelection('\n* unordered list item\n\n'); cm.focus(); cm.setSelection({ch:2,line:(selectionStart.line+1)},{ch:21,line:(selectionStart.line+1)}); }
+        }
+      });
       $('.button.fa-undo').click(function(){ cm.undo(); cm.focus(); });
       $('.button.fa-repeat').click(function(){ cm.redo(); cm.focus(); });
       $('[name="license"],[name="codelicense"]').on('change',function(){
@@ -272,19 +299,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <input id="title" name="title" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
       <div id="editor-buttons">
         <div>
-          <i title="Bold (Ctrl + B)" class="button fa fw fa-bold"></i>
-          <i title="Italic (Ctrl + I)" class="button fa fw fa-italic"></i>
+          <i title="Bold (Ctrl + B)" class="button fa fa-bold"></i>
+          <i title="Italic (Ctrl + I)" class="button fa fa-italic"></i>
           <br>
-          <i title="Hyperlink (Ctrl + L)" class="button fa fw fa-link"></i>
-          <i title="Blockquote (Ctrl + Q)" class="button fa fw fa-quote-left"></i>
-          <i title="Code (Ctrl + K)" class="button fa fw fa-code"></i>
-          <i title="Upload Image (Ctrl + G)" class="button fa fw fa-picture-o"></i>
-      <!--<br>
-          <i title="Ordered List (Ctrl + O)" class="button fa fw fa-list-ol"></i>
-          <i title="Unordered List (Ctrl + U)" class="button fa fw fa-list-ul"></i>-->
+          <i title="Hyperlink (Ctrl + L)" class="button fa fa-link"></i>
+          <i title="Blockquote (Ctrl + Q)" class="button fa fa-quote-left"></i>
+          <i title="Code (Ctrl + K)" class="button fa fa-code"></i>
+          <i title="Upload Image (Ctrl + G)" class="button fa fa-picture-o"></i>
+          <?if($community_name==='databases'||$community_name==='test'){?>
+            <i title="DBFiddle (Ctrl + D)" class="button fa fa-database"></i>
+          <?}?>
           <br>
-          <i title="Undo (Ctrl + Z)" class="button fa fw fa-undo"></i>
-          <i title="Redo (Ctrl + Y)" class="button fa fw fa-repeat"></i>
+          <i title="Ordered List (Ctrl + O)" class="button fa fa-list-ol"></i>
+          <i title="Unordered List (Ctrl + U)" class="button fa fa-list-ul"></i>
+          <br>
+          <i title="Undo (Ctrl + Z)" class="button fa fa-undo"></i>
+          <i title="Redo (Ctrl + Y)" class="button fa fa-repeat"></i>
         </div>
       </div>
       <div id="codemirror-container">

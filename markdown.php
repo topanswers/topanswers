@@ -25,6 +25,7 @@
   .markdown blockquote { padding: 8px 8px 8px 10px; margin-left: 18px; margin-right: 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background-color: rgb(var(--rgb-light)); }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
+  .markdown blockquote > blockquote { margin-left: 0; }
   .markdown code { padding: 0 3px; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
   .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 6px; overflow-wrap: unset; }
   .markdown nav ol { counter-reset: list-item; }
