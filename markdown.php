@@ -4,27 +4,29 @@
   <link rel="stylesheet" href="/lib/katex/katex.min.css">
 <?}?>
 <style>
-  .summary code { padding: 0 0.2em; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 1px; overflow-wrap: break-word; }
+  .summary a { color: blue; }
+  .summary a:visited { color: purple; }
+  .summary code { padding: 0 3px; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>pre { white-space: pre; }
   .markdown>:first-child { margin-top: 0; }
   .markdown>:last-child { margin-bottom: 0; }
-  .markdown ul { padding-left: 2em; }
-  .markdown li { margin: 0.2rem 0; }
+  .markdown ol, .markdown ul { padding-left: 32px; }
+  .markdown li { margin: 3px 0; }
   .markdown a { color: blue; }
   .markdown a:visited { color: purple; }
-  .markdown img { max-width: 100%; max-height: 30rem; margin: 1px; }
+  .markdown img { max-width: 100%; max-height: 480px; margin: 1px; }
   .markdown hr { background-color: rgb(var(--rgb-mid)); border: 0; height: 2px; }
   .markdown table { border-collapse: collapse; table-layout: fixed; }
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
   .markdown th { background-color: rgb(var(--rgb-mid)); }
   .markdown td { background-color: white; }
-  .markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid black; padding: 0.2em; text-align: left; }
-  .markdown blockquote { padding: 0.5rem; margin-left: 0.7rem; margin-right: 0; border-left: 0.3rem solid rgba(var(--rgb-dark),0.6); background-color: rgb(var(--rgb-light)); }
+  .markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid black; padding: 3px 5px; text-align: left; }
+  .markdown blockquote { padding: 8px 8px 8px 10px; margin-left: 18px; margin-right: 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background-color: rgb(var(--rgb-light)); }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
-  .markdown code { padding: 0 0.2em; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 1px; overflow-wrap: break-word; }
-  .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 0.4em; overflow-wrap: unset; }
+  .markdown code { padding: 0 3px; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
+  .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 6px; overflow-wrap: unset; }
   .markdown nav ol { counter-reset: list-item; }
   .markdown nav li { display: block; counter-increment: list-item; }
   .markdown nav li:before { content: counters(list-item,'.') ' '; }
@@ -55,11 +57,11 @@
   .markdown .table-of-contents li { display: block; counter-increment: list-item-toc; }
   .markdown .table-of-contents li:before { content: counters(list-item-toc,'.') ' '; }
 
-  .dbfiddle { padding: 0.5rem; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
+  .dbfiddle { padding: 8px; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
-  .dbfiddle .tablewrapper { margin-top: 0.5rem; }
-  .dbfiddle>div { margin-top: 0.5rem; }
+  .dbfiddle .tablewrapper { margin-top: 8px; }
+  .dbfiddle>div { margin-top: 8px; }
   .dbfiddle .batch { overflow: hidden; min-width: 0; }
   .dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--monospace-font-family); background-color: rgba(var(--rgb-highlight),0.25); }
   .dbfiddle a { font-size: smaller; }
