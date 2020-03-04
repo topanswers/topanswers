@@ -23,7 +23,8 @@ function config($key)
     
     if (!isset($config)) {
         $config = [
-            "DB_HOST" => env("DB_HOST", '')
+            "DB_HOST" => env("DB_HOST", ''),
+            "DEV_HOST" => env("DEV_HOST", '127.0.0.1')
         ];
     }
     

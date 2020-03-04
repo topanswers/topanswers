@@ -9,6 +9,7 @@ services:
       - .:/var/www/
     environment:
       DB_HOST: postgres
+      DEV_HOST: localhost
   apache:
     build:
       context: "./docker/apache/"
