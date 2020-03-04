@@ -402,7 +402,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         if(newchat.find('img').length===0){
           newchat.addClass('processed');
         }else{
-          newchat.find('img').waitForImages(true).done(function(){
+          //newchat.find('img').waitForImages(true).done(function(){
             if(scroll){
               newchat.addClass('processed');
               scroller.scrollTop(1000000);
@@ -410,7 +410,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               newchat.addClass('processed');
               scroller.addClass('newscroll').scroll(_.debounce(function(){ if((scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5){ scroller.removeClass('newscroll'); scroller.off('scroll'); } }));
             }
-          });
+          //});
         }
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
