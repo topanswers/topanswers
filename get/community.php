@@ -286,8 +286,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
 
       function setFinalSpacer(){
-        var scroll, frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child');
+        var scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
+          , scroll = (scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5
+          , frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child')
         if(frst>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log10(1+frst)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(frst,'seconds').humanize()+' later');
+        if(scroll) scroller.scrollTop(1000000);
       }
       function setChatPollTimeout(){
         <?if($auth){?>
@@ -399,19 +402,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         newchat.filter('.message').each(renderChat).find('.when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
-        if(newchat.find('img').length===0){
+
+        Promise.all(newchat.find('img').map(function(){ return new Promise(r => {  const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); }); }).get()).then(() => {
+          if(scroll){
+            scroller.scrollTop(1000000);
+          }else{
+            scroller.addClass('newscroll').scroll(_.debounce(function(){ if((scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5){ scroller.removeClass('newscroll'); scroller.off('scroll'); } }));
+          }
           newchat.addClass('processed');
-        }else{
-          //newchat.find('img').waitForImages(true).done(function(){
-            if(scroll){
-              newchat.addClass('processed');
-              scroller.scrollTop(1000000);
-            }else{
-              newchat.addClass('processed');
-              scroller.addClass('newscroll').scroll(_.debounce(function(){ if((scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5){ scroller.removeClass('newscroll'); scroller.off('scroll'); } }));
-            }
-          //});
-        }
+        });
+
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
           function foo(b){
