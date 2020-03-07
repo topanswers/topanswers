@@ -7,9 +7,9 @@ $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
 extract(cdb("select account_id from one"));
 ?>
 <!doctype html>
-<html style="--rgb-dark: 211,211,211;
+<html style="--rgb-light: 211,211,211;
              --rgb-mid: 211,211,211;
-             --rgb-light: 120,120,120;
+             --rgb-dark: 80,80,80;
              --regular-font-family: 'source-sans-pro', serif;
              ">
 <head>
@@ -25,11 +25,10 @@ extract(cdb("select account_id from one"));
     body { display: flex; flex-direction: column; background: lightgrey; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     footer, footer>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
-    footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: lightgrey; border-top: 2px solid black; }
+    footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); border-top: 2px solid black; }
+    footer a, footer .element a, footer a.element { color: rgb(var(--rgb-light)); }
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 3px; }
-    a { color: blue; }
-    a:visited { color: purple; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-dark)); }
     .communities { display: flex; flex-wrap: wrap; margin: 16px 0; margin-top: -24px; }
@@ -92,7 +91,7 @@ extract(cdb("select account_id from one"));
         </div>
       <?}?>
     </div>
-    <div>
+    <div style="--rgb-dark: 0,0,240;">
     <h1>Join TopAnswers, and help build a lasting library of knowledge.</h1>
     <p>TopAnswers is what Stack Overflow should be: focused on communities and knowledge sharing, not profit. We share some of the same aims:</p>
     <ul>
