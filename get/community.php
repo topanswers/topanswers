@@ -404,9 +404,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
 
         Promise.all(newchat.find('img').map(function(){ return new Promise(r => {  const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); }); }).get()).then(() => {
-          if(scroll){
+          if(scroll===true){
             scroller.scrollTop(1000000);
-          }else{
+          }else if(scroll===false){
             scroller.addClass('newscroll').scroll(_.debounce(function(){ if((scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5){ scroller.removeClass('newscroll'); scroller.off('scroll'); } }));
           }
           newchat.addClass('processed');
