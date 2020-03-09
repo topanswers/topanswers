@@ -48,7 +48,7 @@ $id = $_GET['id']??ccdb("select recent()");
     <?if($authenticated){?>
       <span class="buttons">
         <span class="button-group show">
-          <i class="stars <?=$i_starred?'me ':''?>fa fa-star<?=($account_is_me||$i_starred)?'':'-o'?>" data-count="<?=$chat_star_count?>"></i>
+          <i class="stars <?=$i_starred?'me ':''?>fa fa-star<?=($room_can_chat&&!$i_starred&&!$account_is_me)?'-o':''?>" data-count="<?=$chat_star_count?>"></i>
           <i></i>
           <i class="flags <?=$i_flagged?'me ':''?>fa fa-flag<?=($account_is_me||$i_flagged)?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
           <i></i>
