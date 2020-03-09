@@ -23,7 +23,8 @@ function config($key)
     
     if (!isset($config)) {
         $config = [
-            "DB_HOST" => env("DB_HOST", '')
+            "DB_HOST" => env("DB_HOST", ''),
+            "POST_SERVER_NAME" => env("POST_SERVER_NAME", 'post.topanswers.xyz'),
         ];
     }
     
