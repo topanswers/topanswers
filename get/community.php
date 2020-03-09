@@ -184,7 +184,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-top: 1px; margin-left: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
     .message .button-group .fa { color: rgb(var(--rgb-dark)); cursor: pointer; text-decoration: none; }
-    .message .button-group .fa.me { color: rgb(var(--rgb-highlight)); }
+    .message .button-group .fa-star.me { color: rgb(var(--rgb-highlight)); }
+    .message .button-group .fa-flag.me { color: rgb(var(--rgb-warning)); }
     .message:hover .button-group:first-child { display: none; }
     .message .button-group:not(.show) { display: none; }
     .message:not(:hover) .button-group:not(:first-child) { display: none; }
@@ -403,7 +404,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
 
-        Promise.all(newchat.find('img').map(function(){ return new Promise(r => {  const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); }); }).get()).then(() => {
+        Promise.all(newchat.find('img').map(function(){ return new Promise(r => { const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); }); }).get()).then(() => {
           if(scroll===true){
             scroller.scrollTop(1000000);
           }else if(scroll===false){
@@ -614,12 +615,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#chattext').val(m.find('.markdown').attr('data-markdown')).focus().trigger('input');
       });
       function starflag(t,action,direction){
-        var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
+        var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id+',#s'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
         m.css({'opacity':'0.3','pointer-events':'none'});
         $.post({ url: '//post.topanswers.xyz/chat', data: { action: ((direction===-1)?'un':'')+action, room: <?=$room?>, id: id }, xhrFields: { withCredentials: true } }).done(function(r){
-          m.css({ 'opacity':'1','pointer-events':'auto' }).toggleClass('me fa-'+action+' fa-'+action+'-o')
-           .closest('.buttons').find('.button-group:first-child .'+action+'s[data-count]').toggleClass('me fa-'+action+' fa-'+action+'-o')
-           .each(function(){ $(this).attr('data-count',+$(this).attr('data-count')+direction); });
+          t.closest('.buttons').find('.fa.fa-'+action+((direction===-1)?'':'-o')).toggleClass('me fa-'+action+' fa-'+action+'-o');
+          m.css({ 'opacity':'1','pointer-events':'auto' }).closest('.buttons').find('.button-group .'+action+'s[data-count]').each(function(){ $(this).attr('data-count',+$(this).attr('data-count')+direction); });
         });
       };
       $('#chat-wrapper').on('click','.fa-star-o', function(){ starflag($(this),'star',1); });
