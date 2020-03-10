@@ -399,7 +399,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function processNewChat(scroll){
         var newchat = $('#messages>*:not(.processed)')
-          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages'),
+          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
           , promises;
         newchat.filter('.message').each(renderChat).find('.when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
