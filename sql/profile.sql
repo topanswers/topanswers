@@ -20,6 +20,14 @@ select community_id
 from db.question natural join db.kind
 where community_id=get_community_id() and account_id=get_account_id();
 --
+create view answer with (security_barrier) as
+select community_id
+      ,question_id,question_at,question_title,question_votes
+      ,answer_id,answer_at,answer_votes
+      ,kind_description
+from (select community_id,question_id,question_title,question_at,question_votes,kind_id from db.question) q natural join db.kind natural join db.answer
+where community_id=get_community_id() and account_id=get_account_id();
+--
 create view one with (security_barrier) as
 select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense
      , account_image is not null account_has_image
