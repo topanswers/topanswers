@@ -24,4 +24,5 @@ SET row_security = off;
 \i /seeds/kind.sql
 \i /seeds/license.sql
 \i /seeds/sanction.sql
+\i /seeds/one.sql
 --

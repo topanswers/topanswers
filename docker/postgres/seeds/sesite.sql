@@ -8,4 +8,5 @@ COPY "db".sesite (sesite_id, sesite_url) FROM stdin;
 3	https://unix.stackexchange.com
 4	https://codegolf.meta.stackexchange.com
 5	https://codegolf.stackexchange.com
+6	https://stackoverflow.com
 \.
