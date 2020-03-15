@@ -267,6 +267,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/select2.js"></script>
   <script src="/lib/starrr.js"></script>
   <script src="/lib/jquery.simplePagination.js"></script>
+  <script src="/lib/paste.js"></script>
   <script>
     //moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
@@ -784,6 +785,20 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           t.val('').css('height',$(this).data('initialheight')).css('min-height',0).focus().trigger('input');
           return false;
         }
+      });
+      $('#chattext').pastableTextarea().on('pasteImage', function(e,v){
+        var d = new FormData();
+        d.append('image',v.blob);
+        $('#chattext').prop('disabled',true);
+        $.post({ url: "//post.topanswers.xyz/upload", data: d, processData: false, cache: false, contentType: false, xhrFields: { withCredentials: true } }).done(function(r){
+          $('#chattext').prop('disabled',false).focus();
+          textareaInsertTextAtCursor($('#chattext'),'!['+d.get('image').name+'](/image?hash='+r+')');
+          $('#chatuploadfile').closest('form').trigger('reset');
+        }).fail(function(r){
+          alert(r.status+' '+r.statusText+'\n'+r.responseText);
+          $('#chattext').prop('disabled',false).focus();
+        });
+        return false;
       });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
       $('#dummyresizerx').remove();
