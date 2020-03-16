@@ -131,7 +131,7 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
   select _error(413,'message too long') where length(msg)>5000;
   select _ensure_communicant(get_account_id(),community_id) from room where room_id=get_room_id();
   --
-  with d as (delete from chat_notification where chat_id=replyid and account_id=get_account_id() returning *)
+  with d as (update chat_notification set chat_notification_dismissed_at = current_timestamp where chat_id=replyid and account_id=get_account_id() returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
   --
   insert into chat_year(room_id,chat_year,chat_year_count)
@@ -188,7 +188,7 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
   select _error('too late') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>300;
   select _error(413,'message too long') where length(msg)>5000;
   --
-  with d as (delete from chat_notification where chat_id=replyid and account_id=get_account_id() returning *)
+  with d as (update chat_notification set chat_notification_dismissed_at = current_timestamp where chat_id=replyid and account_id=get_account_id() returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
   --
   update chat set chat_markdown = msg, chat_reply_id=replyid, chat_change_id = default, chat_change_at = default where chat_id=id;
@@ -212,7 +212,7 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
 $$;
 --
 create function dismiss_notification(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  with d as (delete from chat_notification where chat_id=id and account_id=get_account_id() returning *)
+  with d as (update chat_notification set chat_notification_dismissed_at = current_timestamp where chat_id=id and account_id=get_account_id() returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --

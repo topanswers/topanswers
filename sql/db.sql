@@ -516,9 +516,10 @@ create table chat_notification(
   chat_id bigint references chat
 , account_id integer references account
 , chat_notification_at timestamptz not null default current_timestamp
+, chat_notification_dismissed_at timestamptz
 , primary key (chat_id,account_id)
 );
-create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at);
+create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at) where chat_notification_dismissed_at is null;
 
 create table question_notification(
   question_history_id integer references question_history

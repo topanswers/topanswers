@@ -6,7 +6,7 @@ set local search_path to notification,api,pg_temp;
 create view account with (security_barrier) as select account_id,account_name from db.account;
 create view chat_flag with (security_barrier) as select chat_id,chat_flag_at from db.chat_flag where account_id=get_account_id();
 create view chat_star with (security_barrier) as select chat_id,chat_star_at from db.chat_star where account_id=get_account_id();
-create view chat_notification with (security_barrier) as select chat_id,chat_notification_at from db.chat_notification where account_id=get_account_id();
+create view chat_notification with (security_barrier) as select chat_id,chat_notification_at from db.chat_notification where account_id=get_account_id() and chat_notification_dismissed_at is null;
 --
 create view chat with (security_barrier) as
 select room_id,community_id,chat_id,account_id,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_markdown,community_name,question_id
