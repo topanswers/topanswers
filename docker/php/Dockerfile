@@ -8,3 +8,5 @@ RUN set -ex \
     postgresql-dev
 
 RUN docker-php-ext-install pgsql
+
+RUN apk add --no-cache util-linux
