@@ -148,6 +148,7 @@ create function change(title text, markdown text) returns void language sql secu
   update account set account_notification_id = default where account_id in (select account_id from n);
   --
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
+  update answer set answer_summary = _markdownsummary(answer_markdown) where question_id=get_question_id() and answer_summary<>_markdownsummary(answer_markdown);
 $$;
 --
 create function vote(votes integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$

@@ -45,20 +45,6 @@ begin
 end$$;
 --
 --
-create function _markdownsummary(text) returns text language sql immutable security definer set search_path=db,api,pg_temp as $$
-  with recursive
-     m as (select regexp_replace(r[1],'([!$()*+.:<=>?[\\\]^{|}-])', '\\\1', 'g') str_from, trim(trailing chr(13) from r[2]) str_to, (row_number() over ())::integer rn 
-           from regexp_matches($1,'^(\[[^\]]+]): ?(.*)$','ng') r)
-   , w(markdown) as (select split_part(trim(leading chr(13) from $1),chr(13),1), 1 rn
-                     union all
-                     select regexp_replace(
-                              regexp_replace(markdown,'(?<=\[[^\]]+])'||str_from,'('||str_to||')')
-                             ,'(?<=(?<!\])'||str_from||')(?!\()'
-                             ,'('||str_to||')')
-                            ,rn+1  from w join m using(rn))
-  select trim(both ' #' from markdown) from w order by rn desc limit 1;
-$$;
---
 create function vote(votes integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid answer') where get_answer_id() is null;
