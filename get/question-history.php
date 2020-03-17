@@ -68,8 +68,9 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     $(function(){
       var dmp = new diff_match_patch();
       $('textarea').each(function(){
-        var m = $(this).next(), cm = CodeMirror.fromTextArea($(this)[0],{ lineWrapping: true, readOnly: true });
-        m.attr('data-markdown',cm.getValue()).renderMarkdown(function(){
+        var m = $(this).next(), cm = CodeMirror.fromTextArea($(this)[0],{ lineWrapping: true, readOnly: true }), promises = [];
+        m.attr('data-markdown',cm.getValue()).renderMarkdown(promises);
+        Promise.all(promises).then(() => {
           $('.post:not(.processed) .when').each(function(){
             $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
             $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));

@@ -207,7 +207,7 @@
     mdsummary.options.linkify = true;
     mdsummary.linkify.tlds('kiwi',true).tlds('xyz',true);
  
-    $.fn.renderMarkdown = function(callback){
+    $.fn.renderMarkdown = function(promises = []){
       this.filter('[data-markdown]').each(function(){
         var t = $(this), m = t.attr('data-markdown');
         prefix = t.closest('[data-id]').attr('id')||'';
@@ -216,7 +216,7 @@
         t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
         t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
-        t.find('.object-answer').each(function(){ var t = $(this); $.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); typeof callback==='function' && callback(); }); });
+        t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
         if(!t.hasClass('noexpander')){
           t.children('pre').each(function(){
             var t = $(this), h = t.height();
@@ -228,7 +228,6 @@
         }
         if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
       });
-      typeof callback==='function' && callback();
       return this;
     };
 

@@ -148,8 +148,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: rgb(var(--rgb-light)); margin: 0 16px; }
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
-    #firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
-    #firefoxwrapper #messages { min-height: 100%; }
+    .firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
+    .firefoxwrapper>* { min-height: 100%; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { opacity: 0; }
     #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; }
@@ -288,7 +288,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
 
       function setFinalSpacer(){
-        var scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
+        var scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages')
           , scroll = (scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5
           , frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child')
         if(frst>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log10(1+frst)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(frst,'seconds').humanize()+' later');
@@ -380,12 +380,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#search+div').hide();
         },'html');
       }
-      function processStarboard(){
-        $('#starboard .markdown').renderMarkdown();
+      function processStarboard(scroll){
+        var t = $(this), promises = [] , scroller = $('.firefoxwrapper').length ? $('#starboard').parent() : $('#starboard');
+        $('#starboard .markdown').renderMarkdown(promises);
         $('#starboard .when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
-        $('#starboard>.message').addClass('processed');
+        Promise.all(promises).then(() => {
+          if(scroll===true) scroller.show().scrollTop(1000000).hide();
+          $('#starboard>.message').addClass('processed').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
+        });
       }
       function updateStarboard(){
         $.get('/starboard?room=<?=$room_id?>',function(r){
@@ -395,18 +399,20 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }).fail(setChatPollTimeout);
       }
       function renderChat(){
-        var t = $(this);
-        t.find('.markdown').renderMarkdown(function(){ t.find('.question:not(.processed)').each(renderQuestion).addClass('processed'); });
+        var t = $(this), promises = [];
+        t.find('.markdown').renderMarkdown(promises);
+        Promise.all(promises).then( () => t.find('.question:not(.processed)').each(renderQuestion).addClass('processed') );
+        return promises;
       }
       function processNewChat(scroll){
         var newchat = $('#messages>*:not(.processed)')
-          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
-          , promises;
-        newchat.filter('.message').each(renderChat).find('.when').each(function(){
+          , scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages')
+          , promises = [];
+        newchat.filter('.message').each(function(){ promises.push(...renderChat.call(this)); }).find('.when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
 
-        promises = newchat.find('img').map(function(){ return new Promise(r => { const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); }); }).get();
+        newchat.find('img').each(function(){ promises.push(new Promise(r => { const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); })); });
         promises.push(document.fonts.ready);
         Promise.all(promises).then(() => {
           if(scroll===true){
@@ -466,7 +472,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function updateChat(scroll){
         var maxChat = $('#messages>.message').first().data('id')
-          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages');
+          , scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages');
         if(typeof scroll==='undefined') scroll = (scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5;
         $.get('/chat?room=<?=$room?>'+(($('#messages>.message').length===0)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message').first().data('id')===maxChat){
@@ -525,9 +531,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }).fail(setChatPollTimeout);
       }
       function processNotifications(){
-        $('#notification-wrapper .markdown').renderMarkdown(function(){ $('#notification-wrapper .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed'); });
+        var t = $(this), promises = [];
+        $('#notification-wrapper .markdown').renderMarkdown(promises);
         $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-        $('#notifications>.notification').addClass('processed');
+        Promise.all(promises).then(() => {
+          $('#notification-wrapper .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
+          $('#notifications>.notification').addClass('processed');
+        });
       }
       function updateNotifications(){
         $.get('/notification?room=<?=$room_id?>',function(r){
@@ -697,8 +707,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       function renderPreview(sync){
         var m = $('#chattext').val(), s
-          , scroller = $('#firefoxwrapper').length ? $('#firefoxwrapper') : $('#messages')
-          , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight");
+          , scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages')
+          , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight")
+          , promises = [];
         sync = typeof sync !== 'undefined' ? sync : false;
         s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
         if(s&&(s[2]===s[4])){
@@ -724,7 +735,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           });
           return;
         }
-        $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(function(){ $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed'); });
+        $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
+        Promise.all(promises).then(() => {
+          $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed');
+        });
         if(scroll) scroller.scrollTop(1000000);
       }
       var renderPreviewThrottle;
@@ -865,26 +879,37 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
       processNewQuestions(true);
       paginateQuestions(questionPage);
-      $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(function(){
-        $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
-        $('#qa .post:not(.processed) .when').each(function(){
-          var t = $(this);
-          t.text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||''));
-          t.attr('title',moment(t.data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+      (function(){
+        var promises = [];
+        $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(promises);
+        Promise.all(promises).then(() => {
+          $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
+          $('#qa .post:not(.processed) .when').each(function(){
+            var t = $(this);
+            t.text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||''));
+            t.attr('title',moment(t.data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+          });
+          $('#qa .post').addClass('processed');
         });
-        $('#qa .post').addClass('processed');
-      });
+      })();
       if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
         firefox -= true;
-        $('#starboard').next('#messages').addBack().wrapAll('<div id="firefoxwrapper"></div>');
-        $('#firefoxwrapper').closest('#messages-wrapper').css('border-radius','0');
-        setTimeout(function(){ $('#firefoxwrapper').css('scroll-behavior','smooth'); },2000);
+        $('#starboard,#messages').show().wrap('<div class="firefoxwrapper"></div>');
+        $('#starboard').css('display','flex').parent().hide();
+        $('#messages-wrapper').css('border-radius','0');
+        setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
       }
       processNewChat(true);
       updateRoomLatest();
       processNotifications();
       setChatPollTimeout();
-      $('#info').find('.markdown[data-markdown]').renderMarkdown(function(){ $('#info').css('color','rgb(var(--rgb-dark)'); });
+      (function(){
+        var promises = [];
+        $('#info').find('.markdown[data-markdown]').renderMarkdown(promises);
+        Promise.all(promises).then(() => {
+          $('#info').css('color','rgb(var(--rgb-dark)');
+        });
+      })();
       $('#se').click(function(){
         var t = $(this), f = t.closest('form');
         vex.dialog.open({
@@ -962,12 +987,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       });
       $('#chatorstarred').click(function(){
+        var panels = $('#starboard,#messages'), d = 'flex';
+        if($('.firefoxwrapper').length) { panels = panels.parent(); d = 'block'; }
         $(this).children('a').each(function(){ $(this).attr('href',function(i,a){ return a===undefined?'.':null; }); });
-        $('#starboard,#messages').each(function(){ $(this).css('display',function(i,s){ return s==='none'?'flex':'none'; }); })
+        panels.each(function(){ $(this).css('display',function(i,s){ return s==='none'?d:'none'; }); })
         $('#preview,#canchat-wrapper').toggle();
-        processStarboard(true);
         return false;
       });
+      processStarboard(true);
     });
   </script>
   <title><?=isset($_GET['room']) ? ($room_name.' - ') : (isset($_GET['q'])?$question_title.' - ':'')?><?=$community_display_name?> - TopAnswers</title>

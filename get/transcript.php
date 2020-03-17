@@ -119,6 +119,7 @@ if(isset($_GET['month'])){
   <script src="/lib/mark.js"></script>
   <script>
     $(function(){
+      var promises = [];
       function threadChat(){
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
@@ -131,7 +132,8 @@ if(isset($_GET['month'])){
         });
       }
       $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
-      $('.markdown').renderMarkdown(function() {
+      $('.markdown').renderMarkdown(promises);
+      Promise.all(promises).then(() => {
         $('.message').addClass('processed');
       });
       <?if(!$search){?>threadChat();<?}?>

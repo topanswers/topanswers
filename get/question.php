@@ -114,7 +114,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
 
       function render(){
-        $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown(function(){
+        var promises = [];
+        $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown(promises);
+        Promise.all(promises).then(() => {
           $('.post:not(.processed) .when').each(function(){
             $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
             $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
