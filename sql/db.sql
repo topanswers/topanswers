@@ -322,6 +322,7 @@ create table question(
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
+, foreign key (community_id,kind_id) references sanction(community_id,kind_id)
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
 create unique index question_se_question_id_ind on question(community_id,question_sesite_id,question_se_question_id);

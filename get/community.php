@@ -86,8 +86,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     textarea, pre, code, .CodeMirror { font-family: var(--monospace-font-family); }
     textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
-    [data-rz-handle='horizontal'] { margin: 7px 0; transition: opacity 0.1s linear 0s; }
-    [data-rz-handle='horizontal']:not(:hover):not(:active) { opacity: 0; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
     .icon:not(.roomicon) { border-radius: 2px; }
@@ -136,16 +134,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <?}?>
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
-    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-bottom: 1px solid rgb(var(--rgb-dark)); }
+    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-top: 1px solid rgb(var(--rgb-dark));border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #chat-wrapper .roomtitle { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
-    #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; margin: 16px 0; }
+    #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; }
 
-    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; margin: 0 16px; border-radius: 3px; background: rgb(var(--rgb-light)); }
+    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; background: rgb(var(--rgb-light)); }
     #notification-wrapper:empty, #notification-wrapper:empty + [data-rz-handle] { display: none; }
     #notification-wrapper .label { border-bottom: 1px solid rgb(var(--rgb-dark)); flex: 0 0 auto; }
     #notifications { overflow-x: hidden; overflow-y: auto; }
-    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; border-radius: 3px; background: rgb(var(--rgb-light)); margin: 0 16px; }
+    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
     .firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
@@ -234,8 +232,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #search { flex: 0 1 570px; min-width: 0; }
     #search+div { display: none; }
 
-    #dummyresizerx { background-color: black; flex: 0 0 2px; }
-    #dummyresizery { flex: 0 0 2px; }
+    #dummyresizerx { background-color: black; flex: 0 0 6px; }
+    #dummyresizery { background-color: black; flex: 0 0 6px; }
 
     .pane { display: flex; }
     .panecontrol { display: none; width: 28px; font-size: 24px; text-align: center; }
@@ -250,6 +248,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #notification-wrapper { margin: 0; }
       #messages-wrapper { margin: 0; }
       .simple-pagination li>* { height: 22px; width: 22px; line-height: 22px; font-size: 12px; }
+      [data-rz-handle] { display: none; }
     }
   </style>
   <script src="/lib/js.cookie.js"></script>
@@ -817,11 +816,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
       $('#dummyresizerx').remove();
       $('#dummyresizery').remove();
-      const qaAndChat = new Resizer('body', { width: 2
+      const qaAndChat = new Resizer('body', { width: 6
                                             , colour: 'black'
                                             , full_length: true
                               <?if($auth){?>, callback: function(w) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); }<?}?> });
-      const notificationsAndChat = new Resizer('#chat-panels', { width: 2
+      const notificationsAndChat = new Resizer('#chat-panels', { width: 6
                                                                , colour: 'black'
                                                                , full_length: true
                                                  <?if($auth){?>, callback: function(y) { $.post({ url: '//post.topanswers.xyz/profile'
