@@ -133,7 +133,7 @@ if(isset($_GET['month'])){
       }
       $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('.markdown').renderMarkdown(promises);
-      Promise.all(promises).then(() => {
+      Promise.allSettled(promises).then(() => {
         $('.message').addClass('processed');
       });
       <?if(!$search){?>threadChat();<?}?>

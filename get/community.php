@@ -385,7 +385,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#starboard .when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
-        Promise.all(promises).then(() => {
+        Promise.allSettled(promises).then(() => {
           if(scroll===true) scroller.show().scrollTop(1000000).hide();
           $('#starboard>.message').addClass('processed').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
         });
@@ -400,7 +400,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function renderChat(){
         var t = $(this), promises = [];
         t.find('.markdown').renderMarkdown(promises);
-        Promise.all(promises).then( () => t.find('.question:not(.processed)').each(renderQuestion).addClass('processed') );
+        Promise.allSettled(promises).then( () => t.find('.question:not(.processed)').each(renderQuestion).addClass('processed') );
         return promises;
       }
       function processNewChat(scroll){
@@ -413,7 +413,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
         newchat.find('img').each(function(){ promises.push(new Promise(r => { const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); })); });
         promises.push(document.fonts.ready);
-        Promise.all(promises).then(() => {
+        Promise.allSettled(promises).then(() => {
           if(scroll===true){
             scroller.scrollTop(1000000);
           }else if(scroll===false){
@@ -533,7 +533,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var t = $(this), promises = [];
         $('#notification-wrapper .markdown').renderMarkdown(promises);
         $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-        Promise.all(promises).then(() => {
+        Promise.allSettled(promises).then(() => {
           $('#notification-wrapper .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
         });
@@ -735,7 +735,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           return;
         }
         $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
-        Promise.all(promises).then(() => {
+        Promise.allSettled(promises).then(() => {
           $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed');
         });
         if(scroll) scroller.scrollTop(1000000);
@@ -881,7 +881,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       (function(){
         var promises = [];
         $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(promises);
-        Promise.all(promises).then(() => {
+        Promise.allSettled(promises).then(() => {
           $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
           $('#qa .post:not(.processed) .when').each(function(){
             var t = $(this);
@@ -905,7 +905,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       (function(){
         var promises = [];
         $('#info').find('.markdown[data-markdown]').renderMarkdown(promises);
-        Promise.all(promises).then(() => {
+        Promise.allSettled(promises).then(() => {
           $('#info').css('color','rgb(var(--rgb-dark)');
         });
       })();

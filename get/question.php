@@ -116,7 +116,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function render(){
         var promises = [];
         $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown(promises);
-        Promise.all(promises).then(() => {
+        Promise.allSettled(promises).then(() => {
           $('.post:not(.processed) .when').each(function(){
             $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
             $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
