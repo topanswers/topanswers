@@ -90,7 +90,10 @@
 <script src="/lib/markdownItTocDoneRight.js"></script>
 <script src="/lib/highlightjs/highlight.js"></script>
 <script src="/lib/qp/qp.js"></script>
+<script src="/lib/promise-all-settled.js"></script>
 <script>
+  //polyfill
+  if (!Promise.allSettled) Promise.allSettled = allSettled;
   // we have no idea why this works but without it cs highlighting doesn't happen
   (function(){
     var script = document.createElement( 'script' );
