@@ -137,13 +137,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-top: 1px solid rgb(var(--rgb-dark));border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #chat-wrapper .roomtitle { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
-    #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; }
+    #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
 
-    #notification-wrapper { display: flex; flex-direction: column; flex: 1 1 <?=$login_chat_resizer_percent?>%; overflow: hidden; background: rgb(var(--rgb-light)); }
-    #notification-wrapper:empty, #notification-wrapper:empty + [data-rz-handle] { display: none; }
-    #notification-wrapper .label { border-bottom: 1px solid rgb(var(--rgb-dark)); flex: 0 0 auto; }
-    #notifications { overflow-x: hidden; overflow-y: auto; }
-    #messages-wrapper { flex: 1 1 <?=100-$login_chat_resizer_percent?>%; display: flex; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
+    #notifications { xbackground: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column; scroll-behavior: smooth; xbackground: rgb(var(--rgb-light)); }
+    #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
     .firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
@@ -168,8 +165,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chatupload:active { color: rgb(var(--rgb-mid)); }
     #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 26px; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; }
 
-    #chatorstarred { pointer-events: none; }
-    #chatorstarred a[href] { pointer-events: auto; }
+    #chat a.panel { pointer-events: none; }
+    #chat a[href].panel { pointer-events: auto; }
+    #chat a.panel[data-unread]:not([data-unread^="0"]):after { display: inline-block; vertical-align: middle; content:attr(data-unread); margin-left: 0.5em; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: black;
+                                                               width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
 
     .message { position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message:not(.processed) { opacity: 0; }
@@ -193,6 +192,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message.merged>.who, .message.merged>.icon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
     .message.thread .markdown { background: rgba(var(--rgb-highlight),0.25); }
+
+    #xnotifications { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; }
+    #notifications { xbackground: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; scroll-behavior: smooth; }
 
     .notification { padding: 4px; border-radius: 3px; margin: 2px; border: 1px solid rgba(var(--rgb-dark),0.6); }
     .notification:not(.processed) { opacity: 0; }
@@ -233,7 +235,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #search+div { display: none; }
 
     #dummyresizerx { background-color: black; flex: 0 0 6px; }
-    #dummyresizery { background-color: black; flex: 0 0 6px; }
 
     .pane { display: flex; }
     .panecontrol { display: none; width: 28px; font-size: 24px; text-align: center; }
@@ -245,7 +246,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #poll { display: none; }
       #se { display: none; }
       #chat-panels { margin: 0; }
-      #notification-wrapper { margin: 0; }
       #messages-wrapper { margin: 0; }
       .simple-pagination li>* { height: 22px; width: 22px; line-height: 22px; font-size: 12px; }
       [data-rz-handle] { display: none; }
@@ -531,16 +531,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function processNotifications(){
         var t = $(this), promises = [];
-        $('#notification-wrapper .markdown').renderMarkdown(promises);
-        $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+        $('#notifications .markdown').renderMarkdown(promises);
+        $('#notifications .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
         Promise.allSettled(promises).then(() => {
-          $('#notification-wrapper .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
+          $('#notifications .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
+          $('#chat .panel[data-panel="2"]').attr('data-unread',$('#notifications>.notification').length);
         });
       }
       function updateNotifications(){
         $.get('/notification?room=<?=$room_id?>',function(r){
-          $('#notification-wrapper').replaceWith(r);
+          $('#notifications').children().remove();
+          $('#notifications').append(r);
           processNotifications();
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
@@ -772,7 +774,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   checkChat();
                 }else{
                   if(replyid) $('#notifications .message[data-id='+replyid+']').remove();
-                  if($('#notifications .message').children().length===0) $('#notification-wrapper').children().remove();
                   updateChat(true);
                 }
                 $('#cancel').click();
@@ -815,17 +816,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
       $('#dummyresizerx').remove();
-      $('#dummyresizery').remove();
       const qaAndChat = new Resizer('body', { width: 6
                                             , colour: 'black'
                                             , full_length: true
                               <?if($auth){?>, callback: function(w) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } }); }<?}?> });
-      const notificationsAndChat = new Resizer('#chat-panels', { width: 6
-                                                               , colour: 'black'
-                                                               , full_length: true
-                                                 <?if($auth){?>, callback: function(y) { $.post({ url: '//post.topanswers.xyz/profile'
-                                                                                                , data: { action: 'chat_resizer', position: Math.round(y) }
-                                                                                                , xhrFields: { withCredentials: true } }); }<?}?> });
       $('#chatupload').click(function(){ $('#chatuploadfile').click(); });
       $('#chatuploadfile').change(function() {
         if(this.files[0].size > 2097152){
@@ -848,7 +842,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
         return false;
       });
-      $('#notification-wrapper .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
+      $('#notifications .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
       <?if($auth){?>
         $('#question .starrr, #qa .answer .starrr').each(function(){
           var t = $(this), v = t.data('votes'), vv = t.prev().data('total');
@@ -894,8 +888,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
         firefox -= true;
         $('#starboard,#messages').show().wrap('<div class="firefoxwrapper"></div>');
-        $('#starboard').css('display','flex').parent().hide();
-        $('#messages-wrapper').css('border-radius','0');
+        $('#starboard').removeClass('panel').css('display','flex').parent().addClass('panel').hide();
+        //$('#messages-wrapper').css('border-radius','0');
         setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
       }
       processNewChat(true);
@@ -985,12 +979,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           return false;
         }
       });
-      $('#chatorstarred').click(function(){
-        var panels = $('#starboard,#messages'), d = 'flex';
-        if($('.firefoxwrapper').length) { panels = panels.parent(); d = 'block'; }
-        $(this).children('a').each(function(){ $(this).attr('href',function(i,a){ return a===undefined?'.':null; }); });
-        panels.each(function(){ $(this).css('display',function(i,s){ return s==='none'?d:'none'; }); })
-        $('#preview,#canchat-wrapper').toggle();
+      $('#chat a.panel').click(function(){
+        var panels = $('#chat-panels>div:not(.label)');
+        $('#chat a.panel:not([href])').attr('href','.');
+        $(this).removeAttr('href');
+        panels.hide();
+        panels.eq($(this).data('panel')).show();
+        //panels.each(function(){ $(this).css('display',function(i,s){ return (s==='none') ? ($(this).hasClass('.firefoxwrapper')?'block':'flex') : 'none'; }); })
         return false;
       });
       processStarboard(true);
@@ -1008,6 +1003,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
         <?if($auth){?>
+          <?if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
           <?if($community_about_question_id){?><a href="/<?=$community_name?>?q=<?=$community_about_question_id?>" class="button wideonly">About</a><?}?>
           <?if($auth&&$communicant_can_import){?>
             <form method="post" action="//post.topanswers.xyz/import">
@@ -1262,10 +1258,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div style="display: flex; align-items: center; height: 100%;">
         <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
         <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
-        <div></div>
-      </div>
-      <div>
-        <?if($auth) if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
+        <div class="element"><?=$room_name?></div>
       </div>
       <div style="display: flex; align-items: center; height: 100%;">
         <?foreach(db("select room_id,room_name
@@ -1278,22 +1271,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </header>
     <div id="chat">
       <div id="chat-panels">
-        <?if($auth){?>
-          <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-          <div id="dummyresizery" data-rz-handle="horizontal"></div>
-        <?}?>
-        <div id="messages-wrapper">
-          <div class="label container">
-            <div id="chatorstarred" class="element"><a><?=$question?'Comments':'Chat'?></a><?=($auth)?' / <a href=".">Starred</a>':''?></div>
-            <?if(!$question){?><div class="element roomtitle" title="<?=$room_name?>">&#8220;<?=$room_name?>&#8221;</div><?}?>
-            <div class="element"><a class="element" href="/transcript?room=<?=$room?>">transcript</a></div>
-          </div>
-          <?if($auth){?>
-            <div id="starboard">
-              <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-              <div style="flex: 1 0 0;"></div>
-            </div>
-          <?}?>
+        <div class="label container">
+          <div class="element"><a class="panel" data-panel="0"><?=$question?'comments':'chat'?></a><?if($auth){?> / <a class="panel" data-panel="1" href=".">starred</a><?}?> / <a href="/transcript?room=<?=$room?>">transcript</a></div>
+          <div class="element"><?if($auth){?><a class="panel" data-panel="2" href=".">notifications</a><?}?></div>
+        </div>
+        <div id="messages-wrapper" class="panel">
           <div id="messages">
             <?if($room_has_chat){?>
               <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
@@ -1334,6 +1316,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             </div>
           <?}?>
         </div>
+        <?if($auth){?>
+          <div id="starboard" class="panel">
+            <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+            <div style="flex: 1 0 0;"></div>
+          </div>
+          <div id="notifications" class="panel">
+            <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+          </div>
+        <?}?>
       </div>
       <?if($auth){?>
         <div id="active">
