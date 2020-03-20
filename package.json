@@ -1,0 +1,22 @@
+{
+  "name": "topanswers.xyz",
+  "version": "0.1.0",
+  "description": "Building a Library of Knowledge for the Internet",
+  "main": "get/index.php",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/topanswers/topanswers.git"
+  },
+  "keywords": [
+    "q&a"
+  ],
+  "author": "Jack Douglas <jack@douglastechnology.co.uk>",
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/topanswers/topanswers/issues"
+  },
+  "homepage": "https://topanswers.xyz"
+}
