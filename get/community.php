@@ -617,9 +617,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var m = $(this).closest('.message'), url = location.href;
         $('#status').attr('data-replyid',m.data('id')).attr('data-replyname',m.data('name')).data('update')();
         $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
-        $('#chattext').focus();
         location.href = "#c"+m.data('id');
         history.replaceState(null,null,url);
+        $('#chattext').focus();
       });
       $('#chat-wrapper').on('click','.fa-ellipsis-h', function(){
         if($(this).closest('.button-group').is(':last-child')) $(this).closest('.button-group').removeClass('show').parent().children('.button-group:nth-child(2)').addClass('show');
