@@ -167,7 +167,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #chat a.panel { pointer-events: none; }
     #chat a[href].panel { pointer-events: auto; }
-    #chat a.panel[data-unread]:not([data-unread^="0"]):after { display: inline-block; vertical-align: middle; content:attr(data-unread); margin-left: 0.5em; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: black;
+    #chat a.panel[data-unread]:not([data-unread^="0"])::after { display: inline-block; vertical-align: middle; content:attr(data-unread); margin-left: 2px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: black;
                                                                width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px white; }
 
     .message { position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
@@ -536,7 +536,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         Promise.allSettled(promises).then(() => {
           $('#notifications .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
-          $('#chat .panel[data-panel="2"]').attr('data-unread',$('#notifications>.notification').length);
+          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification').length);
         });
       }
       function updateNotifications(){
@@ -614,9 +614,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#poll').click(function(){ checkChat(); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
-        var m = $(this).closest('.message');
+        var m = $(this).closest('.message'), url = location.href;
         $('#status').attr('data-replyid',m.data('id')).attr('data-replyname',m.data('name')).data('update')();
+        $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
         $('#chattext').focus();
+        location.href = "#c"+m.data('id');
+        history.replaceState(null,null,url);
       });
       $('#chat-wrapper').on('click','.fa-ellipsis-h', function(){
         if($(this).closest('.button-group').is(':last-child')) $(this).closest('.button-group').removeClass('show').parent().children('.button-group:nth-child(2)').addClass('show');
@@ -933,7 +936,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
       $('#chat-wrapper').on('click','.notification[data-type="chat"] .fa.fa-times-circle', function(){
-        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
+        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); if(!$('#notifications').children().length) $('#chat a.panel[href][data-panel="messages-wrapper"]').click() });
         $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
@@ -980,12 +983,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       });
       $('#chat a.panel').click(function(){
-        var panels = $('#chat-panels>div:not(.label)');
+        var panels = $('#chat-panels>div:not(.label)'), panel = $('#'+$(this).data('panel'));
+        if(!panel.hasClass('panel')) panel = panel.parent();
         $('#chat a.panel:not([href])').attr('href','.');
         $(this).removeAttr('href');
         panels.hide();
-        panels.eq($(this).data('panel')).show();
-        //panels.each(function(){ $(this).css('display',function(i,s){ return (s==='none') ? ($(this).hasClass('.firefoxwrapper')?'block':'flex') : 'none'; }); })
+        panel.show();
         return false;
       });
       processStarboard(true);
@@ -1272,8 +1275,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <div id="chat">
       <div id="chat-panels">
         <div class="label container">
-          <div class="element"><a class="panel" data-panel="0"><?=$question?'comments':'chat'?></a><?if($auth){?> / <a class="panel" data-panel="1" href=".">starred</a><?}?> / <a href="/transcript?room=<?=$room?>">transcript</a></div>
-          <div class="element"><?if($auth){?><a class="panel" data-panel="2" href=".">notifications</a><?}?></div>
+          <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?'comments':'chat'?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href=".">starred</a> / <a class="panel" data-panel="notifications" href=".">notifications</a><?}?></div>
+          <div class="element"><a href="/transcript?room=<?=$room?>">transcript</a></div>
         </div>
         <div id="messages-wrapper" class="panel">
           <div id="messages">
