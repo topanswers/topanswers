@@ -540,12 +540,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
       }
       function updateNotifications(){
-        $.get('/notification?room=<?=$room_id?>',function(r){
+        return Promise.resolve($.get('/notification?room=<?=$room_id?>',function(r){
           $('#notifications').children().remove();
           $('#notifications').append(r);
           processNotifications();
           setChatPollTimeout();
-        }).fail(setChatPollTimeout);
+        }).fail(setChatPollTimeout));
       }
       function checkChat(){
         $.get('/poll?room=<?=$room?>').done(function(r){
@@ -936,7 +936,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
       $('#chat-wrapper').on('click','.notification[data-type="chat"] .fa.fa-times-circle', function(){
-        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); if(!$('#notifications').children().length) $('#chat a.panel[href][data-panel="messages-wrapper"]').click() });
+        $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'dismiss', room: <?=$room?>, id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){
+          updateNotifications().then(() => {
+            if(!$('#notifications').children().length) $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
+            <?if($dev){?>console.log($('#notifications').children().length);<?}?>
+          });
+        });
         $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
