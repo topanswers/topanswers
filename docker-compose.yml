@@ -9,7 +9,7 @@ services:
       - .:/var/www/
     environment:
       DB_HOST: postgres
-      POST_SERVER_NAME: post.topanswers.local
+      DEV_SERVER_NAME: topanswers.local
   apache:
     build:
       context: "./docker/apache/"
