@@ -1,4 +1,5 @@
-<?    
+<?
+include '../config.php';
 include '../cors.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
