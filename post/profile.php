@@ -1,6 +1,8 @@
 <?
+include '../config.php';
 include '../cors.php';
 include '../db.php';
+
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
 isset($_POST['action']) || fail(400,'must have an "action" parameter');
 db("set search_path to profile,pg_temp");

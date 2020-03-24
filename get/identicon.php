@@ -1,4 +1,5 @@
 <?php
+include '../config.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to identicon,pg_temp");

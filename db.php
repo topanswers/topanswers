@@ -1,7 +1,5 @@
 <?
 
-require __DIR__ . "/config.php";
-
 function fail($code = 500,$msg = ''){
   switch($code){
     case 400: header('HTTP/1.1 400 Bad Request'); break;
