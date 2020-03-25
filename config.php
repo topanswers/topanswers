@@ -24,8 +24,8 @@ function config($key)
     if (!isset($config)) {
         $config = [
             "DB_HOST" => env("DB_HOST", ''),
-            "DEV_SERVER_NAME" => env("DEV_SERVER_NAME", '127.0.0.1'),
-            "SITE_DOMAIN" => env("DEV_SERVER_NAME", 'topanswers.xyz'),
+            "DEV_SERVER_NAME" => env("SITE_DOMAIN", '127.0.0.1'),
+            "SITE_DOMAIN" => env("SITE_DOMAIN", 'topanswers.xyz'),
         ];
     }
     
