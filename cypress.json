@@ -1,3 +1,4 @@
 {
-  "baseUrl": "https://topanswers.local"
+  "baseUrl": "https://topanswers.local",
+  "ignoreTestFiles": "*.scripts.js"
 }
