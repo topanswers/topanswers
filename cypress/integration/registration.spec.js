@@ -12,7 +12,7 @@ describe("The registration and login process", () => {
         cy.wrap(windowConfirmStub.firstCall)
           .its("args.0")
           .should("have.string", "set a cookie")
-          .should("have.string", "You must be 16");
+          .should("have.string", "You must be 16 or over");
 
         cy.wrap(windowAlertStub.firstCall).then(alert => {
           const match = alert.args[0].match(/\n\n([-a-zA-Z0-9]+)/);
