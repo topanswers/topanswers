@@ -10,9 +10,10 @@ describe("The registration and login process", () => {
       .click()
       .then(() => {
         cy.wrap(windowConfirmStub.firstCall)
-          .its("args.0")
-          .should("have.string", "set a cookie")
-          .should("have.string", "You must be 16 or over");
+          .its("args.0").then((confirmText) => {
+              expect(confirmText).to.have.string("set a cookie")
+              expect(confirmText).to.have.string("You must be 16 or over")
+          })
 
         cy.wrap(windowAlertStub.firstCall).then(alert => {
           const match = alert.args[0].match(/\n\n([-a-zA-Z0-9]+)/);
