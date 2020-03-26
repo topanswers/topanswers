@@ -66,7 +66,7 @@ if($auth){
   }
 }else{
   $uuid = exec('uuidgen');
-  setcookie("uuid",$uuid,2147483647,'/','.topanswers.xyz',true,true);
+  setcookie("uuid",$uuid,2147483647,'/','.'.config("SITE_DOMAIN"),true,true);
   switch($_POST['action']){
     case 'link':
       if(is_numeric($_POST['link'])) db('select link($1,$2::bigint)',$uuid,$_POST['link']);
