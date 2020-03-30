@@ -9,7 +9,7 @@ ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_POS
 extract(cdb("select sesite_url,selink_user_id from sesite where sesite_id=$1",$_POST['sesiteid']));
 
 function file_get_contents_retry($url,$attempts=3) {
-  $content = file_get_contents($url);
+  $content = file_get_contents($url,false,stream_context_create(array('http' => array('user_agent' => 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'))));
   $attempts--;
   if( empty($content) && ($attempts>0) ){
     usleep(10);
