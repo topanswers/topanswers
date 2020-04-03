@@ -62,7 +62,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#community').change(function(){ window.location = '/profile?community='+$(this).find(':selected').attr('data-name'); });
       $('input[value=save]').css('visibility','hidden');
       $('table').DataTable({
-        select: true,
         dom: 'Pfrtip',
         language: { searchPanes: { emptyPanes: null } },
         preDrawCallback: function (settings) {
