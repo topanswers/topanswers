@@ -53,11 +53,11 @@ function getPrivateCommunities() {
       <span class='element'>TopAnswers</span>
     </div>
     <div>
-      <?if($auth){?>
+      <? if ($auth) { ?>
         <a class="frame" href="/profile?community=meta"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
-      <?}else{?>
+      <? } else { ?>
         <span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span>
-      <?}?>
+      <? } ?>
     </div>
   </header>
   <main>
@@ -66,16 +66,16 @@ function getPrivateCommunities() {
       <div class="communities">
         <? foreach(getPublicCommunities() as $r) { extract($r); ?>
           <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
-        <?}?>
+        <? } ?>
       </div>
       <?if (hasPrivateCommunities()) { ?>
         <h1>Coming Soon:</h1>
         <div class="communities">
           <? foreach(getPrivateCommunities() as $r) { extract($r); ?>
             <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
-          <?}?>
+          <? } ?>
         </div>
-      <?}?>
+      <? } ?>
     </div>
     <div style="--rgb-dark: 0,0,240;">
     <h1>Join TopAnswers, and help build a lasting library of knowledge.</h1>
