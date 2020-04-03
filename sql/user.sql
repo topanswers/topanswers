@@ -51,8 +51,8 @@ from (select account_id,account_name,account_derived_name from db.account natura
                               ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                         from api._community natural join db.community
                         where community_id=get_community_id()) c
-     natural left join db.communicant
-     natural left join (select account_id my_account_id from db.account natural join api._account where account_id=get_account_id()) a;
+     natural left join (select account_id my_account_id from db.account natural join api._account where account_id=get_account_id()) a
+     natural left join (select community_id,account_id my_account_id,communicant_regular_font_id,communicant_monospace_font_id from db.communicant) co;
 --
 --
 create function login_communityuser(uuid,text,integer) returns boolean language sql security definer as

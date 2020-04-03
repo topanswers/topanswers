@@ -50,9 +50,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     div.panel:not(#answers) { display: none; }
 
     table { border-collapse: collapse !important; }
+    td,th { border: 1px solid black; white-space: nowrap; }
     table.dataTable thead th { padding: 5px 18px; }
     table.dataTable tbody td { padding: 5px 10px; }
-    td,th { border: 1px solid black; white-space: nowrap; }
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/jquery.js"></script>

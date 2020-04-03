@@ -10,9 +10,9 @@ $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
 extract(cdb("select account_id, (select community_display_name from community where community_name=$1) community_display_name from one",$_GET['community']));
 ?>
 <!doctype html>
-<html style="--rgb-dark: 211,211,211;
+<html style="--rgb-light: 211,211,211;
              --rgb-mid: 211,211,211;
-             --rgb-light: 120,120,120;
+             --rgb-dark: 80,80,80;
              --regular-font-family: 'source-sans-pro', serif;
              ">
 <head>
@@ -32,7 +32,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
     a { color: blue; }
     a:visited { color: purple; }
 
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-dark)); }
+    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-light)); }
 
     @media (max-width: 576px){
       main>div { margin: 16px 16px; }
