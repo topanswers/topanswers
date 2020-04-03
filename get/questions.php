@@ -33,8 +33,8 @@ if($search){
     $startid = intval($_GET['id'])+1;
     $endid = '';
   }
-  $results = db("select question_id,question_change,question_is_answered,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id,question_account_id,question_account_name
-                       ,question_is_deleted,question_communicant_votes
+  $results = db("select question_id,question_change,question_is_answered,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id
+                       ,question_account_id,question_account_name,question_is_deleted,question_communicant_votes
                        ,kind_short_description
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                       , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
@@ -53,7 +53,9 @@ if($search){
     </div>
     <div class="bar">
       <div>
-        <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
+        <a href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>">
+          <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
+        </a>
         <span class="element"><?=$question_account_name?></span>
         <?if($question_votes){?>
           <span class="element">
@@ -94,7 +96,9 @@ if($search){
                 </span>
               <?}?>
               <span class="element"><?=$answer_account_name?></span>
-              <img title="Stars: <?=$answer_communicant_votes?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
+              <a href="/user?id=<?=$answer_account_id?>&community=<?=$community_name?>">
+                <img title="Stars: <?=$answer_communicant_votes?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
+              </a>
             </div>
           </div>
         <?}?>

@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists usr cascade;
 drop schema if exists navigation cascade;
 drop schema if exists communityicon cascade;
 drop schema if exists duplicate cascade;
@@ -51,6 +52,7 @@ create function get_community_id() returns integer stable language sql security 
 create function get_question_id() returns integer stable language sql security definer as $$select api._get_id('question'::text)::integer;$$;
 create function get_answer_id() returns integer stable language sql security definer as $$select api._get_id('answer'::text)::integer;$$;
 create function get_chat_id() returns bigint stable language sql security definer as $$select api._get_id('chat'::text);$$;
+create function get_user_id() returns bigint stable language sql security definer as $$select api._get_id('user'::text);$$;
 --
 create function _set_id(text,bigint) returns void stable language sql security definer set search_path=db,api,pg_temp as $$
   with w as (select account_encryption_key from login natural join account where login_uuid=nullif(current_setting('custom.uuid',true),'')::uuid
@@ -139,6 +141,16 @@ create function login_community(uuid uuid, cid integer) returns boolean language
   select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
   select _error('invalid community') where not exists (select 1 from _community c where community_id=cid);
   select _set_id('community',community_id) from community where community_id=cid;
+  select exists(select 1 from login where login_uuid=uuid);
+$$;
+--
+create function login_communityuser(uuid uuid, cid integer, aid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
+  select set_config('custom.timestamp',current_timestamp::text,false);
+  select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
+  select _error('invalid community') where not exists (select 1 from _community c where community_id=cid);
+  select _error('invalid account') where not exists (select 1 from _account a where account_id=aid);
+  select _set_id('community',community_id) from community where community_id=cid;
+  select _set_id('user',account_id) from account where account_id=aid;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
@@ -233,5 +245,6 @@ end$$;
 \i ~/git/sql/duplicate.sql
 \i ~/git/sql/communityicon.sql
 \i ~/git/sql/navigation.sql
+\i ~/git/sql/user.sql
 --
 commit;
