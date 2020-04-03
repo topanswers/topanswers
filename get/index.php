@@ -21,24 +21,8 @@ extract(cdb("select account_id from one"));
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
-  <style>
-    html { box-sizing: border-box; font-family: source-sans-pro, serif; font-size: 16px; }
-    body { display: flex; flex-direction: column; background: lightgrey; }
-    html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    footer, footer>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
-    footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); border-top: 2px solid black; }
-    footer a, footer .element a, footer a.element { color: rgb(var(--rgb-light)); }
-    main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
-    main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 3px; }
-
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-dark)); }
-    .communities { display: flex; flex-wrap: wrap; margin: 16px 0; margin-top: -24px; }
-    .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; }
-
-    @media (max-width: 576px){
-      main>div { margin: 16px 16px; }
-    }
-  </style>
+  <link rel="stylesheet" href="/cssjs/index/style.css">
+  
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
   <script>
