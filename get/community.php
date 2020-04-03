@@ -401,6 +401,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function renderChat(){
         var t = $(this), promises = [];
         t.find('.markdown').renderMarkdown(promises);
+//console.log(promises);
         Promise.allSettled(promises).then( () => t.find('.question:not(.processed)').each(renderQuestion).addClass('processed') );
         return promises;
       }

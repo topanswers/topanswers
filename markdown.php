@@ -109,6 +109,7 @@
   (function($){
     var md, mdsummary, prefix;
     function fiddleMarkdown(){
+      var promises = [];
       function addfiddle(o,r){
         var l = o.attr('data-source-line'), f = $(r).replaceAll(o);
         if(l) f.attr('data-source-line',l);
@@ -130,10 +131,11 @@
              .each(function()
       {
         var t = $(this);
-        $.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){
+        promises.push(Promise.resolve($.get('/dbfiddle?'+t.attr('href').split('?')[1]).done(function(r){
           addfiddle(t.parent(),r);
-        });
+        })));
       });
+      return promises;
     }
 
     function myslugify(s){
@@ -229,7 +231,7 @@
             }
           });
         }
-        if(!t.hasClass('nofiddle')) fiddleMarkdown.call(this);
+        promises.push(...fiddleMarkdown.call(this));
       });
       return this;
     };
