@@ -102,7 +102,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </thead>
           <tbody>
             <?foreach(db("select question_id,question_title,question_votes,answer_id,answer_votes,kind_description
-                               , to_char(question_at,'YYYY-MM-DD HH24:MI') answer_at_desc
+                               , to_char(answer_at,'YYYY-MM-DD HH24:MI') answer_at_desc
                                , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
                           from answer
                           order by question_at desc") as $r){extract($r);?>
