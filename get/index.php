@@ -2,11 +2,29 @@
 include '../config.php';
 include '../db.php';
 include '../nocache.php';
+
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
+
 db("set search_path to indx,pg_temp");
 $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
 extract(cdb("select account_id from one"));
+
+function getPublicCommunities() {
+    $rows = db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='public' order by random()");
+    return $rows;
+}
+
+function hasPrivateCommunities() {
+    return ccdb("select exists(select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private')");
+}
+
+function getPrivateCommunities() {
+    $rows = db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private' order by random()");
+    return $rows;
+}
+
 ?>
+
 <!doctype html>
 <html style="--rgb-light: 211,211,211;
              --rgb-mid: 211,211,211;
@@ -46,14 +64,14 @@ extract(cdb("select account_id from one"));
     <div>
       <h1>TopAnswers Communities:</h1>
       <div class="communities">
-        <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='public' order by random()") as $r){ extract($r);?>
+        <? foreach(getPublicCommunities() as $r) { extract($r); ?>
           <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
         <?}?>
       </div>
-      <?if(ccdb("select exists(select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private')")){?>
+      <?if (hasPrivateCommunities()) { ?>
         <h1>Coming Soon:</h1>
         <div class="communities">
-          <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private' order by random()") as $r){ extract($r);?>
+          <? foreach(getPrivateCommunities() as $r) { extract($r); ?>
             <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
           <?}?>
         </div>
