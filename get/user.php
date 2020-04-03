@@ -10,6 +10,7 @@ extract(cdb("select account_id
                    ,user_account_id,user_account_name,user_account_name_is_derived
                    ,community_id,community_name,community_display_name
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
 
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
@@ -46,7 +47,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     input[type="file"] { color: transparent; }
     input[type="submit"] { margin-left: 16px; }
 
-    table { border-collapse: collapse; }
+    div.panel:not(#answers) { display: none; }
+
+    table { border-collapse: collapse !important; }
+    table.dataTable thead th { padding: 5px 18px; }
+    table.dataTable tbody td { padding: 5px 10px; }
     td,th { border: 1px solid black; white-space: nowrap; }
   </style>
   <script src="/lib/js.cookie.js"></script>
@@ -56,11 +61,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     $(function(){
       $('#community').change(function(){ window.location = '/profile?community='+$(this).find(':selected').attr('data-name'); });
       $('input[value=save]').css('visibility','hidden');
-      $('table').DataTable({ select: true, dom: 'Pfrtip',
-                             preDrawCallback: function (settings) {
-                               $(this).closest('.dataTables_wrapper').find('.dataTables_paginate,.dataTables_info,.dataTables_filter').toggle((new $.fn.dataTable.Api(settings)).page.info().pages > 1);
-                             }
-                           });
+      $('table').DataTable({
+        select: true,
+        dom: 'Pfrtip',
+        language: { searchPanes: { emptyPanes: null } },
+        preDrawCallback: function (settings) {
+          $(this).closest('.dataTables_wrapper').find('.dataTables_paginate,.dataTables_info,.dataTables_filter').toggle((new $.fn.dataTable.Api(settings)).page.info().pages > 1);
+        }
+      });
+      $('a.panel').click(function(){
+        var panels = $('div.panel'), panel = $('#'+$(this).data('panel'));
+        $('a.panel:not([href])').attr('href','.');
+        $(this).removeAttr('href');
+        panels.hide();
+        panel.show();
+        return false;
+      });
     });
   </script>
   <title><?=$user_account_name?> | TopAnswers</title>
@@ -68,7 +84,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <body>
   <header>
     <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-    <div><?if($account_id){?><a class="frame"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?></div>
+    <div><?if($account_id){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?></div>
   </header>
   <main>
     <fieldset>
@@ -78,68 +94,68 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       </div>
     </fieldset>
     <fieldset>
-      <legend>communities</legend>
-      <table data-order='[[3,"desc"]]' data-page-length="10" data-dom="rtip">
-        <thead>
-          <tr><th>community</th><th>questions</th><th>answers</th><th>stars</th></tr>
-        </thead>
-        <tbody>
-          <?foreach(db("select community_id,community_name,community_question_count,community_answer_count,community_votes
-                        from community
-                        order by community_votes desc, community_answer_count desc, community_question_count desc, community_id") as $r){extract($r);?>
-            <tr>
-              <td><a href="?id=<?=$_GET['id']?>&community=<?=$community_name?>"><?=$community_name?></a></td>
-              <td><?=$community_question_count?></td>
-              <td><?=$community_answer_count?></td>
-              <td><?=$community_votes?></td>
-            </tr>
-          <?}?>
-        </tbody>
-      </table>
-    </fieldset>
-    <fieldset>
-      <legend>questions</legend>
-      <table data-order='[[0,"desc"]]' data-page-length="10">
-        <thead>
-          <tr><th>date/time</th><th>type</th><th>title</th><th>stars</th></tr>
-        </thead>
-        <tbody>
-          <?foreach(db("select question_id,question_title,question_votes,kind_description,kind_has_question_votes
-                             , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
-                        from question
-                        order by question_at desc") as $r){extract($r);?>
-            <tr>
-              <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
-              <td><?=$kind_description?></td>
-              <td><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></td>
-              <td><?=$kind_has_question_votes?$question_votes:''?></td>
-            </tr>
-          <?}?>
-        </tbody>
-      </table>
-    </fieldset>
-    <fieldset>
-      <legend>answers</legend>
-      <table data-order='[[0,"desc"]]' data-page-length='10'>
-        <thead>
-          <tr><th>answer date/time</th><th>question type</th><th>title</th><th>answer stars</th><th>question date/time</th></tr>
-        </thead>
-        <tbody>
-          <?foreach(db("select question_id,question_title,question_votes,answer_id,answer_votes,kind_description
-                             , to_char(question_at,'YYYY-MM-DD HH24:MI') answer_at_desc
-                             , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
-                        from answer
-                        order by question_at desc") as $r){extract($r);?>
-            <tr>
-              <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$answer_at_desc?></td>
-              <td><?=$kind_description?></td>
-              <td><a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>"><?=$question_title?></a></td>
-              <td><?=$answer_votes?></td>
-              <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
-            </tr>
-          <?}?>
-        </tbody>
-      </table>
+      <legend><a class="panel" data-panel="answers">answers</a> / <a class="panel" data-panel="questions" href=".">questions</a> / <a class="panel" data-panel="communities" href=".">communities</a></legend>
+      <div id="answers" class="panel">
+        <table data-order='[[0,"desc"]]' data-page-length='10'>
+          <thead>
+            <tr><th>answer date/time</th><th>question type</th><th>title</th><th>answer stars</th><th>question date/time</th></tr>
+          </thead>
+          <tbody>
+            <?foreach(db("select question_id,question_title,question_votes,answer_id,answer_votes,kind_description
+                               , to_char(question_at,'YYYY-MM-DD HH24:MI') answer_at_desc
+                               , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
+                          from answer
+                          order by question_at desc") as $r){extract($r);?>
+              <tr>
+                <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$answer_at_desc?></td>
+                <td><?=$kind_description?></td>
+                <td><a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>"><?=$question_title?></a></td>
+                <td><?=$answer_votes?></td>
+                <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
+              </tr>
+            <?}?>
+          </tbody>
+        </table>
+      </div>
+      <div id="questions" class="panel">
+        <table data-order='[[0,"desc"]]' data-page-length="10">
+          <thead>
+            <tr><th>date/time</th><th>type</th><th>title</th><th>stars</th></tr>
+          </thead>
+          <tbody>
+            <?foreach(db("select question_id,question_title,question_votes,kind_description,kind_has_question_votes
+                               , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
+                          from question
+                          order by question_at desc") as $r){extract($r);?>
+              <tr>
+                <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
+                <td><?=$kind_description?></td>
+                <td><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></td>
+                <td><?=$kind_has_question_votes?$question_votes:''?></td>
+              </tr>
+            <?}?>
+          </tbody>
+        </table>
+      </div>
+      <div id="communities" class="panel">
+        <table data-order='[[3,"desc"]]' data-page-length="10" data-dom="rtip">
+          <thead>
+            <tr><th>community</th><th>questions</th><th>answers</th><th>stars</th></tr>
+          </thead>
+          <tbody>
+            <?foreach(db("select community_id,community_name,community_question_count,community_answer_count,community_votes
+                          from community
+                          order by community_votes desc, community_answer_count desc, community_question_count desc, community_id") as $r){extract($r,EXTR_PREFIX_ALL,'c');?>
+              <tr>
+                <td><?=($community_name!==$c_community_name)?('<a href="?id='.$_GET['id'].'&community='.$c_community_name.'">'.$c_community_name.'</a>'):$c_community_name?></td>
+                <td><?=$c_community_question_count?></td>
+                <td><?=$c_community_answer_count?></td>
+                <td><?=$c_community_votes?></td>
+              </tr>
+            <?}?>
+          </tbody>
+        </table>
+      </div>
     </fieldset>
   </main>
 </body>
