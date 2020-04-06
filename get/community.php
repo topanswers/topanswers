@@ -112,7 +112,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       .newtag { position: relative; cursor: pointer; margin-left: 0; }
       .newtag .tag { opacity: 0.4; margin: 0; }
       .newtag:hover .tag { opacity: 1; }
-      .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
+      .newtag>div { position: absolute; top: -4px; left: 1px; z-index: 1; visibility: hidden; }
 
       #qa .post:target { box-shadow: 0 0 1px 2px rgb(var(--rgb-highlight)); }
       #qa .post.answer:not(:last-child) { margin-bottom: 40px; }
