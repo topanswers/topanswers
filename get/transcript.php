@@ -76,7 +76,7 @@ if(isset($_GET['month'])){
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    mark[data-markjs] { background: rgb(var(--rgb-highlight))80; }
+    mark[data-markjs] { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), white; }
     a:not([href]) { color: rgb(var(--rgb-highlight)); }
     a[data-lightbox] img { cursor: zoom-in; }
 
