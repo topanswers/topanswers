@@ -52,25 +52,25 @@ if($search){
       <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
     </div>
     <div class="bar">
+      <div class="element container">
+        <?foreach(db("select question_id,tag_id,tag_name from tag where question_id=$1 order by tag_question_count",$question_id) as $r){ extract($r);?>
+          <span class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+        <?}?>
+      </div>
       <div>
-        <a href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>">
-          <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
-        </a>
-        <span class="element"><?=$question_account_name?></span>
+        <?if($question_change!=='asked'){?>
+          <span class="element hover wideonly when" data-prefix="(<?=$question_change?>, " data-postfix=")" data-seconds="<?=$question_change_when?>" data-at="<?=$question_change_at_iso?>"></span>
+        <?}?>
+        <span class="when element hover" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"><?=$question_account_name?></span>
         <?if($question_votes){?>
           <span class="element">
             <i class="fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>" data-count="<?=$question_votes?>"></i>
           </span>
         <?}?>
-        <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"><?=$question_account_name?></span>
-        <?if($question_change!=='asked'){?>
-          <span class="element hover wideonly when" data-prefix="(<?=$question_change?>, " data-postfix=")" data-seconds="<?=$question_change_when?>" data-at="<?=$question_change_at_iso?>"></span>
-        <?}?>
-      </div>
-      <div class="element container">
-        <?foreach(db("select question_id,tag_id,tag_name from tag where question_id=$1 order by tag_question_count",$question_id) as $r){ extract($r);?>
-          <span class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
-        <?}?>
+        <span class="element"><?=$question_account_name?></span>
+        <a class="hover" href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>">
+          <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
+        </a>
       </div>
     </div>
     <?if($question_is_answered){?>
@@ -89,14 +89,14 @@ if($search){
               <?if($answer_change!=='answered'){?>
                 <span class="element hover when" data-prefix="(<?=$answer_change?>, " data-postfix=")" data-seconds="<?=$answer_change_when?>" data-at="<?=$answer_change_at_iso?>"></span>
               <?}?>
-              <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
+              <span class="when element hover" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
               <?if($answer_votes){?>
                 <span class="element">
                   <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
                 </span>
               <?}?>
               <span class="element"><?=$answer_account_name?></span>
-              <a href="/user?id=<?=$answer_account_id?>&community=<?=$community_name?>">
+              <a class="hover" href="/user?id=<?=$answer_account_id?>&community=<?=$community_name?>">
                 <img title="Stars: <?=$answer_communicant_votes?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
               </a>
             </div>

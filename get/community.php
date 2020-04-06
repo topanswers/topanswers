@@ -81,7 +81,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </noscript>
   <style>
     html { box-sizing: border-box; font-family: var(--regular-font-family); font-size: 16px; }
-    body { display: flex; background: rgb(var(--rgb-dark)); }
+    body { display: flex; background: rgba(var(--rgb-dark),1.3); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
@@ -99,7 +99,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     a[data-lightbox] img { cursor: zoom-in; }
 
     #qa { overflow: auto; scroll-behavior: smooth; }
-    #qa .post:first-child { margin-top: 16px; }
     #qa #info { color: rgb(var(--rgb-mid)); padding: 6px; background: rgb(var(--rgb-mid)); font-size: 12px; }
     #qa .banner { display: flex; margin: 16px; align-items: center; }
     #qa .banner h1, #qa .banner h3 { color: rgb(var(--rgb-light)); font-weight: normal; margin: 0; }
@@ -114,7 +113,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       .newtag:hover .tag { opacity: 1; }
       .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
 
-      #qa #question { margin-bottom: 16px; }
+      #qa #question { margin-bottom: 8px; }
       #qa .post:target { box-shadow: 0 0 1px 2px rgb(var(--rgb-highlight)); }
       #qa .markdown { border: 1px solid rgb(var(--rgb-dark)); border-width: 1px 0; padding: 8px; }
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
@@ -232,7 +231,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
     .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
 
-    #search { flex: 0 1 570px; min-width: 0; }
+    #search { flex: 0 1 570px; min-width: 0; background-color: rgba(var(--rgb-light)); border: none; border-radius: 3px; padding: 3px; }
     #search+div { display: none; }
 
     #dummyresizerx { background-color: black; flex: 0 0 6px; }
@@ -980,7 +979,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           searchQuestions();
         }
       }
-      $('#search').on('input',_.debounce(search,500));
+      $('#search').on('input',()=>{ $('#questions>.question').remove(); $('#more').hide(); });
+      $('#search').on('input',_.debounce(search,750));
       $('#search').keydown(function(e){
         if(e.which===27){
           $(this).val('').trigger('input');
@@ -1249,10 +1249,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="markdown" data-markdown="<?=htmlspecialchars($community_banner_markdown)?>">&nbsp;</div>
           </div>
         <?}?>
-        <div class="banner">
-          <h1>Latest:</h1>
-          <div style="flex: 1 1 0;"></div>
-        </div>
         <div id="questions">
           <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&page=1'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
         </div>
