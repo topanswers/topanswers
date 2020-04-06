@@ -4,7 +4,8 @@
 .post.deleted, .post.deleted>.markdown, .post .answers .bar.deleted { background: linear-gradient(rgba(var(--rgb-warning),0.13),rgba(var(--rgb-warning),0.13)), white; }
 .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; }
 .post .title { display: flex; font-size: 18px; }
-.post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 6px 6px 0 6px; text-decoration: none; color: black; white-space: nowrap; }
+.post .title>a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 6px 6px 0 6px; text-decoration: none; color: black; white-space: nowrap; }
+.post .title>i { font-size: 12px; padding-top: 2px; }
 .post .title+.bar { margin: 4px 6px; }
 .post .title+.bar>.element { margin-left: 0; }
 .post .title+.bar>div:last-child { margin-right: -6px; margin-bottom: -8px; }

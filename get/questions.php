@@ -49,6 +49,9 @@ if($search){
   <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
     <div class="title">
       <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
+      <?if($question_votes){?>
+        <i class="element hover fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>" data-count="<?=$question_votes?>"></i>
+      <?}?>
     </div>
     <div class="bar">
       <div class="element container shrink">
@@ -82,9 +85,7 @@ if($search){
           <div class="bar<?=$answer_is_deleted?' deleted':''?>">
             <div class="element summary shrink">
               <?if($answer_votes){?>
-                <span class="xelement">
-                  <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
-                </span>
+                <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
               <?}?>
               <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element shrink"><span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
             </div>
