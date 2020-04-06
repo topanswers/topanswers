@@ -263,7 +263,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
   <script src="/lib/resizer.js"></script>
-  <script src="/lib/favico.js"></script>
   <script src="/lib/select2.js"></script>
   <script src="/lib/starrr.js"></script>
   <script src="/lib/jquery.simplePagination.js"></script>
@@ -272,7 +271,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     //moment.locale(window.navigator.userLanguage || window.navigator.language);
     $(function(){
       var title = document.title, latestChatId;
-      var favicon = new Favico({ animation: 'fade', position: 'up' });
       var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
       var firefox = false;

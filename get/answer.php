@@ -93,7 +93,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
-  <script src="/lib/favico.js"></script>
   <script>
     $(function(){
       var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', inputStyle: 'contenteditable', spellcheck: true, extraKeys: {

@@ -19,8 +19,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/source-sans-pro.css">
   <link rel="stylesheet" href="/fonts/source-code-pro.css">
-  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/communityicon" type="image/png">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <style>
