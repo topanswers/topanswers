@@ -7,7 +7,7 @@ db("set search_path to chat_history,pg_temp");
 ccdb("select login_chat(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
 extract(cdb("select account_id
                    ,chat_id
-                   ,room_id,room_name
+                   ,room_id,room_derived_name
                    ,community_name,community_display_name,community_code_language,community_tables_are_monospace
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
