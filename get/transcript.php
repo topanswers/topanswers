@@ -106,7 +106,7 @@ if(isset($_GET['month'])){
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .icon { visibility: hidden; }
-    .message.thread .markdown { background: rgba(var(--rgb-highlight),0.25); }
+    .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), white; }
     .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
   </style>
   <script src="/lib/js.cookie.js"></script>

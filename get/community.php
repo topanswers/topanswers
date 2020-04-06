@@ -113,7 +113,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       .newtag:hover .tag { opacity: 1; }
       .newtag>div { position: absolute; top: -2px; right: -2px; z-index: 1; visibility: hidden; }
 
-      #qa #question { margin-bottom: 8px; }
       #qa .post:target { box-shadow: 0 0 1px 2px rgb(var(--rgb-highlight)); }
       #qa .markdown { border: 1px solid rgb(var(--rgb-dark)); border-width: 1px 0; padding: 8px; }
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
@@ -191,7 +190,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message.merged>.markdown { margin-top: -1px; }
     .message.merged>.who, .message.merged>.icon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
-    .message.thread .markdown { background: rgba(var(--rgb-highlight),0.25); }
+    .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), white; }
 
     #xnotifications { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; }
     #notifications { xbackground: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; scroll-behavior: smooth; }
@@ -231,7 +230,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
     .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
 
-    #search { flex: 0 1 570px; min-width: 0; background-color: rgba(var(--rgb-light)); border: none; border-radius: 3px; padding: 3px; }
+    #search { flex: 0 1 570px; min-width: 0; background-color: rgba(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 10px; padding: 3px; }
+    #search:focus { background: white; }
     #search+div { display: none; }
 
     #dummyresizerx { background-color: black; flex: 0 0 6px; }

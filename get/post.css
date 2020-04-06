@@ -1,10 +1,10 @@
 .post { background-color: white; border-radius: 3px; margin: 6px; overflow: hidden; }
 .post:not(.processed) { opacity: 0; }
 .post:not(:hover) .hover { display: none; }
-.post.deleted>.title>a, .post.deleted>.markdown, .post .answers .bar.deleted { background: rgba(var(--rgb-warning),0.13); }
+.post.deleted, .post.deleted>.markdown, .post .answers .bar.deleted { background: linear-gradient(rgba(var(--rgb-warning),0.13),rgba(var(--rgb-warning),0.13)), white; }
 .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; }
 .post .title { display: flex; font-size: 18px; }
-.post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; margin: 6px 6px 0 6px; text-decoration: none; color: black; white-space: nowrap; }
+.post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 6px 6px 0 6px; text-decoration: none; color: black; white-space: nowrap; }
 .post .title+.bar { margin: 4px 6px; }
 .post .title+.bar>.element { margin-left: 0; }
 .post .bar { height: 22px; font-size: 12px; }
