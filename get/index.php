@@ -25,7 +25,7 @@ extract(cdb("select account_id from one"));
     body { display: flex; flex-direction: column; background: lightgrey; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     footer, footer>div { display: flex; min-width: 0; overflow: hidden; align-items: center; }
-    footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); border-top: 2px solid black; }
+    footer { min-height: 30px; flex: 0 0 auto; flex-wrap: wrap; justify-content: space-between; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); border-top: 1px solid black; }
     footer a, footer .element a, footer a.element { color: rgb(var(--rgb-light)); }
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 3px; }

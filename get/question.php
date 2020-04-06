@@ -51,20 +51,20 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <style>
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    body { display: flex; flex-direction: column; background-color: rgb(var(--rgb-light)); }
-    main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 32px 1fr; grid-gap: 16px; padding: 16px; max-width: 3000px; margin: 0 auto; height: 100%; }
+    body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
+    main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 32px 1fr; grid-gap: 10px; padding: 10px; max-width: 3000px; margin: 0 auto; height: 100%; }
     textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
     #form { flex: 1 0 0; min-height: 0; }
-    #title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgba(var(--rgb-dark),0.6); padding: 5px; font-size: 16px; }
+    #title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgba(var(--rgb-dark),0.6); padding: 5px; font-size: 18px; font-family: var(--regular-font-family); }
     #codemirror-container { grid-area: 2 / 1 / 3 / 2; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
-    #markdown { grid-area: 2 / 2 / 3 / 3; background-color: white; padding: 7px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
+    #markdown { grid-area: 2 / 2 / 3 / 3; background: white; padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
 
     #editor-buttons { grid-area: 2 / 1 / 3 / 2; justify-self: start; min-height: 0; }
-    #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px 0 0 3px; padding: 5px; }
+    #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-light)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px 0 0 3px; padding: 5px; }
     #editor-buttons>div i { padding: 4px; text-align: center; width: 24px; height: 24px; text-align: center; }
-    #editor-buttons>div i:hover { box-shadow: 0 0 0 1px rgba(var(--rgb-dark),0.6) inset; cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
+    #editor-buttons>div i:hover { box-shadow: 0 0 0 1px rgba(var(--rgb-dark),0.6) inset; cursor: pointer; background: rgb(var(--rgb-mid)); border-radius: 3px; }
     #editor-buttons>div i:last-child { margin-bottom: 0; }
     #editor-buttons>div br { margin-bottom: 12px; }
 

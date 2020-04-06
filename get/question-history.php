@@ -36,15 +36,16 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <style>
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
-    body { background: rgb(var(--rgb-light)); }
+    body { background: rgb(var(--rgb-mid)); }
     main { width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 10px; padding: 10px; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
     [data-rz-handle] { flex: 0 0 2px; background: black; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    .markdown, .title { background: white; padding: 8px; font-size: 16px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
-    .diff { background: rgb(var(--rgb-mid)); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
+    .title { background: white; padding: 5px; font-size: 18px; border: 1px solid rgba(var(--rgb-dark),0.6); }
+    .markdown { background: white; padding: 8px; font-size: 16px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
+    .diff { background: rgb(var(--rgb-light)); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
     .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px rgb(var(--rgb-highlight)); }
     .separator { border-bottom: 4px solid rgb(var(--rgb-dark)); margin: 8px -10px; }
     .separator:last-child { display: none; }

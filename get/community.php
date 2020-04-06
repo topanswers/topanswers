@@ -222,18 +222,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination ul { display: flex; padding: 0; }
     .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; outline-left: 1px solid rgb(var(--rgb-dark)); }
     .simple-pagination li>span { user-select: none; }
-    .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: black; text-align: center; background-color: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark)); }
-    .simple-pagination li:not(.disabled):not(.active):hover>* { background-color: rgb(var(--rgb-mid)); }
+    .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: black; text-align: center; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark)); }
+    .simple-pagination li:not(.disabled):not(.active):hover>* { background: rgb(var(--rgb-mid)); }
     .simple-pagination li>.current:not(.prev):not(.next) { position: relative; z-index: 1; outline: 2px solid rgb(var(--rgb-highlight)); }
     .simple-pagination li>.ellipse { padding: 0 10px; user-select: none; }
     .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
     .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
 
-    #search { flex: 0 1 570px; min-width: 0; background-color: rgba(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 3px; padding: 3px; }
+    #search { flex: 0 1 570px; min-width: 0; background: rgba(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 3px; padding: 3px; }
     #search:focus { background: white; }
     #search+div { display: none; }
 
-    #dummyresizerx { background-color: black; flex: 0 0 6px; }
+    #dummyresizerx { background: black; flex: 0 0 6px; }
 
     .pane { display: flex; }
     .panecontrol { display: none; width: 28px; font-size: 24px; text-align: center; }

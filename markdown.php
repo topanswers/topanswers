@@ -6,7 +6,7 @@
 <style>
   .summary a { color: blue; }
   .summary a:visited { color: purple; }
-  .summary code { padding: 0 3px; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
+  .summary code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>pre { white-space: pre; }
   .markdown>:first-child { margin-top: 0; }
@@ -16,16 +16,16 @@
   .markdown a { color: blue; }
   .markdown a:visited { color: purple; }
   .markdown img { max-width: 100%; max-height: 480px; margin: 1px; }
-  .markdown hr { background-color: rgb(var(--rgb-mid)); border: 0; height: 2px; }
+  .markdown hr { background: rgb(var(--rgb-mid)); border: 0; height: 2px; }
   .markdown table { border-collapse: collapse; table-layout: fixed; }
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
-  .markdown th { background-color: rgb(var(--rgb-mid)); }
-  .markdown td { background-color: white; }
+  .markdown th { background: rgb(var(--rgb-mid)); }
+  .markdown td { background: white; }
   .markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid black; padding: 3px 5px; text-align: left; }
-  .markdown blockquote { padding: 8px 2px 8px 10px; margin: 16px 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background-color: rgba(var(--rgb-dark),0.1); }
+  .markdown blockquote { padding: 8px 2px 8px 10px; margin: 16px 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background: rgba(var(--rgb-dark),0.1); }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
-  .markdown code { padding: 0 3px; background-color: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
+  .markdown code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
   .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 6px; overflow-wrap: unset; }
   .markdown nav ol { counter-reset: list-item; }
   .markdown nav li { display: block; counter-increment: list-item; }
@@ -57,13 +57,13 @@
   .markdown .table-of-contents li { display: block; counter-increment: list-item-toc; }
   .markdown .table-of-contents li:before { content: counters(list-item-toc,'.') ' '; }
 
-  .dbfiddle { padding: 8px; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
+  .dbfiddle { padding: 8px; background: rgb(var(--rgb-light)); border-radius: 3px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 8px; }
   .dbfiddle>div { margin-top: 8px; }
   .dbfiddle .batch { overflow: hidden; min-width: 0; }
-  .dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--monospace-font-family); background-color: rgba(var(--rgb-highlight),0.25); }
+  .dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--monospace-font-family); background: rgba(var(--rgb-highlight),0.25); }
   .dbfiddle a { font-size: smaller; }
   .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; margin-top: 5px; padding: 2px }
   .dbfiddle .qp-statement-header { display: none; }

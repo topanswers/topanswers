@@ -76,7 +76,7 @@ if(isset($_GET['month'])){
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    mark[data-markjs] { background-color: rgb(var(--rgb-highlight))80; }
+    mark[data-markjs] { background: rgb(var(--rgb-highlight))80; }
     a:not([href]) { color: rgb(var(--rgb-highlight)); }
     a[data-lightbox] img { cursor: zoom-in; }
 
@@ -86,7 +86,7 @@ if(isset($_GET['month'])){
     .period>div>span { font-size: smaller; font-style: italic; }
     .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: rgba(var(--rgb-dark),0.5); }
 
-    #messages { flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 13px; overflow: auto; background-color: rgb(var(--rgb-mid)); scroll-behavior: smooth; }
+    #messages { flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 13px; overflow: auto; background: rgb(var(--rgb-mid)); scroll-behavior: smooth; }
 
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message:not(.processed) { opacity: 0; }
@@ -156,7 +156,7 @@ if(isset($_GET['month'])){
       <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
     </div>
   </header>
-  <main style="display: flex; flex: 1 1 auto; background-color: rgb(var(--rgb-light)); overflow: hidden;">
+  <main style="display: flex; flex: 1 1 auto; background: rgb(var(--rgb-light)); overflow: hidden;">
     <?if($search){?>
       <div id="messages">
         <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.55',false)");?>

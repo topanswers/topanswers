@@ -28,14 +28,14 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="stylesheet" href="/header.css">
   <style>
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
-    body { display: flex; flex-direction: column; background: rgb(var(--rgb-dark)); }
+    body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    fieldset { display: inline-block; margin: 16px; border: none; background-color: white; border-radius: 3px; }
-    legend { background-color: white; box-shadow: 0 0 1px 1px rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
+    fieldset { display: inline-block; margin: 16px; border: 1px solid rgb(var(--rgb-dark)); background: white; border-radius: 3px; }
+    legend { background: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/jquery.js"></script>
@@ -43,7 +43,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     $(function(){
     });
   </script>
-  <title>Room | TopAnswers</title>
+  <title>Room Settings - TopAnswers</title>
 </head>
 <body>
   <header>

@@ -35,15 +35,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/header.css">
   <style>
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
-    body { display: flex; flex-direction: column; background: rgb(var(--rgb-dark)); }
+    body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
     main>fieldset { display: flex; flex-direction: column; align-items: flex-start; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    fieldset { display: inline-block; margin: 16px; border-radius: 3px; background-color: white; border: none; padding: 8px; }
-    legend { background-color: white; box-shadow: 0 0 1px 1px rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
+    fieldset { display: inline-block; margin: 10px; border-radius: 3px; background: white; border: 1px solid rgb(var(--rgb-dark)); padding: 8px; }
+    legend { background: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
     input[type="file"] { color: transparent; }
     input[type="submit"] { margin-left: 16px; }
 
@@ -78,7 +78,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
     });
   </script>
-  <title><?=$user_account_name?> | TopAnswers</title>
+  <title><?=$user_account_name?> - TopAnswers</title>
 </head>
 <body>
   <header>
