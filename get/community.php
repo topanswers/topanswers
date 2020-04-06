@@ -1035,23 +1035,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                                              ?><?=$question_i_counterflagged?' counterflagged':''?><?
                                                              ?><?=$question_is_deleted?' deleted':''?>">
           <div class="title">
-            <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
             <a title="<?=$question_title?>"><?=$question_title?></a>
+            <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
           </div>
           <div class="bar">
             <div>
-              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
-              <span class="element">
-                <?if($question_account_is_imported){?>
-                  <span><?if($question_selink_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_selink_user_id?>"><?=$question_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
-                <?}else{?>
-                  <span><?=$question_account_name?></span>
-                <?}?>
-              </span>
-              <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"></span>
-            </div>
-            <div>
               <div class="element container">
+                <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
+                  <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+                <?}?>
                 <?if($auth){?>
                   <span class="newtag element">
                     <div>
@@ -1065,10 +1057,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     <span class="tag element">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                   </span>
                 <?}?>
-                <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
-                  <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
-                <?}?>
               </div>
+            </div>
+            <div>
+              <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"></span>
+              <span class="element">
+                <?if($question_account_is_imported){?>
+                  <span><?if($question_selink_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_selink_user_id?>"><?=$question_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                <?}else{?>
+                  <span><?=$question_account_name?></span>
+                <?}?>
+              </span>
+              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
             </div>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=$question_markdown?>"><pre class='noscript'><?=$question_markdown?></pre></div>

@@ -6,7 +6,7 @@
 .post .title { display: flex; font-size: 18px; }
 .post .title > div { flex: 0 0 auto; padding: 2px 6px; margin: 6px 4px; background: rgb(var(--rgb-mid)); border-radius: 2px; }
 .post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
-.post>.bar { margin: -4px 0 4px 4px; }
+.post .title+.bar { margin: -4px 0 4px 4px; }
 .post .bar { position: relative; height: 22px; font-size: 12px; }
 .post .bar .fa { text-decoration: none; }
 .post .bar .fa:not(.highlight) { color: rgb(var(--rgb-dark)); }
