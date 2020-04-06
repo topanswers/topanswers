@@ -13,7 +13,7 @@
 .post .bar, .post .bar>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
 .post .bar>div:not(.shrink) { flex: 0 0 auto; }
 .post .bar.shrink { flex: 0 1 auto; }
-.post .kind { display: inline-block; height: 18px; padding: 1px 4px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-dark)); margin-left: 0; line-height: 1.1; }
+.post .kind { display: inline-block; height: 18px; padding: 1px 4px; background: rgba(var(--rgb-light),0.5); border: 1px solid rgb(var(--rgb-dark)); margin-left: 0; line-height: 1.1; }
 .post .tag { display: inline-block; height: 18px; padding: 1px 4px; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 0; }
 .post .tag::after { position: absolute; border-radius: 50%; background: white; border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
 .post .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); border-radius: 50%; }
