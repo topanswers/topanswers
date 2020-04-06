@@ -13,7 +13,7 @@ where chat_id=get_chat_id();
 --
 create view one with (security_barrier) as
 select chat_id
-      ,room_id,room_derived_name room_name,room_derived_name
+      ,room_id,room_derived_name
       ,account_id
       ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning

@@ -86,7 +86,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <header>
     <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div class="container">
-      <span class="element">history of <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>">a chat message</a> in <a href="/<?=$community_name?>?room=<?=$room_id?>"><?=$room_name?></a></span>
+      <span class="element">history of <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>">a chat message</a> in <a href="/<?=$community_name?>?room=<?=$room_id?>"><?=$room_derived_name?></a></span>
     </div>
     <div>
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
