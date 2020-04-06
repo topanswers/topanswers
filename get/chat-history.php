@@ -38,21 +38,21 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
     html, body { margin: 0; padding: 0; }
     body { background-color: rgb(var(--rgb-light)); }
-    main { width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 1rem; padding: 1rem; }
+    main { width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 10px; padding: 10px; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    .markdown { background: white; padding: 0.25rem; font-size: 16px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; }
-    .diff { background: rgb(var(--rgb-mid)); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 0.25rem; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; }
+    .markdown { background: white; padding: 0.25rem; font-size: 16px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
+    .diff { background: rgb(var(--rgb-mid)); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 0.25rem; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
     .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px rgb(var(--rgb-highlight)); }
-    .separator { border-bottom: 4px solid rgb(var(--rgb-dark)); margin: 1rem -1rem; }
+    .separator { border-bottom: 4px solid rgb(var(--rgb-dark)); margin: 8px -10px; }
     .separator:last-child { display: none; }
 
     .who, .when { white-space: nowrap; }
-    .when { font-size: smaller; color: rgb(var(--rgb-dark)); }
+    .when { font-size: 14px; color: rgb(var(--rgb-dark)); }
 
-    .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); font-size: 1.1rem; border-radius: 3px; }
+    .CodeMirror { height: 100%; border: 1px solid rgba(var(--rgb-dark),0.6); font-size: 16px; border-radius: 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>

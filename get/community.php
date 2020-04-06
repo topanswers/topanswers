@@ -104,7 +104,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .banner .button:last-child { margin-right: 0; }
     #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
-    #chat-wrapper header { border-top: 2px solid black; }
+    #chat-wrapper header { border-top: 1px solid black; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
     <?if($question){?>
@@ -135,12 +135,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <?}?>
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
-    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-top: 1px solid rgb(var(--rgb-dark)); border-bottom: 1px solid rgb(var(--rgb-dark)); }
+    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #chat-wrapper .roomtitle { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
     #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
 
-    #notifications { xbackground: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column; scroll-behavior: smooth; xbackground: rgb(var(--rgb-light)); }
+    #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column; scroll-behavior: smooth; }
     #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
@@ -193,9 +193,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message.merged>.who, .message.merged>.icon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
     .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), white; }
-
-    #xnotifications { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; }
-    #notifications { xbackground: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; scroll-behavior: smooth; }
 
     .notification { padding: 4px; border-radius: 3px; margin: 2px; border: 1px solid rgba(var(--rgb-dark),0.6); }
     .notification:not(.processed) { opacity: 0; }

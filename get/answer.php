@@ -48,21 +48,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
     #form { flex: 1 0 0; min-height: 0; }
-    #question { display: flex; flex-direction: column; background-color: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow: hidden; }
-    #question>.title { flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgb(var(--rgb-dark)); }
+    #question { display: flex; flex-direction: column; background-color: white; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow: hidden; }
+    #question>.title { flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
     #question>.title>a { color: black; text-decoration: none; }
     #question>.markdown { overflow-y: auto; padding: 0.6em; min-height: 0; }
     #codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
-    #markdown { grid-area: 1 / 3 / 3 / 4; background-color: white; padding: 7px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; overflow-y: auto; }
+    #markdown { grid-area: 1 / 3 / 3 / 4; background-color: white; padding: 7px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
 
     #editor-buttons { grid-area: 1 / 2 / 2 / 3; justify-self: start; min-height: 0; }
-    #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px 0 0 3px; padding: 5px; }
+    #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px 0 0 3px; padding: 5px; }
     #editor-buttons>div i { padding: 4px; text-align: center; width: 24px; height: 24px; text-align: center; }
     #editor-buttons>div i:hover { box-shadow: 0 0 0 1px rgba(var(--rgb-dark),0.6) inset; cursor: pointer; background-color: rgb(var(--rgb-light)); border-radius: 3px; }
     #editor-buttons>div i:last-child { margin-bottom: 0; }
     #editor-buttons>div br { margin-bottom: 12px; }
 
-    .CodeMirror { height: 100%; border: 1px solid rgb(var(--rgb-dark)); border-radius: 0 3px 3px 3px; }
+    .CodeMirror { height: 100%; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
 

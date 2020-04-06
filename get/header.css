@@ -1,4 +1,4 @@
-header { min-height: 30px; border-bottom: 2px solid black; display: grid; grid-auto-rows: 28px; grid-template-columns: max-content auto max-content; grid-column-gap: 5vw; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
+header { min-height: 31px; border-bottom: 1px solid black; display: grid; grid-auto-rows: 30px; grid-template-columns: max-content auto max-content; grid-column-gap: 5vw; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; padding: 0 1px; }
 header a, header .element a, header a.element { color: rgb(var(--rgb-light)); }
 header a.button { background: rgb(var(--rgb-dark)); border: 1px solid rgba(var(--rgb-light),0.5); color: rgb(var(--rgb-light)); }
 header a.button[href]:hover { border-color: transparent; background: rgba(var(--rgb-light),0.2); }
@@ -14,12 +14,12 @@ header>div:last-child { grid-area: 1 / 3 / 2 / 4; justify-content: end; }
   header .wideonly { display: none; }
 }
 
-header .select { height: 28px; margin-left: 0; }
+header .select { height: 30px; margin-left: 0; }
 header .select>div:first-child { padding: 0 6px; cursor: pointer; display: flex; align-items: center; height: 100%; user-select: none; transition: background linear 0.1s; }
 header .select>div:first-child:hover { background: rgba(var(--rgb-light),0.2); }
 header .select.open>div:first-child { background: rgba(var(--rgb-light),0.2); }
 header .select>div:first-child>i { margin-left: 4px; opacity: 0.7; font-size: 10px; }
-header .select>div:last-child>div { position: absolute; z-index: 100; display: none; flex-direction: column; border-top: 2px solid black; background: white; box-shadow: 1px 4px 4px black; }
+header .select>div:last-child>div { position: absolute; z-index: 100; display: none; flex-direction: column; border-top: 1px solid black; background: white; box-shadow: 1px 4px 4px black; }
 header .select.open>div:last-child>div { display: flex; }
 header .select>div:last-child>div>div { display: flex; transition: all linear 0.1s; }
 header .select>div:last-child>div>div:not(:last-child) { border-bottom: 1px solid lightgray; }
