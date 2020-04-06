@@ -3,7 +3,14 @@ include '../config.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to communityicon,pg_temp");
-$auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'');
+
+if(!isset($_GET['community'])){
+  header("Content-Type: image/jpeg");
+  echo pg_unescape_bytea(ccdb("select community_image from one"));
+  exit;
+}
+
+$auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 extract(cdb("select community_id,community_image
                   , community_image is not null community_has_image
                   , get_byte(community_dark_shade,0) community_dark_shade_r

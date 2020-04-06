@@ -3,7 +3,10 @@ grant usage on schema communityicon to get;
 set local search_path to communityicon,api,pg_temp;
 --
 --
-create view one with (security_barrier) as select community_id,community_image,community_dark_shade from db.community where community_id=get_community_id();
+create view one with (security_barrier) as
+select community_id,community_image,community_dark_shade from db.community where community_id=get_community_id()
+union all
+select null,one_image,null from db.one where get_community_id() is null;
 --
 --
 create function login_community(uuid,text) returns boolean language sql security definer as $$select api.login_community($1,(select community_id from db.community where community_name=$2));$$;

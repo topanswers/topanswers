@@ -23,6 +23,7 @@ set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
 create table one(
   one_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
 , one_stackapps_secret text default '' not null
+, one_image bytea check(length(one_image)>0)
 );
 create unique index one_only_ind on one((1));
 
