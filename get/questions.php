@@ -68,7 +68,7 @@ if($search){
           </span>
         <?}?>
         <span class="element"><?=$question_account_name?></span>
-        <a class="hover" href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>">
+        <a href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>">
           <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
         </a>
       </div>
@@ -96,7 +96,7 @@ if($search){
                 </span>
               <?}?>
               <span class="element"><?=$answer_account_name?></span>
-              <a class="hover" href="/user?id=<?=$answer_account_id?>&community=<?=$community_name?>">
+              <a href="/user?id=<?=$answer_account_id?>&community=<?=$community_name?>">
                 <img title="Stars: <?=$answer_communicant_votes?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
               </a>
             </div>

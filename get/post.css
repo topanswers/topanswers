@@ -7,11 +7,12 @@
 .post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 6px 6px 0 6px; text-decoration: none; color: black; white-space: nowrap; }
 .post .title+.bar { margin: 4px 6px; }
 .post .title+.bar>.element { margin-left: 0; }
+.post .title+.bar>div:last-child { margin-right: -6px; margin-bottom: -8px; }
 .post .bar { height: 22px; font-size: 12px; }
 .post .bar .fa { text-decoration: none; }
 .post .bar .fa:not(.highlight) { color: rgb(var(--rgb-dark)); }
 .post .bar .icon+.icon { margin-left: 0; }
-.post .bar, .post .bar>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
+.post .bar, .post .bar>div { display: flex; min-width: 0; align-items: center; white-space: nowrap; justify-content: space-between }
 .post .bar>div:not(.shrink) { flex: 0 0 auto; }
 .post .bar.shrink { flex: 0 1 auto; }
 .post .kind { display: inline-block; height: 18px; padding: 1px 4px; background: rgba(var(--rgb-light),0.5); border: 1px solid rgb(var(--rgb-dark)); margin-left: 0; line-height: 14px; }
