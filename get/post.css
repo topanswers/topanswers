@@ -1,4 +1,4 @@
-.post { background-color: white; border-radius: 3px; margin: 6px; overflow: hidden; }
+.post { background-color: white; border-radius: 3px; margin: 10px; overflow: hidden; border: 1px solid rgba(var(--rgb-dark),0.6); }
 .post:not(.processed) { opacity: 0; }
 .post:not(:hover) .hover { display: none; }
 .post.deleted, .post.deleted>.markdown, .post .answers .bar.deleted { background: linear-gradient(rgba(var(--rgb-warning),0.13),rgba(var(--rgb-warning),0.13)), white; }
@@ -20,7 +20,7 @@
 .post .tag::after { position: absolute; border-radius: 50%; background: white; border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
 .post .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); border-radius: 50%; }
 .post .tag i::before { border-radius: 50%; }
-.post .answers { border-top: 1px solid rgb(var(--rgb-dark)); }
+.post .answers { border-top: 1px solid rgba(var(--rgb-dark),0.6); }
 .post .answers .bar { background-color: white; }
 .post .answers .bar:not(:last-child) { border-bottom: 1px solid rgb(var(--rgb-mid)); height: 23px; }
 .post .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

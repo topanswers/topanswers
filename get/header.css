@@ -1,5 +1,7 @@
 header { min-height: 30px; border-bottom: 2px solid black; display: grid; grid-auto-rows: 28px; grid-template-columns: max-content auto max-content; grid-column-gap: 5vw; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
 header a, header .element a, header a.element { color: rgb(var(--rgb-light)); }
+header a.button { background: rgb(var(--rgb-dark)); border: 1px solid rgba(var(--rgb-light),0.5); color: rgb(var(--rgb-light)); }
+header a.button[href]:hover { border-color: transparent; background: rgba(var(--rgb-light),0.2); }
 header label { color: rgb(var(--rgb-light)); }
 header>div { display: flex; justify-self: stretch; align-items: center; }
 header>div:first-child { grid-area: 1 / 1 / 2 / 2; justify-content: start; }

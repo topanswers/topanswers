@@ -23,7 +23,7 @@ a[href] { color: rgb(var(--rgb-dark)); }
 .frame { display: inline-block; border: 1px solid rgb(var(--rgb-dark)); margin: 2px; outline: 1px solid rgb(var(--rgb-light)); background: rgb(var(--rgb-light)); }
 .frame + .frame { margin-left: -1px; }
 
-a.button { background: rgb(var(--rgb-dark)); border: 1px solid rgba(var(--rgb-light),0.5); border-radius: 3px; color: rgb(var(--rgb-light)); font-size: 14px; margin: 4px; padding: 1px 6px; text-decoration: none; transition: all linear 0.1s; }
-a.button[href]:hover { border-color: transparent; background: rgba(var(--rgb-light),0.2); }
+a.button { background: rgb(var(--rgb-mid)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; color: rgb(var(--rgb-dark)); font-size: 14px; margin: 4px; padding: 1px 6px; text-decoration: none; transition: all linear 0.1s; }
+a.button[href]:hover { background: rgb(var(--rgb-light)); }
 a.button:not([href]) { cursor: default; opacity: 0.5; }
 a.button+a.button { margin-left: 1px; }

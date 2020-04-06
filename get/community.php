@@ -81,7 +81,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </noscript>
   <style>
     html { box-sizing: border-box; font-family: var(--regular-font-family); font-size: 16px; }
-    body { display: flex; background: rgba(var(--rgb-dark),1.3); }
+    body { display: flex; background: rgb(var(--rgb-mid)); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
@@ -100,9 +100,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #qa { overflow: auto; scroll-behavior: smooth; }
     #qa #info { color: rgb(var(--rgb-mid)); padding: 6px; background: rgb(var(--rgb-mid)); font-size: 12px; }
-    #qa .banner { display: flex; margin: 6px; align-items: center; }
+    #qa .banner { display: flex; margin: 10px; align-items: center; }
     #qa .banner .button:last-child { margin-right: 0; }
-    #qa .banner h1, #qa .banner h3 { color: rgb(var(--rgb-light)); font-weight: normal; margin: 0; }
+    #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
     #chat-wrapper header { border-top: 2px solid black; }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
@@ -116,7 +116,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
       #qa .post:target { box-shadow: 0 0 1px 2px rgb(var(--rgb-highlight)); }
       #qa .post.answer:not(:last-child) { margin-bottom: 40px; }
-      #qa .markdown { border: 1px solid rgb(var(--rgb-dark)); border-width: 1px 0; padding: 8px; }
+      #qa .markdown { border: 1px solid rgb(var(--rgb-dark),0.6); border-width: 1px 0; padding: 8px; }
       #qa .bar .element.fa { cursor: pointer; font-size: 16px; }
       #qa .bar .element.fa-bell { color: rgb(var(--rgb-highlight)); }
       #qa .bar .element.fa-flag { color: rgb(var(--rgb-warning)); }
@@ -135,7 +135,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <?}?>
 
     #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
-    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-top: 1px solid rgb(var(--rgb-dark));border-bottom: 1px solid rgb(var(--rgb-dark)); }
+    #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-top: 1px solid rgb(var(--rgb-dark)); border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #chat-wrapper .roomtitle { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
     #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
@@ -1126,7 +1126,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?}?>
           </div>
           <?if($kind_show_answer_summary_toc&&$question_is_answered){?>
-            <div style="height: 2px; background: rgb(var(--rgb-dark));"></div>
+            <div style="height: 3px; background: rgba(var(--rgb-dark),0.6);"></div>
             <div class="answers">
               <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
                                  , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
