@@ -1038,26 +1038,24 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <a title="<?=$question_title?>"><?=$question_title?></a>
           </div>
           <div class="bar">
-            <div>
-              <div class="element container">
-                <?if($kind_short_description){?><span class="kind element"><?=$kind_short_description?></span><?}?>
-                <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
-                  <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
-                <?}?>
-                <?if($auth){?>
-                  <span class="newtag element">
-                    <div>
-                      <select id="tags" data-question-id="<?=$question?>">
-                        <option></option>
-                        <?foreach(db("select tag_id,tag_name from tag where not tag_is order by tag_question_count desc,tag_name") as $r){ extract($r);?>
-                          <option value="<?=$tag_id?>"><?=$tag_name?></option>
-                        <?}?>
-                      </select>
-                    </div>
-                    <span class="tag element">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                  </span>
-                <?}?>
-              </div>
+            <div class="element container shrink">
+              <?if($kind_short_description){?><span class="kind element"><?=$kind_short_description?></span><?}?>
+              <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
+                <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+              <?}?>
+              <?if($auth){?>
+                <span class="newtag element">
+                  <div>
+                    <select id="tags" data-question-id="<?=$question?>">
+                      <option></option>
+                      <?foreach(db("select tag_id,tag_name from tag where not tag_is order by tag_question_count desc,tag_name") as $r){ extract($r);?>
+                        <option value="<?=$tag_id?>"><?=$tag_name?></option>
+                      <?}?>
+                    </select>
+                  </div>
+                  <span class="tag element">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                </span>
+              <?}?>
             </div>
             <div>
               <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"></span>
