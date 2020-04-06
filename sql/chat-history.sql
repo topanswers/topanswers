@@ -13,14 +13,14 @@ where chat_id=get_chat_id();
 --
 create view one with (security_barrier) as
 select chat_id
-      ,room_id,room_name
+      ,room_id,room_derived_name room_name,room_derived_name
       ,account_id
       ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
 from (select chat_id,community_id,room_id from db.chat where chat_id=get_chat_id()) a
-     natural join db.room
+     natural join api._room
      natural join db.community
      natural join api._community
      natural join (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) ac
