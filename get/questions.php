@@ -48,8 +48,8 @@ if($search){
 <?foreach($results as $r){ extract($r);?>
   <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
     <div class="title">
-      <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
       <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
+      <?if($kind_short_description){?><div><?=$kind_short_description?></div><?}?>
     </div>
     <div class="bar">
       <div class="element container">

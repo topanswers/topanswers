@@ -3,10 +3,11 @@
 .post:not(:hover) .hover { display: none; }
 .post.deleted>.title>a, .post.deleted>.markdown, .post .answers .bar.deleted { background: rgba(var(--rgb-warning),0.13); }
 .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; }
-.post .title { display: flex; border-bottom: 1px solid rgb(var(--rgb-dark)); font-size: 18px; }
-.post .title > div { flex: 0 0 auto; padding: 8px; background: rgb(var(--rgb-mid)); border-right: 1px solid rgb(var(--rgb-dark)); box-shadow: 0 0 0 1px white inset; border-top-left-radius: 3px; }
+.post .title { display: flex; font-size: 18px; }
+.post .title > div { flex: 0 0 auto; padding: 2px 6px; margin: 6px 4px; background: rgb(var(--rgb-mid)); border-radius: 2px; }
 .post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
-.post .bar { position: relative; height: 22px; background: rgb(var(--rgb-light)); font-size: 12px; }
+.post>.bar { margin: -4px 0 4px 4px; }
+.post .bar { position: relative; height: 22px; font-size: 12px; }
 .post .bar .fa { text-decoration: none; }
 .post .bar .fa:not(.highlight) { color: rgb(var(--rgb-dark)); }
 .post .bar .icon+.icon { margin-left: 0; }
@@ -19,7 +20,7 @@
 .post .tag i::before { border-radius: 50%; }
 .post .answers { border-top: 1px solid rgb(var(--rgb-dark)); }
 .post .answers .bar { background-color: white; }
-.post .answers .bar:not(:last-child) { border-bottom: 1px solid rgba(var(--rgb-dark),0.6); height: 23px; }
+.post .answers .bar:not(:last-child) { border-bottom: 1px solid rgb(var(--rgb-mid)); height: 23px; }
 .post .answers .bar a.summary { display: block; padding: 2px; text-decoration: none; color: black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .post .markdown .post { border: 3px solid rgb(var(--rgb-dark)); margin: 0; }
 .post .markdown .post .tag:hover i { visibility: hidden; }
