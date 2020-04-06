@@ -4,7 +4,6 @@
 .post.deleted>.title>a, .post.deleted>.markdown, .post .answers .bar.deleted { background: rgba(var(--rgb-warning),0.13); }
 .post .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; }
 .post .title { display: flex; font-size: 18px; }
-.post .title > div { flex: 0 0 auto; padding: 2px 6px; margin: 6px 4px; background: rgb(var(--rgb-mid)); border-radius: 2px; }
 .post .title > a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 8px; text-decoration: none; color: black; white-space: nowrap; }
 .post .title+.bar { margin: -4px 0 4px 4px; }
 .post .bar { position: relative; height: 22px; font-size: 12px; }
@@ -14,8 +13,9 @@
 .post .bar, .post .bar>div { display: flex; min-width: 0; overflow: hidden; align-items: center; white-space: nowrap; justify-content: space-between }
 .post .bar>div:not(.shrink) { flex: 0 0 auto; }
 .post .bar.shrink { flex: 0 1 auto; }
-.post .tag { display: inline-block; height: 18px; padding: 0.1em 0.2em 0.1em 0.4em; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); font-size: 12px; border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 0; }
-.post .tag::after { position: absolute; border-radius: 50%; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
+.post .kind { display: inline-block; height: 18px; padding: 1px 4px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-dark)); margin-left: 0; line-height: 1.1; }
+.post .tag { display: inline-block; height: 18px; padding: 1px 4px; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 0 8px 8px 0; position: relative; line-height: 1; margin-left: 0; }
+.post .tag::after { position: absolute; border-radius: 50%; background: white; border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
 .post .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); border-radius: 50%; }
 .post .tag i::before { border-radius: 50%; }
 .post .answers { border-top: 1px solid rgb(var(--rgb-dark)); }
