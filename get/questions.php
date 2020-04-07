@@ -53,7 +53,7 @@ if($search){
     <div class="bar">
       <div class="element container shrink">
         <?if($question_votes){?>
-          <i class="element stars fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>" data-count="<?=$question_votes?>"></i>
+          <i class="element stars fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>" data-count="<?=$question_votes?>" title="<?=$question_votes?>"></i>
         <?}?>
         <?if($kind_short_description){?><span class="kind element"><?=$kind_short_description?></span><?}?>
         <?foreach(db("select question_id,tag_id,tag_name from tag where question_id=$1 order by tag_question_count",$question_id) as $r){ extract($r);?>
@@ -84,7 +84,7 @@ if($search){
                       order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$question_id) as $i=>$r){ extract($r);?>
           <div class="bar<?=$answer_is_deleted?' deleted':''?>">
             <div class="element summary shrink">
-              <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
+              <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>" title="<?=$answer_votes?>"></i>
               <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element shrink"><span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
             </div>
             <div>
