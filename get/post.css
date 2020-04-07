@@ -2,10 +2,13 @@
 .post:not(.processed) { opacity: 0; }
 .post:not(:hover) .hover { display: none; }
 .post.deleted, .post.deleted>.markdown, .post .answers .bar.deleted { background: linear-gradient(rgba(var(--rgb-warning),0.13),rgba(var(--rgb-warning),0.13)), rgb(var(--rgb-white)); }
-.post .fa[data-count]::after { content: attr(data-count); margin-left: 2px; font-family: '<?=$my_community_regular_font_name?>', serif; color: rgb(var(--rgb-dark)); }
+.post .stars { font-size: 12px; margin: 2px; color: rgb(var(--rgb-dark)) }
+.post .stars>:first-child { margin-right: 1px; }
+.post .stars>i { margin: 0; }
 .post .title { display: flex; font-size: 18px; }
 .post .title>a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 6px 6px 0 6px; text-decoration: none; color: rgb(var(--rgb-black)); white-space: nowrap; }
-.post .title>i { font-size: 12px; padding-top: 2px; }
+.post .title>i { font-size: 12px; margin: 2px 3px; }
+.post .title>i:not(.highlight) { color: rgb(var(--rgb-dark)); }
 .post .title+.bar { margin: 4px 6px; }
 .post .title+.bar>.element { margin-left: 0; }
 .post .title+.bar>div:last-child { margin-right: -6px; margin-bottom: -8px; }
@@ -16,8 +19,7 @@
 .post .bar, .post .bar>div { display: flex; min-width: 0; align-items: center; white-space: nowrap; justify-content: space-between }
 .post .bar>div:not(.shrink) { flex: 0 0 auto; }
 .post .bar.shrink { flex: 0 1 auto; }
-.post .kind { display: inline-block; height: 18px; padding: 1px 4px; background: rgba(var(--rgb-highlight),0.3); border: 1px solid rgb(var(--rgb-dark)); margin-left: 0; margin-right: 7px; line-height: 14px; }
-.post .stars { display: inline-block; height: 18px; padding: 1px 4px; border: 1px solid rgb(var(--rgb-dark)); margin-left: 0; margin-right: 7px; line-height: 14px; }
+.post .kind { display: inline-block; height: 18px; padding: 1px 4px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); margin-left: 0; margin-right: 6px; line-height: 16px; }
 .post .tag { display: inline-block; height: 18px; padding: 1px 4px; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 0 8px 8px 0; position: relative; line-height: 14px; margin-left: 0; }
 .post .tag::after { position: absolute; border-radius: 50%; background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
 .post .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); border-radius: 50%; }
