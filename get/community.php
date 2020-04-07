@@ -313,7 +313,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $(this).find('.answers>.bar:first-child+.bar+.bar+.bar').each(function(){
           var t = $(this), h = t.nextAll('.bar').addBack();
           if(h.length>1){
+            t.prev().addClass('premore');
             $('<div class="bar more"><span></span><a href=".">show '+h.length+' more</a><span></span></div>').appendTo(t.parent()).click(function(){
+              t.prev().removeClass('premore');
               $(this).prevAll('.bar:hidden').slideDown().end().slideUp();
               return false;
             });

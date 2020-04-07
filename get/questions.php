@@ -84,9 +84,7 @@ if($search){
                       order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$question_id) as $i=>$r){ extract($r);?>
           <div class="bar<?=$answer_is_deleted?' deleted':''?>">
             <div class="element summary shrink">
-              <?if($answer_votes){?>
-                <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
-              <?}?>
+              <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>" data-count="<?=$answer_votes?>"></i>
               <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element shrink"><span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
             </div>
             <div>
