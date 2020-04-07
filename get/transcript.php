@@ -58,6 +58,8 @@ if(isset($_GET['month'])){
              --rgb-light: <?=$community_rgb_light?>;
              --rgb-highlight: <?=$community_rgb_highlight?>;
              --rgb-warning: <?=$community_rgb_warning?>;
+             --rgb-white: 255, 255, 255;
+             --rgb-black: 0, 0, 0;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
@@ -76,7 +78,7 @@ if(isset($_GET['month'])){
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    mark[data-markjs] { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), white; }
+    mark[data-markjs] { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
     a:not([href]) { color: rgb(var(--rgb-highlight)); }
     a[data-lightbox] img { cursor: zoom-in; }
 
@@ -91,7 +93,7 @@ if(isset($_GET['month'])){
     .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
     .message:not(.processed) { opacity: 0; }
     .message .who { white-space: nowrap; font-size: 10px;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
-    .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: white; overflow: auto; transition: background linear 0.1s; }
+    .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: rgb(var(--rgb-white)); overflow: auto; transition: background linear 0.1s; }
 
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
@@ -106,7 +108,7 @@ if(isset($_GET['month'])){
     .message.merged { margin-top: -1px; }
     .message.merged .who,
     .message.merged .icon { visibility: hidden; }
-    .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), white; }
+    .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
     .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
   </style>
   <script src="/lib/js.cookie.js"></script>

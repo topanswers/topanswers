@@ -20,8 +20,8 @@
   .markdown table { border-collapse: collapse; table-layout: fixed; }
   .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
   .markdown th { background: rgb(var(--rgb-mid)); }
-  .markdown td { background: white; }
-  .markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid black; padding: 3px 5px; text-align: left; }
+  .markdown td { background: rgb(var(--rgb-white)); }
+  .markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid rgb(var(--rgb-black)); padding: 3px 5px; text-align: left; }
   .markdown blockquote { padding: 8px 2px 8px 10px; margin: 16px 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background: rgba(var(--rgb-dark),0.1); }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
@@ -43,10 +43,10 @@
   .markdown .quoted-message > p em { color: rgb(var(--rgb-dark)); font-style: normal; white-space: nowrap; }
   .markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 2 / span 1; margin: 2px 0 0 1px; }
   .markdown .quoted-message > img { grid-row: 2 / span 1; }
-  .markdown .quoted-message > blockquote { margin: 0; background: white; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
+  .markdown .quoted-message > blockquote { margin: 0; background: rgb(var(--rgb-white)); padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
   .markdown .post { border: 3px solid rgb(var(--rgb-dark)); margin: 0; }
   .markdown .post .tag:hover i { visibility: hidden; }
-  .markdown .post .title > a { color: black; }
+  .markdown .post .title > a { color: rgb(var(--rgb-black)); }
   .markdown .expandable { overflow: hidden; position: relative; border-bottom: 1px dashed rgb(var(--rgb-mid)); }
   .markdown .expandable>code { overflow: hidden; }
   .markdown .expander { position: absolute; z-index: 1; height: 50px; top: 250px; padding-top: 34px; left: 0; right: 0; font-family: var(--regular-font-family); font-size: 12px; text-align: center; color: rgb(var(--rgb-dark));
@@ -67,7 +67,7 @@
   .dbfiddle a { font-size: smaller; }
   .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; margin-top: 5px; padding: 2px }
   .dbfiddle .qp-statement-header { display: none; }
-  .qp-tt { z-index: 999; box-shadow: 0 0 2px 2px white; }
+  .qp-tt { z-index: 999; box-shadow: 0 0 2px 2px rgb(var(--rgb-white)); }
   .katex-block { overflow: auto; }
 </style>
 <script src="/lib/markdown-it.js"></script>

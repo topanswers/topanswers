@@ -1,4 +1,4 @@
-header { min-height: 31px; border-bottom: 1px solid black; display: grid; grid-auto-rows: 30px; grid-template-columns: max-content auto max-content; grid-column-gap: 5vw; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; padding: 0 1px; }
+header { min-height: 31px; border-bottom: 1px solid rgb(var(--rgb-black)); display: grid; grid-auto-rows: 30px; grid-template-columns: max-content auto max-content; grid-column-gap: 5vw; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; padding: 0 1px; }
 header a, header .element a, header a.element { color: rgb(var(--rgb-light)); }
 header a.button { background: rgb(var(--rgb-dark)); border: 1px solid rgba(var(--rgb-light),0.5); color: rgb(var(--rgb-light)); }
 header a.button[href]:hover { border-color: transparent; background: rgba(var(--rgb-light),0.2); }
@@ -19,12 +19,12 @@ header .select>div:first-child { padding: 0 6px; cursor: pointer; display: flex;
 header .select>div:first-child:hover { background: rgba(var(--rgb-light),0.2); }
 header .select.open>div:first-child { background: rgba(var(--rgb-light),0.2); }
 header .select>div:first-child>i { margin-left: 4px; opacity: 0.7; font-size: 10px; }
-header .select>div:last-child>div { position: absolute; z-index: 100; display: none; flex-direction: column; border-top: 1px solid black; background: white; box-shadow: 1px 4px 4px black; }
+header .select>div:last-child>div { position: absolute; z-index: 100; display: none; flex-direction: column; border-top: 1px solid rgb(var(--rgb-black)); background: rgb(var(--rgb-white)); box-shadow: 1px 4px 4px rgb(var(--rgb-black)); }
 header .select.open>div:last-child>div { display: flex; }
 header .select>div:last-child>div>div { display: flex; transition: all linear 0.1s; }
 header .select>div:last-child>div>div:not(:last-child) { border-bottom: 1px solid lightgray; }
 header .select>div:last-child>div>div:hover { background: rgb(var(--rgb-light)); }
-header .select>div:last-child>div>div>a { display: flex; color: black; line-height: 28px; }
+header .select>div:last-child>div>div>a { display: flex; color: rgb(var(--rgb-black)); line-height: 28px; }
 header .select>div:last-child>div>div>a>div { margin-right: 6px; outline: none; }
 header .select>div:last-child>div>div>a:not(:first-of-type) { font-size: 12px; padding-right: 4px; }
 header .select>div:last-child>div>div>a:first-child { flex: 1 0 auto; padding-right: 75px; text-decoration: none; }

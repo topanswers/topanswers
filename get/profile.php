@@ -62,6 +62,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
              --rgb-light: <?=$community_rgb_light?>;
              --rgb-highlight: <?=$community_rgb_highlight?>;
              --rgb-warning: <?=$community_rgb_warning?>;
+             --rgb-white: 255, 255, 255;
+             --rgb-black: 0, 0, 0;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              ">
@@ -83,13 +85,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
     fieldset { display: inline-block; margin: 10px; border-radius: 3px; }
-    :not(main)>fieldset { background: white; border: 1px solid rgb(var(--rgb-dark)); }
-    legend { background: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
+    :not(main)>fieldset { background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); }
+    legend { background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
     input[type="file"] { color: transparent; }
     input[type="submit"] { margin-left: 16px; }
 
     table { border-collapse: collapse; }
-    td,th { border: 1px solid black; white-space: nowrap; }
+    td,th { border: 1px solid rgb(var(--rgb-black)); white-space: nowrap; }
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/jquery.js"></script>
@@ -102,7 +104,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#uuid').click(function(){ var t = $(this); $.get('/profile?uuid').done(function(r){ t.replaceWith('<span class="highlight">'+r+'</span>'); }); });
       $('[name="license"],[name="codelicense"]').on('change',function(){
         if($(this).children('option:selected').data('versioned')===true){
-          $(this).next().css('color','black').find('input').prop('disabled',false);
+          $(this).next().css('color','rgb(var(--rgb-black))').find('input').prop('disabled',false);
         }else{
           $(this).next().css('color','#ccc').find('input').prop('checked',false).prop('disabled',true);
         }

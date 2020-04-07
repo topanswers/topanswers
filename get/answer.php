@@ -24,6 +24,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
              --rgb-light: <?=$community_rgb_light?>;
              --rgb-highlight: <?=$community_rgb_highlight?>;
              --rgb-warning: <?=$community_rgb_warning?>;
+             --rgb-white: 255, 255, 255;
+             --rgb-black: 0, 0, 0;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
@@ -48,12 +50,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
     #form { flex: 1 0 0; min-height: 0; }
-    #question { display: flex; flex-direction: column; background: white; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow: hidden; }
+    #question { display: flex; flex-direction: column; background: rgb(var(--rgb-white)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow: hidden; }
     #question>.title { flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
-    #question>.title>a { color: black; text-decoration: none; }
+    #question>.title>a { color: rgb(var(--rgb-black)); text-decoration: none; }
     #question>.markdown { overflow-y: auto; padding: 8px; min-height: 0; }
     #codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
-    #markdown { grid-area: 1 / 3 / 3 / 4; background: white; padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
+    #markdown { grid-area: 1 / 3 / 3 / 4; background: rgb(var(--rgb-white)); padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
 
     #editor-buttons { grid-area: 1 / 2 / 2 / 3; justify-self: start; min-height: 0; }
     #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-light)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px 0 0 3px; padding: 5px; }

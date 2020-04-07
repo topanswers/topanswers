@@ -33,6 +33,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
              --rgb-light: <?=$community_rgb_light?>;
              --rgb-highlight: <?=$community_rgb_highlight?>;
              --rgb-warning: <?=$community_rgb_warning?>;
+             --rgb-white: 255, 255, 255;
+             --rgb-black: 0, 0, 0;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
@@ -59,7 +61,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #form { flex: 1 0 0; min-height: 0; }
     #title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgba(var(--rgb-dark),0.6); padding: 5px; font-size: 18px; font-family: var(--regular-font-family); }
     #codemirror-container { grid-area: 2 / 1 / 3 / 2; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
-    #markdown { grid-area: 2 / 2 / 3 / 3; background: white; padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
+    #markdown { grid-area: 2 / 2 / 3 / 3; background: rgb(var(--rgb-white)); padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
 
     #editor-buttons { grid-area: 2 / 1 / 3 / 2; justify-self: start; min-height: 0; }
     #editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-light)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px 0 0 3px; padding: 5px; }

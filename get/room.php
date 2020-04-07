@@ -16,6 +16,8 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
              --rgb-light: <?=$community_rgb_light?>;
              --rgb-highlight: <?=$community_rgb_highlight?>;
              --rgb-warning: <?=$community_rgb_warning?>;
+             --rgb-white: 255, 255, 255;
+             --rgb-black: 0, 0, 0;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              ">
@@ -34,8 +36,8 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    fieldset { display: inline-block; margin: 16px; border: 1px solid rgb(var(--rgb-dark)); background: white; border-radius: 3px; }
-    legend { background: white; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
+    fieldset { display: inline-block; margin: 16px; border: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-white)); border-radius: 3px; }
+    legend { background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/jquery.js"></script>

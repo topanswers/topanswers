@@ -13,6 +13,8 @@ extract(cdb("select account_id, (select community_display_name from community wh
 <html style="--rgb-light: 211,211,211;
              --rgb-mid: 211,211,211;
              --rgb-dark: 80,80,80;
+             --rgb-white: 255, 255, 255;
+             --rgb-black: 0, 0, 0;
              --regular-font-family: 'source-sans-pro', serif;
              ">
 <head>
@@ -27,7 +29,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
     body { display: flex; flex-direction: column; background: lightgrey; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
-    main>div { background: white; flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 5px; }
+    main>div { background: rgb(var(--rgb-white)); flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 5px; }
     a { color: blue; }
     a:visited { color: purple; }
 
@@ -62,7 +64,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
 <body>
   <header>
     <div class="container">
-      <a class="frame" style="background: white;" href="/" title="home"><img class="icon" style="background: white;" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
+      <a class="frame" style="background: rgb(var(--rgb-white));" href="/" title="home"><img class="icon" style="background: rgb(var(--rgb-white));" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div>

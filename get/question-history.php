@@ -19,6 +19,8 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
              --rgb-light: <?=$community_rgb_light?>;
              --rgb-highlight: <?=$community_rgb_highlight?>;
              --rgb-warning: <?=$community_rgb_warning?>;
+             --rgb-white: 255, 255, 255;
+             --rgb-black: 0, 0, 0;
              --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
              --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
              --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
@@ -39,12 +41,12 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     body { background: rgb(var(--rgb-mid)); }
     main { width: 100%; display: grid; align-items: start; grid-template-columns: auto 1fr 1fr; grid-auto-rows: auto; grid-gap: 10px; padding: 10px; }
     textarea, pre, code, .CodeMirror, .diff { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    [data-rz-handle] { flex: 0 0 2px; background: black; }
+    [data-rz-handle] { flex: 0 0 2px; background: rgb(var(--rgb-black)); }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
-    .title { background: white; padding: 5px; font-size: 18px; border: 1px solid rgba(var(--rgb-dark),0.6); }
-    .markdown { background: white; padding: 8px; font-size: 16px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
+    .title { background: rgb(var(--rgb-white)); padding: 5px; font-size: 18px; border: 1px solid rgba(var(--rgb-dark),0.6); }
+    .markdown { background: rgb(var(--rgb-white)); padding: 8px; font-size: 16px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
     .diff { background: rgb(var(--rgb-light)); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
     .diff:target, .diff:target+div { box-shadow: 0 0 3px 3px rgb(var(--rgb-highlight)); }
     .separator { border-bottom: 4px solid rgb(var(--rgb-dark)); margin: 8px -10px; }
