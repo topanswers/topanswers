@@ -72,7 +72,7 @@ create function _markdownsummary(text) returns text language sql immutable secur
                              ,'(?<=(?<!\])'||str_from||')(?!\()'
                              ,'('||str_to||')')
                             ,rn+1  from w join m using(rn))
-   , o as (select markdown from w order by rn desc limit 1)
+   , o as (select trim(both ' #' from markdown) markdown from w order by rn desc limit 1)
   select case when markdown~'^@@@ answer [1-9][0-9]*$'
                 then (select 'see [this answer on "'||question_title||'"](/'||community_name||'?q='||question_id||'#a'||answer_id||')'
                       from (select question_id,community_id,question_title from question) q natural join community natural join answer where answer_id=substr(markdown,11)::integer)
