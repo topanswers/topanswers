@@ -49,12 +49,12 @@ if($search){
   <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
     <div class="title">
       <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
-      <?if($question_votes){?>
-        <i class="element hover fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>" data-count="<?=$question_votes?>"></i>
-      <?}?>
     </div>
     <div class="bar">
       <div class="element container shrink">
+        <?if($question_votes){?>
+          <i class="element stars fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>" data-count="<?=$question_votes?>"></i>
+        <?}?>
         <?if($kind_short_description){?><span class="kind element"><?=$kind_short_description?></span><?}?>
         <?foreach(db("select question_id,tag_id,tag_name from tag where question_id=$1 order by tag_question_count",$question_id) as $r){ extract($r);?>
           <span class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
