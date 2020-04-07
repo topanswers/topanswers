@@ -1,0 +1,114 @@
+# This is the official list of people and organisations
+# who have contributed to this repository.
+# The AUTHORS file lists the copyright holders; this file
+# lists people. For example, company employees are listed here
+# but not in AUTHORS, because the company holds the copyright.
+#
+# When adding J Random Contributor's name to this file,
+# either J's name or J's organization's name should be
+# added to the AUTHORS file.
+#
+# Names should be added to this file like so, in the 
+# chronological order of contribution:
+#
+#     N: <name>
+#     E: <email>
+#     W: <website>
+#     D: <description of role>
+
+N: Science and Heritage Initiative, IIT Bombay
+W: http://www.sandhi.iitb.ac.in/
+D: Project funded by MHRD, Government of India to promote studies exploring the link between science and heritage 
+
+N: Cell for Indian Science and Technology in Sanskrit, IIT Bombay
+W: http://www.hss.iitb.ac.in/cists/index.html
+D: A unit specialising in the study of scientific and technological literature in Sanskrit at IIT Bombay
+
+N: Prof. K. Ramasubramanian
+E: ram@hss.iitb.ac.in
+D: Guidance and Supervision
+
+N: Prof. Girish Dalvi
+E: girish.dalvi@iitb.ac.in
+D: Guidance and Supervision
+
+N: Aditya Kolachana
+E: aditya.kolachana@gmail.com
+D: Concept and Project Lead
+
+N: Yashodeep Gholap
+E: yashodeep.gholap@gmail.com
+W: http://www.yashodeepgholap.com
+D: Design of conjunct characters
+
+N: Vishvendra Singh Poonia
+E: vishvendra.punia@gmail.com
+D: Font Engineer
+
+N: Abhishek Sharma
+E: sabhishek.iitb@gmail.com
+D: Font Engineer
+
+N: Rohit Saluja
+E: rohitsaluja22@gmail.com
+D: Font Engineer
+
+नाव : राज्य मराठी विकास संस्था
+इ-टपाल : rmvs_mumbai@yahoo.com
+संकेतस्थळ : https://rmvs.maharashtra.gov.in/
+योगदान : विविध क्षेत्रांत होणारा मराठीचा वापर अधिकाधिक गुणवत्तापूर्ण होत जावा यासाठी प्रयत्नशील राहावे व मराठी भाषेच्या अभिवृद्धीची प्रक्रिया नियोजनपूर्वक गतिमान करावी ह्या उद्देशाने महाराष्ट्र-शासनाद्वारे स्थापन करण्यात आलेली संस्था
+
+नाव : सीडॅक, जीस्ट गट
+संकेतस्थळ : http://www.cdac.in/index.aspx?id=gist
+योगदान : यशोमुद्रा आणि यशोवेणू ह्या टंकांचे विकासक, टंकांचे अक्षराकार, तांत्रिक बाबी ह्यांचे प्रत्यक्ष काम करणारी संस्था
+
+नाव : प्रा. मुकुंद गोखले
+इ-टपाल : gokhale.mukund1@gmail.com
+योगदान : प्रकल्पासाठीच्या तज्ज्ञसमितीचे सदस्य
+
+नाव : प्रा. संतोष क्षीरसागर
+इ-टपाल : kshirsagar.santosh@gmail.com 
+योगदान : प्रकल्पासाठीच्या तज्ज्ञसमितीचे सदस्य
+
+नाव : डॉ. गिरीश दळवी
+इ-टपाल : girish.dalvi@iitb.ac.in
+संकेतस्थळ : http://www.idc.iitb.ac.in/~girish/index_mr.html
+योगदान : प्रकल्पासाठीच्या तज्ज्ञसमितीचे सदस्य
+
+नाव : डॉ. अभिजात विचारे
+इ-टपाल : abhijatv@gmail.com 
+योगदान : प्रकल्पासाठीच्या तज्ज्ञसमितीचे सदस्य
+
+नाव : श्री. मकरंद गद्रे
+इ-टपाल : makarand@gadre.com
+संकेतस्थळ : http://www.gadre.com/
+योगदान : प्रकल्पासाठीच्या तज्ज्ञसमितीचे सदस्य
+
+नाव : डॉ. रमेश धोंगडे
+इ-टपाल : dhongde@hotmail.com
+योगदान : प्रकल्पासाठीच्या तज्ज्ञसमितीचे सदस्य
+
+नाव : श्री. प्रकाश विश्वासराव
+इ-टपाल : lokvangmayagriha@gmail.com 
+योगदान : प्रकल्पासाठीच्या तज्ज्ञसमितीचे सदस्य
+
+नाव : डॉ. अशोक सोलनकर
+इ-टपाल : rmvs_mumbai@yahoo.com
+योगदान : राज्य मराठी विकास संस्थेचे प्रभारी संचालक
+
+नाव : श्री. गिरीश पतके
+इ-टपाल : rmvs_mumbai@yahoo.com
+योगदान : प्रकल्पाच्या चर्चांमध्ये सहभाग प्रकल्पासंदर्भात सूचना
+
+नाव : श्री. सुशान्त देवळेकर
+इ-टपाल : rmvs_mumbai@yahoo.com
+योगदान : प्रकल्पाच्या समन्वयाचे काम
+
+N: Alexandra Korolkova
+D: Designer - PT Serif
+
+N: Olga Umpeleva
+D: Designer - PT Serif
+
+N: Vladimir Yefimov
+D: Designer - PT Serif

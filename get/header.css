@@ -19,6 +19,7 @@ header .select>div:first-child { padding: 0 6px; cursor: pointer; display: flex;
 header .select>div:first-child:hover { background: rgba(var(--rgb-light),0.2); }
 header .select.open>div:first-child { background: rgba(var(--rgb-light),0.2); }
 header .select>div:first-child>i { margin-left: 4px; opacity: 0.7; font-size: 10px; }
+header .select>div:first-child>* { line-height: 30px; }
 header .select>div:last-child>div { position: absolute; z-index: 100; display: none; flex-direction: column; border-top: 1px solid rgb(var(--rgb-black)); background: rgb(var(--rgb-white)); box-shadow: 1px 4px 4px rgb(var(--rgb-black)); }
 header .select.open>div:last-child>div { display: flex; }
 header .select>div:last-child>div>div { display: flex; transition: all linear 0.1s; }

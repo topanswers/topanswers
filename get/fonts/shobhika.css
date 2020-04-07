@@ -1,0 +1,15 @@
+@font-face{
+    font-family: 'shobhika';
+    font-weight: 400;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/shobhika/Shobhika-Regular.otf') format('opentype');
+}
+
+@font-face{
+    font-family: 'shobhika';
+    font-weight: 700;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('/fonts/shobhika/Shobhika-Bold.otf') format('opentype');
+}
