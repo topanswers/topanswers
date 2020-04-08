@@ -28,6 +28,7 @@ drop schema if exists community cascade;
 drop schema if exists transcript cascade;
 drop schema if exists chat cascade;
 drop schema if exists notification cascade;
+drop schema if exists q cascade;
 drop schema if exists api cascade;
 create schema api;
 grant usage on schema api to get,post;
@@ -88,6 +89,8 @@ from db.account;
 --
 create view _community with (security_barrier) as
 select community_id
+     , split_part(community_name,'-',1) community_root_name
+     , coalesce(nullif(substr(community_name,length(split_part(community_name,'-',1))+2),''),'en') community_language
      , 1+trunc(log(greatest(communicant_votes,1))) community_my_power
      , communicant_votes community_my_votes
      , get_byte(community_dark_shade,0)||','||get_byte(community_dark_shade,1)||','||get_byte(community_dark_shade,2) community_rgb_dark
@@ -95,7 +98,7 @@ select community_id
      , get_byte(community_light_shade,0)||','||get_byte(community_light_shade,1)||','||get_byte(community_light_shade,2) community_rgb_light
      , get_byte(community_highlight_color,0)||','||get_byte(community_highlight_color,1)||','||get_byte(community_highlight_color,2) community_rgb_highlight
      , get_byte(community_warning_color,0)||','||get_byte(community_warning_color,1)||','||get_byte(community_warning_color,2) community_rgb_warning
-from (select community_id,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color
+from (select community_id,community_name,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color
       from db.community natural left join (select community_id,account_id from db.member where account_id=get_account_id()) m where community_type='public' or account_id is not null) c
      natural left join (select community_id,communicant_votes from db.communicant where account_id=get_account_id()) a;
 --
@@ -221,6 +224,7 @@ begin
             where n.nspname='api' and proname!~'^_' );
 end$$;
 --
+\i ~/git/sql/q.sql
 \i ~/git/sql/transcript.sql
 \i ~/git/sql/chat.sql
 \i ~/git/sql/notification.sql

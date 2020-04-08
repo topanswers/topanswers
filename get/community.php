@@ -22,7 +22,7 @@ if(!isset($_GET['room'])&&!isset($_GET['q'])){
 if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
 extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,account_id,account_is_dev,account_notification_id
-                   ,community_id,community_name,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text,community_banner_markdown
+                   ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text,community_banner_markdown
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
                    ,room_id,room_name,room_can_chat,room_has_chat
@@ -40,6 +40,8 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
+include '../lang/community.en.php';
+include '../lang/community.'.$community_language.'.php';
 $question = $_GET['q']??'0';
 $room = $room_id;
 $canchat = $room_can_chat;
@@ -1010,7 +1012,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <header>
       <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
       <?if(!$question){?>
-        <div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍&#xFE0E; {type} [tag] &quot;exact phrase&quot; fuzzy"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
+        <div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍&#xFE0E; <?=$l_search_placeholder?>"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
       <?}?>
       <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
