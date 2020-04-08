@@ -107,7 +107,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .banner .button:last-child { margin-right: 0; }
     #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
-    #chat-wrapper header { border-top: 1px solid rgb(var(--rgb-black)); }
     #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
 
     <?if($question){?>
@@ -233,7 +232,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
     .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
 
-    #search { flex: 0 1 570px; min-width: 0; background: rgba(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 3px; padding: 3px; }
+    #search { flex: 0 1 570px; min-width: 0; background: rgba(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 3px; padding: 4px; }
     #search:focus { background: rgb(var(--rgb-white)); }
     #search+div { display: none; }
 
@@ -245,6 +244,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       .hidepane { display: none; }
       .panecontrol { display: unset; }
       textarea,select,input { font-size: 16px; }
+      #search { line-height: 1; align-self: start; height: 26px; padding: 0 4px; }
       #chattext-wrapper:not(:hover) button { display: unset; }
       #poll { display: none; }
       #se { display: none; }
