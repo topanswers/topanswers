@@ -40,7 +40,6 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
-include '../lang/community.en.php';
 include '../lang/community.'.$community_language.'.php';
 $question = $_GET['q']??'0';
 $room = $room_id;
@@ -1280,8 +1279,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <div id="chat">
       <div id="chat-panels">
         <div class="label container">
-          <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?'comments':'chat'?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href=".">starred</a> / <a class="panel" data-panel="notifications" href=".">notifications</a><?}?></div>
-          <div class="element"><a href="/transcript?room=<?=$room?>">transcript</a></div>
+          <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
+          <div class="element"><a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a></div>
         </div>
         <div id="messages-wrapper" class="panel">
           <div id="messages">
@@ -1319,7 +1318,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <div id="chattext-wrapper">
                 <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
                 <i id="chatupload" class="fa fa-fw fa-picture-o" title="embed image"></i>
-                <textarea id="chattext" rows="1" placeholder="type message here" maxlength="5000"></textarea>
+                <textarea id="chattext" rows="1" placeholder="<?=$l_chattext_placeholder?>" maxlength="5000"></textarea>
               </div>
             </div>
           <?}?>
