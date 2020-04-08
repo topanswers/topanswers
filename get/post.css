@@ -6,7 +6,7 @@
 .post .stars>:first-child { margin-right: 1px; }
 .post .stars>i { margin: 0; }
 .post .title { display: flex; font-size: 18px; }
-.post .title>a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 6px 6px 0 6px; text-decoration: none; color: rgb(var(--rgb-black)); white-space: nowrap; }
+.post .title>a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 6px 6px 0 6px; text-decoration: none; color: rgb(var(--rgb-black)); white-space: nowrap; margin-right: 20px; }
 .post .title i.highlight { color: rgb(var(--rgb-highlight)); }
 .post .title+.bar { margin: 4px 6px; }
 .post .title+.bar>.element { margin-left: 0; }
