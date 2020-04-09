@@ -540,7 +540,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         Promise.allSettled(promises).then(() => {
           $('#notifications .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
-          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification').length);
+          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification').length.toLocaleString('<?=$community_language?>'));
         });
       }
       function updateNotifications(){
