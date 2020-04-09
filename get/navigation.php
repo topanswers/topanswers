@@ -7,7 +7,8 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to navigation,pg_temp");
 $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 $environment = $_COOKIE['environment']??'prod';
-extract(cdb("select community_id,community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,account_is_dev from one"));
+extract(cdb("select community_id,community_name,community_language,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,account_is_dev from one"));
+include '../lang/navigation.'.$community_language.'.php';
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
@@ -35,7 +36,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <a class="frame" href="/<?=$community_name?>" title="<?=$community_display_name?> home"><img class="icon" src="/communityicon?community=<?=$community_name?>"></a>
   <div class="select element">
     <div accesskey="t">
-      <span class="wideonly">TopAnswers&nbsp;</span>
+      <span class="wideonly"><?=$l_topanswers?>&nbsp;</span>
       <span><?=$community_display_name?></span>
       <i class="fa fa-chevron-down"></i>
     </div>

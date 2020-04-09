@@ -7,8 +7,9 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to questions,pg_temp");
 $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 $search = $_GET['search']??'';
-extract(cdb("select account_id,account_is_dev,community_name,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,community_my_power,num_questions from one"));
+extract(cdb("select account_id,account_is_dev,community_name,community_language,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,community_my_power,num_questions from one"));
 $_GET['community']===$community_name || fail(400,'invalid community');
+include '../lang/questions.'.$community_language.'.php';
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]')::json from question where question_poll_minor_id>$1",$_GET['fromid']));
 if($search){
   db("select set_config('pg_trgm.strict_word_similarity_threshold','0.5',false)");
@@ -50,8 +51,8 @@ if($search){
     <div class="title">
       <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
       <?if($question_votes){?>
-        <span class="stars" title="<?=$question_votes?>">
-          <span><?=$question_votes?></span>
+        <span class="stars" title="<?=$l_num($question_votes)?>">
+          <span><?=$l_num($question_votes)?></span>
           <i class="element stars fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>"></i>
         </span>
       <?}?>
@@ -70,7 +71,7 @@ if($search){
         <span class="when element hover" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"><?=$question_account_name?></span>
         <span class="element"><?=$question_account_name?></span>
         <a href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>">
-          <img title="Stars: <?=$question_communicant_votes?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
+          <img title="<?=$l_stars?>: <?=$l_num($question_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
         </a>
       </div>
     </div>
@@ -87,9 +88,9 @@ if($search){
                       order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$question_id) as $i=>$r){ extract($r);?>
           <div class="bar<?=$answer_is_deleted?' deleted':''?>">
             <div class="element summary shrink">
-              <span class="stars" title="<?=$answer_votes?>">
+              <span class="stars" title="<?=$l_num($answer_votes)?>">
                 <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>"></i>
-                <span><?=$answer_votes?></span>
+                <span><?=$l_num($answer_votes)?></span>
               </span>
               <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element shrink"><span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
             </div>
@@ -100,7 +101,7 @@ if($search){
               <span class="when element hover" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
               <span class="element"><?=$answer_account_name?></span>
               <a href="/user?id=<?=$answer_account_id?>&community=<?=$community_name?>">
-                <img title="Stars: <?=$answer_communicant_votes?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
+                <img title="<?=$l_stars?>: <?=$l_num($answer_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
               </a>
             </div>
           </div>

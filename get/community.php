@@ -170,7 +170,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
     #chat a.panel { pointer-events: none; }
     #chat a[href].panel { pointer-events: auto; }
-    #chat a.panel[data-unread]:not([data-unread^="0"])::after { display: inline-block; vertical-align: middle; content:attr(data-unread); margin-left: 2px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
+    #chat a.panel[data-unread]:not([data-unread^="0"])::after { display: inline-block; vertical-align: middle; content:attr(data-unread-lang); margin-left: 2px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
                                                                width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px rgb(var(--rgb-white)); }
 
     .message { position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
@@ -212,7 +212,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #active { flex: 0 0 23px; display: flex; flex-direction: column; justify-content: space-between; background: rgb(var(--rgb-light)); border-left: 1px solid rgb(var(--rgb-dark)); overflow-y: hidden; }
     #active-rooms { flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden; }
     #active-rooms a { position: relative; }
-    #active-rooms a.processed[href][data-unread]:after { content:attr(data-unread); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
+    #active-rooms a.processed[href][data-unread]:after { content:attr(data-unread-lang); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
                                                          width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px rgb(var(--rgb-white)); }
     #active-rooms>a:not([href])>.icon { outline: 1px solid rgb(var(--rgb-highlight)); }
     #active-rooms>a[href]:hover>.icon { outline: 1px solid rgba(var(--rgb-highlight),0.6); }
@@ -458,6 +458,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           if(read[r]){
             read[r] = $.map(read[r],function(v){ return (v>l)?v:null; });
             $(this).attr('data-unread',Math.max(0,$(this).attr('data-unread')-read[r].length));
+            $(this).attr('data-unread-lang',$(this).data('unread').toLocaleString('<?=$community_language?>'));
             if($(this).attr('data-unread')==='0') $(this).removeAttr('data-unread');
           }
           $(this).addClass('processed');
@@ -540,7 +541,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         Promise.allSettled(promises).then(() => {
           $('#notifications .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
-          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification').length.toLocaleString('<?=$community_language?>'));
+          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification').length).attr('data-unread-lang',$('#notifications>.notification').length.toLocaleString('<?=$community_language?>'));
         });
       }
       function updateNotifications(){
@@ -693,7 +694,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#status').children('span').text(strings.join(', '));
           $('#cancel').show();
         }else{
-          $('#status').children('span').text('Preview:');
+          $('#status').children('span').text('<?=$l_preview?>:');
           $('#cancel').hide();
         }
       });
@@ -1309,7 +1310,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <?if($canchat){?>
             <div id="preview" class="message processed">
               <div id="status" style="width: 100%; font-style: italic; font-size: 10px;" data-replyid="" data-replyname="" data-editid="">
-                <span>Preview:</span>
+                <span><?=$l_preview?>:</span>
                 <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
               </div>
               <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>

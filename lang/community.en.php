@@ -7,3 +7,4 @@ $l_comments = 'comments';
 $l_starred = 'starred';
 $l_notifications = 'notifications';
 $l_transcript = 'transcript';
+$l_preview = 'preview';

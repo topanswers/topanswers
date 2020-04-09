@@ -12,7 +12,7 @@ from api._community natural join db.community
 where community_type='public' or account_id is not null;
 --
 create view one with (security_barrier) as
-select community_id,community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light
+select community_id,community_name,community_display_name,community_language,community_rgb_dark,community_rgb_mid,community_rgb_light
      , coalesce(account_is_dev,false) account_is_dev
 from db.community natural join api._community
      natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
