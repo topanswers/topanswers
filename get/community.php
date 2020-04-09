@@ -270,7 +270,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/jquery.simplePagination.js"></script>
   <script src="/lib/paste.js"></script>
   <script>
-    //moment.locale(window.navigator.userLanguage || window.navigator.language);
+    moment.locale('<?=substr($community_language,0,1).substr(strtok($community_language,'-'),-1)?>');
     $(function(){
       var title = document.title, latestChatId;
       var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;

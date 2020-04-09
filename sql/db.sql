@@ -103,7 +103,7 @@ create table codelicense(
 
 create table account(
   account_id integer generated always as identity primary key
-, account_name text check (account_name~'^[-'' ._0-9[:alpha:]]{1,40}$')
+, account_name text
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
 , account_image bytea check(length(account_image)>0)
