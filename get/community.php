@@ -1261,13 +1261,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </main>
   <div id="dummyresizerx"></div>
   <div id="chat-wrapper" class="pane hidepane">
-    <header>
-      <div style="display: flex; align-items: center; height: 100%;">
+    <footer>
+      <div>
         <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
         <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
-        <div class="element"><?=$room_name?></div>
+        <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
       </div>
-      <div style="display: flex; align-items: center; height: 100%;">
+      <div>
         <?foreach(db("select room_id,room_name
                       from room natural join community
                       where community_name=$1 and room_id<>$2
@@ -1275,7 +1275,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <a class="frame" href="/<?=$community_name?>?room=<?=$r_room_id?>" title="<?=$r_room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$r_room_id?>"></a>
         <?}?>
       </div>
-    </header>
+    </footer>
     <div id="chat">
       <div id="chat-panels">
         <div class="label container">
