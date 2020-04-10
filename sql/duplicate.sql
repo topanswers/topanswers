@@ -15,9 +15,9 @@ select get_account_id() account_id
       ,community_name,community_language,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,question_id,question_at,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,kind_short_description
      , coalesce(question_vote_votes,0) question_votes_from_me
-      ,answer_id,answer_at,answer_summary,answer_markdown,answer_account_id,answer_account_name,answer_votes,answer_communicant_votes
+      ,answer_id,answer_at,answer_summary,answer_account_id,answer_account_name,answer_votes,answer_communicant_votes
      , coalesce(answer_vote_votes,0) answer_votes_from_me
-from (select community_id,question_id,answer_id,answer_at,answer_summary,answer_markdown,answer_votes
+from (select community_id,question_id,answer_id,answer_at,answer_summary,answer_votes
            , account_id answer_account_id
            , account_name answer_account_name
            , coalesce(communicant_votes,0) answer_communicant_votes
