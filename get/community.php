@@ -41,6 +41,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
 include '../lang/community.'.$community_language.'.php';
+$jslang = substr($community_language,0,1).substr(strtok($community_language,'-'),-1);
 $question = $_GET['q']??'0';
 $room = $room_id;
 $canchat = $room_can_chat;
@@ -270,7 +271,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/jquery.simplePagination.js"></script>
   <script src="/lib/paste.js"></script>
   <script>
-    moment.locale('<?=substr($community_language,0,1).substr(strtok($community_language,'-'),-1)?>');
+    moment.locale('<?=$jslang?>');
     $(function(){
       var title = document.title, latestChatId;
       var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
@@ -457,7 +458,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           if(read[r]){
             read[r] = $.map(read[r],function(v){ return (v>l)?v:null; });
             $(this).attr('data-unread',Math.max(0,$(this).attr('data-unread')-read[r].length));
-            $(this).attr('data-unread-lang',$(this).data('unread').toLocaleString('<?=$community_language?>'));
+            $(this).attr('data-unread-lang',$(this).data('unread').toLocaleString('<?=$jslang?>'));
             if($(this).attr('data-unread')==='0') $(this).removeAttr('data-unread');
           }
           $(this).addClass('processed');
@@ -540,7 +541,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         Promise.allSettled(promises).then(() => {
           $('#notifications .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
-          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification').length).attr('data-unread-lang',$('#notifications>.notification').length.toLocaleString('<?=$community_language?>'));
+          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification').length).attr('data-unread-lang',$('#notifications>.notification').length.toLocaleString('<?=$jslang?>'));
         });
       }
       function updateNotifications(){
