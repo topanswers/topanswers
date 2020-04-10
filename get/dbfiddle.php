@@ -49,6 +49,6 @@ header('Cache-Control: max-age=60');
   <?}?>
   <div>
     <input type="button" value="run">
-    <a href="https://dbfiddle.uk?rdbms=<?=$_GET['rdbms']?>&fiddle=<?=$_GET['fiddle']?>" target="_blank">fiddle</a>
+    <a href="https://dbfiddle.uk?rdbms=<?=$_GET['rdbms']?>&fiddle=<?=$_GET['fiddle']?><?=isset($_GET['hide'])?'&hide='.$_GET['hide']:''?>" target="_blank">fiddle</a>
   </div>
 </div>
