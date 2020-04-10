@@ -51,7 +51,7 @@ if($search){
     <div class="title">
       <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
       <?if($question_votes){?>
-        <span class="stars" title="<?=$l_num($question_votes)?>">
+        <span class="stars" title="<?=$l_stars?>: <?=$l_num($question_votes)?>">
           <span><?=$l_num($question_votes)?></span>
           <i class="element stars fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>"></i>
         </span>
@@ -88,7 +88,7 @@ if($search){
                       order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$question_id) as $i=>$r){ extract($r);?>
           <div class="bar<?=$answer_is_deleted?' deleted':''?>">
             <div class="element summary shrink">
-              <span class="stars" title="<?=$l_num($answer_votes)?>">
+              <span class="stars" title="<?=$l_stars?>: <?=$l_num($answer_votes)?>">
                 <i class="fa fa-star<?=(($answer_account_id!==$account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>"></i>
                 <span><?=$l_num($answer_votes)?></span>
               </span>

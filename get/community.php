@@ -107,7 +107,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .banner .button:last-child { margin-right: 0; }
     #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
-    #more { margin-bottom: 2rem; display: none; display: flex; justify-content: center; }
+    #more { margin-bottom: 10px; display: none; display: flex; justify-content: center; }
 
     <?if($question){?>
       <?if($auth){?>.tag:hover i { visibility: visible; }<?}?>
@@ -221,7 +221,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 
     .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
-    .simple-pagination ul { display: flex; padding: 0; }
+    .simple-pagination ul { display: flex; padding: 0; margin: 30px 0; }
     .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; outline-left: 1px solid rgb(var(--rgb-dark)); }
     .simple-pagination li>span { user-select: none; }
     .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: rgb(var(--rgb-black)); text-align: center; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark)); }
