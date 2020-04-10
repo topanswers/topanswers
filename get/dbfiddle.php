@@ -12,12 +12,13 @@ function transpose($arr) {
   return $out;
 }
 $json = json_decode(file_get_contents('https://dbfiddle.uk/json?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']),true);
+$hide = isset($_GET['hide'])?array_reverse(array_map(function($c){ return $c==='1'; },str_split(decbin($_GET['hide'])))):[];
 header('X-Powered-By: ');
 header('Cache-Control: max-age=60');
 ?>
 <div class="dbfiddle" data-rdbms="<?=$_GET['rdbms']?>">
   <?foreach($json as $i=>$batchplusoutput){?>
-    <div class="batch">
+    <div class="batch<?=$hide[$i]?' hidden':''?>">
       <textarea rows="1"><?=$batchplusoutput['batch']?></textarea>
       <?if($batchplusoutput['output']['error']){?>
         <pre class="error"><?=$batchplusoutput['output']['error']?></pre>

@@ -62,6 +62,7 @@
   .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
   .dbfiddle .tablewrapper { margin-top: 8px; }
   .dbfiddle>div { margin-top: 8px; }
+  .dbfiddle .batch.hidden { display: none; }
   .dbfiddle .batch { overflow: hidden; min-width: 0; }
   .dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--monospace-font-family); background: rgba(var(--rgb-highlight),0.25); }
   .dbfiddle a { font-size: smaller; }
@@ -118,7 +119,7 @@
         f.find('input').click(function(){
           f.css('opacity',0.5);
           $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-          $.post('https://test.dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('.batch>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
+          $.post('https://dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('.batch>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
               .done(function(r){
             $.get('/dbfiddle?rdbms='+f.data('rdbms')+'&fiddle='+r).done(function(r){
               addfiddle(f,r);
@@ -127,7 +128,7 @@
         });
       }
       $(this).find('a[href*="//dbfiddle.uk"]')
-             .filter(function(){ return $(this).attr('href').match(/https?:\/\/dbfiddle\.uk\/?\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
+             .filter(function(){ return $(this).attr('href').match(/^https?:\/\/dbfiddle\.uk\/?\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
              .each(function()
       {
         var t = $(this);
