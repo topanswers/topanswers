@@ -64,7 +64,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
 <body>
   <header>
     <div class="container">
-      <a class="frame" style="background: rgb(var(--rgb-white));" href="/" title="home"><img class="icon" style="background: rgb(var(--rgb-white));" src="/image?hash=cb8fe8c88f6b7326bcca667501eaf8b1f1e2ef46af1bc0c37eeb71daa477e1be"></a>
+      <a class="frame" style="background: rgb(var(--rgb-white));" href="/" title="home"><img class="icon" style="background: rgb(var(--rgb-white));" src="/communityicon"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div>
