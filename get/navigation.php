@@ -32,7 +32,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('body').click(function(){ $('.select').removeClass('open'); });
     });
   </script>
-  <a class="frame" style="background: white;" href="/" title="home"><img class="icon" src="/communityicon"></a>
+  <a class="frame" style="background: rgb(var(--rgb_dark));" href="/" title="home"><img class="icon" src="/communityicon"></a>
   <a class="frame" href="/<?=$community_name?>" title="<?=$community_display_name?> home"><img class="icon" src="/communityicon?community=<?=$community_name?>"></a>
   <div class="select element">
     <div accesskey="t">

@@ -19,7 +19,7 @@ extract(cdb("select account_id from one"));
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="/fonts/source-sans-pro.css">
   <link rel="stylesheet" href="/fonts/source-code-pro.css">
-  <link rel="icon" href="/communityicon" type="image/png">
+  <link rel="icon" href="/image?hash=b234a3e19e45299b89e82d5c068b32f1cace725deba132a4455d0f03c8cfa2c0" type="image/png">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <style>
@@ -62,7 +62,7 @@ extract(cdb("select account_id from one"));
 <body>
   <header>
     <div class="container">
-      <a class="frame" style="background: rgb(var(--rgb-white));" href="/" title="home"><img class="icon" style="background: rgb(var(--rgb-white));" src="/communityicon"></a>
+      <a class="frame" style="background: rgb(var(--rgb-white));" href="/" title="home"><img class="icon" style="background: rgb(var(--rgb-dark));" src="/communityicon"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div>
