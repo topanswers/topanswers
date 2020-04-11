@@ -31,7 +31,7 @@ extract(cdb("select account_id from one"));
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-light)); }
     .communities { display: flex; flex-wrap: wrap; margin: 16px 0; margin-top: -24px; }
-    .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; }
+    .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; line-height: 1; }
 
     @media (max-width: 576px){
       main>div { margin: 16px 16px; }
