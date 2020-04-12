@@ -9,6 +9,7 @@ db("set search_path to notification,pg_temp");
 ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'') || fail(403,'access denied');
 
 switch($_POST['action']) {
+  case 'dismiss': exit(ccdb("select dismiss($1)",$_POST['id']));
   case 'dismiss-question': exit(ccdb("select dismiss_question($1)",$_POST['id']));
   case 'dismiss-question-flag': exit(ccdb("select dismiss_question_flag($1)",$_POST['id']));
   case 'dismiss-answer': exit(ccdb("select dismiss_answer($1)",$_POST['id']));
