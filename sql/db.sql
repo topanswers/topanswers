@@ -466,7 +466,7 @@ create table question_flag_history(
 );
 
 create table question_flag_notification(
-  notification_id bigint references notification on delete set null
+  notification_id bigint not null unique references notification
 , question_flag_history_id integer references question_flag_history
 , account_id integer references account
 , question_flag_notification_at timestamptz not null default current_timestamp
@@ -517,7 +517,7 @@ create table answer_flag_history(
 );
 
 create table answer_flag_notification(
-  notification_id bigint references notification on delete set null
+  notification_id bigint not null unique references notification
 , answer_flag_history_id integer references answer_flag_history
 , account_id integer references account
 , answer_flag_notification_at timestamptz not null default current_timestamp
@@ -526,7 +526,7 @@ create table answer_flag_notification(
 create index answer_flag_notification_latest_ind on answer_flag_notification(account_id,answer_flag_notification_at);
 
 create table chat_notification(
-  notification_id bigint references notification on delete set null
+  notification_id bigint not null unique references notification
 , chat_id bigint references chat
 , account_id integer references account
 , chat_notification_at timestamptz not null default current_timestamp
@@ -536,7 +536,7 @@ create table chat_notification(
 create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at) where chat_notification_dismissed_at is null;
 
 create table question_notification(
-  notification_id bigint references notification on delete set null
+  notification_id bigint not null unique references notification
 , question_history_id integer references question_history
 , account_id integer references account
 , question_notification_at timestamptz not null default current_timestamp
@@ -545,7 +545,7 @@ create table question_notification(
 create index question_notification_latest_ind on question_notification(account_id,question_notification_at);
 
 create table answer_notification(
-  notification_id bigint references notification on delete set null
+  notification_id bigint not null unique references notification
 , answer_history_id integer references answer_history
 , account_id integer references account
 , answer_notification_at timestamptz not null default current_timestamp
@@ -554,7 +554,7 @@ create table answer_notification(
 create index answer_notification_latest_ind on answer_notification(account_id,answer_notification_at);
 
 create table system_notification(
-  notification_id bigint references notification on delete set null
+  notification_id bigint not null unique references notification
 , system_notification_id integer generated always as identity primary key
 , account_id integer references account
 , system_notification_at timestamptz not null default current_timestamp
