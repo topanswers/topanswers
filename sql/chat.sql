@@ -134,6 +134,7 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
   select _ensure_communicant(get_account_id(),community_id) from room where room_id=get_room_id();
   --
   with d as (update chat_notification set chat_notification_dismissed_at = current_timestamp where chat_id=replyid and account_id=get_account_id() returning *)
+     , n as (update notification set notification_dismissed_at = current_timestamp where notification_id in(select notification_id from d))
   update account set account_notification_id = default from d where account.account_id=d.account_id;
   --
   insert into chat_year(room_id,chat_year,chat_year_count)
