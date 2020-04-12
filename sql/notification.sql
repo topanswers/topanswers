@@ -94,6 +94,7 @@ end$$;
 --
 create function dismiss_question(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   with d as (delete from question_notification where question_history_id=id and account_id=get_account_id() returning *)
+     , n as (delete from notification where notification_id in (select notification_id from d))
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
@@ -101,11 +102,13 @@ create function dismiss_question_flag(id integer) returns void language sql secu
   with d as (delete from question_flag_notification
              where question_flag_history_id in(select question_flag_history_id from question_flag_history where question_id=(select question_id from question_flag_history where question_flag_history_id=id))
                    and account_id=get_account_id() returning *)
+     , n as (delete from notification where notification_id in (select notification_id from d))
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
 create function dismiss_answer(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   with d as (delete from answer_notification where answer_history_id=id and account_id=get_account_id() returning *)
+     , n as (delete from notification where notification_id in (select notification_id from d))
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
@@ -113,11 +116,14 @@ create function dismiss_answer_flag(id integer) returns void language sql securi
   with d as (delete from answer_flag_notification
              where answer_flag_history_id in(select answer_flag_history_id from answer_flag_history where answer_id=(select answer_id from answer_flag_history where answer_flag_history_id=id))
                    and account_id=get_account_id() returning *)
+     , n as (delete from notification where notification_id in (select notification_id from d))
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --
 create function dismiss_system(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  update system_notification set system_notification_dismissed_at = current_timestamp where system_notification_dismissed_at is null and system_notification_id=id and account_id=get_account_id();
+  with u as (update system_notification set system_notification_dismissed_at = current_timestamp where system_notification_dismissed_at is null and system_notification_id=id and account_id=get_account_id() returning *)
+  update notification set notification_dismissed_at = current_timestamp where notification_id in (select notification_id from u);
+  --
   update account set account_notification_id = default where account_id=get_account_id();
 $$;
 --

@@ -154,16 +154,11 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
   with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
              select community_id,get_room_id(),get_account_id(),msg,replyid from room where room_id=get_room_id() returning community_id,room_id,chat_id)
      , h as (insert into chat_history(chat_id,chat_history_markdown) select chat_id,msg from i)
-     , n as (insert into chat_notification(chat_id,account_id)
-             select chat_id,(select account_id from chat where chat_id=replyid) from i where replyid is not null and (select account_id from chat where chat_id=replyid)<>get_account_id()
-             returning *)
+    , aa as (select account_id from (select account_id from chat where chat_id=replyid union select unnest(pingids)) a where account_id<>get_account_id())
+     , n as (insert into notification(account_id) select account_id from aa returning *)
+    , cn as (insert into chat_notification(notification_id,chat_id,account_id) select notification_id,chat_id,account_id from n cross join i)
      , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
-    , n2 as (insert into chat_notification(chat_id,account_id)
-             select chat_id,account_id
-             from i cross join (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z
-             returning *)
-    , a2 as (update account set account_notification_id = default from n2 where account.account_id=n2.account_id)
-     , p as (insert into ping(chat_id,account_id) select chat_id,account_id from n2)
+     , p as (insert into ping(chat_id,account_id) select chat_id,account_id from aa cross join i)
      , r as (insert into participant(room_id,account_id,participant_latest_read_chat_id)
              select room_id,get_account_id(),chat_id from i
              on conflict on constraint participant_pkey
@@ -191,22 +186,19 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
   select _error(413,'message too long') where length(msg)>5000;
   --
   with d as (update chat_notification set chat_notification_dismissed_at = current_timestamp where chat_id=replyid and account_id=get_account_id() returning *)
+     , n as (update notification set notification_dismissed_at = current_timestamp where notification_id in(select notification_id from d))
   update account set account_notification_id = default from d where account.account_id=d.account_id;
   --
   update chat set chat_markdown = msg, chat_reply_id=replyid, chat_change_id = default, chat_change_at = default where chat_id=id;
   --
   with h as (insert into chat_history(chat_id,chat_history_markdown) values(id,msg))
-     , n as (insert into chat_notification(chat_id,account_id)
-             select id,(select account_id from chat where chat_id=replyid)  where replyid is not null and (select account_id from chat where chat_id=replyid)<>get_account_id()
-             on conflict do nothing
-             returning *)
+    , aa as (select account_id
+             from (select account_id from chat where chat_id=replyid union select unnest(pingids)) a
+             where account_id<>get_account_id() and not exists (select 1 from chat_notification natural join notification where chat_id=id and account_id=a.account_id))
+     , n as (insert into notification(account_id) select account_id from aa returning *)
+    , cn as (insert into chat_notification(notification_id,chat_id,account_id) select notification_id,id,account_id from n)
      , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
-     , p as (insert into chat_notification(chat_id,account_id)
-             select id,account_id
-             from (select account_id from account where account_id in (select * from unnest(pingids) except select account_id from chat where chat_id=replyid) and account_id<>get_account_id()) z
-             on conflict do nothing
-             returning *)
-     , b as (update account set account_notification_id = default from p where account.account_id=p.account_id)
+     , p as (insert into ping(chat_id,account_id) select id,account_id from aa on conflict do nothing)
   select 1;
   --
   with w as (select chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
@@ -215,6 +207,7 @@ $$;
 --
 create function dismiss_notification(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   with d as (update chat_notification set chat_notification_dismissed_at = current_timestamp where chat_id=id and account_id=get_account_id() returning *)
+     , n as (update notification set notification_dismissed_at = current_timestamp where notification_id in (select notification_id from d))
   update account set account_notification_id = default from d where account.account_id=d.account_id;
 $$;
 --

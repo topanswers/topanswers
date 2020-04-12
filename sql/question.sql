@@ -140,12 +140,12 @@ create function change(title text, markdown text) returns void language sql secu
                                          where account_id=get_account_id() and question_history_at>current_timestamp-'5m'::interval)>10;
   --
   with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown) values(get_question_id(),get_account_id(),title,markdown) returning question_id,question_history_id)
-     , n as (insert into question_notification(question_history_id,account_id)
-             select question_history_id,account_id from h natural join (select question_id,account_id from question) z where account_id<>get_account_id()
+    , nn as (select question_history_id,account_id from h natural join (select question_id,account_id from question) z where account_id<>get_account_id()
              union
-             select question_history_id,account_id from h natural join subscription where account_id<>get_account_id()
-             returning account_id)
-  update account set account_notification_id = default where account_id in (select account_id from n);
+             select question_history_id,account_id from h natural join subscription where account_id<>get_account_id())
+     , n as (insert into notification(account_id) select account_id from nn returning *)
+    , qn as (insert into question_notification(notification_id,question_history_id,account_id) select notification_id,question_history_id,account_id from nn natural join n)
+  update account set account_notification_id = default where account_id in (select account_id from nn);
   --
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
   update answer set answer_summary = _markdownsummary(answer_markdown) where question_id=get_question_id() and answer_summary<>_markdownsummary(answer_markdown);
@@ -178,13 +178,13 @@ create function vote(votes integer) returns integer language sql security define
              from (select question_id,community_id,q.account_id,question_vote_votes from i join question q using(question_id)) z natural join community
              on conflict on constraint communicant_pkey do update set communicant_votes = communicant.communicant_votes+excluded.communicant_votes
              returning account_id,community_id,communicant_votes)
-     , n as (insert into system_notification(account_id,system_notification_message,system_notification_community_id)
-             select account_id
+     , n as (insert into notification(account_id) select account_id from c where trunc(log(greatest(communicant_votes,1)))>trunc(log(greatest(communicant_votes-votes,1))) returning *)
+    , sn as (insert into system_notification(notification_id,account_id,system_notification_message,system_notification_community_id)
+             select notification_id,account_id
                   , 'Congratulations! You have reached the '||pow(10,trunc(log(greatest(communicant_votes,1))))||' star threshold, and can now award '||(1+trunc(log(greatest(communicant_votes,1))))||' stars on '
                        ||community_display_name||'.'
                    ,community_id
-             from c natural join community
-             where trunc(log(greatest(communicant_votes,1)))>trunc(log(greatest(communicant_votes-votes,1))))
+             from n natural join c natural join community)
   update question set question_votes = question_votes+question_vote_votes from i where question.question_id=get_question_id() returning question_votes;
 $$;
 --
@@ -231,12 +231,12 @@ create function flag(direction integer) returns void language sql security defin
      , h as (insert into question_flag_history(question_id,account_id,question_flag_history_direction,question_flag_history_is_crew)
              select question_id,account_id,question_flag_direction,question_flag_is_crew from i
              returning question_flag_history_id,question_flag_history_direction)
-   , qfn as (insert into question_flag_notification(question_flag_history_id,account_id)
-             select question_flag_history_id,account_id
+    , nn as (select question_flag_history_id,account_id
              from h cross join (select account_id from communicant where community_id=get_community_id() and communicant_is_post_flag_crew and account_id<>get_account_id()) c
-             where question_flag_history_direction>0
-             returning account_id)
-  update account set account_notification_id = default where account_id in (select account_id from qfn);
+             where question_flag_history_direction>0)
+     , n as (insert into notification(account_id) select account_id from nn returning *)
+   , qfn as (insert into question_flag_notification(notification_id,question_flag_history_id,account_id) select notification_id,question_flag_history_id,account_id from nn natural join n)
+  update account set account_notification_id = default where account_id in (select account_id from n);
 $$;
 --
 --

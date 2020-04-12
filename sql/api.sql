@@ -209,9 +209,10 @@ create function _ensure_communicant(aid integer, cid integer) returns void langu
              select aid,cid,community_regular_font_id,community_monospace_font_id from community where community_id=cid
              on conflict on constraint communicant_pkey do nothing
              returning account_id,community_id)
+     , n as (insert into notification(account_id) select account_id from i returning *)
   insert into system_notification(account_id,system_notification_message,system_notification_community_id)
   select account_id, 'If you haven''t already done so, please take a look at [the ''about'' post](/'||community_name||'?q='||community_about_question_id||') for '||community_display_name||'.', community_id
-  from i natural join community
+  from i natural join n natural join community
   where community_about_question_id is not null;
 $$;
 --
