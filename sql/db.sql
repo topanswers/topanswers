@@ -108,7 +108,7 @@ create table notification(
 , notification_dismissed_at timestamptz
 , unique (account_id,notification_id)
 );
-create unique index notification_latest_ind on notification(account_id,(notification_dismissed_at is null),notification_id);
+create index notification_latest_ind on notification(account_id,notification_dismissed_at desc nulls first);
 
 create table account(
   account_id integer generated always as identity primary key

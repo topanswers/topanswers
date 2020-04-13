@@ -6,6 +6,7 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to notification,pg_temp");
 $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 $limit = ccdb("select count(1) from notification where notification_dismissed_at is null")+($_GET['dismissed']??0);
+$has_dismissed = ccdb("select exists(select 1 from notification where notification_dismissed_at is not null)");
 extract(cdb("select room_id,room_can_chat
                   , (select coalesce(jsonb_agg(z),'[]'::jsonb)
                      from (select notification_id,notification_dismissed_at,notification_at,notification_at_iso,notification_type,notification_data
@@ -43,8 +44,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <?$seperator = false; $n = 0;?>
 <?foreach($notifications as $notification){ extract($notification); extract($notification_data,EXTR_PREFIX_ALL,'d');?>
+  <?if($notification_dismissed_at&&!$seperator){ $seperator = true; if($n>0){?><hr><?}}?>
   <?$n += $notification_count;?>
-  <?if($notification_dismissed_at&&!$seperator){ $seperator = true;?><hr><?}?>
   <div id="n<?=$notification_id?>" class="notification<?=$notification_dismissed_at?' dismissed':''?><?=in_array($notification_type,['chat','system'])?' message':''?>"
        style="background: rgb(<?=$d_community_rgb_mid?>); --rgb-dark: <?=$d_community_rgb_dark?>; --rgb-mid: <?=$d_community_rgb_mid?>; --rgb-light: <?=$d_community_rgb_light?>; --rgb-warning: <?=$d_community_rgb_warning?>;"
        data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$d_chat_from_account_name?>" data-chat-id="<?=$d_chat_id?>" data-reply-id="<?=$d_chat_reply_id?>"<?}?>>
@@ -121,5 +122,5 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <?}?>
   </div>
 <?}?>
-<?if($n===$limit){?><a id="more-notifications" href="." data-dismissed="<?=isset($_GET['dismissed'])?(intval($_GET['dismissed']*2)):'10'?>">show <?=isset($_GET['dismissed'])?'more ':''?>dismissed notifications</a><?}?>
+<?if($has_dismissed&&($n===$limit)){?><a id="more-notifications" href="." data-dismissed="<?=isset($_GET['dismissed'])?(intval($_GET['dismissed']*2)):'10'?>">show <?=isset($_GET['dismissed'])?'more ':''?>dismissed notifications</a><?}?>
 <?ob_end_flush();
