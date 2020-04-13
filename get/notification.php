@@ -27,10 +27,10 @@ extract(cdb("select room_id,room_can_chat
                                             when s.notification_id is not null then to_jsonb(s)
                                             end notification_data
                                 from notification n
-                                     left join chat2 c using(notification_id)
-                                     left join question2 q using(notification_id)
+                                     left join chat c using(notification_id)
+                                     left join question q using(notification_id)
                                      left join question_flag qf using(notification_id)
-                                     left join answer2 a using(notification_id)
+                                     left join answer a using(notification_id)
                                      left join answer_flag af using(notification_id)
                                      left join system s using(notification_id)
                                 where not notification_is_dismissed

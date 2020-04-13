@@ -15,17 +15,24 @@ from db.notification
 where account_id=get_account_id();
 --
 create view chat with (security_barrier) as
-select room_id,community_id,chat_id,account_id,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_markdown,community_name,question_id
+select notification_id,room_id,community_id,chat_id,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_markdown,community_name,room_question_id
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+     , account_id chat_from_account_id
      , chat_reply_account_id=get_account_id() chat_reply_account_is_me
-     , coalesce(question_title,room_name) chat_room_name 
-     , question_id is not null chat_is_question_room
+     , room_derived_name chat_room_name 
+     , room_question_id is not null chat_is_question_room
      , (select count(1) from db.chat_flag where chat_id=chat.chat_id) chat_flag_count
      , (select count(1) from db.chat_star where chat_id=chat.chat_id) chat_star_count
      , (select count(1) from db.chat_history where chat_id=chat.chat_id)>1 chat_has_history
-from chat_notification natural join db.chat natural join db.room natural join api._community natural join db.community
-     natural left join (select question_room_id room_id, question_id, question_title from db.question) q
-     natural left join (select chat_id chat_reply_id, account_id chat_reply_account_id from db.chat) c;
+     , (select account_derived_name from api._account where account_id=chat.account_id) chat_from_account_name
+     , (select account_derived_name from api._account where account_id=chat_reply_account_id) chat_reply_account_name
+     , chat_flag_at is not null chat_i_flagged
+     , chat_star_at is not null chat_i_starred
+     , notification_id stack_id
+from notification natural join (select notification_id,chat_id from db.chat_notification) n natural join db.chat natural join api._room natural join api._community natural join db.community
+     natural left join (select chat_id chat_reply_id, account_id chat_reply_account_id from db.chat) c
+     natural left join (select chat_id,chat_flag_at from db.chat_flag where account_id=get_account_id()) f
+     natural left join (select chat_id,chat_star_at from db.chat_star where account_id=get_account_id()) s;
 
 create view chat2 with (security_barrier) as
 select notification_id,room_id,community_id,chat_id,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_markdown,community_name,room_question_id
@@ -54,8 +61,14 @@ from db.question_notification natural join (select question_history_id,question_
 where account_id=get_account_id();
 --
 create view question with (security_barrier) as
-select question_id,question_title,question_room_id,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-from (select distinct question_id from question_notification) n natural join db.question natural join api._community natural join db.community;
+select notification_id,question_id,question_history_id,question_title,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+     , question_id stack_id
+from notification
+     natural join (select notification_id,question_history_id from db.question_notification) qn
+     natural join (select question_history_id,question_id from db.question_history) h
+     natural join db.question
+     natural join api._community
+     natural join db.community;
 
 create view question2 with (security_barrier) as
 select notification_id,question_id,question_history_id,question_title,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
@@ -92,8 +105,13 @@ from db.answer_notification natural join (select answer_history_id,answer_id,ans
 where account_id=get_account_id();
 --
 create view answer with (security_barrier) as
-select answer_id,question_id,question_title,question_room_id,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-from (select distinct answer_id from answer_notification) n
+select notification_id,answer_id,answer_history_id,question_id,question_title,question_room_id
+      ,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+     , answer_at<>answer_history_at answer_notification_is_edit
+     , answer_id stack_id
+from notification
+     natural join (select notification_id,answer_history_id from db.answer_notification) n
+     natural join (select answer_history_id,answer_id,answer_history_at from db.answer_history) h
      natural join db.answer
      natural join (select community_id,question_id,question_title,question_room_id from db.question) q
      natural join api._community
