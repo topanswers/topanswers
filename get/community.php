@@ -457,7 +457,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
         $('#active-rooms>a[data-unread]:not(.processed)').each(function(){
           var r = $(this).attr('data-room'), l = $(this).data('latest');
-          if(r==='<?=$room?>') read['<?=$room?>'] = _.union(read['<?=$room?>']||[],$('#messages>.message').map(function(){ var id = +this.id.substring(1); return (id>l)?id:null; }).get());
+          if(r==='<?=$room?>') read['<?=$room?>'] = _.union(read['<?=$room?>']||[],$('#messages>.message').map(function(){ var id = +this.id.substring(1); return (id>l)?id:null; }).get().reverse()).sort((a,b) => a-b);
           if(read[r]){
             read[r] = $.map(read[r],function(v){ return (v>l)?v:null; });
             $(this).attr('data-unread',Math.max(0,$(this).attr('data-unread')-read[r].length));
@@ -593,6 +593,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           }else if(+localStorage.getItem('readCount')>99){
             $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'read', room: <?=$room?>, read: $.map(JSON.parse(localStorage.getItem('read')), function(v){ return _.last(v); }) }, xhrFields: { withCredentials: true } }).done(function(){
               setChatPollTimeout();
+              localStorage.removeItem('read');
+              localStorage.removeItem('readCount');
             });
           }else{
             setChatPollTimeout();
@@ -780,6 +782,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                        , read: $.map(JSON.parse(localStorage.getItem('read')), function(v){ return _.last(v); }) };
               }
               $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).done(function(){
+                localStorage.removeItem('read');
+                localStorage.removeItem('readCount');
                 if(edit){
                   $('#c'+editid).css('opacity',1).find('.markdown').attr('data-markdown',msg).attr('data-reply-id',replyid).end().each(renderChat);
                   checkChat();

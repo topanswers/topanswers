@@ -5,6 +5,15 @@ set local search_path to chat,api,pg_temp;
 --
 create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
 --
+create view room with (security_barrier) as
+with w as (select room_id,participant_latest_chat_at,participant_chat_count,participant_latest_read_chat_id
+                , (select count(1) from db.chat c where c.room_id=p.room_id and c.chat_id>p.participant_latest_read_chat_id) participant_unread
+           from db.participant p
+           where account_id=get_account_id() and participant_listening)
+select room_id,room_derived_name,room_question_id,community_name,participant_unread,participant_latest_read_chat_id,participant_chat_count,participant_latest_chat_at
+from w natural join api._room natural join db.community
+where participant_unread>0 or participant_latest_chat_at+make_interval(hours=>60+least(participant_chat_count,182)*12)>current_timestamp;
+--
 create view one with (security_barrier) as
 select account_id,account_is_dev,community_id,community_name,community_language,community_code_language,room_id,room_name
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
