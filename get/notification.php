@@ -59,7 +59,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       </span>
       <img title="<?=$d_chat_from_account_name?>" class="icon" src="/identicon?id=<?=$d_chat_from_account_id?>">
       <div class="markdown" data-markdown="<?=$d_chat_markdown?>"><pre><?=$d_chat_markdown?></pre></div>
-      <?if($d_room_can_chat&&($d_room_id===$room_id)){?>
+      <?if($room_can_chat&&($d_room_id===$room_id)){?>
         <span class="buttons">
           <span class="button-group show">
             <i class="stars <?=$d_chat_i_starred?'me ':''?>fa fa-star<?=$d_chat_i_starred?'':'-o'?>" data-count="<?=$d_chat_star_count?>"></i>
