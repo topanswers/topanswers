@@ -34,7 +34,8 @@ extract(cdb("select room_id,room_can_chat
                                      left join answer_flag af using(notification_id)
                                      left join system s using(notification_id)
                                 where not notification_is_dismissed
-                                      and(coalesce(c.notification_id,q.notification_id,qf.notification_id,a.notification_id,af.notification_id,s.notification_id) is not null)) z) z
+                                      and(coalesce(c.notification_id,q.notification_id,qf.notification_id,a.notification_id,af.notification_id,s.notification_id) is not null)) z
+                           order by notification_at desc) z
                      where notification_stack_rn=1) notifications
              from one"));
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
