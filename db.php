@@ -35,7 +35,10 @@ function db($query,...$params) {
     for($j = 0; $j<pg_num_rows($res); $j++){
       if(pg_field_type($res,$i)==='bool') $rows[$j][pg_field_name($res,$i)] = $rows[$j][pg_field_name($res,$i)]==='t';
       if(in_array(pg_field_type($res,$i),['int4','int8'],TRUE)) $rows[$j][pg_field_name($res,$i)] = intval($rows[$j][pg_field_name($res,$i)]);
-      if(pg_field_type($res,$i)==='jsonb') $rows[$j][pg_field_name($res,$i)] = json_decode($rows[$j][pg_field_name($res,$i)],TRUE);
+      if(pg_field_type($res,$i)==='jsonb'){
+        $rows[$j][pg_field_name($res,$i)] = json_decode($rows[$j][pg_field_name($res,$i)],TRUE);
+        array_walk_recursive($rows[$j][pg_field_name($res,$i)],function(&$v){ if(is_string($v)) $v = htmlspecialchars($v); });
+      }
       if(pg_field_type($res,$i)==='text') $rows[$j][pg_field_name($res,$i)] = htmlspecialchars($rows[$j][pg_field_name($res,$i)]);
     }
   }
