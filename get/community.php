@@ -144,6 +144,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
 
     #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column; scroll-behavior: smooth; }
+    #notifications>hr { margin: 14px 6px; border: 1px solid rgb(var(--rgb-dark)); }
+    #more-notifications { display: block; text-align: center; font-size: 12px; margin: 10px;}
     #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
@@ -277,6 +279,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
       var firefox = false;
+      var dismissed = 0;
 
       vex.defaultOptions.className = 'vex-theme-topanswers';
 
@@ -541,11 +544,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         Promise.allSettled(promises).then(() => {
           $('#notifications .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
-          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification').length).attr('data-unread-lang',$('#notifications>.notification').length.toLocaleString('<?=$jslang?>'));
+          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification:not(.dismissed)').length).attr('data-unread-lang',$('#notifications>.notification:not(.dismissed)').length.toLocaleString('<?=$jslang?>'));
         });
       }
       function updateNotifications(){
-        return Promise.resolve($.get('/notification?room=<?=$room_id?>',function(r){
+        return Promise.resolve($.get('/notification?room=<?=$room_id?>'+(dismissed?'&dismissed='+dismissed:''),function(r){
           $('#notifications').children().remove();
           $('#notifications').append(r);
           processNotifications();
@@ -943,11 +946,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){
           updateNotifications().then(() => {
-            if(!$('#notifications').children().length) $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
+            if(!$('#notifications').children('div').length) $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
             <?if($dev){?>console.log($('#notifications').children().length);<?}?>
           });
         });
         $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
+        return false;
+      });
+      $('#chat-wrapper').on('click','#more-notifications', function(){
+        dismissed = $(this).data('dismissed');
+        $(this).html('<a class="fa fa-fw fa-spinner fa-pulse"></i>');
+        updateNotifications();
         return false;
       });
       function search(){

@@ -4,7 +4,7 @@ set local search_path to notification,api,pg_temp;
 --
 --
 create view notification with (security_barrier) as
-select notification_id,notification_at
+select notification_id,notification_at,notification_dismissed_at
      , notification_dismissed_at is not null notification_is_dismissed
 from db.notification
 where account_id=get_account_id();
