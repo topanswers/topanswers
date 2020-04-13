@@ -466,13 +466,9 @@ create table question_flag_history(
 );
 
 create table question_flag_notification(
-  notification_id bigint not null unique references notification
+  notification_id bigint primary key references notification
 , question_flag_history_id integer references question_flag_history
-, account_id integer references account
-, question_flag_notification_at timestamptz not null default current_timestamp
-, primary key (question_flag_history_id,account_id)
 );
-create index question_flag_notification_latest_ind on question_flag_notification(account_id,question_flag_notification_at);
 
 create table answer_vote(
   answer_id integer references answer
@@ -517,53 +513,30 @@ create table answer_flag_history(
 );
 
 create table answer_flag_notification(
-  notification_id bigint not null unique references notification
+  notification_id bigint primary key references notification
 , answer_flag_history_id integer references answer_flag_history
-, account_id integer references account
-, answer_flag_notification_at timestamptz not null default current_timestamp
-, primary key (answer_flag_history_id,account_id)
 );
-create index answer_flag_notification_latest_ind on answer_flag_notification(account_id,answer_flag_notification_at);
 
 create table chat_notification(
-  notification_id bigint not null unique references notification
+  notification_id bigint primary key references notification
 , chat_id bigint references chat
-, account_id integer references account
-, chat_notification_at timestamptz not null default current_timestamp
-, chat_notification_dismissed_at timestamptz
-, primary key (chat_id,account_id)
 );
-create index chat_notification_latest_ind on chat_notification(account_id,chat_notification_at) where chat_notification_dismissed_at is null;
 
 create table question_notification(
-  notification_id bigint not null unique references notification
+  notification_id bigint primary key references notification
 , question_history_id integer references question_history
-, account_id integer references account
-, question_notification_at timestamptz not null default current_timestamp
-, primary key (question_history_id,account_id)
 );
-create index question_notification_latest_ind on question_notification(account_id,question_notification_at);
 
 create table answer_notification(
-  notification_id bigint not null unique references notification
+  notification_id bigint primary key references notification
 , answer_history_id integer references answer_history
-, account_id integer references account
-, answer_notification_at timestamptz not null default current_timestamp
-, primary key (answer_history_id,account_id)
 );
-create index answer_notification_latest_ind on answer_notification(account_id,answer_notification_at);
 
 create table system_notification(
-  notification_id bigint not null unique references notification
-, system_notification_id integer generated always as identity primary key
-, account_id integer references account
-, system_notification_at timestamptz not null default current_timestamp
-, system_notification_dismissed_at timestamptz
+  notification_id bigint primary key references notification
 , system_notification_message text not null
 , system_notification_community_id integer references community
-, unique (account_id,system_notification_id)
 );
-create index system_notification_latest_ind on system_notification(account_id,system_notification_at) where system_notification_dismissed_at is null;
 
 create table subscription(
   account_id integer references account

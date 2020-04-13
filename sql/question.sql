@@ -144,7 +144,7 @@ create function change(title text, markdown text) returns void language sql secu
              union
              select question_history_id,account_id from h natural join subscription where account_id<>get_account_id())
      , n as (insert into notification(account_id) select account_id from nn returning *)
-    , qn as (insert into question_notification(notification_id,question_history_id,account_id) select notification_id,question_history_id,account_id from nn natural join n)
+    , qn as (insert into question_notification(notification_id,question_history_id) select notification_id,question_history_id from nn natural join n)
   update account set account_notification_id = default where account_id in (select account_id from nn);
   --
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
@@ -179,8 +179,8 @@ create function vote(votes integer) returns integer language sql security define
              on conflict on constraint communicant_pkey do update set communicant_votes = communicant.communicant_votes+excluded.communicant_votes
              returning account_id,community_id,communicant_votes)
      , n as (insert into notification(account_id) select account_id from c where trunc(log(greatest(communicant_votes,1)))>trunc(log(greatest(communicant_votes-votes,1))) returning *)
-    , sn as (insert into system_notification(notification_id,account_id,system_notification_message,system_notification_community_id)
-             select notification_id,account_id
+    , sn as (insert into system_notification(notification_id,system_notification_message,system_notification_community_id)
+             select notification_id
                   , 'Congratulations! You have reached the '||pow(10,trunc(log(greatest(communicant_votes,1))))||' star threshold, and can now award '||(1+trunc(log(greatest(communicant_votes,1))))||' stars on '
                        ||community_display_name||'.'
                    ,community_id
@@ -235,7 +235,7 @@ create function flag(direction integer) returns void language sql security defin
              from h cross join (select account_id from communicant where community_id=get_community_id() and communicant_is_post_flag_crew and account_id<>get_account_id()) c
              where question_flag_history_direction>0)
      , n as (insert into notification(account_id) select account_id from nn returning *)
-   , qfn as (insert into question_flag_notification(notification_id,question_flag_history_id,account_id) select notification_id,question_flag_history_id,account_id from nn natural join n)
+   , qfn as (insert into question_flag_notification(notification_id,question_flag_history_id) select notification_id,question_flag_history_id from nn natural join n)
   update account set account_notification_id = default where account_id in (select account_id from n);
 $$;
 --

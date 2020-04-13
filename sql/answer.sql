@@ -67,8 +67,8 @@ create function vote(votes integer) returns integer language sql security define
      , r as (select answer_id,community_id,a.account_id,answer_vote_votes from i join answer a using(answer_id) natural join (select question_id,community_id from question) q )
      , c as (update communicant set communicant_votes = communicant_votes+answer_vote_votes from r where communicant.account_id=r.account_id and communicant.community_id=r.community_id returning r.account_id,r.community_id,communicant_votes)
      , n as (insert into notification(account_id) select account_id from c where trunc(log(greatest(communicant_votes,1)))>trunc(log(greatest(communicant_votes-votes,1))) returning *)
-    , sn as (insert into system_notification(notification_id,account_id,system_notification_message,system_notification_community_id)
-             select notification_id,account_id
+    , sn as (insert into system_notification(notification_id,system_notification_message,system_notification_community_id)
+             select notification_id
                   , 'Congratulations! You have reached the '||pow(10,trunc(log(greatest(communicant_votes,1))))||' star threshold, and can now award '||(1+trunc(log(greatest(communicant_votes,1))))||' stars on '
                          ||community_display_name||'.'
                    ,community_id
@@ -107,7 +107,7 @@ create function flag(direction integer) returns void language sql security defin
              from h cross join (select account_id from communicant where community_id=get_community_id() and communicant_is_post_flag_crew and account_id<>get_account_id()) c
              where answer_flag_history_direction>0)
      , n as (insert into notification(account_id) select account_id from nn returning *)
-   , qfn as (insert into answer_flag_notification(notification_id,answer_flag_history_id,account_id) select notification_id,answer_flag_history_id,account_id from nn natural join n)
+   , qfn as (insert into answer_flag_notification(notification_id,answer_flag_history_id) select notification_id,answer_flag_history_id from nn natural join n)
   update account set account_notification_id = default where account_id in (select account_id from n);
 $$;
 --
@@ -125,7 +125,7 @@ create function change(markdown text) returns void language sql security definer
              union
              select answer_history_id,account_id from h natural join (select answer_id,question_id from answer) z natural join subscription where account_id<>get_account_id())
      , n as (insert into notification(account_id) select account_id from nn returning *)
-    , an as (insert into answer_notification(notification_id,answer_history_id,account_id) select notification_id,answer_history_id,account_id from nn natural join n)
+    , an as (insert into answer_notification(notification_id,answer_history_id) select notification_id,answer_history_id from nn natural join n)
   update account set account_notification_id = default where account_id in (select account_id from n);
   --
   update answer set answer_markdown = markdown, answer_summary = _markdownsummary(markdown), answer_change_at = default where answer_id=get_answer_id();
@@ -148,7 +148,7 @@ create function new(markdown text, lic integer, lic_orlater boolean, codelic int
      , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id,answer_history_id)
     , nn as (select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=get_question_id() and account_id<>get_account_id()) z)
      , n as (insert into notification(account_id) select account_id from nn returning *)
-    , an as (insert into answer_notification(notification_id,answer_history_id,account_id) select notification_id,answer_history_id,account_id from nn natural join n)
+    , an as (insert into answer_notification(notification_id,answer_history_id) select notification_id,answer_history_id from nn natural join n)
      , a as (update account set account_notification_id = default where account_id in (select account_id from n))
   select answer_id from i;
 $$;

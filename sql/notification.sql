@@ -43,7 +43,7 @@ create view question_flag with (security_barrier) as
 select notification_id,question_id,question_title,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , question_id stack_id
 from notification
-     natural join (select notification_id,question_flag_history_id,account_id from db.question_flag_notification) f
+     natural join (select notification_id,question_flag_history_id from db.question_flag_notification) f
      natural join (select question_flag_history_id,question_id from db.question_flag_history) h
      natural join (select community_id,question_id,question_title from db.question) q
      natural join api._community
@@ -66,7 +66,7 @@ create view answer_flag with (security_barrier) as
 select notification_id,answer_id,question_id,question_title,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , answer_id stack_id
 from notification
-     natural join (select notification_id,answer_flag_history_id,account_id from db.answer_flag_notification) f
+     natural join (select notification_id,answer_flag_history_id from db.answer_flag_notification) f
      natural join (select answer_flag_history_id,answer_id from db.answer_flag_history) h
      natural join db.answer
      natural join (select community_id,question_id,question_title from db.question) q
@@ -102,24 +102,25 @@ end$$;
 --
 --
 create function dismiss(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('invalid notification id') where not exists (select 1 from notification where notification_id=id and account_id=get_account_id());
   --
-  with q as (select question_id from question_notification natural join (select question_history_id,question_id from question_history) h where notification_id=id and account_id=get_account_id())
-     , n as (select notification_id from question_notification natural join (select question_history_id,question_id from question_history) h natural join q where account_id=get_account_id())
+  with q as (select question_id from question_notification natural join (select question_history_id,question_id from question_history) h where notification_id=id)
+     , n as (select notification_id from notification natural join question_notification natural join (select question_history_id,question_id from question_history) h natural join q where notification_dismissed_at is null and account_id=get_account_id())
      , u as (update notification set notification_dismissed_at = current_timestamp from n where notification.notification_id=n.notification_id returning account_id)
   update account set account_notification_id = default from u where account.account_id=u.account_id;
   --
-  with q as (select question_id from question_flag_notification natural join (select question_flag_history_id,question_id from question_flag_history) h where notification_id=id and account_id=get_account_id())
-     , n as (select notification_id from question_flag_notification natural join (select question_flag_history_id,question_id from question_flag_history) h natural join q where account_id=get_account_id())
+  with q as (select question_id from question_flag_notification natural join (select question_flag_history_id,question_id from question_flag_history) h where notification_id=id)
+     , n as (select notification_id from notification natural join question_flag_notification natural join (select question_flag_history_id,question_id from question_flag_history) h natural join q where notification_dismissed_at is null and account_id=get_account_id())
      , u as (update notification set notification_dismissed_at = current_timestamp from n where notification.notification_id=n.notification_id returning account_id)
   update account set account_notification_id = default from u where account.account_id=u.account_id;
   --
-  with a as (select answer_id from answer_notification natural join (select answer_history_id,answer_id from answer_history) h where notification_id=id and account_id=get_account_id())
-     , n as (select notification_id from answer_notification natural join (select answer_history_id,answer_id from answer_history) h natural join a where account_id=get_account_id())
+  with a as (select answer_id from answer_notification natural join (select answer_history_id,answer_id from answer_history) h where notification_id=id)
+     , n as (select notification_id from notification natural join answer_notification natural join (select answer_history_id,answer_id from answer_history) h natural join a where notification_dismissed_at is null and account_id=get_account_id())
      , u as (update notification set notification_dismissed_at = current_timestamp from n where notification.notification_id=n.notification_id returning account_id)
   update account set account_notification_id = default from u where account.account_id=u.account_id;
   --
-  with a as (select answer_id from answer_flag_notification natural join (select answer_flag_history_id,answer_id from answer_flag_history) h where notification_id=id and account_id=get_account_id())
-     , n as (select notification_id from answer_flag_notification natural join (select answer_flag_history_id,answer_id from answer_flag_history) h natural join a where account_id=get_account_id())
+  with a as (select answer_id from answer_flag_notification natural join (select answer_flag_history_id,answer_id from answer_flag_history) h where notification_id=id)
+     , n as (select notification_id from notification natural join answer_flag_notification natural join (select answer_flag_history_id,answer_id from answer_flag_history) h natural join a where notification_dismissed_at is null and account_id=get_account_id())
      , u as (update notification set notification_dismissed_at = current_timestamp from n where notification.notification_id=n.notification_id returning account_id)
   update account set account_notification_id = default from u where account.account_id=u.account_id;
   --

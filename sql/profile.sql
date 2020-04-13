@@ -71,8 +71,8 @@ create function new(luuid uuid) returns uuid language sql security definer set s
   with a as (insert into account default values returning account_id,account_uuid)
      , l as (insert into login(account_id,login_uuid) select account_id,luuid from a)
      , n as (insert into notification(account_id) select account_id from a returning *)
-    , sn as (insert into system_notification(notification_id,account_id,system_notification_message)
-             select notification_id,account_id
+    , sn as (insert into system_notification(notification_id,system_notification_message)
+             select notification_id
                    ,'Please make sure your [login key](/profile?highlight-recovery) is recorded somewhere safe before dismissing this message, so you don''t ever lose access to your account.'
              from n)
   select account_uuid from a;
