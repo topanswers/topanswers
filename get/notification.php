@@ -43,7 +43,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <?foreach($notifications as $notification){ extract($notification); extract($notification_data,EXTR_PREFIX_ALL,'d');?>
   <div id="n<?=$notification_id?>" class="notification<?=in_array($notification_type,['chat','system'])?' message':''?>"
        style="background: rgb(<?=$d_community_rgb_mid?>); --rgb-dark: <?=$d_community_rgb_dark?>; --rgb-mid: <?=$d_community_rgb_mid?>; --rgb-light: <?=$d_community_rgb_light?>; --rgb-warning: <?=$d_community_rgb_warning?>;"
-       data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$d_chat_from_account_name?>" data-reply-id="<?=$d_chat_reply_id?>"<?}?>>
+       data-id="<?=$notification_id?>" data-type="<?=$notification_type?>"<?if($notification_type==='chat'){?> data-name="<?=$d_chat_from_account_name?>" data-chat-id="<?=$d_chat_id?>" data-reply-id="<?=$d_chat_reply_id?>"<?}?>>
     <?if($notification_type==='chat'){?>
       <span class="who" title="<?=$d_chat_from_account_name?><?=$d_chat_reply_id?' replying to '.($d_chat_reply_account_is_me?'Me':$d_chat_reply_account_name):''?> in <?=$d_chat_room_name?>">
         <i class="fa fa-times-circle" title="dismiss notification"></i>
@@ -74,7 +74,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <i class="fa fa-reply fa-rotate-180" title="reply"></i>
           </span>
           <span class="button-group">
-            <a href="/transcript?room=<?=$d_room_id?>&id=<?=$notification_id?>#c<?=$notification_id?>" class="fa fa-link" title="permalink"></a>
+            <a href="/transcript?room=<?=$d_room_id?>&id=<?=$notification_id?>#c<?=$d_chat_id?>" class="fa fa-link" title="permalink"></a>
             <i class="fa fa-ellipsis-h" title="more actions"></i>
             <?if($d_chat_has_history){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
             <i></i>
@@ -111,7 +111,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <i class="fa fa-times-circle" title="dismiss notification"></i>
         <span class="when" data-at="<?=$notification_at_iso?>"></span>,&nbsp;
         Message from&nbsp;
-        <a href="/<?=$d__community_name?>">TopAnswers<?=$d_community_name?'/'.$d_community_name:''?></a>
+        <a href="/<?=$d_community_name?>">TopAnswers<?=$d_community_name?'/'.$d_community_name:''?></a>
       </span>
       <div class="markdown" data-markdown="<?=$d_system_notification_message?>"><pre><?=$d_system_notification_message?></pre></div>
     <?}?>

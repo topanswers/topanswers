@@ -620,9 +620,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
         var m = $(this).closest('.message'), url = location.href;
-        $('#status').attr('data-replyid',m.data('id')).attr('data-replyname',m.data('name')).data('update')();
+        $('#status').attr('data-replyid',m.data('chat-id')).attr('data-replyname',m.data('name')).data('update')();
         $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
-        location.href = "#c"+m.data('id');
+        location.href = "#c"+m.data('chat-id');
         history.replaceState(null,null,url);
         $('#chattext').focus();
       });
@@ -634,7 +634,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var m = $(this).closest('.message');
         $('.ping').removeClass('ping locked');
         $.each(m.data('pings'),function(k,v){ $('.icon.pingable[data-id="'+v+'"]').addClass('ping locked'); });
-        $('#status').attr('data-editid',m.data('id')).attr('data-replyid',m.attr('data-reply-id')).attr('data-replyname',m.attr('data-reply-name')).data('update')();
+        $('#status').attr('data-editid',m.data('chat-id')).attr('data-replyid',m.attr('data-reply-id')).attr('data-replyname',m.attr('data-reply-name')).data('update')();
         $('#chattext').val(m.find('.markdown').attr('data-markdown')).focus().trigger('input');
       });
       function starflag(t,action,direction){
@@ -940,38 +940,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         else t.prev().animate({ 'flex-shrink': 1 });
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
-      $('#chat-wrapper').on('click','.notification[data-type="chat"] .fa.fa-times-circle', function(){
+      $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){
           updateNotifications().then(() => {
             if(!$('#notifications').children().length) $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
             <?if($dev){?>console.log($('#notifications').children().length);<?}?>
           });
         });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
-        return false;
-      });
-      $('#chat-wrapper').on('click','.notification[data-type="question"] .fa.fa-times-circle', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
-        return false;
-      });
-      $('#chat-wrapper').on('click','.notification[data-type="question flag"] .fa.fa-times-circle', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
-        return false;
-      });
-      $('#chat-wrapper').on('click','.notification[data-type="answer"] .fa.fa-times-circle', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
-        return false;
-      });
-      $('#chat-wrapper').on('click','.notification[data-type="answer flag"] .fa.fa-times-circle', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
-        $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
-        return false;
-      });
-      $('#chat-wrapper').on('click','.notification[data-type="system"] .fa.fa-times-circle', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){ updateNotifications(); });
         $(this).replaceWith('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });

@@ -10,10 +10,5 @@ ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'') || fail(403,'acce
 
 switch($_POST['action']) {
   case 'dismiss': exit(ccdb("select dismiss($1)",$_POST['id']));
-  case 'dismiss-question': exit(ccdb("select dismiss_question($1)",$_POST['id']));
-  case 'dismiss-question-flag': exit(ccdb("select dismiss_question_flag($1)",$_POST['id']));
-  case 'dismiss-answer': exit(ccdb("select dismiss_answer($1)",$_POST['id']));
-  case 'dismiss-answer-flag': exit(ccdb("select dismiss_answer_flag($1)",$_POST['id']));
-  case 'dismiss-system': exit(ccdb("select dismiss_system($1)",$_POST['id']));
   default: fail(400,'unrecognized action');
 }

@@ -34,6 +34,7 @@ $id = $_GET['id']??ccdb("select recent()");
   <div id="c<?=$chat_id?>"
        class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?>"
        data-id="<?=$chat_id?>"
+       data-chat-id="<?=$chat_id?>"
        data-name="<?=$account_name?>"
        data-reply-id="<?=$chat_reply_id?$chat_reply_id:''?>"
        data-reply-name="<?=$reply_account_name?>"
