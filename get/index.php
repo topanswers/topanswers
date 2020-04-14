@@ -67,9 +67,9 @@ extract(cdb("select account_id from one"));
     </div>
     <div>
       <?if($auth){?>
-        <a class="frame" href="/profile?community=meta"><img test-id="userIcon" class="icon" src="/identicon?id=<?=$account_id?>"></a>
+        <a class="frame" href="/profile?community=meta"><img data-test="userIcon" class="icon" src="/identicon?id=<?=$account_id?>"></a>
       <?}else{?>
-        <span class="element"><input id="join" type="button" value="join"> or <input test-id="loginBtn" id="link" type="button" value="log in"></span>
+        <span class="element"><input id="join" type="button" value="join"> or <input data-test="loginBtn" id="link" type="button" value="log in"></span>
       <?}?>
     </div>
   </header>

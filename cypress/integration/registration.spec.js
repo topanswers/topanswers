@@ -15,7 +15,7 @@ describe("The registration and login process", () => {
         RetrieveAccountToken()
       });
 
-    cy.get("[test-id=userIcon]").should("be.visible");
+    cy.get("[data-test=userIcon]").should("be.visible");
     
     cy.clearCookies();
     cy.visit("/");
