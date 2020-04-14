@@ -18,7 +18,7 @@ if(isset($_GET['activerooms'])){
                                                 data-room="<?=$room_id?>"
                                                 data-latest="<?=$participant_latest_read_chat_id?>"
                                                 <?if($participant_unread>0){?>data-unread="<?=$participant_unread?>" data-unread-lang="<?=$l_num($participant_unread)?>"<?}?>>
-      <img title="<?=($room_name)?$room_name:''?>" class="icon roomicon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>">
+      <img title="<?=($room_derived_name)?$room_derived_name:''?>" class="icon roomicon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>">
     </a><?
   }
   exit;
