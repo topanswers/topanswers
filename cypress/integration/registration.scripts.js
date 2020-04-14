@@ -28,8 +28,8 @@ export const LoginAndAssertUserIconVisibility = () => {
     cy.window().then(win => {
         cy.get("@accountToken").then(accountToken => {
             cy.stub(win, "prompt").returns(accountToken);
-            cy.get("[test-id=loginBtn]").click();
-            cy.get("[test-id=userIcon]").should("be.visible");
+            cy.get("[data-test=loginBtn]").click();
+            cy.get("[data-test=userIcon]").should("be.visible");
         });
     });
 }
