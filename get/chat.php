@@ -11,7 +11,8 @@ include '../lang/chat.'.$community_language.'.php';
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from chat where chat_change_id>$1",$_GET['fromid']));
 if(isset($_GET['quote'])) exit(ccdb("select quote($1,$2)::varchar",$_GET['room'],$_GET['id']));
 if(isset($_GET['activerooms'])){
-  foreach(db("select room_id,room_derived_name,room_question_id,community_name,participant_unread,participant_latest_read_chat_id
+  foreach(db("select room_id,room_derived_name,room_question_id,community_name,participant_latest_read_chat_id
+                   , least(99,participant_unread) participant_unread
               from room
               order by participant_chat_count desc, participant_latest_chat_at desc") as $r){ extract($r);?>
     <a<?if($room_id!==intval($_GET['room'])){?> href="/<?=$community_name?>?<?=$room_question_id?'q='.$room_question_id:'room='.$room_id?>"<?}?>
