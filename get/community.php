@@ -25,7 +25,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text,community_banner_markdown
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
-                   ,room_id,room_name,room_can_chat,room_has_chat
+                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
@@ -947,6 +947,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         else t.prev().animate({ 'flex-shrink': 1 });
       });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
+      $('#chat-wrapper').on('click','#mute', function(){
+        var t = $(this);
+        $.post({ url: '//post.topanswers.xyz/room', data: { action: 'mute', id: <?=$room?> }, xhrFields: { withCredentials: true } }).done(function(){
+          t.remove();
+          updateActiveRooms();
+        });
+        t.html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
+        return false;
+      });
       $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){
           updateNotifications().then(() => {
@@ -1269,7 +1278,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div id="chat-panels">
         <div class="label container">
           <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
-          <div class="element"><a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a></div>
+          <div class="element"><?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a> <?}?><a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a></div>
         </div>
         <div id="messages-wrapper" class="panel">
           <div id="messages">

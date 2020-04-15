@@ -9,8 +9,8 @@ create view room with (security_barrier) as
 with w as (select room_id,participant_latest_chat_at
                 , coalesce(participant_chat_count,0) participant_chat_count
                 , coalesce(listener_latest_read_chat_id,0) listener_latest_read_chat_id
-                , (select count(1) from (select 1 from db.chat c where c.room_id=l.room_id and c.chat_id>coalesce(l.listener_latest_read_chat_id,0) limit 99) z) listener_unread
-           from db.listener l natural left join db.participant p
+                , case when room_can_listen then (select count(1) from (select 1 from db.chat c where c.room_id=l.room_id and c.chat_id>coalesce(l.listener_latest_read_chat_id,0) limit 99) z) else 0 end listener_unread
+           from db.listener l natural join db.room r natural left join db.participant p
            where account_id=get_account_id())
 select room_id,room_derived_name,room_question_id,community_name,listener_unread,listener_latest_read_chat_id,participant_chat_count,participant_latest_chat_at
 from w natural join api._room natural join db.community
@@ -154,7 +154,7 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
      , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
      , p as (insert into ping(chat_id,account_id) select chat_id,account_id from aa cross join i)
      , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
-             select get_account_id(),room_id,chat_id from i natural join room where room_can_listen
+             select get_account_id(),room_id,chat_id from i natural join room
              on conflict on constraint listener_pkey do update set listener_latest_read_chat_id=excluded.listener_latest_read_chat_id)
      , r as (insert into participant(room_id,account_id)
              select room_id,get_account_id() from i

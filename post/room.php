@@ -9,7 +9,7 @@ extract(cdb("select room_id,community_name,question_id from one"));
 if(isset($_POST['action'])){
   switch($_POST['action']) {
     case 'mute':
-      ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_POST['from-id']??'') || fail(403,'access denied');
+      ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_POST['id']??'') || fail(403,'access denied');
       db("select mute()");
       exit;
     default: fail(400,'unrecognized action');

@@ -9,3 +9,4 @@ $l_notifications = 'notifications';
 $l_transcript = 'transcript';
 $l_preview = 'preview';
 $l_topanswers = 'TopAnswers';
+$l_mute = 'mute';

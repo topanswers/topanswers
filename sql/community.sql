@@ -92,9 +92,11 @@ select account_id
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , a.account_id is not null and (room_type='public' or x.account_id is not null) room_can_chat
      , sesite_url
+     , l.account_id is not null and room_can_listen room_can_mute
 from db.room r natural join db.community natural join api._community
      natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
+     natural left join db.listener l
      natural left join db.writer x
      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,question_is_deleted
                               ,sesite_url,selink_user_id
