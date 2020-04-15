@@ -122,6 +122,7 @@ create function new(knd integer, title text, markdown text, lic integer, lic_orl
   select _ensure_communicant(kind_account_id,get_community_id()) from kind where kind_id=knd and kind_account_id is not null;
   --
   with r as (insert into room(community_id) values(get_community_id()) returning room_id,community_id)
+     , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
      , q as (insert into question(community_id,account_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense)
              select community_id,coalesce(kind_account_id,get_account_id()),knd,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
              from r cross join (select kind_id,kind_account_id from kind where kind_id=knd) k

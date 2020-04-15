@@ -6,11 +6,15 @@ set local search_path to chat,api,pg_temp;
 create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
 --
 create view room with (security_barrier) as
-with w as (select room_id,participant_latest_chat_at,participant_chat_count,participant_latest_read_chat_id
-                , (select count(1) from db.chat c where c.room_id=p.room_id and c.chat_id>p.participant_latest_read_chat_id) participant_unread
-           from db.participant p
-           where account_id=get_account_id() and participant_listening)
-select room_id,room_derived_name,room_question_id,community_name,participant_unread,participant_latest_read_chat_id,participant_chat_count,participant_latest_chat_at
+with w as (select room_id,participant_latest_chat_at
+                , coalesce(participant_chat_count,0) participant_chat_count
+                , coalesce(listener_latest_read_chat_id,0) participant_latest_read_chat_id
+                , coalesce(listener_latest_read_chat_id,0) listener_latest_read_chat_id
+                , (select count(1) from (select 1 from db.chat c where c.room_id=l.room_id and c.chat_id>coalesce(l.listener_latest_read_chat_id,0) limit 99) z) participant_unread
+                , (select count(1) from (select 1 from db.chat c where c.room_id=l.room_id and c.chat_id>coalesce(l.listener_latest_read_chat_id,0) limit 99) z) listener_unread
+           from db.listener l natural left join db.participant p
+           where account_id=get_account_id())
+select room_id,room_derived_name,room_question_id,community_name,participant_unread,listener_unread,listener_latest_read_chat_id,participant_latest_read_chat_id,participant_chat_count,participant_latest_chat_at
 from w natural join api._room natural join db.community
 where participant_unread>0 or participant_latest_chat_at+make_interval(hours=>60+least(participant_chat_count,182)*12)>current_timestamp;
 --
@@ -168,6 +172,9 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
     , cn as (insert into chat_notification(notification_id,chat_id) select notification_id,chat_id from n cross join i)
      , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
      , p as (insert into ping(chat_id,account_id) select chat_id,account_id from aa cross join i)
+     , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
+             select get_account_id(),room_id,chat_id from i natural join room where room_can_listen
+             on conflict on constraint listener_pkey do update set listener_latest_read_chat_id=excluded.listener_latest_read_chat_id)
      , r as (insert into participant(room_id,account_id,participant_latest_read_chat_id)
              select room_id,get_account_id(),chat_id from i
              on conflict on constraint participant_pkey
@@ -247,13 +254,13 @@ create function read(ids integer[]) returns void language sql security definer s
   select _error('access denied') where get_account_id() is null;
   --
   with w as (select room_id, max(chat_id) chat_id
-             from chat natural join (select room_id,participant_latest_read_chat_id from participant where account_id=get_account_id()) x
-             where chat_id in (select * from unnest(ids)) and chat_id>participant_latest_read_chat_id
+             from chat natural join (select room_id,listener_latest_read_chat_id from listener where account_id=get_account_id()) x
+             where chat_id in (select * from unnest(ids)) and chat_id>coalesce(listener_latest_read_chat_id,0)
              group by room_id)
-  update participant x
-  set participant_latest_read_chat_id = w.chat_id
+  update listener l
+  set listener_latest_read_chat_id = w.chat_id
   from w
-  where w.room_id=x.room_id and account_id=get_account_id();
+  where w.room_id=l.room_id and account_id=get_account_id();
 $$;
 --
 --

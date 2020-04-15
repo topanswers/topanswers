@@ -81,6 +81,7 @@ create table room(
 , room_type room_type_enum not null default 'public'
 , room_name text
 , room_image bytea check(length(room_image)>0)
+, room_can_listen boolean not null default true
 , unique (community_id,room_id)
 );
 
@@ -216,13 +217,20 @@ create table writer(
 , primary key (account_id,room_id)
 );
 
+create table listener(
+  account_id integer references account
+, room_id integer references room
+, listener_latest_read_chat_id bigint
+, primary key (account_id,room_id)
+, foreign key (room_id,listener_latest_read_chat_id) references chat(room_id,chat_id)
+);
+
 create table participant(
   room_id integer references room
 , account_id integer references account
 , participant_latest_chat_at timestamptz not null default current_timestamp
 , participant_latest_read_chat_id bigint not null
 , participant_chat_count integer default 0 not null
-, participant_listening boolean default true not null;
 , primary key (room_id,account_id)
 );
 create index participant_latest on participant(room_id,participant_latest_chat_at);
@@ -392,7 +400,7 @@ create table tag(
   tag_id integer generated always as identity primary key
 , community_id integer not null references community
 , tag_at timestamptz not null default current_timestamp
-, tag_name text not null check (tag_name~'^[a-z][-.0-9a-z]{1,18}[0-9a-z]$')
+, tag_name text not null check (tag_name~'^[a-z][-.0-9a-z]{0,18}[0-9a-z]$')
 , tag_description text default '' not null check (length(tag_description)<101)
 , tag_implies_id integer
 , tag_question_count integer default 0 not null

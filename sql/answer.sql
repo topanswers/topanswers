@@ -150,6 +150,11 @@ create function new(markdown text, lic integer, lic_orlater boolean, codelic int
      , n as (insert into notification(account_id) select account_id from nn returning *)
     , an as (insert into answer_notification(notification_id,answer_history_id) select notification_id,answer_history_id from nn natural join n)
      , a as (update account set account_notification_id = default where account_id in (select account_id from n))
+     , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
+             select get_account_id(),question_room_id,(select max(chat_id) from chat where room_id=question_room_id)
+             from question natural join room
+             where question_id=get_question_id() and room_can_listen
+             on conflict do nothing)
   select answer_id from i;
 $$;
 --
