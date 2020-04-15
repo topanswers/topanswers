@@ -230,12 +230,10 @@ create table participant(
   room_id integer references room
 , account_id integer references account
 , participant_latest_chat_at timestamptz not null default current_timestamp
-, participant_latest_read_chat_id bigint not null
 , participant_chat_count integer default 0 not null
 , primary key (room_id,account_id)
 );
 create index participant_latest on participant(room_id,participant_latest_chat_at);
-create index participant_account_id_ind on participant(account_id) include(room_id,participant_latest_chat_at,participant_latest_read_chat_id,participant_chat_count) where participant_listening;
 
 create table chat_flag(
   chat_id bigint references chat
