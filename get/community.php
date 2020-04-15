@@ -739,7 +739,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           });
           return;
         }
-        s = m.match(/^https:\/\/(?:www.youtube.com\/watch\?v=|youtu.be\/)([0-9a-zA-Z]*)$/);
+        s = m.match(/^https:\/\/(?:www.youtube.com\/watch\?v=|youtu.be\/)([-_0-9a-zA-Z]*)$/);
         if(s){
           $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'youtube', room: <?=$room?>, id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
             if($('#chattext').val()===m){
