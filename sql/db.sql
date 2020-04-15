@@ -224,6 +224,7 @@ create table listener(
 , primary key (account_id,room_id)
 , foreign key (room_id,listener_latest_read_chat_id) references chat(room_id,chat_id)
 );
+create index listener_account_id_ind on listener(account_id) include(room_id,listener_latest_read_chat_id);
 
 create table participant(
   room_id integer references room
