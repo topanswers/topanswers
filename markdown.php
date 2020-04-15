@@ -56,6 +56,8 @@
   .markdown .table-of-contents ol { counter-reset: list-item-toc; }
   .markdown .table-of-contents li { display: block; counter-increment: list-item-toc; }
   .markdown .table-of-contents li:before { content: counters(list-item-toc,'.') ' '; }
+  .markdown.youtube p { position: relative; }
+  .markdown.youtube a::before { content: ''; display: block; position: absolute; width: 0; height: 0; left: 50%; top: 50%; transform: translate(-50%, -50%); border-top: 20px solid transparent; border-bottom: 20px solid transparent; border-left: 35px solid rgba(255,255,255,0.7); }
 
   .dbfiddle { padding: 8px; background: rgb(var(--rgb-light)); border-radius: 3px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
@@ -216,6 +218,7 @@
     $.fn.renderMarkdown = function(promises = []){
       this.filter('[data-markdown]').each(function(){
         var t = $(this), m = t.attr('data-markdown');
+        if(m.match(/^\[!\[[^\]]*]\(\/image\?hash=[0-9a-f]{64}\)]\(https:\/\/www\.youtube\.com\/watch\?v=[-_0-9a-zA-Z]+\)$/)) t.addClass('youtube');
         prefix = t.closest('[data-id]').attr('id')||'';
         //if(m.length>10000) md.enable('anchor'); else md.disable('anchor');
         t.html(md.render(m,{ docId: prefix }));
