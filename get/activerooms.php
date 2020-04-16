@@ -10,7 +10,7 @@ extract(cdb("select community_name,community_language
                   , (select jsonb_agg(z)
                      from (select room_group, jsonb_agg(z order by rn) rooms
                            from (select room_id,room_derived_name,room_question_id,community_name,listener_latest_read_chat_id,listener_unread
-                                      , case when room_question_id is not null and community_name=$1 then 1 when room_question_id is null then 2 else 3 end room_group
+                                      , case when room_question_id is null then 1 else 2 end room_group
                                       , row_number() over (order by participant_chat_count desc, participant_latest_chat_at desc) rn
                                  from room) z
                            group by room_group) z) grps

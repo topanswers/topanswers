@@ -186,9 +186,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chatupload:active { color: rgb(var(--rgb-mid)); }
     #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 26px; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; background: rgb(var(--rgb-white)); color: rgb(var(--rgb-black)); }
 
-    #chat a.panel { pointer-events: none; }
-    #chat a[href].panel { pointer-events: auto; }
-    #chat a.panel[data-unread]:not([data-unread^="0"])::after { display: inline-block; vertical-align: middle; content:attr(data-unread-lang); margin-left: 2px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
+    #chat-panels a.panel { pointer-events: none; }
+    #chat-panels a[href].panel { pointer-events: auto; }
+    #chat-panels a.panel[data-unread]:not([data-unread^="0"])::after { display: inline-block; vertical-align: middle; content:attr(data-unread-lang); margin-left: 2px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
                                                                width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px rgb(var(--rgb-white)); }
 
     .message { position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
