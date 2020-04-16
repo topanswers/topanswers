@@ -89,6 +89,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
+    footer { min-height: 30px; flex: 0 0 auto; pxadding: 1px 0; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
+    footer .icon { height: 24px; width: 24px; margin: 0; }
+    #community-rooms { display: flex; padding: 1px; }
+    #community-rooms>div:first-child { flex: 1 1 auto; display: flex; align-items: center; height: 100%; overflow: hidden; }
+    #community-rooms>div:first-child>div:last-child { overflow: hidden; text-overflow: ellipsis; }
+    #community-rooms>div:last-child { flex: 0 0 auto; display: flex; align-items: center; height: 100%; }
+    footer>div:last-child { display: none; }
+    #active-rooms { display: flex; flex-wrap: wrap; justify-content: space-between; border-top: 2px solid black; }
+    #active-rooms>div { display: flex; overflow-y: hidden; overflow-x: auto; }
+    footer a.frame { position: relative; }
+    footer a.frame[data-unread]:after { content:attr(data-unread-lang); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight));
+                                                         color: rgb(var(--rgb-black)); width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none;
+                                                         box-shadow: -1px -1px 1px 1px #fffe; xtext-shadow: 0 0 0px rgb(var(--rgb-white)) ; }
+    #more-rooms.none { pointer-events: none; opacity: 0.5; }
+
     textarea, pre, code, .CodeMirror { font-family: var(--monospace-font-family); }
     textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
 
@@ -149,7 +164,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
     #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
-    .firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; }
+    .firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; flex: 1 1 0; }
     .firefoxwrapper>* { min-height: 100%; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { opacity: 0; }
@@ -212,16 +227,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .notification .fa.fa-spinner { color: rgb(var(--rgb-dark)); }
     .notification>a { color: rgb(var(--rgb-dark)); }
 
-    #active { flex: 0 0 23px; display: flex; flex-direction: column; justify-content: space-between; background: rgb(var(--rgb-light)); border-left: 1px solid rgb(var(--rgb-dark)); overflow-y: hidden; }
-    #active-rooms { flex: 1 1 auto; display: flex; flex-direction: column; overflow-y: hidden; }
-    #active-rooms a { position: relative; }
-    #active-rooms a.processed[href][data-unread]:after { content:attr(data-unread-lang); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
-                                                         width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px rgb(var(--rgb-white)); }
-    #active-rooms>a:not([href])>.icon { outline: 1px solid rgb(var(--rgb-highlight)); }
-    #active-rooms>a[href]:hover>.icon { outline: 1px solid rgba(var(--rgb-highlight),0.6); }
-    #active-spacer { flex: 0 0 auto; padding: 1rem 0; cursor: pointer; }
-    #active-spacer>div { background: rgb(var(--rgb-dark)); height: 1px; }
-    #active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
+    #active-users { flex: 0 0 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 
     .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
     .simple-pagination ul { display: flex; padding: 0; margin: 30px 0; }
@@ -449,13 +455,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
       }
       function updateRoomLatest(){
-        var read, count = 0;
+        var read, count = 0, m;
         read = localStorage.getItem('read')?JSON.parse(localStorage.getItem('read')):{};
-        $('#active-rooms>a:not([data-unread]):not(.processed)').each(function(){
+        $('#active-rooms a:not([data-unread]):not(.processed)').each(function(){
           delete read[$(this).attr('data-room')];
           $(this).addClass('processed');
         });
-        $('#active-rooms>a[data-unread]:not(.processed)').each(function(){
+        $('#active-rooms a[data-unread]:not(.processed)').each(function(){
           var r = $(this).attr('data-room'), l = $(this).data('latest');
           if(r==='<?=$room?>') read['<?=$room?>'] = _.union(read['<?=$room?>']||[],$('#messages>.message').map(function(){ var id = +this.id.substring(1); return (id>l)?id:null; }).get().reverse()).sort((a,b) => a-b);
           if(read[r]){
@@ -469,9 +475,24 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         localStorage.setItem('read',JSON.stringify(read));
         _.forEach(read,function(e){ count += e.length; });
         localStorage.setItem('readCount',count);
+        $('#community-rooms a').each(function(){
+          var t = $(this);
+          $('#active-rooms a[data-room="'+t.data('id')+'"]').each(function(){
+            var u = $(this);
+            if(t.hasClass('this')){
+              t.attr('data-unread',u.attr('data-unread'));
+              t.attr('data-unread-lang',u.attr('data-unread-lang'));
+              t.attr('title',u.attr('title-lang'));
+            }
+            if(u.siblings().length===0) u.parent().remove(); else u.remove();
+          });
+        });
+        m = $('#active-rooms a[data-unread]').length;
+        if(m) $('#more-rooms').attr('data-unread',m).attr('data-unread-lang',m.toLocaleString('<?=$jslang?>'));
+        $('#more-rooms').toggleClass('none',$('#active-rooms a').length===0);
       }
       function updateActiveRooms(){
-        $.get('/chat?activerooms&room=<?=$room?>').done(function(r){
+        $.get('/activerooms?community=<?=$community_name?>').done(function(r){
           $('#active-rooms').html(r);
           updateRoomLatest();
           setChatPollTimeout();
@@ -495,7 +516,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 $('#active-users').html(r);
                 $.each(savepings,function(){ $('#active-users .icon[data-id='+this+']').addClass('ping'); });
               });
-              $.get('/chat?activerooms&room=<?=$room?>').done(function(r){
+              $.get('/activerooms?community=<?=$community_name?>').done(function(r){
                 $('#active-rooms').html(r);
                 updateRoomLatest();
               });
@@ -544,7 +565,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         Promise.allSettled(promises).then(() => {
           $('#notifications .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
-          $('#chat .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification:not(.dismissed)').length).attr('data-unread-lang',$('#notifications>.notification:not(.dismissed)').length.toLocaleString('<?=$jslang?>'));
+          $('#chat-panels .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification:not(.dismissed)').length).attr('data-unread-lang',$('#notifications>.notification:not(.dismissed)').length.toLocaleString('<?=$jslang?>'));
         });
       }
       function updateNotifications(){
@@ -626,7 +647,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
         var m = $(this).closest('.message'), url = location.href;
         $('#status').attr('data-replyid',m.data('chat-id')).attr('data-replyname',m.data('name')).data('update')();
-        $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
+        $('#chat-panels a.panel[href][data-panel="messages-wrapper"]').click();
         location.href = "#c"+m.data('chat-id');
         history.replaceState(null,null,url);
         $('#chattext').focus();
@@ -908,7 +929,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
       }
       processNewChat(true);
-      updateRoomLatest();
+      updateActiveRooms();
       processNotifications();
       setChatPollTimeout();
       (function(){
@@ -959,7 +980,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){
           updateNotifications().then(() => {
-            if(!$('#notifications').children('div').length) $('#chat a.panel[href][data-panel="messages-wrapper"]').click();
+            if(!$('#notifications').children('div').length) $('#chat-panels a.panel[href][data-panel="messages-wrapper"]').click();
             <?if($dev){?>console.log($('#notifications').children().length);<?}?>
           });
         });
@@ -990,16 +1011,20 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           return false;
         }
       });
-      $('#chat a.panel').click(function(){
+      $('#chat-panels a.panel').click(function(){
         var panels = $('#chat-panels>div:not(.label)'), panel = $('#'+$(this).data('panel'));
         if(!panel.hasClass('panel')) panel = panel.parent();
-        $('#chat a.panel:not([href])').attr('href','.');
+        $('#chat-panels a.panel:not([href])').attr('href','.');
         $(this).removeAttr('href');
         panels.hide();
         panel.show();
         return false;
       });
       processStarboard(true);
+      $('#more-rooms').click(function(){
+        $('#active-rooms').parent().slideToggle(200);
+        return false;
+      });
     });
   </script>
   <title><?=isset($_GET['room']) ? ($room_name.' - ') : (isset($_GET['q'])?$question_title.' - ':'')?><?=$community_display_name?> - <?=$l_topanswers?></title>
@@ -1260,27 +1285,34 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <div id="dummyresizerx"></div>
   <div id="chat-wrapper" class="pane hidepane">
     <footer>
-      <div>
-        <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
-        <a class="frame"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
-        <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
+      <div id="community-rooms">
+        <div>
+          <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
+          <a class="frame this"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>" data-id="<?=$room?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
+          <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
+        </div>
+        <div>
+          <?foreach(db("select room_id,room_name
+                        from room natural join community
+                        where community_name=$1 and room_id<>$2
+                        order by room_name desc",$community_name,$room) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
+            <a class="frame" href="/<?=$community_name?>?room=<?=$r_room_id?>" title="<?=$r_room_name?>" data-id="<?=$r_room_id?>"><img class="icon roomicon" src="/roomicon?id=<?=$r_room_id?>"></a>
+          <?}?>
+          <a id="more-rooms" class="frame none" href="." title="more rooms"><img class="icon roomicon" src="/image?hash=560e3af97ebebc1189b630f64012ae2adca14ecedb6d86e51823f5f180786f8f"></a>
+        </div>
       </div>
       <div>
-        <?foreach(db("select room_id,room_name
-                      from room natural join community
-                      where community_name=$1 and room_id<>$2
-                      order by room_name desc",$community_name,$room) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
-          <a class="frame" href="/<?=$community_name?>?room=<?=$r_room_id?>" title="<?=$r_room_name?>"><img class="icon roomicon" src="/roomicon?id=<?=$r_room_id?>"></a>
-        <?}?>
+        <div id="active-rooms">
+        </div>
       </div>
     </footer>
-    <div id="chat">
-      <div id="chat-panels">
-        <div class="label container">
-          <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
-          <div class="element"><?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a> <?}?><a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a></div>
-        </div>
-        <div id="messages-wrapper" class="panel">
+    <div id="chat-panels">
+      <div class="label container">
+        <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
+        <div class="element"><?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a> <?}?><a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a></div>
+      </div>
+      <div id="messages-wrapper" class="panel">
+        <div id="chat" class="panel">
           <div id="messages">
             <?if($room_has_chat){?>
               <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
@@ -1304,42 +1336,36 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               </div>
             <?}?>
           </div>
-          <?if($canchat){?>
-            <div id="preview" class="message processed">
-              <div id="status" style="width: 100%; font-style: italic; font-size: 10px;" data-replyid="" data-replyname="" data-editid="">
-                <span><?=$l_preview?>:</span>
-                <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
-              </div>
-              <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
-            </div>
-            <div id="canchat-wrapper">
-              <div id="chattext-wrapper">
-                <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
-                <i id="chatupload" class="fa fa-fw fa-picture-o" title="embed image"></i>
-                <textarea id="chattext" rows="1" placeholder="<?=$l_chattext_placeholder?>" maxlength="5000"></textarea>
-              </div>
+          <?if($auth){?>
+            <div id="active-users">
+              <?$ch = curl_init('http://127.0.0.1/chat?activeusers&room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
             </div>
           <?}?>
         </div>
-        <?if($auth){?>
-          <div id="starboard" class="panel">
-            <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-            <div style="flex: 1 0 0;"></div>
+        <?if($canchat){?>
+          <div id="preview" class="message processed">
+            <div id="status" style="width: 100%; font-style: italic; font-size: 10px;" data-replyid="" data-replyname="" data-editid="">
+              <span><?=$l_preview?>:</span>
+              <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
+            </div>
+            <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
           </div>
-          <div id="notifications" class="panel">
-            <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+          <div id="canchat-wrapper">
+            <div id="chattext-wrapper">
+              <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
+              <i id="chatupload" class="fa fa-fw fa-picture-o" title="embed image"></i>
+              <textarea id="chattext" rows="1" placeholder="<?=$l_chattext_placeholder?>" maxlength="5000"></textarea>
+            </div>
           </div>
         <?}?>
       </div>
       <?if($auth){?>
-        <div id="active">
-          <div id="active-rooms">
-            <?$ch = curl_init('http://127.0.0.1/chat?activerooms&room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-          </div>
-          <div id="active-spacer"><div></div></div>
-          <div id="active-users">
-            <?$ch = curl_init('http://127.0.0.1/chat?activeusers&room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-          </div>
+        <div id="starboard" class="panel">
+          <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+          <div style="flex: 1 0 0;"></div>
+        </div>
+        <div id="notifications" class="panel">
+          <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
         </div>
       <?}?>
     </div>

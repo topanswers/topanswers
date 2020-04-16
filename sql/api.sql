@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists activerooms cascade;
 drop schema if exists usr cascade;
 drop schema if exists navigation cascade;
 drop schema if exists communityicon cascade;
@@ -251,5 +252,6 @@ end$$;
 \i ~/git/sql/communityicon.sql
 \i ~/git/sql/navigation.sql
 \i ~/git/sql/user.sql
+\i ~/git/sql/activerooms.sql
 --
 commit;

@@ -31,10 +31,3 @@ header .select>div:last-child>div>div>a>div { margin-right: 6px; outline: none; 
 header .select>div:last-child>div>div>a:not(:first-of-type) { font-size: 12px; padding-right: 4px; }
 header .select>div:last-child>div>div>a:first-child { flex: 1 0 auto; padding-right: 75px; text-decoration: none; }
 header .select>div:last-child>div>div:not(:hover)>a:not(:first-of-type) { visibility: hidden; }
-
-footer { min-height: 30px; display: flex; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
-footer a, footer .element a, footer a.element { color: rgb(var(--rgb-light)); }
-footer .icon { height: 24px; width: 24px; margin: 0; }
-footer>div:first-child { flex: 1 1 auto; display: flex; align-items: center; height: 100%; overflow: hidden; }
-footer>div:first-child>div:last-child { overflow: hidden; text-overflow: ellipsis; }
-footer>div:last-child { flex: 0 0 auto; display: flex; align-items: center; height: 100%; }

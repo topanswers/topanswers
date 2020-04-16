@@ -29,6 +29,9 @@ extract(cdb("select account_id from one"));
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
     main>div { background: rgb(var(--rgb-white)); flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 3px; }
 
+    footer { display: flex; align-items: center; justify-content: safe center; height: 30px; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); white-space: nowrap; }
+    footer *, footer a[href] { color: rgb(var(--rgb-light)); }
+
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-light)); }
     .communities { display: flex; flex-wrap: wrap; margin: 16px 0; margin-top: -24px; }
     .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; line-height: 1; }
@@ -118,9 +121,7 @@ extract(cdb("select account_id from one"));
     </div>
   </main>
   <footer>
-    <div>
-      <span class='element'>TopAnswers is based in the UK, with servers in a data centre in Reading. We are <a href="/meta?q=1">committed to</a> seeking <a href="https://en.wikipedia.org/wiki/Charitable_incorporated_organisation">Charitable Incorporated Organisation</a> status as soon as we can meet our modest hosting and accountancy costs.</span>
-    </div>
+    <div>TopAnswers is based in the UK, with servers in a data centre in Reading. We are <a href="/meta?q=1">committed to</a> seeking <a href="https://en.wikipedia.org/wiki/Charitable_incorporated_organisation">Charitable Incorporated Organisation</a> status as soon as we can meet our modest hosting and accountancy costs.</div>
   </footer>
 </body>
 </html>
