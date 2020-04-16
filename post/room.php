@@ -8,6 +8,10 @@ ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['u
 extract(cdb("select room_id,community_name,question_id from one"));
 if(isset($_POST['action'])){
   switch($_POST['action']) {
+    case 'listen':
+      ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_POST['id']??'') || fail(403,'access denied');
+      db("select listen()");
+      exit;
     case 'mute':
       ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_POST['id']??'') || fail(403,'access denied');
       db("select mute()");

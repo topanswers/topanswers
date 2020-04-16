@@ -93,6 +93,7 @@ select account_id
      , a.account_id is not null and (room_type='public' or x.account_id is not null) room_can_chat
      , sesite_url
      , l.account_id is not null and room_can_listen room_can_mute
+     , l.account_id is null and room_can_listen room_can_listen
 from db.room r natural join db.community natural join api._community
      natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant

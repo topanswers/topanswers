@@ -25,7 +25,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text,community_banner_markdown
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
-                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute
+                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
@@ -479,7 +479,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           var t = $(this);
           $('#active-rooms a[data-room="'+t.data('id')+'"]').each(function(){
             var u = $(this);
-            if(t.hasClass('this')){
+            if(!t.hasClass('this')){
               t.attr('data-unread',u.attr('data-unread'));
               t.attr('data-unread-lang',u.attr('data-unread-lang'));
               t.attr('title',u.attr('title-lang'));
@@ -971,7 +971,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('click','#mute', function(){
         var t = $(this);
         $.post({ url: '//post.topanswers.xyz/room', data: { action: 'mute', id: <?=$room?> }, xhrFields: { withCredentials: true } }).done(function(){
-          t.remove();
+          t.html('<?=$l_listen?>').attr('id','listen');
+          $('#listen').show();
+          updateActiveRooms();
+        });
+        t.html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
+        return false;
+      });
+      $('#chat-wrapper').on('click','#listen', function(){
+        var t = $(this);
+        $.post({ url: '//post.topanswers.xyz/room', data: { action: 'listen', id: <?=$room?> }, xhrFields: { withCredentials: true } }).done(function(){
+          t.html('<?=$l_mute?>').attr('id','mute');
           updateActiveRooms();
         });
         t.html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
@@ -1309,7 +1319,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <div id="chat-panels">
       <div class="label container">
         <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
-        <div class="element"><?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a> <?}?><a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a></div>
+        <div class="element">
+          <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
+          <?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a><?}?>
+          <a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a>
+        </div>
       </div>
       <div id="messages-wrapper" class="panel">
         <div id="chat" class="panel">
