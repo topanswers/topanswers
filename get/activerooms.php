@@ -14,7 +14,7 @@ extract(cdb("select community_name,community_language
                                       , row_number() over (order by participant_chat_count desc, participant_latest_chat_at desc) rn
                                  from room) z
                            group by room_group) z) grps
-             from one",$_GET['community']));
+             from one"));
 $_GET['community']===$community_name || fail(400,'invalid community');
 include '../lang/activerooms.'.$community_language.'.php';
 ?>
