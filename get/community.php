@@ -96,7 +96,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #community-rooms>div:first-child>div:last-child { overflow: hidden; text-overflow: ellipsis; }
     #community-rooms>div:last-child { flex: 0 0 auto; display: flex; align-items: center; height: 100%; }
     footer>div:last-child { display: none; }
-    #active-rooms { display: flex; flex-wrap: wrap; justify-content: space-between; border-top: 2px solid black; }
+    #active-rooms { border-top: 2px solid black; }
     #active-rooms>div { display: flex; overflow-y: hidden; overflow-x: auto; }
     footer a.frame { position: relative; }
     footer a.frame[data-unread]:after { content:attr(data-unread-lang); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight));
