@@ -163,7 +163,7 @@ create function set_se_user_id(sid integer, uid integer) returns void language s
               from selink s
               where s.community_id=get_community_id() and sesite_id=sid and selink_user_id=uid and c.community_id=s.community_id and c.account_id=s.account_id
               returning s.account_id)
-      , d as (delete from selink where account_id=(select account_id from se) and community_id=get_community_id() and sesite_id = sid)
+      , d as (delete from selink s using se where s.account_id=se.account_id and s.community_id=get_community_id() and s.sesite_id = sid)
       , i as (insert into selink(account_id,community_id,sesite_id,selink_user_id) values(get_account_id(),get_community_id(),sid,uid))
      , ta as (update communicant
               set communicant_votes = communicant_votes+coalesce((select communicant_votes from communicant where community_id=get_community_id() and account_id=(select account_id from se)),0)

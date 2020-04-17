@@ -153,6 +153,7 @@ create table selink(
 , sesite_id integer references sesite
 , selink_user_id integer not null
 , primary key (account_id,community_id,sesite_id)
+, unique (community_id,sesite_id,selink_user_id) deferrable initially deferred
 , foreign key (account_id,community_id) references communicant
 , foreign key (community_id,sesite_id) references source
 );
