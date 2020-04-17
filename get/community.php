@@ -913,6 +913,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var promises = [];
         $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(promises);
         Promise.allSettled(promises).then(() => {
+          $('#qa .post:not(.processed) .question').each(renderQuestion);
           $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
           $('#qa .post:not(.processed) .when').each(function(){
             var t = $(this);
