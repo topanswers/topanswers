@@ -28,6 +28,12 @@ select community_id
 from (select community_id,question_id,question_title,question_at,question_votes,kind_id from db.question) q natural join db.kind natural join db.answer
 where community_id=get_community_id() and account_id=get_account_id();
 --
+create view sesite with (security_barrier) as
+select sesite_id,sesite_url,selink_user_id, row_number() over (order by source_is_default desc, sesite_id) sesite_ordinal
+from db.source natural join db.sesite
+     natural left join (select community_id,sesite_id,selink_user_id from db.selink where account_id=get_account_id()) a
+where community_id=get_community_id();
+--
 create view one with (security_barrier) as
 select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense
      , account_image is not null account_has_image
@@ -138,6 +144,27 @@ create function set_se_user_id(id integer) returns void language sql security de
               returning account_id)
       , d as (delete from selink where account_id=(select account_id from se) and community_id=get_community_id())
       , i as (insert into selink(account_id,community_id,sesite_id,selink_user_id) select account_id,community_id,sesite_id,id from community natural join (select community_id,sesite_id from source where source_is_default) s natural join communicant where community_id=get_community_id() and account_id=get_account_id())
+     , ta as (update communicant
+              set communicant_votes = communicant_votes+coalesce((select communicant_votes from communicant where community_id=get_community_id() and account_id=(select account_id from se)),0)
+              where community_id=get_community_id() and account_id=get_account_id())
+      , q as (update question set account_id=get_account_id() where account_id=(select account_id from se))
+      , a as (update answer set account_id=get_account_id() where account_id=(select account_id from se))
+  select null;
+$$;
+--
+create function set_se_user_id(sid integer, uid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null or get_community_id() is null;
+  select _error('SE user id is already set for this account') where exists(select 1 from communicant natural join selink where community_id=get_community_id() and sesite_id=sid and account_id=get_account_id() and selink_user_id is not null);
+  select _error('SE user id is already linked to an account') where exists(select 1 from communicant natural join account natural join selink where community_id=get_community_id() and sesite_id=sid and selink_user_id=uid and not account_is_imported);
+  select _ensure_communicant(get_account_id(),get_community_id());
+  --
+  with se as (update communicant c
+              set communicant_votes = 0
+              from selink s
+              where s.community_id=get_community_id() and sesite_id=sid and selink_user_id=uid and c.community_id=s.community_id and c.account_id=s.account_id
+              returning s.account_id)
+      , d as (delete from selink where account_id=(select account_id from se) and community_id=get_community_id() and sesite_id = sid)
+      , i as (insert into selink(account_id,community_id,sesite_id,selink_user_id) values(get_account_id(),get_community_id(),sid,uid))
      , ta as (update communicant
               set communicant_votes = communicant_votes+coalesce((select communicant_votes from communicant where community_id=get_community_id() and account_id=(select account_id from se)),0)
               where community_id=get_community_id() and account_id=get_account_id())

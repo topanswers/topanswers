@@ -13,7 +13,7 @@ if(isset($_POST['community'])){
 }
 if($auth){
   if(isset($_POST['community'])){
-    extract(cdb("select community_name,sesite_url from one"));
+    extract(cdb("select community_name from one"));
     switch($_POST['action']){
       case 'font':
         if(isset($_POST['regular'])) db("select change_regular_font($1)",$_POST['regular']);
@@ -21,12 +21,14 @@ if($auth){
         header('Location: '.$_POST['location']);
         exit;
       case 'se':
+        isset($_POST['sesite']) || fail(400,'must have an "sesite" parameter');
+        extract(cdb("select sesite_url from sesite where sesite_id=$1",$_POST['sesite']));
         $ch = curl_init('https://api.stackexchange.com/2.2/me?key=fQPamdsPO4Okt9r*OKEp)g((&site='.explode('.',substr($sesite_url,8))[0].'&access_token='.$_POST['token']);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
         curl_setopt($ch,CURLOPT_ENCODING,'');
         $id = json_decode(curl_exec($ch),true)['items'][0]["user_id"];
         curl_close($ch);
-        if($id) db("select set_se_user_id($1)",$id);
+        if($id) db("select set_se_user_id($1,$2)",$_POST['sesite'],$id);
         header('Location: '.$_POST['location']);
         exit;
       default: fail(400,'unrecognized action for authenticated user with community set');

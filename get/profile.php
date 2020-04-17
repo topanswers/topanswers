@@ -21,12 +21,12 @@ if(isset($_GET['action'])){
   switch($_GET['action']){
     case 'se':
       if(isset($_GET['code'])){
-        $ch = curl_init('https://stackoverflow.com/oauth/access_token?client_id=17064&redirect_uri='.urlencode('https://topanswers.xyz/profile?community='.$_GET['community'].'&action=se'));
+        $ch = curl_init('https://stackoverflow.com/oauth/access_token?client_id=17064&redirect_uri='.urlencode('https://topanswers.xyz/profile?community='.$_GET['community'].'&sesite='.$_GET['sesite'].'&action=se'));
         curl_setopt($ch,CURLOPT_POST,true);
         curl_setopt($ch,CURLOPT_POSTFIELDS,http_build_query(['client_id'=>'17064'
                                                             ,'client_secret'=>$one_stackapps_secret
                                                             ,'code'=>$_GET['code']
-                                                            ,'redirect_uri'=>'https://topanswers.xyz/profile?community='.$_GET['community'].'&action=se'
+                                                            ,'redirect_uri'=>'https://topanswers.xyz/profile?community='.$_GET['community'].'&sesite='.$_GET['sesite'].'&action=se'
                                                             ]));
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
         $token = preg_split('/=|&/',curl_exec($ch))[1];
@@ -35,6 +35,7 @@ if(isset($_GET['action'])){
           <form id="form" action="//post.topanswers.xyz/profile" method="post">
             <input type="hidden" name="action" value="se">
             <input type="hidden" name="community" value="<?=$community_name?>">
+            <input type="hidden" name="sesite" value="<?=$_GET['sesite']?>">
             <input type="hidden" name="token" value="<?=$token?>">
             <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
             <noscript><input type="submit" value="Click here if you are not redirected automatically."/></noscript>
@@ -46,7 +47,7 @@ if(isset($_GET['action'])){
         }
         exit;
       }else{
-        header('Location: https://stackoverflow.com/oauth?client_id=17064&redirect_uri='.urlencode('https://topanswers.xyz/profile?community='.$_GET['community'].'&action=se')); exit;
+        header('Location: https://stackoverflow.com/oauth?client_id=17064&redirect_uri='.urlencode('https://topanswers.xyz/profile?community='.$_GET['community'].'&sesite='.$_GET['sesite'].'&action=se')); exit;
       }
     default: fail(400,'unrecognized action');
   }
@@ -243,17 +244,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <input type="submit" value="save">
         </form>
       </fieldset>
-      <?if($sesite_url){?>
+      <?foreach(db("select sesite_id,sesite_url,selink_user_id from sesite order by sesite_ordinal") as $r){ extract($r);?>
         <fieldset>
           <legend>linked account on <a href="<?=$sesite_url?>"><?=substr($sesite_url,8)?></a></legend>
           <form action="//topanswers.xyz/profile" method="get">
-            <?if($communicant_se_user_id){?>
-              <a href="<?=$sesite_url.'/users/'.$communicant_se_user_id?>?>"><?=substr($sesite_url,8).'/users/'.$communicant_se_user_id?></a>
+            <?if($selink_user_id){?>
+              <a href="<?=$sesite_url.'/users/'.$selink_user_id?>?>"><?=substr($sesite_url,8).'/users/'.$selink_user_id?></a>
             <?}else{?>
               <input type="hidden" name="action" value="se">
               <input type="hidden" name="community" value="<?=$community_name?>">
+              <input type="hidden" name="sesite" value="<?=$sesite_id?>">
               <input type="submit" value="authenticate with SE to link account">
-              <a href="/meta?q=409#a647">info</a>
+              <a href="/meta?q=409#a647" style="margin-left: 4px;">info</a>
             <?}?>
           </form>
         </fieldset>
