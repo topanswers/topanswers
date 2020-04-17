@@ -46,6 +46,7 @@ where community_id=get_community_id();
 --
 --
 create function login_community(uuid,text) returns boolean language sql security definer as $$select api.login_room($1,(select community_room_id from db.community where community_name=$2));$$;
+create function login_question(uuid,integer) returns boolean language sql security definer as $$select api.login_room($1,(select question_room_id from db.question where question_id=$2));$$;
 --
 create function search(text) returns table (question_id integer, rn bigint) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   with t as (select trim('[]' from m[1]) tag_name from regexp_matches($1,'\[[^\]]+]','g') m)

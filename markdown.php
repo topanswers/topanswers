@@ -53,6 +53,7 @@
                         border: 1px solid rgb(var(--rgb-mid)); border-style: none solid;
                         background: linear-gradient(to bottom, rgba(var(--rgb-light),0) 0%, rgb(var(--rgb-light)) 40%, rgb(var(--rgb-light)) 25%); }
   .markdown .expander:hover { text-decoration: underline; cursor: pointer; }
+  .markdown .post .hover { display: none; }
   .markdown .table-of-contents ol { counter-reset: list-item-toc; }
   .markdown .table-of-contents li { display: block; counter-increment: list-item-toc; }
   .markdown .table-of-contents li:before { content: counters(list-item-toc,'.') ' '; }
@@ -187,10 +188,13 @@
                  var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/);
                  if (tokens[idx].nesting===1) return '<div class="object-answer" data-id="'+m[1]+'">';
                  else return '</div>';
-               } })
-               <?if($community_name==='codegolf'||$community_name==='test'){?>
-                 .use(window.markdownitKatex)
-               <?}?>
+                 } })
+               .use(window.markdownitObject,'question',{ validate: function(p) { return p.trim().match(/^question ([1-9][0-9]*)$/); }, render: function (tokens,idx){
+                 var m = tokens[idx].info.trim().match(/^question ([1-9][0-9]*)$/);
+                 if (tokens[idx].nesting===1) return '<div class="object-question" data-id="'+m[1]+'">';
+                 else return '</div>';
+                 } })
+               <?if($community_name==='codegolf'||$community_name==='test'){?>.use(window.markdownitKatex)<?}?>
                .use(window.markdownItAnchor, { slugify: myslugify })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
                .use(window.markdownitForInline,'url-fix','link_open',shortcuts);
@@ -226,6 +230,7 @@
         t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
+        t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
         if(!t.hasClass('noexpander')){
           t.children('pre').each(function(){
             var t = $(this), h = t.height();

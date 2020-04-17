@@ -3,12 +3,15 @@ include '../config.php';
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to questions,pg_temp");
-$auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
+if(isset($_GET['one'])&&isset($_GET['id'])&&!isset($_GET['community'])){
+  $auth = ccdb("select login_question(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['id']);
+}else{
+  $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
+}
 $search = $_GET['search']??'';
-extract(cdb("select account_id,account_is_dev,community_name,community_language,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,community_my_power,num_questions from one"));
-$_GET['community']===$community_name || fail(400,'invalid community');
+extract(cdb("select account_id,account_is_dev,community_name,community_language,community_code_language,my_community_regular_font_name,my_community_monospace_font_name,community_my_power,num_questions
+             from one"));
 include '../lang/questions.'.$community_language.'.php';
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]')::json from question where question_poll_minor_id>$1",$_GET['fromid']));
 if($search){
