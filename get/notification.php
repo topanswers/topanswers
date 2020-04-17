@@ -8,7 +8,7 @@ $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_C
 $limit = ccdb("select count(1) from notification where notification_dismissed_at is null")+($_GET['dismissed']??0);
 $has_dismissed = ccdb("select exists(select 1 from notification where notification_dismissed_at is not null)");
 extract(cdb("select room_id,room_can_chat
-                  , (select coalesce(jsonb_agg(z),'[]'::jsonb)
+                  , (select coalesce(jsonb_agg(z order by notification_dismissed_at desc nulls first, notification_at desc),'[]'::jsonb)
                      from (select notification_id,notification_dismissed_at,notification_at,notification_at_iso,notification_type,notification_data
                                 , count(*) over (partition by notification_type,notification_data#>array['stack_id']) notification_count
                                 , row_number() over (partition by notification_type,notification_data#>array['stack_id'] order by notification_at) notification_stack_rn
@@ -36,8 +36,7 @@ extract(cdb("select room_id,room_can_chat
                                      left join answer_flag af using(notification_id)
                                      left join system s using(notification_id)
                                 where coalesce(c.notification_id,q.notification_id,qf.notification_id,a.notification_id,af.notification_id,s.notification_id) is not null
-                                order by notification_dismissed_at desc nulls first limit $1) z
-                           order by notification_dismissed_at desc nulls first) z
+                                order by notification_dismissed_at desc nulls first limit $1) z ) z
                      where notification_stack_rn=1) notifications
              from one",$limit));
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
