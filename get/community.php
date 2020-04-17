@@ -1322,8 +1322,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
         </div>
         <div>
-          <?$ch = curl_init('http://127.0.0.1/pinnedrooms?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-          <a id="more-rooms" class="frame none" href="." title="more rooms"><img class="icon roomicon" src="/image?hash=560e3af97ebebc1189b630f64012ae2adca14ecedb6d86e51823f5f180786f8f"></a>
+          <?if($auth){?>
+            <?$ch = curl_init('http://127.0.0.1/pinnedrooms?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+            <a id="more-rooms" class="frame none" href="." title="more rooms"><img class="icon roomicon" src="/image?hash=560e3af97ebebc1189b630f64012ae2adca14ecedb6d86e51823f5f180786f8f"></a>
+          <?}?>
         </div>
       </div>
       <div>
@@ -1335,9 +1337,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <div class="label container">
         <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
         <div class="element">
-          <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
-          <?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a><?}?>
-          <?if($room_is_pinned){?><a id="unpin" href="."><?=$l_unpin?></a><?}else{?><a id="pin" href="."><?=$l_pin?></a><?}?>
+          <?if($auth){?>
+            <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
+            <?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a><?}?>
+            <?if($room_is_pinned){?><a id="unpin" href="."><?=$l_unpin?></a><?}else{?><a id="pin" href="."><?=$l_pin?></a><?}?>
+          <?}?>
           <a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a>
         </div>
       </div>
