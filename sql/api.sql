@@ -178,7 +178,7 @@ create function login_answer(uuid uuid, id integer) returns boolean language sql
   select set_config('custom.timestamp',current_timestamp::text,false);
   select set_config('custom.uuid',uuid::text,false) from login where login_uuid=uuid;
   select _error('invalid answer') where not exists (select 1 from _answer where answer_id=id);
-  select _set_id('answer',answer_id),_set_id('question',question_id),_set_id('community',community_id) from _answer where answer_id=id;
+  select _set_id('answer',answer_id),_set_id('question',question_id),_set_id('room',question_room_id),_set_id('community',community_id) from _answer natural join question where answer_id=id;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --

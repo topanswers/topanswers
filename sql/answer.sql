@@ -108,6 +108,9 @@ create function flag(direction integer) returns void language sql security defin
              where answer_flag_history_direction>0)
      , n as (insert into notification(account_id) select account_id from nn returning *)
    , qfn as (insert into answer_flag_notification(notification_id,answer_flag_history_id) select notification_id,answer_flag_history_id from nn natural join n)
+     , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
+             select get_account_id(),get_room_id(),max(chat_id) from chat where room_id=get_room_id()
+             on conflict on constraint listener_pkey do update set listener_latest_read_chat_id=excluded.listener_latest_read_chat_id)
   update account set account_notification_id = default where account_id in (select account_id from n);
 $$;
 --
