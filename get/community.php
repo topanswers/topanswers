@@ -25,7 +25,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text,community_banner_markdown
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
-                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen
+                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
@@ -95,6 +95,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #community-rooms>div:first-child { flex: 1 1 auto; display: flex; align-items: center; height: 100%; overflow: hidden; }
     #community-rooms>div:first-child>div:last-child { overflow: hidden; text-overflow: ellipsis; }
     #community-rooms>div:last-child { flex: 0 0 auto; display: flex; align-items: center; height: 100%; }
+    #community-rooms>div:last-child a.this{ display: none; }
     footer>div:last-child { display: none; }
     #active-rooms { border-top: 2px solid black; margin-bottom: 2px; }
     #active-rooms>div { display: flex; flex-direction: row-reverse; overflow-y: hidden; overflow-x: auto; margin: 1px; }
@@ -987,6 +988,25 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         t.html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
+      $('#chat-wrapper').on('click','#pin', function(){
+        var t = $(this);
+        $.post({ url: '//post.topanswers.xyz/room', data: { action: 'pin', id: <?=$room?> }, xhrFields: { withCredentials: true } }).done(function(){
+          t.html('<?=$l_unpin?>').attr('id','unpin');
+          $('#unpin').show();
+          updateActiveRooms();
+        });
+        t.html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
+        return false;
+      });
+      $('#chat-wrapper').on('click','#unpin', function(){
+        var t = $(this);
+        $.post({ url: '//post.topanswers.xyz/room', data: { action: 'unpin', id: <?=$room?> }, xhrFields: { withCredentials: true } }).done(function(){
+          t.html('<?=$l_pin?>').attr('id','pin');
+          updateActiveRooms();
+        });
+        t.html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
+        return false;
+      });
       $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){
           updateNotifications().then(() => {
@@ -1302,12 +1322,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
         </div>
         <div>
-          <?foreach(db("select room_id,room_name
-                        from room natural join community
-                        where community_name=$1 and room_id<>$2
-                        order by room_name desc",$community_name,$room) as $r){ extract($r,EXTR_PREFIX_ALL,'r');?>
-            <a class="frame" href="/<?=$community_name?>?room=<?=$r_room_id?>" title="<?=$r_room_name?>" data-id="<?=$r_room_id?>"><img class="icon roomicon" src="/roomicon?id=<?=$r_room_id?>"></a>
-          <?}?>
+          <?$ch = curl_init('http://127.0.0.1/pinnedrooms?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
           <a id="more-rooms" class="frame none" href="." title="more rooms"><img class="icon roomicon" src="/image?hash=560e3af97ebebc1189b630f64012ae2adca14ecedb6d86e51823f5f180786f8f"></a>
         </div>
       </div>
@@ -1322,6 +1337,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div class="element">
           <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
           <?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a><?}?>
+          <?if($room_is_pinned){?><a id="unpin" href="."><?=$l_unpin?></a><?}else{?><a id="pin" href="."><?=$l_pin?></a><?}?>
           <a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a>
         </div>
       </div>

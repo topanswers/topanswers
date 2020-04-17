@@ -94,10 +94,12 @@ select account_id
      , sesite_url
      , l.account_id is not null and room_can_listen room_can_mute
      , l.account_id is null and room_can_listen room_can_listen
+     , p.account_id is not null room_is_pinned
 from db.room r natural join db.community natural join api._community
      natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
      natural left join db.listener l
+     natural left join db.pinner p
      natural left join db.writer x
      natural left join (select question_id,question_at,question_title,question_markdown,question_votes,question_se_question_id,question_crew_flags,question_active_flags,question_is_deleted
                               ,sesite_url,selink_user_id

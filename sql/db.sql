@@ -227,6 +227,12 @@ create table listener(
 );
 create index listener_account_id_ind on listener(account_id) include(room_id,listener_latest_read_chat_id);
 
+create table pinner(
+  account_id integer references account
+, room_id integer references room
+, primary key (account_id,room_id)
+);
+
 create table participant(
   room_id integer references room
 , account_id integer references account

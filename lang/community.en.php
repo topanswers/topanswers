@@ -11,3 +11,5 @@ $l_preview = 'preview';
 $l_topanswers = 'TopAnswers';
 $l_mute = 'mute';
 $l_listen = 'listen';
+$l_pin = 'pin';
+$l_unpin = 'unpin';

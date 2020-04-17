@@ -52,6 +52,16 @@ create function listen() returns void language sql security definer set search_p
   insert into listener(account_id,room_id,listener_latest_read_chat_id) select get_account_id(),get_room_id(),max(chat_id) from chat where room_id=get_room_id() on conflict do nothing;
 $$;
 --
+create function pin() returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  insert into pinner(account_id,room_id) values (get_account_id(),get_room_id()) on conflict do nothing;
+$$;
+--
+create function unpin() returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  delete from pinner where account_id=get_account_id() and room_id=get_room_id();
+$$;
+--
 --
 revoke all on all functions in schema room from public;
 do $$
