@@ -199,7 +199,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message .who>a[href^='#'] { text-decoration: none; }
     .message .when { color: rgb(var(--rgb-dark)); transition: opacity linear 0.1s; }
     .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: rgb(var(--rgb-white)); overflow: auto; transition: background linear 0.1s; }
-    .message .markdown img { max-height: 7rem; }
+    .message .markdown img { max-height: 120px; }
     .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-top: 1px; margin-left: 1px; }
     .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
     .message .button-group .fa { color: rgb(var(--rgb-dark)); cursor: pointer; text-decoration: none; }
@@ -763,9 +763,19 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
         s = m.match(/^https:\/\/(?:www.youtube.com\/watch\?v=|youtu.be\/)([-_0-9a-zA-Z]*)$/);
         if(s){
-          $.post({ url: '//post.topanswers.xyz/chat', data: { action: 'youtube', room: <?=$room?>, id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
+          $.post({ url: '//post.topanswers.xyz/onebox/youtube', data: { id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
             if($('#chattext').val()===m){
-              $('#preview .markdown').css('visibility','visible').attr('data-markdown','[![YouTube Link](/image?hash='+r+')](https://www.youtube.com/watch?v='+s[1]+')').renderMarkdown();
+              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r).renderMarkdown();
+              if(scroll) scroller.scrollTop(1000000);
+            }
+          });
+          return;
+        }
+        s = m.match(/^https:\/\/xkcd.com\/([0-9]*)\/?$/);
+        if(s){
+          $.post({ url: '//post.topanswers.xyz/onebox/xkcd', data: { id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
+            if($('#chattext').val()===m){
+              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r).renderMarkdown();
               if(scroll) scroller.scrollTop(1000000);
             }
           });
