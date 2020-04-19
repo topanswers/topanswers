@@ -1,5 +1,5 @@
 <?
-include 'en.php';
+include_once 'en.php';
 $l_search_placeholder = '{type} [tag] &quot;exact phrase&quot; fuzzy';
 $l_chattext_placeholder = 'type message here';
 $l_chat = 'chat';
@@ -13,3 +13,8 @@ $l_mute = 'mute';
 $l_listen = 'listen';
 $l_pin = 'pin';
 $l_unpin = 'unpin';
+$l_edit = 'edit';
+$l_history = 'history';
+$l_license = 'license';
+$provide_answer = 'provide an answer';
+$provide_another_answer = 'provide another answer';

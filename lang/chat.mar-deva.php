@@ -1,3 +1,3 @@
 <?
 include 'chat.en.php';
-include 'mar-deva.php';
+include_once 'mar-deva.php';

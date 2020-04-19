@@ -1146,10 +1146,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 <?if(!$question_account_is_me){?><div class="starrr element" data-id="<?=$question?>" data-type="question" data-votes="<?=$question_votes_from_me?>" title="rate this question"></div><?}?>
               <?}?>
               <?if($auth){?>
-                <?if($question_account_is_me||$kind_can_all_edit){?><a class="element" href="/question?id=<?=$question?>">edit</a><?}?>
-                <?if($question_has_history){?><a class="element" href="/question-history?id=<?=$question?>">history</a><?}?>
+                <?if($question_account_is_me||$kind_can_all_edit){?><a class="element" href="/question?id=<?=$question?>"><?=$l_edit?></a><?}?>
+                <?if($question_has_history){?><a class="element" href="/question-history?id=<?=$question?>"><?=$l_history?></a><?}?>
                 <?if(!$question_account_is_me){?><a class="element" href="." onclick="$('#question .icon').click(); return false;">comment</a><?}?>
-                <a class="element" href="." onclick="$(this).hide().next('.element').show(); return false;">license</a>
+                <a class="element" href="." onclick="$(this).hide().next('.element').show(); return false;"><?=$l_license?></a>
                 <span class="element" style="display: none;">
                   <a href="<?=$question_license_href?>" title="<?=$question_license_description?>"><?=$question_license_name?></a>
                   <?if($question_has_codelicense){?>
@@ -1223,7 +1223,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="banner">
             <h3><?=$question_answer_count?> Answer<?=($question_answer_count!==1)?'s':''?></h3>
             <div style="flex: 1 1 0;"></div>
-            <a <?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'href="/answer?question='.$question.'"':'title="requires '.($kind_minimum_votes_to_answer-$question_votes).' more stars"'?> class="button">Provide <?=$question_answered_by_me?'another':'an'?> answer</a>
+            <a <?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'href="/answer?question='.$question.'"':'title="requires '.($kind_minimum_votes_to_answer-$question_votes).' more stars"'?> class="button"><?=$question_answered_by_me?$provide_another_answer:$provide_answer?></a>
           </div>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
@@ -1264,10 +1264,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                   <?}?>
                 <?}?>
                 <?if($auth){?>
-                  <a class="element" href="/answer?id=<?=$answer_id?>">edit</a>
-                  <?if($answer_has_history){?><a class="element" href="/answer-history?id=<?=$answer_id?>">history</a><?}?>
+                  <a class="element" href="/answer?id=<?=$answer_id?>"><?=$l_edit?></a>
+                  <?if($answer_has_history){?><a class="element" href="/answer-history?id=<?=$answer_id?>"><?=$l_history?></a><?}?>
                   <?if(!$answer_account_is_me){?><a class="element" href="." onclick="$(this).closest('.answer').find('.icon').click(); return false;">comment</a><?}?>
-                  <a class="element" href="." onclick="$(this).hide().next('.element').show(); return false;">license</a>
+                  <a class="element" href="." onclick="$(this).hide().next('.element').show(); return false;"><?=$l_license?></a>
                   <span class="element" style="display: none;">
                     <a href="<?=$answer_license_href?>" title="<?=$answer_license_description?>"><?=$answer_license_name?></a>
                     <?if($answer_has_codelicense){?>

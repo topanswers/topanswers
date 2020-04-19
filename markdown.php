@@ -1,3 +1,7 @@
+<?
+include '../lang/markdown.'.($community_language??'en').'.php';
+$jslang = $jslang??'en';
+?>
 <link rel="stylesheet" href="/lib/highlightjs/default.css">
 <link rel="stylesheet" href="/lib/qp/qp.css">
 <?if($community_name==='codegolf'||$community_name==='test'){?>
@@ -262,7 +266,7 @@
             var t = $(this), h = t.height();
             if(h>450){
               t.innerHeight(300).addClass('expandable');
-              $('<div class="expander">show '+Math.round((h-300)/14.4)+' more lines</div>').prependTo(t).click(function(){ t.animate({ height: h }, function(){ t.height(''); }).removeClass('expandable'); $(this).remove(); });
+              $('<div class="expander"><?=$l_showmorelines?></div>'.replace(/%/,Math.round((h-300)/14.4).toLocaleString('<?=$jslang?>'))).prependTo(t).click(function(){ t.animate({ height: h }, function(){ t.height(''); }).removeClass('expandable'); $(this).remove(); });
             }
           });
         }
