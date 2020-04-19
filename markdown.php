@@ -211,8 +211,8 @@
                                                      '</div>';
                  else return '</div>';
                  } })
-               .use(window.markdownitObject,'xkcd',{ validate: function(p) { return p.trim().match(/^xkcd [1-9][0-9]* [0-9a-f]{64} "[^"]*" "[^"]*"$/); }, render: function (tokens,idx){
-                 var m = tokens[idx].info.trim().match(/^xkcd ([1-9][0-9]*) ([0-9a-f]{64}) "([^"]*)" "([^"]*)"$/);
+               .use(window.markdownitObject,'xkcd',{ validate: function(p) { return p.trim().match(/^xkcd [1-9][0-9]* [0-9a-f]{64} "[^"<>]*" "[^"<>]*"$/); }, render: function (tokens,idx){
+                 var m = tokens[idx].info.trim().match(/^xkcd ([1-9][0-9]*) ([0-9a-f]{64}) "([^"<>]*)" "([^"<>]*)"$/);
                  if (tokens[idx].nesting===1) return '<div class="xkcd" title="'+m[4]+'">'+
                                                        '<div>'+m[3]+'</div>'+
                                                        '<hr>'+

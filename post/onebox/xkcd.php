@@ -11,4 +11,4 @@ $path = '/srv/uploads/'.substr($hash,0,2).'/'.substr($hash,2,2).'/'.substr($hash
 $fname = $path.'/'.$hash;
 is_dir($path) || mkdir($path,0777,true);
 if(!file_exists($fname)) file_put_contents($fname,$thumb);
-exit('@@@ xkcd '.$_POST['id'].' '.$hash.' "'.str_replace('"',"&quot;",$data['title']).'" "'.str_replace('"',"&quot;",$data['alt']).'"');
+exit('@@@ xkcd '.$_POST['id'].' '.$hash.' "'.htmlspecialchars($data['title']).'" "'.htmlspecialchars($data['alt']).'"');
