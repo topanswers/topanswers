@@ -12,7 +12,6 @@ where account_id=get_account_id();
 create view one with (security_barrier) as select community_name from db.community where community_id=get_community_id();
 --
 --
-create function login(uuid) returns boolean language sql security definer as $$select api.login($1);$$;
 create function login_room(uuid,integer) returns boolean language sql security definer as $$select api.login_room($1,$2);$$;
 --
 --

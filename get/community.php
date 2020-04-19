@@ -745,45 +745,64 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var m = $('#chattext').val(), s
           , scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages')
           , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight")
-          , promises = [];
+          , promises = []
+          , onebox = false;
         sync = typeof sync !== 'undefined' ? sync : false;
-        s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
-        if(s&&(s[2]===s[4])){
-          $.get({ url: '/chat?quote&room=<?=$room?>&id='+s[2], async: !sync }).done(function(r){
-            if($('#chattext').val()===m){
-              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return ' *— '+(moment(match).fromNow())+'*'; })).renderMarkdown();
-              if(scroll) scroller.scrollTop(1000000);
-            }
-          }).fail(function(){
-            if($('#chattext').val()===m){
-              $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown();
-            }
-          });
-          return;
+        if(!onebox){
+          s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
+          if(s&&(s[2]===s[4])){
+            $.get({ url: '/chat?quote&room=<?=$room?>&id='+s[2], async: !sync }).done(function(r){
+              if($('#chattext').val()===m){
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return ' *— '+(moment(match).fromNow())+'*'; })).renderMarkdown(promises);
+              }
+            }).fail(function(){
+              if($('#chattext').val()===m){
+                $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
+              }
+            });
+            return;
+          }
         }
-        s = m.match(/^https:\/\/(?:www.youtube.com\/watch\?v=|youtu.be\/)([-_0-9a-zA-Z]*)$/);
-        if(s){
-          $.post({ url: '//post.topanswers.xyz/onebox/youtube', data: { id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
-            if($('#chattext').val()===m){
-              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r).renderMarkdown();
-              if(scroll) scroller.scrollTop(1000000);
-            }
-          });
-          return;
+        if(!onebox){
+          s = m.match(/^https:\/\/(?:www.youtube.com\/watch\?v=|youtu.be\/)([-_0-9a-zA-Z]*)$/);
+          if(s){
+            $.post({ url: '//post.topanswers.xyz/onebox/youtube', data: { id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
+              if($('#chattext').val()===m){
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown',r).renderMarkdown(promises);
+              }
+            });
+            onebox = true;
+          }
         }
-        s = m.match(/^https:\/\/xkcd.com\/([0-9]*)\/?$/);
-        if(s){
-          $.post({ url: '//post.topanswers.xyz/onebox/xkcd', data: { id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
-            if($('#chattext').val()===m){
-              $('#preview .markdown').css('visibility','visible').attr('data-markdown',r).renderMarkdown();
-              if(scroll) scroller.scrollTop(1000000);
-            }
-          });
-          return;
+        if(!onebox){
+          s = m.match(/^https:\/\/xkcd.com\/([0-9]*)\/?$/);
+          if(s){
+            $.post({ url: '//post.topanswers.xyz/onebox/xkcd', data: { id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
+              if($('#chattext').val()===m){
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown',r).renderMarkdown(promises);
+              }
+            });
+            onebox = true;
+          }
         }
-        $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
+        if(!onebox){
+          s = m.match(/^https:\/\/topanswers.xyz\/[^\?\/]+\?q=([1-9][0-9]*)$/);
+          if(s){
+            $('#preview .markdown').css('visibility','visible').attr('data-markdown','@@@ question '+s[1]).renderMarkdown(promises);
+            onebox = true;
+          }
+        }
+        if(!onebox){
+          s = m.match(/^https:\/\/topanswers.xyz\/[^\?\/]+\?q=[1-9][0-9]*#a([1-9][0-9]*)$/);
+          if(s){
+            $('#preview .markdown').css('visibility','visible').attr('data-markdown','@@@ answer '+s[1]).renderMarkdown(promises);
+            onebox = true;
+          }
+        }
+        if(!onebox) $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
         Promise.allSettled(promises).then(() => {
           $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed');
+          if(scroll) scroller.scrollTop(1000000);
         });
         if(scroll) scroller.scrollTop(1000000);
       }
