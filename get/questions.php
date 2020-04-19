@@ -19,6 +19,7 @@ if($search){
   $results = db("select question_id,question_at,question_change_at,question_change,question_is_answered,question_title,question_votes,question_votes_from_me,question_account_id,question_account_name
                        ,question_poll_major_id,question_poll_minor_id
                        ,question_is_deleted,question_communicant_votes
+                       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                        ,kind_short_description
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                       , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
@@ -39,6 +40,7 @@ if($search){
   }
   $results = db("select question_id,question_change,question_is_answered,question_title,question_votes,question_votes_from_me,question_poll_major_id,question_poll_minor_id
                        ,question_account_id,question_account_name,question_is_deleted,question_communicant_votes
+                       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                        ,kind_short_description
                       , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                       , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
@@ -50,7 +52,13 @@ if($search){
 }
 ?>
 <?foreach($results as $r){ extract($r);?>
-  <div id="q<?=$question_id?>" class="question post<?=$question_is_deleted?' deleted':''?>" data-id="<?=$question_id?>" data-poll-major-id="<?=$question_poll_major_id?>" data-poll-minor-id="<?=$question_poll_minor_id?>" data-of="<?=$num_questions?>">
+  <div id="q<?=$question_id?>"
+       class="question post<?=$question_is_deleted?' deleted':''?>"
+       style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>; --rgb-highlight: <?=$community_rgb_highlight?>; --rgb-warning: <?=$community_rgb_warning?>;"
+       data-id="<?=$question_id?>"
+       data-poll-major-id="<?=$question_poll_major_id?>"
+       data-poll-minor-id="<?=$question_poll_minor_id?>"
+       data-of="<?=$num_questions?>">
     <div class="title">
       <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
       <?if($question_votes){?>
