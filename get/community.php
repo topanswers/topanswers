@@ -95,7 +95,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #community-rooms>div:first-child { flex: 1 1 auto; display: flex; align-items: center; height: 100%; overflow: hidden; }
     #community-rooms>div:first-child>div:last-child { overflow: hidden; text-overflow: ellipsis; }
     #community-rooms>div:last-child { flex: 0 0 auto; display: flex; align-items: center; height: 100%; }
-    #community-rooms>div:last-child a.this{ display: none; }
+    #community-rooms>div:last-child a.this{ pointer-events: none; opacity: 0.3; }
     footer>div:last-child { display: none; }
     #active-rooms { border-top: 2px solid black; margin-bottom: 2px; }
     #active-rooms>div { display: flex; flex-direction: row-reverse; overflow-y: hidden; overflow-x: auto; margin: 1px; }
