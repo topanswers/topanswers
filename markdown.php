@@ -66,6 +66,10 @@ $jslang = $jslang??'en';
   .markdown .youtube>a>img { display: block; margin: 0; }
   .markdown .xkcd>a>img { max-height: 180px; }
   .markdown .xkcd>hr { margin: 4px 0; }
+  .markdown .wikipedia { margin: 4px; }
+  .markdown .wikipedia>a:nth-of-type(1) { float: right; width: 50px; }
+  .markdown .wikipedia>a:nth-of-type(2) { font-size: 18px; display: block; margin-bottom: 10px; }
+  .markdown .wikipedia>a:nth-of-type(3) { float: left; margin-top: 4px; margin-right: 12px; margin-bottom: 0; max-width: 30%; }
 
   .dbfiddle { padding: 8px; background: rgb(var(--rgb-light)); border-radius: 3px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
@@ -211,8 +215,7 @@ $jslang = $jslang??'en';
                                                          '<mask id="m"><rect x="0" y="0" width="100" height="100" fill="white"/><polygon points="35,25 35,75 78,50" fill="black"/></mask>'+
                                                          '<circle cx="50" cy="50" r="50" fill="white" fill-opacity="0.8" mask="url(#m)"/>'+
                                                          '<polygon points="35,25 35,75 78,50" fill="black" fill-opacity="0.4"/>'+
-                                                       '</svg>'+
-                                                     '</div>';
+                                                       '</svg>';
                  else return '</div>';
                  } })
                .use(window.markdownitObject,'xkcd',{ validate: function(p) { return p.trim().match(/^xkcd [1-9][0-9]* [0-9a-f]{64} "[^"<>]*" "[^"<>]*"$/); }, render: function (tokens,idx){
@@ -222,8 +225,16 @@ $jslang = $jslang??'en';
                                                        '<hr>'+
                                                        '<a href="https://xkcd.com/'+m[1]+'">'+
                                                          '<img src="/image?hash='+m[2]+'">'+
-                                                       '</a>'+
-                                                     '</div>';
+                                                       '</a>';
+                 else return '</div>';
+                 } })
+               .use(window.markdownitObject,'wikipedia',{ validate: function(p) { return p.trim().match(/^wikipedia [0-9a-f]{64} [0-9a-zA-Z]+ "[^"<>]+" "[^"<>]+"$/); }, render: function (tokens,idx){
+                 var m = tokens[idx].info.trim().match(/^wikipedia ([0-9a-f]{64}) ([0-9a-zA-Z]+) "([^"<>]+)" "([^"<>]+)"$/);
+                 if (tokens[idx].nesting===1) return '<div class="wikipedia">'+
+                                                       '<a href="https://en.wikipedia.org/wiki/Wikipedia_logo" class="wikipedia-logo"><img src="/image?hash=fda7e63a458c087cb49b2cb452efa8fd8c29e6de3df844e3e4043ba64efc3a11"></a>'+
+                                                       '<a href="https://w.wiki/'+m[2]+'">'+m[3]+'</a> '+
+                                                       ((m[1]==='0'.repeat(64))?'':'<img src="/image?hash='+m[1]+'">')+
+                                                       '<span>'+m[4]+'</span>';
                  else return '</div>';
                  } })
                <?if($community_name==='codegolf'||$community_name==='test'){?>.use(window.markdownitKatex)<?}?>

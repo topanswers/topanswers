@@ -3,7 +3,7 @@ include '../../config.php';
 include '../../cors.php';
 $_SERVER['REQUEST_METHOD']==='POST' || fail(405,'only POSTs allowed here');
 isset($_COOKIE['uuid']) || fail(403,'only registered users can POST');
-$data = json_decode(file_get_contents('http://xkcd.com/'.$_POST['id'].'/info.0.json'),true);
+$data = json_decode(file_get_contents('https://xkcd.com/'.$_POST['id'].'/info.0.json'),true);
 $thumb = file_get_contents($data['img']);
 if(!getimagesizefromstring($thumb)) fail(400,'no image found');
 $hash = hash('sha256',$thumb);

@@ -786,14 +786,25 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           }
         }
         if(!onebox){
-          s = m.match(/^https:\/\/topanswers.xyz\/[^\?\/]+\?q=([1-9][0-9]*)$/);
+          s = m.match(/^https:\/\/[a-z]+.wikipedia.org\/wiki\/.*$/);
+          if(s){
+            $.post({ url: '//post.topanswers.xyz/onebox/wikipedia', data: { url: s[0] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
+              if($('#chattext').val()===m){
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown',r).renderMarkdown(promises);
+              }
+            });
+            onebox = true;
+          }
+        }
+        if(!onebox){
+          s = m.match(/^(?:https?:\/\/)?(?:www\.)?topanswers.xyz\/[^\?\/]+\?q=([1-9][0-9]*)$/);
           if(s){
             $('#preview .markdown').css('visibility','visible').attr('data-markdown','@@@ question '+s[1]).renderMarkdown(promises);
             onebox = true;
           }
         }
         if(!onebox){
-          s = m.match(/^https:\/\/topanswers.xyz\/[^\?\/]+\?q=[1-9][0-9]*#a([1-9][0-9]*)$/);
+          s = m.match(/^(?:https?:\/\/)?(?:www\.)?topanswers.xyz\/[^\?\/]+\?q=[1-9][0-9]*#a([1-9][0-9]*)$/);
           if(s){
             $('#preview .markdown').css('visibility','visible').attr('data-markdown','@@@ answer '+s[1]).renderMarkdown(promises);
             onebox = true;
