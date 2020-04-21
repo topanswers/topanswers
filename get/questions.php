@@ -10,10 +10,10 @@ if(isset($_GET['one'])&&!isset($_GET['community'])){
 }else{
   $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 }
-if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]')::json from question2 where community_id=get_community_id() and question_poll_minor_id>$1",$_GET['fromid']));
+if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]')::json from question where community_id=get_community_id() and question_poll_minor_id>$1",$_GET['fromid']));
 $search = $_GET['search']??'';
 $type = 'simple';
-if($search && trim(preg_replace('/\[[^\]]+]|{[^}]+}/','',$search))) $type = 'fuzzy';
+if($search && trim(preg_replace('/\[[^\]]+]|{[^}]+}/','',$search),' !')) $type = 'fuzzy';
 if(isset($_GET['one'])) $type = 'one';
 $page = $_GET['page']??'1';
 extract(cdb("select account_id,community_name,community_language
@@ -26,13 +26,13 @@ extract(cdb("select account_id,community_name,community_language
                                 , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
                                 , extract('epoch' from current_timestamp-question_at)::bigint question_when
                                 , extract('epoch' from current_timestamp-question_change_at)::bigint question_change_when
-                                , (select coalesce(jsonb_agg(z),'[]'::jsonb) from (select tag_id,tag_name from tag2 t where t.question_id=q.question_id order by tag_question_count) z) tags
-                           from (select question_id, 1 question_ordinal, 1 question_count from question2 where $1='one' and question_id=$2::integer
+                                , (select coalesce(jsonb_agg(z),'[]'::jsonb) from (select tag_id,tag_name from tag t where t.question_id=q.question_id order by tag_question_count) z) tags
+                           from (select question_id, 1 question_ordinal, 1 question_count from question where $1='one' and question_id=$2::integer
                                  union all
                                  select question_id,question_ordinal,question_count from simple_recent($3,$4::integer) where $1='simple'
                                  union all
                                  select question_id,question_ordinal,question_count from fuzzy_closest($3,$4::integer) where $1='fuzzy') q
-                                natural join question2) z) questions
+                                natural join question) z) questions
              from one",$type,$_GET['id']??'0',$search,$page),EXTR_PREFIX_ALL,'o');
 include '../lang/questions.'.$o_community_language.'.php';
 ?>

@@ -1362,7 +1362,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?}?>
         <div id='more'></div>
         <div id="questions">
-          <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.(isset($_GET['page'])?'&page='.$_GET['page']:'').(isset($_GET['search'])?'&search='.$_GET['search']:'')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+          <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.(isset($_GET['page'])?'&page='.$_GET['page']:'').(isset($_GET['search'])?'&search='.urlencode($_GET['search']):'')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
         </div>
       <?}?>
     </div>
