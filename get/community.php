@@ -392,7 +392,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       function updateQuestions(){
         var maxQuestion = $('#questions>:first-child').data('poll-major-id');
         //if($('#qa').scrollTop()<100) scroll = true;
-        $.get('/questions?community=<?=$community_name?>',function(data) {
+        $.get('/questions?community=<?=$community_name?>'+window.location.search.replace('?','&'),function(data) {
           if($('#questions>:first-child').data('poll-major-id')===maxQuestion){
             var newquestions = $(data).filter('.question').filter(function(){ return $(this).data('poll-major-id')>maxQuestion; });
             newquestions.each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
@@ -614,6 +614,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             }else if((j.Q>maxQuestionPollMajorID)&&(page===1)&&(srch.replace(/!|{[^}]*}|\[[^\]]+\]/g,'').trim()==='')){
               <?if($dev){?>console.log('updating questions because poll ('+j.Q+') > max ('+maxQuestionPollMajorID+')');<?}?>
               updateQuestions();
+              maxQuestionPollMajorID = j.Q
           <?}?>
           }else if(j.cc>maxChatChangeID){
             <?if($dev){?>console.log('updating chat change flag statuses');<?}?>
