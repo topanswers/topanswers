@@ -602,7 +602,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           , page = query.has('page')?+query.get('page'):1
           , srch = query.has('search')?query.get('search'):''
         $.get('/poll?room=<?=$room?>').done(function(r){
-          <?if($dev){?>console.log('maxQuestionPollMajorID='+maxQuestionPollMajorID);<?}?>
           var j = JSON.parse(r);
           if(j.c>+$('#messages>.message').first().data('id')){
             <?if($dev){?>console.log('updating chat');<?}?>
@@ -879,6 +878,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 }
                 $('#cancel').click();
                 t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
+                $('#listen').html('<?=$l_mute?>').attr('id','mute');
               }).fail(function(r){
                 alert(r.status+' '+r.statusText+'\n'+r.responseText);
                 t.prop('disabled',false).focus();
