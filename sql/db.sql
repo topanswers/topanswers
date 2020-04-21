@@ -147,6 +147,16 @@ create table communicant(
 , primary key (account_id,community_id)
 );
 
+create table syndication(
+  account_id integer
+, community_to_id integer
+, community_from_id integer
+, primary key (account_id,community_to_id,community_from_id)
+, foreign key (account_id,community_from_id) references communicant
+, foreign key (account_id,community_to_id) references communicant
+, check (community_from_id<>community_to_id)
+);
+
 create table selink(
   account_id integer
 , community_id integer
@@ -345,6 +355,7 @@ create table question(
 , question_permit_later_codelicense boolean default false not null
 , kind_id integer references kind not null
 , question_sesite_id integer references sesite
+, question_tag_ids integer[] default array[]::integer[] not null
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
@@ -355,6 +366,7 @@ create unique index question_se_question_id_ind on question(community_id,questio
 create unique index question_poll_major_id_ind on question(community_id,question_poll_major_id);
 create index question_search_title_ind on question using gin (community_id, question_title gin_trgm_ops);
 create index question_search_markdown_ind on question using gin (community_id, question_markdown gin_trgm_ops);
+create index question_search_simple_ind on question using gin (community_id,kind_id,question_tag_ids,question_poll_major_id);
 create index question_room_id_fk_ind on question(question_room_id);
 
 alter table community add foreign key (community_about_question_id) references question;

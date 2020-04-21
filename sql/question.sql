@@ -68,8 +68,7 @@ create function _new_question_tag(aid integer, qid integer, tid integer) returns
   select _error('invalid question') where not exists (select 1 from question where question_id=qid and community_id=get_community_id());
   select _error('invalid tag') where not exists (select 1 from tag where tag_id=tid and community_id=get_community_id());
   --
-  select _ensure_communicant(get_account_id(),community_id) from question where question_id=qid;;
-  update question set question_poll_minor_id = default where question_id=qid;
+  select _ensure_communicant(get_account_id(),community_id) from question where question_id=qid;
   --
   with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
                                                   union all
@@ -80,6 +79,8 @@ create function _new_question_tag(aid integer, qid integer, tid integer) returns
              where tag_id not in (select tag_id from question_tag_x where question_id=qid)
              returning tag_id)
   update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
+  --
+  update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from question_tag_x where question_id=qid) where question_id=qid;
 $$;
 --
 create function new_tag(id integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
@@ -99,8 +100,6 @@ create function remove_tag(tid integer) returns void language sql security defin
                                                 from question_tag_x_history
                                                 where question_tag_x_history_removed_by_account_id=get_account_id() and question_tag_x_removed_at>current_timestamp-'1s'::interval);
   --
-  update question set question_poll_minor_id = default where question_id=get_question_id();
-  --
   select question.remove_tag(tag_implies_id)
   from question_tag_x natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
   where question_id=get_question_id() and tag_id=tid and tag_name like parent_name||'%' and not exists(select 1 from question_tag_x natural join tag where question_id=get_question_id() and tag_id<>tid and tag_implies_id=t.tag_implies_id);
@@ -110,6 +109,8 @@ create function remove_tag(tid integer) returns void language sql security defin
   --
   delete from question_tag_x where question_id=get_question_id() and tag_id=tid;
   update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
+  --
+  update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from question_tag_x where question_id=get_question_id()) where question_id=get_question_id();
 $$;
 --
 create function new(knd integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,pg_temp as $$

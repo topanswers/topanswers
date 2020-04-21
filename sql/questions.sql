@@ -17,9 +17,27 @@ from api._question natural join db.question q natural join api._account natural 
      natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
 where community_id=get_community_id();
 --
+create view question2 with (security_barrier) as
+select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title
+      ,community_id,community_name,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+     , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
+     , account_id question_account_id
+     , account_derived_name question_account_name
+     , coalesce(question_vote_votes,0) question_votes_from_me
+     , coalesce(communicant_votes,0) question_communicant_votes
+     , case when question_se_imported_at=question_change_at then 'imported' when question_change_at>question_at then 'edited' else 'asked' end question_change
+     , exists(select 1 from api._answer a where a.question_id=q.question_id) question_is_answered
+from api._question natural join db.question q natural join api._account natural join api._community natural join db.community natural join db.communicant natural join db.kind
+     natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v;
+--
 create view tag with (security_barrier) as
 select question_id,tag_id,tag_name,tag_question_count
 from db.question_tag_x qt natural join (select * from db.tag where community_id=get_community_id()) t
+where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
+--
+create view tag2 with (security_barrier) as
+select question_id,tag_id,tag_name,tag_question_count
+from db.question_tag_x qt natural join db.tag t
 where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
 create view answer with (security_barrier) as
@@ -75,6 +93,49 @@ create function search(text) returns table (question_id integer, rn bigint) lang
         and (select count(1) from question_tag_x natural join tag natural join t where question_id=q.question_id) = (select count(1) from t)
         and (not exists (select 1 from ty) or kind_id in(select kind_id from kind where lower(kind_short_description) in(select knd from ty)))
   order by exact desc, similarity desc limit 50;
+$$;
+--
+create function parse(text) returns table (community_id integer, kind_id integer, tag_ids integer[], not_tag_ids integer[]) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
+  with c as (select get_community_id() community_id union all select community_from_id from syndication where account_id=get_account_id() and community_to_id=get_community_id() and left($1,2)<>'! ')
+    , kt as (select lower(trim('{}' from m[1])) knd from regexp_matches($1,'{[^}]*}','g') m)
+     , k as (select community_id,kind_id from kind natural join sanction where (select count(1) from kt)=0 or exists(select 1 from kt where knd=lower(kind_short_description)))
+    , tt as (select lower(trim('[]' from m[1])) tag_name from regexp_matches($1,'\[[^!\]]+]','g') m)
+     , t as (select community_id, array_agg(tag_id) tag_ids from tag natural join tt group by community_id)
+   , ntt as (select lower(trim('[!]' from m[1])) tag_name from regexp_matches($1,'\[![^!\]]+]','g') m)
+    , nt as (select community_id, array_agg(tag_id) not_tag_ids from tag natural join ntt group by community_id)
+    , u1 as (select community_id,kind_id,tag_ids from c natural join k natural join t where (select count(1)>0 from tt)
+             union all
+             select community_id,kind_id,array[]::integer[] from c natural join k where (select count(1)=0 from tt))
+  select community_id,kind_id,tag_ids,not_tag_ids from u1 natural join nt where (select count(1)>0 from ntt)
+  union all
+  select community_id,kind_id,tag_ids,array[]::integer[] from u1 where (select count(1)=0 from ntt);
+$$;
+--
+create function simple_recent(text,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
+  select question_id, (row_number() over (order by question_poll_major_id desc))::integer, (count(1) over ())::integer
+  from questions.parse($1) natural join question
+  where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids
+  order by question_poll_major_id desc offset ($2-1)*10 limit 10;
+$$;
+--
+create function fuzzy_closest(text,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
+  with c as (select get_community_id() community_id union all select community_from_id from syndication where account_id=get_account_id() and community_to_id=get_community_id())
+     , e as (select '%'||trim('"' from m[1])||'%' exacts from regexp_matches($1,'"[^%."]*"','g') m)
+     , w as (select trim(regexp_replace($1,'\[[^\]]+]|{[^}]+}','','g')) search_text)
+     , q as (select question_id, question_markdown txt, strict_word_similarity($1,question_markdown) word_similarity, similarity($1,question_markdown) similarity
+             from c natural join db.question
+             where (select search_text from w)<<%question_markdown and ((select exacts from e) is null or question_markdown ilike all((select exacts from e))))
+    , qt as (select question_id, question_title txt, strict_word_similarity($1,question_title)*2 word_similarity, similarity($1,question_title)*2 similarity
+             from c natural join db.question
+             where (select search_text from w)<<%question_title and ((select exacts from e) is null or question_title ilike all((select exacts from e))))
+     , a as (select question_id, answer_markdown txt, strict_word_similarity($1,answer_markdown) word_similarity, similarity($1,answer_markdown) similarity
+             from c natural join db.answer natural join (select question_id,community_id from db.question) z
+             where (select search_text from w)<<%answer_markdown and ((select exacts from e) is null or answer_markdown ilike all((select exacts from e))))
+     , s as (select question_id, bool_or(txt like '%'||(select search_text from w)||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
+  select question_id, (row_number() over (order by exact desc, similarity desc))::integer, (count(1) over ())::integer
+  from s natural join db.question natural join parse($1)
+  where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids
+  order by exact desc, similarity desc offset ($2-1)*10 limit 10;
 $$;
 --
 create function recent() returns integer language sql security definer set search_path=db,api,questions,pg_temp as $$

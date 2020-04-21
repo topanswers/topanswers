@@ -231,7 +231,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #active-users { flex: 0 0 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 
     .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
-    .simple-pagination ul { display: flex; padding: 0; margin: 30px 0; }
+    .simple-pagination ul { display: flex; padding: 0; margin: 2px; margin-top: 12px; }
     .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; outline-left: 1px solid rgb(var(--rgb-dark)); }
     .simple-pagination li>span { user-select: none; }
     .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: rgb(var(--rgb-black)); text-align: center; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark)); }
@@ -284,7 +284,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     $(function(){
       var title = document.title, latestChatId;
       var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
-      var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0, questionPage = 1;
+      var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0;
       var firefox = false;
       var dismissed = 0;
 
@@ -353,8 +353,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         newquestions.addClass('processed');
         setChatPollTimeout();
       }
-      function paginateQuestions(n){
-        var m = $('#questions').children('.question').data('of')
+      function paginateQuestions(){
+        var u = new URLSearchParams(window.location.search)
+          , n = u.has('page')?+u.get('page'):1
+          , s = u.has('search')?+u.get('search'):''
+          , m = $('#questions').children('.question').data('of')
           , p = Math.ceil(m/10)
           , d = (n<7)?[8,8,8,8,7,6][n-1]:((n>(p-6))?[8,8,8,8,7,5][p-n]:5)
           , o = { items: m
@@ -364,34 +367,51 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                 , nextText: '»'
                 , ellipsePageSet: false
                 , displayedPages: d
-                , onPageClick: function(n){ questionPage = n; $('#questions').children('.question').remove(); updateQuestions(true); return false; } };
-        $('#more').show().pagination(o);
+                , onPageClick: function(n){
+                    var u = new URLSearchParams(window.location.search);
+                    u.set('page',n);
+                    if(n===1) u.delete('page');
+                    window.history.pushState({},'',(window.location.href.split('?')[0]+'?'+u.toString()).replace(/\?$/,''));
+                    loadQuestions();
+                    return false;
+                } };
+        if(m>10) $('#more').show().pagination(o);
         $('#qa>div.banner').show();
       }
-      function updateQuestions(scroll){
-        var maxQuestion = $('#questions>:first-child').data('poll-major-id'), full = $('#questions').children('.question').length===0;
-        if($('#qa').scrollTop()<100) scroll = true;
-        $.get('/questions?community=<?=$community_name?>'+(full?'&page='+questionPage:'&id='+maxQuestion),function(data) {
+      function loadQuestions(){
+        $('#questions').children('.question').remove();
+        $.get('/questions?community=<?=$community_name?>'+window.location.search.replace('?','&'),function(data) {
+          var newquestions = $(data).filter('.question').prependTo($('#questions'));
+          processNewQuestions();
+          paginateQuestions();
+          $('#qa').scrollTop(0);
+          $('#search+div').hide();
+          if($('#search').val()) $('#search').focus();
+        },'html');
+      }
+      function updateQuestions(){
+        var maxQuestion = $('#questions>:first-child').data('poll-major-id');
+        //if($('#qa').scrollTop()<100) scroll = true;
+        $.get('/questions?community=<?=$community_name?>',function(data) {
           if($('#questions>:first-child').data('poll-major-id')===maxQuestion){
-            var newquestions;
-            $(data).each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
-            newquestions = $(data).filter('.question').prependTo($('#questions')).hide().slideDown(full?0:400);
+            var newquestions = $(data).filter('.question').filter(function(){ return $(this).data('poll-major-id')>maxQuestion; });
+            newquestions.each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
+            newquestions.prependTo($('#questions')).hide().slideDown();
+            $('#questions .question').slice(11).slideUp({ complete: function(){ $(this).remove(); } });
             processNewQuestions();
-            paginateQuestions(questionPage);
-            if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
+            paginateQuestions();
+            //if(scroll) setTimeout(function(){ $('#qa').scrollTop(0); },0);
           }
         },'html').fail(setChatPollTimeout);
       }
       function searchQuestions(){
+        var u = new URLSearchParams(window.location.search);
+        u.set('search',$('#search').val());
+        if($('#search').val()==='') u.delete('search');
+        u.delete('page');
+        window.history.pushState({},'',(window.location.href.split('?')[0]+'?'+u.toString()).replace(/\?$/,''));
         $('#search+div').show();
-        $.get('/questions?community=<?=$community_name?>&search='+$('#search').val(),function(data) {
-          $('#questions>.question').remove();
-          $(data).filter('.question').prependTo($('#questions'));
-          processNewQuestions();
-          $('#more').hide();
-          $('#qa>div.banner').hide();
-          $('#search+div').hide();
-        },'html');
+        loadQuestions()
       }
       function processStarboard(scroll){
         var t = $(this), promises = [] , scroller = $('.firefoxwrapper').length ? $('#starboard').parent() : $('#starboard');
@@ -578,7 +598,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }).fail(setChatPollTimeout));
       }
       function checkChat(){
+        var query = new URLSearchParams(window.location.search)
+          , page = query.has('page')?+query.get('page'):1
+          , srch = query.has('search')?query.get('search'):''
         $.get('/poll?room=<?=$room?>').done(function(r){
+          <?if($dev){?>console.log('maxQuestionPollMajorID='+maxQuestionPollMajorID);<?}?>
           var j = JSON.parse(r);
           if(j.c>+$('#messages>.message').first().data('id')){
             <?if($dev){?>console.log('updating chat');<?}?>
@@ -588,7 +612,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             updateNotifications();
             maxNotificationID = j.n;
           <?if(!$question){?>
-            }else if((j.Q>maxQuestionPollMajorID)&&(questionPage===1)&&($('#search').val()==='')){
+            }else if((j.Q>maxQuestionPollMajorID)&&(page===1)&&(srch.replace(/!|{[^}]*}|\[[^\]]+\]/g,'').trim()==='')){
               <?if($dev){?>console.log('updating questions because poll ('+j.Q+') > max ('+maxQuestionPollMajorID+')');<?}?>
               updateQuestions();
           <?}?>
@@ -948,7 +972,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
       <?}?>
       processNewQuestions(true);
-      paginateQuestions(questionPage);
+      paginateQuestions();
       (function(){
         var promises = [];
         $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(promises);
@@ -1064,18 +1088,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         updateNotifications();
         return false;
       });
-      function search(){
-        if($('#search').val()===''){
-          $('#questions>.question').remove();
-          maxQuestionPollMajorID = 0;
-          maxQuestionPollMinorID = 0;
-          updateQuestions();
-        }else{
-          searchQuestions();
-        }
-      }
       $('#search').on('input',()=>{ $('#questions>.question').remove(); $('#more').hide(); });
-      $('#search').on('input',_.debounce(search,750));
+      $('#search').on('input',_.debounce(searchQuestions,1000));
       $('#search').keydown(function(e){
         if(e.which===27){
           $(this).val('').trigger('input');
@@ -1105,7 +1119,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <header>
       <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
       <?if(!$question){?>
-        <div class="container shrink"><input class="element" type="search" id="search" placeholder="🔍&#xFE0E; <?=$l_search_placeholder?>"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
+        <div class="container shrink"><input class="element" type="search" id="search" value="<?=$_GET['search']??''?>" placeholder="🔍&#xFE0E; <?=$l_search_placeholder?>" autocomplete="off"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
       <?}?>
       <div>
         <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
@@ -1346,10 +1360,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="markdown" data-markdown="<?=htmlspecialchars($community_banner_markdown)?>">&nbsp;</div>
           </div>
         <?}?>
-        <div id="questions">
-          <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&page=1'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-        </div>
         <div id='more'></div>
+        <div id="questions">
+          <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.(isset($_GET['page'])?'&page='.$_GET['page']:'').(isset($_GET['search'])?'&search='.$_GET['search']:'')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+        </div>
       <?}?>
     </div>
   </main>

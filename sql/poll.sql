@@ -5,10 +5,11 @@ set local search_path to poll,api,pg_temp;
 --
 create view one with (security_barrier) as
 with w as (select get_room_id() room_id, get_community_id() community_id)
+   , c as (select get_community_id() community_id union all select community_from_id from db.syndication where account_id=get_account_id() and community_to_id=get_community_id())
 select account_notification_id
      , (select max(chat_id) from db.chat natural join w) chat_max_id
      , (select max(chat_change_id) from db.chat natural join w) chat_max_change_id
-     , (select max(question_poll_major_id) from db.question natural join w) question_max_poll_major_id
+     , (select max(question_poll_major_id) from db.question natural join c) question_max_poll_major_id
      , (select max(question_poll_minor_id) from db.question natural join w) question_max_poll_minor_id
      , (select max((select max(chat_id) from db.chat where room_id=participant.room_id))
         from db.participant 

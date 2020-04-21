@@ -19,6 +19,8 @@
 .post .bar>div:not(.shrink) { flex: 0 0 auto; }
 .post .bar.shrink { flex: 0 1 auto; }
 .post .kind { display: inline-block; height: 18px; padding: 1px 4px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); margin-left: 0; margin-right: 6px; line-height: 16px; }
+.post .community { margin-left: 0; margin-right: 6px; }
+.post .community>img { display: block; height: 18px; border: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-light)); border-radius: 2px; }
 .post .tag { display: inline-block; height: 18px; padding: 1px 4px; background: rgb(var(--rgb-mid)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 0 8px 8px 0; position: relative; line-height: 14px; margin-left: 0; }
 .post .tag::after { position: absolute; border-radius: 50%; background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
 .post .tag i { visibility: hidden; cursor: pointer; position: relative; z-index: 1; color: rgb(var(--rgb-dark)); background: rgb(var(--rgb-mid)); border-radius: 50%; }
