@@ -153,13 +153,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #qa .post.counterflagged .bar .element.fa-flag-checkered { color: rgb(var(--rgb-highlight)); }
     <?}?>
 
-    #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column-reverse; justify-content: flex-start; min-width: 0; overflow: hidden; }
+    #chat-wrapper { font-size: 14px; flex: 1 1 <?=100-$login_resizer_percent?>%; flex-direction: column; justify-content: flex-start; min-width: 0; overflow: hidden; }
     #chat-wrapper .label { font-size: 12px; padding: 2px 0 1px 0; border-bottom: 1px solid rgb(var(--rgb-dark)); }
     #chat-wrapper .roomtitle { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     #chat { display: flex; flex: 1 0 0; min-height: 0; }
-    #chat-panels { display: flex; flex: 1 1 auto; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
+    #chat-panels { display: flex; position: relative; flex: 1 1 auto; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
+    #chat-panels>div { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
 
-    #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column; scroll-behavior: smooth; }
+    #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: flex; visibility: hidden; flex-direction: column; scroll-behavior: smooth; }
     #notifications>hr { margin: 14px 6px; border: 1px solid rgb(var(--rgb-dark)); }
     #more-notifications { display: block; text-align: center; font-size: 12px; margin: 10px;}
     #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
@@ -169,7 +170,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .firefoxwrapper>* { min-height: 100%; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { opacity: 0; }
-    #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: none; flex-direction: column-reverse; scroll-behavior: smooth; }
+    #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: flex; visibility: hidden; flex-direction: column-reverse; scroll-behavior: smooth; }
     #starboard .message { padding: 4px; padding-top: 1.3em; }
     #starboard .message:not(:first-child) { border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
     #starboard .message .who { top: 0.2rem; font-size: 12px; }
@@ -420,7 +421,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
         Promise.allSettled(promises).then(() => {
-          if(scroll===true) scroller.show().scrollTop(1000000).hide();
+          if(scroll===true) scroller.scrollTop(1000000);
           $('#starboard>.message').addClass('processed').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
         });
       }
@@ -1097,13 +1098,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           return false;
         }
       });
-      $('#chat-panels a.panel').click(function(){
-        var panels = $('#chat-panels>div:not(.label)'), panel = $('#'+$(this).data('panel'));
+      $('#chat-bar a.panel').click(function(){
+        var panels = $('#chat-panels>div'), panel = $('#'+$(this).data('panel'));
         if(!panel.hasClass('panel')) panel = panel.parent();
-        $('#chat-panels a.panel:not([href])').attr('href','.');
+        $('#chat-bar a.panel:not([href])').attr('href','.');
         $(this).removeAttr('href');
-        panels.hide();
-        panel.show();
+        panels.css('visibility','hidden');
+        panel.css('visibility','visible');
         return false;
       });
       processStarboard(true);
@@ -1370,37 +1371,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </main>
   <div id="dummyresizerx"></div>
   <div id="chat-wrapper" class="pane hidepane">
-    <footer>
-      <div id="community-rooms">
-        <div>
-          <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
-          <a class="frame this"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>" data-id="<?=$room?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
-          <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
-        </div>
-        <div>
-          <?if($auth){?>
-            <?$ch = curl_init('http://127.0.0.1/pinnedrooms?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-            <a id="more-rooms" class="frame none" href="." title="more rooms"><img class="icon roomicon" src="/image?hash=560e3af97ebebc1189b630f64012ae2adca14ecedb6d86e51823f5f180786f8f"></a>
-          <?}?>
-        </div>
+    <div id="chat-bar" class="label container">
+      <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
+      <div class="element">
+        <?if($auth){?>
+          <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
+          <?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a><?}?>
+          <?if($room_is_pinned){?><a id="unpin" href="."><?=$l_unpin?></a><?}else{?><a id="pin" href="."><?=$l_pin?></a><?}?>
+        <?}?>
+        <a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a>
       </div>
-      <div>
-        <div id="active-rooms">
-        </div>
-      </div>
-    </footer>
+    </div>
     <div id="chat-panels">
-      <div class="label container">
-        <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
-        <div class="element">
-          <?if($auth){?>
-            <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
-            <?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a><?}?>
-            <?if($room_is_pinned){?><a id="unpin" href="."><?=$l_unpin?></a><?}else{?><a id="pin" href="."><?=$l_pin?></a><?}?>
-          <?}?>
-          <a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a>
-        </div>
-      </div>
       <div id="messages-wrapper" class="panel">
         <div id="chat" class="panel">
           <div id="messages">
@@ -1459,6 +1441,25 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </div>
       <?}?>
     </div>
+    <footer>
+      <div id="community-rooms">
+        <div>
+          <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
+          <a class="frame this"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>" data-id="<?=$room?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
+          <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
+        </div>
+        <div>
+          <?if($auth){?>
+            <?$ch = curl_init('http://127.0.0.1/pinnedrooms?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+            <a id="more-rooms" class="frame none" href="." title="more rooms"><img class="icon roomicon" src="/image?hash=560e3af97ebebc1189b630f64012ae2adca14ecedb6d86e51823f5f180786f8f"></a>
+          <?}?>
+        </div>
+      </div>
+      <div>
+        <div id="active-rooms">
+        </div>
+      </div>
+    </footer>
   </div>
 </body>
 </html>
