@@ -531,6 +531,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             newchat = $(data).prependTo($('#messages'));
             if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
             if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
+            newchat.filter('.message[data-reply-id]').each(function(){ $('#c'+$(this).attr('data-reply-id')).removeAttr('data-notification-id').removeClass('notify'); });
             processNewChat(scroll);
             <?if($auth){?>
               $.get('/chat?room='+<?=$room?>+'&activeusers').done(function(r){
