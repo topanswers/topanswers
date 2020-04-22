@@ -677,10 +677,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         location.href = "#c"+m.data('chat-id');
         history.replaceState(null,null,url);
         $('#chattext').focus();
+        return false;
       });
       $('#chat-wrapper').on('click','.fa-ellipsis-h', function(){
         if($(this).closest('.button-group').is(':last-child')) $(this).closest('.button-group').removeClass('show').parent().children('.button-group:nth-child(2)').addClass('show');
         else $(this).closest('.button-group').removeClass('show').next().addClass('show');
+        return false;
       });
       $('#chat-wrapper').on('click','.fa-edit', function(){
         var m = $(this).closest('.message');
@@ -688,6 +690,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $.each(m.data('pings'),function(k,v){ $('.icon.pingable[data-id="'+v+'"]').addClass('ping locked'); });
         $('#status').attr('data-editid',m.data('chat-id')).attr('data-replyid',m.attr('data-reply-id')).attr('data-replyname',m.attr('data-reply-name')).data('update')();
         $('#chattext').val(m.find('.markdown').attr('data-markdown')).focus().trigger('input');
+        return false;
       });
       function starflag(t,action,direction){
         var id = t.closest('.message').data('id'), m = $('#c'+id+',#n'+id+',#s'+id).find('.button-group:not(:first-child) .fa-'+action+((direction===-1)?'':'-o'));
@@ -697,10 +700,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           m.css({ 'opacity':'1','pointer-events':'auto' }).closest('.buttons').find('.button-group .'+action+'s[data-count]').each(function(){ $(this).attr('data-count',+$(this).attr('data-count')+direction); });
         });
       };
-      $('#chat-wrapper').on('click','.fa-star-o', function(){ starflag($(this),'star',1); });
-      $('#chat-wrapper').on('click','.fa-star', function(){ starflag($(this),'star',-1); });
-      $('#chat-wrapper').on('click','.fa-flag-o', function(){ starflag($(this),'flag',1); });
-      $('#chat-wrapper').on('click','.fa-flag', function(){ starflag($(this),'flag',-1); });
+      $('#chat-wrapper').on('click','.fa-star-o', function(){ starflag($(this),'star',1); return false; });
+      $('#chat-wrapper').on('click','.fa-star', function(){ starflag($(this),'star',-1); return false; });
+      $('#chat-wrapper').on('click','.fa-flag-o', function(){ starflag($(this),'flag',1); return false; });
+      $('#chat-wrapper').on('click','.fa-flag', function(){ starflag($(this),'flag',-1); return false; });
+      $('#chat-wrapper').on('click','.notify', function(){
+        var t = $(this);
+        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: t.attr('data-notification-id') }, xhrFields: { withCredentials: true } }).done(function(){
+          t.removeAttr('data-notification-id').removeClass('notify');
+          updateNotifications();
+        });
+        return false;
+      });
       function subscribe(state){
         var b = $('#question .fa-bell, #question .fa-bell-o');
         b.css({'opacity':'0.3','pointer-events':'none'});
@@ -1071,14 +1082,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           updateActiveRooms();
         });
         t.html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
-        return false;
-      });
-      $('#messages').on('click','.notify', function(){
-        var t = $(this);
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: t.attr('data-notification-id') }, xhrFields: { withCredentials: true } }).done(function(){
-          t.removeAttr('data-notification-id').removeClass('notify');
-          updateNotifications();
-        });
         return false;
       });
       $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
