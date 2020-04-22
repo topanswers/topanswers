@@ -215,6 +215,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message.merged>.who, .message.merged>.icon { visibility: hidden; }
     .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
     .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
+    .message.notify .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-dark)) inset; }
 
     .notification { padding: 4px; border-radius: 3px; margin: 2px; border: 1px solid rgba(var(--rgb-dark),0.6); }
     .notification:not(.processed) { opacity: 0; }
@@ -990,9 +991,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       })();
       if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
         firefox -= true;
-        $('#starboard,#messages').show().wrap('<div class="firefoxwrapper"></div>');
-        $('#starboard').removeClass('panel').css('display','flex').parent().addClass('panel').hide();
-        //$('#messages-wrapper').css('border-radius','0');
+        $('#starboard,#messages').wrap('<div class="firefoxwrapper"></div>');
+        $('#starboard').removeClass('panel').css('visibility','unset').parent().addClass('panel').css('visibility','hidden');
         setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
       }
       processNewChat(true);

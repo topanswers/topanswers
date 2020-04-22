@@ -77,7 +77,7 @@ create function range(startid bigint, endid bigint)
               from chat c
                    natural join account
                    natural join (select account_id,community_id,communicant_votes from communicant) v
-                   natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id()) n
+                   natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id() and notification_dismissed_at is null) n
               where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
         where (select account_id from g) is not null or chat_flag_count=0) z
   where chat_id>startid or endid is not null
