@@ -595,7 +595,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#notifications').children().remove();
           $('#notifications').append(r);
           $('#messages>.notify').removeAttr('data-notification-id').removeClass('notify');
-          $('#notifications>.message').each(function(){ $('#c'+$(this).attr('data-chat-id')).attr('data-notification-id',$(this).attr('notification-id')).addClass('notify'); });
+          $('#notifications>.message').each(function(){ $('#c'+$(this).attr('data-chat-id')).attr('data-notification-id',$(this).attr('data-id')).addClass('notify'); });
           processNotifications();
           setChatPollTimeout();
         }).fail(setChatPollTimeout));
@@ -676,7 +676,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         var m = $(this).closest('.message'), url = location.href;
         $('#status').attr('data-replyid',m.data('chat-id')).attr('data-replyname',m.data('name')).data('update')();
         $('#chat-bar a.panel[href][data-panel="messages-wrapper"]').click();
-        location.href = "#c"+m.data('chat-id');
+        window.location.hash = "#c"+m.data('chat-id');
         history.replaceState(null,null,url);
         $('#chattext').focus();
         return false;
@@ -764,8 +764,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       });
       $('#cancel').click(function(){
+        var url = location.href;
         $('.ping').removeClass('ping locked');
         $('#status').attr('data-editid','').attr('data-replyid','').attr('data-replyname','').data('update')();
+        window.location.hash='';
+        history.replaceState(null,null,url);
       });
       $('#community').change(function(){
         window.location = '/'+$(this).find(':selected').attr('data-name');
