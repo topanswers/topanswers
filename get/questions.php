@@ -19,7 +19,7 @@ $page = $_GET['page']??'1';
 extract(cdb("select account_id,community_name,community_language
                   , (select coalesce(jsonb_agg(z order by question_ordinal),'[]'::jsonb)
                      from (select question_id,question_ordinal,question_count,question_at,question_change_at,question_change,question_is_answered,question_title,question_votes,question_votes_from_me
-                                 ,question_account_id,question_account_name,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_communicant_votes
+                                 ,question_account_id,question_account_name,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_communicant_votes,question_is_imported
                                  ,community_id,community_name,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                                  ,kind_short_description
                                 , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
@@ -38,7 +38,7 @@ include '../lang/questions.'.$o_community_language.'.php';
 ?>
 <?foreach($o_questions as $r){ extract($r);?>
   <div id="q<?=$question_id?>"
-       class="question post<?=$question_is_deleted?' deleted':''?><?=($community_name!==$o_community_name)?' foreign':''?>"
+       class="question post<?=$question_is_deleted?' deleted':''?><?=($community_name!==$o_community_name)?' foreign':''?><?=$question_is_imported?' imported':''?>"
        style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>; --rgb-highlight: <?=$community_rgb_highlight?>; --rgb-warning: <?=$community_rgb_warning?>;"
        data-id="<?=$question_id?>"
        data-poll-major-id="<?=$question_poll_major_id?>"
