@@ -64,8 +64,9 @@ $jslang = $jslang??'en';
   .markdown .youtube { position: relative; z-index: 0; }
   .markdown .youtube>svg { position: absolute; height: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
   .markdown .youtube>a>img { display: block; margin: 0; }
-  .markdown .xkcd>a { margin-bottom: 8px; display: block; }
-  .markdown .xkcd img { max-height: 180px; display: block; }
+  .markdown .xkcd * { display: block; }
+  .markdown .xkcd>:first-child { margin-bottom: 8px; }
+  .markdown .xkcd img { max-height: 180px }
   .markdown .wikipedia { margin: 4px; }
   .markdown .wikipedia>a:nth-of-type(1) { float: right; width: 50px; }
   .markdown .wikipedia>a:nth-of-type(2) { font-size: 18px; display: block; margin-bottom: 10px; }

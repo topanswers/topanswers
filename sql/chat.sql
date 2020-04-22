@@ -51,6 +51,7 @@ create function range(startid bigint, endid bigint)
                                   , chat_star_count integer
                                   , chat_has_history boolean
                                   , chat_pings json
+                                  , notification_id bigint
                                   , chat_account_is_repeat boolean
                                   , rn bigint
                                    ) language sql security definer set search_path=db,api,chat,pg_temp as $$
@@ -72,7 +73,11 @@ create function range(startid bigint, endid bigint)
                    , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
                    , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
                    , (select json_agg(p.account_id) from ping p where p.chat_id=c.chat_id and c.account_id=get_account_id()) chat_pings
-              from chat c natural join account natural join (select account_id,community_id,communicant_votes from communicant) v
+                   , notification_id
+              from chat c
+                   natural join account
+                   natural join (select account_id,community_id,communicant_votes from communicant) v
+                   natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id()) n
               where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
         where (select account_id from g) is not null or chat_flag_count=0) z
   where chat_id>startid or endid is not null

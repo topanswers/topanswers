@@ -188,9 +188,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chatupload:active { color: rgb(var(--rgb-mid)); }
     #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 26px; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; background: rgb(var(--rgb-white)); color: rgb(var(--rgb-black)); }
 
-    #chat-panels a.panel { pointer-events: none; }
-    #chat-panels a[href].panel { pointer-events: auto; }
-    #chat-panels a.panel[data-unread]:not([data-unread^="0"])::after { display: inline-block; vertical-align: middle; content:attr(data-unread-lang); margin-left: 2px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
+    #chat-bar a.panel { pointer-events: none; }
+    #chat-bar a[href].panel { pointer-events: auto; }
+    #chat-bar a.panel[data-unread]:not([data-unread^="0"])::after { display: inline-block; vertical-align: middle; content:attr(data-unread-lang); margin-left: 2px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight)); color: rgb(var(--rgb-black));
                                                                width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px rgb(var(--rgb-white)); }
 
     .message { position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
@@ -259,8 +259,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #chattext-wrapper:not(:hover) button { display: unset; }
       #poll { display: none; }
       #se { display: none; }
-      #chat-panels { margin: 0; }
-      #messages-wrapper { margin: 0; }
+      #chat-wrapper { margin: 0; }
       .simple-pagination li>* { height: 22px; width: 22px; line-height: 22px; font-size: 12px; }
       [data-rz-handle] { display: none; }
     }
@@ -587,7 +586,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         Promise.allSettled(promises).then(() => {
           $('#notifications .markdown').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
           $('#notifications>.notification').addClass('processed');
-          $('#chat-panels .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification:not(.dismissed)').length).attr('data-unread-lang',$('#notifications>.notification:not(.dismissed)').length.toLocaleString('<?=$jslang?>'));
+          $('#chat-bar .panel[data-panel="notifications"]').attr('data-unread',$('#notifications>.notification:not(.dismissed)').length).attr('data-unread-lang',$('#notifications>.notification:not(.dismissed)').length.toLocaleString('<?=$jslang?>'));
         });
       }
       function updateNotifications(){
@@ -673,7 +672,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       $('#chat-wrapper').on('click','.fa-reply', function(){
         var m = $(this).closest('.message'), url = location.href;
         $('#status').attr('data-replyid',m.data('chat-id')).attr('data-replyname',m.data('name')).data('update')();
-        $('#chat-panels a.panel[href][data-panel="messages-wrapper"]').click();
+        $('#chat-bar a.panel[href][data-panel="messages-wrapper"]').click();
         location.href = "#c"+m.data('chat-id');
         history.replaceState(null,null,url);
         $('#chattext').focus();
@@ -1075,9 +1074,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         return false;
       });
       $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
-        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: $(this).closest('.notification').attr('data-id') }, xhrFields: { withCredentials: true } }).done(function(){
+        var n = $(this).closest('.notification').attr('data-id');
+        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: n }, xhrFields: { withCredentials: true } }).done(function(){
+          $('#messages>.message.notify[data-notification-id='+n+']').removeAttr('data-notification-id').removeClass('notify');
           updateNotifications().then(() => {
-            if(!$('#notifications').children('div').length) $('#chat-panels a.panel[href][data-panel="messages-wrapper"]').click();
+            if(!$('#notifications').children('div').length) $('#chat-bar a.panel[href][data-panel="messages-wrapper"]').click();
             <?if($dev){?>console.log($('#notifications').children().length);<?}?>
           });
         });

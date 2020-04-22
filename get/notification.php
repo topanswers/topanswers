@@ -12,31 +12,26 @@ extract(cdb("select room_id,room_can_chat
                      from (select notification_id,notification_dismissed_at,notification_at,notification_at_iso,notification_type,notification_data
                                 , count(*) over (partition by notification_type,notification_data#>array['stack_id']) notification_count
                                 , row_number() over (partition by notification_type,notification_data#>array['stack_id'] order by notification_at) notification_stack_rn
-                           from(select notification_id,notification_dismissed_at,notification_at
-                                     , to_char(notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
-                                     , case when c.notification_id is not null then 'chat'
-                                            when q.notification_id is not null then 'question'
-                                            when qf.notification_id is not null then 'question flag'
-                                            when a.notification_id is not null then 'answer'
-                                            when af.notification_id is not null then 'answer flag'
-                                            when s.notification_id is not null then 'system'
+                           from(select notification_id,notification_dismissed_at,notification_at,notification_at_iso
+                                     , case when c is not null then 'chat'
+                                            when q is not null then 'question'
+                                            when qf is not null then 'question flag'
+                                            when a is not null then 'answer'
+                                            when af is not null then 'answer flag'
+                                            when s is not null then 'system'
                                             end notification_type
-                                     , case when c.notification_id is not null then to_jsonb(c)
-                                            when q.notification_id is not null then to_jsonb(q)
-                                            when qf.notification_id is not null then to_jsonb(qf)
-                                            when a.notification_id is not null then to_jsonb(a)
-                                            when af.notification_id is not null then to_jsonb(af)
-                                            when s.notification_id is not null then to_jsonb(s)
-                                            end notification_data
-                                from notification n
-                                     left join chat c using(notification_id)
-                                     left join question q using(notification_id)
-                                     left join question_flag qf using(notification_id)
-                                     left join answer a using(notification_id)
-                                     left join answer_flag af using(notification_id)
-                                     left join system s using(notification_id)
-                                where coalesce(c.notification_id,q.notification_id,qf.notification_id,a.notification_id,af.notification_id,s.notification_id) is not null
-                                order by notification_dismissed_at desc nulls first limit $1) z ) z
+                                     , coalesce(c,q,qf,a,af,s) notification_data
+                                from (select notification_id,notification_dismissed_at,notification_at
+                                           , to_char(notification_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') notification_at_iso
+                                           , (select to_jsonb(c) from chat c where c.notification_id=n.notification_id) c
+                                           , (select to_jsonb(q) from question q where q.notification_id=n.notification_id) q
+                                           , (select to_jsonb(qf) from question_flag qf where qf.notification_id=n.notification_id) qf
+                                           , (select to_jsonb(a) from answer a where a.notification_id=n.notification_id) a
+                                           , (select to_jsonb(af) from answer_flag af where af.notification_id=n.notification_id) af
+                                           , (select to_jsonb(s) from system s where s.notification_id=n.notification_id) s
+                                      from notification n
+                                      order by notification_dismissed_at desc nulls first limit $1) z ) z
+                           where notification_type is not null) z
                      where notification_stack_rn=1) notifications
              from one",$limit));
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
