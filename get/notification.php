@@ -73,7 +73,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <i class="fa fa-reply fa-rotate-180" title="reply"></i>
           </span>
           <span class="button-group">
-            <a href="/transcript?room=<?=$d_room_id?>&id=<?=$notification_id?>#c<?=$d_chat_id?>" class="fa fa-link" title="permalink"></a>
+            <a href="/transcript?room=<?=$d_room_id?>&id=<?=$d_chat_id?>#c<?=$d_chat_id?>" class="fa fa-link" title="permalink"></a>
             <i class="fa fa-ellipsis-h" title="more actions"></i>
             <?if($d_chat_has_history){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
             <i></i>
