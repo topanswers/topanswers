@@ -1073,6 +1073,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         t.html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
         return false;
       });
+      $('#messages').on('click','.notify', function(){
+        var t = $(this);
+        $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: t.attr('data-notification-id') }, xhrFields: { withCredentials: true } }).done(function(){
+          t.removeAttr('data-notification-id').removeClass('notify');
+          updateNotifications();
+        });
+        return false;
+      });
       $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
         var n = $(this).closest('.notification').attr('data-id');
         $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: n }, xhrFields: { withCredentials: true } }).done(function(){

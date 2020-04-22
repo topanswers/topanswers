@@ -64,10 +64,10 @@ $jslang = $jslang??'en';
   .markdown .youtube { position: relative; z-index: 0; }
   .markdown .youtube>svg { position: absolute; height: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
   .markdown .youtube>a>img { display: block; margin: 0; }
-  .markdown .xkcd * { display: block; }
-  .markdown .xkcd>:first-child { margin-bottom: 8px; }
-  .markdown .xkcd img { max-height: 180px }
-  .markdown .wikipedia { margin: 4px; }
+  .markdown .xkcd>div { margin-bottom: 8px; }
+  .markdown .xkcd img { max-height: 180px; display: block; }
+  .markdown .xkcd>a { display: block; }
+  .markdown .wikipedia { display: block; margin: 4px; }
   .markdown .wikipedia>a:nth-of-type(1) { float: right; width: 50px; }
   .markdown .wikipedia>a:nth-of-type(2) { font-size: 18px; display: block; margin-bottom: 10px; }
   .markdown .wikipedia>a:nth-of-type(3) { float: left; margin-top: 4px; margin-right: 12px; margin-bottom: 0; max-width: 30%; }
@@ -222,7 +222,7 @@ $jslang = $jslang??'en';
                .use(window.markdownitObject,'xkcd',{ validate: function(p) { return p.trim().match(/^xkcd [1-9][0-9]* [0-9a-f]{64} "[^"<>]*" "[^"<>]*"$/); }, render: function (tokens,idx){
                  var m = tokens[idx].info.trim().match(/^xkcd ([1-9][0-9]*) ([0-9a-f]{64}) "([^"<>]*)" "([^"<>]*)"$/);
                  if (tokens[idx].nesting===1) return '<div class="xkcd" title="'+m[4]+'">'+
-                                                       '<a href="https://xkcd.com/'+m[1]+'">'+m[3]+'</a>'+
+                                                       '<div><a href="https://xkcd.com/'+m[1]+'">'+m[3]+'</a></div>'+
                                                        '<img src="/image?hash='+m[2]+'">';
                  else return '</div>';
                  } })
