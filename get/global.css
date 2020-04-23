@@ -24,7 +24,8 @@ a[href] { color: rgb(var(--rgb-dark)); }
 .element.shrink { flex: 0 1 auto; }
 .element>.element:last-child { margin-right: 0; }
 .highlight { color: rgb(var(--rgb-highlight)); }
-.frame { display: inline-block; padding: 1px; margin: 1px; background: rgb(var(--rgb-light)); border-radius: 2px; }
+.frame { display: inline-block; padding: 1px; margin: 1px 0; background: rgb(var(--rgb-light)); border-radius: 2px; }
+.frame+.frame { margin-left: 2px; }
 
 a.button { background: rgb(var(--rgb-mid)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; color: rgb(var(--rgb-dark)); font-size: 14px; margin: 4px; padding: 1px 6px; text-decoration: none; transition: all linear 0.1s; }
 a.button[href]:hover { background: rgb(var(--rgb-light)); }

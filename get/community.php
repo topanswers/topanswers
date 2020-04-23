@@ -89,20 +89,21 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
-    footer { min-height: 30px; flex: 0 0 auto; padding-bottom: 1px; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
+    footer { min-height: 30px; flex: 0 0 auto; font-size: 14px; padding-right: 2px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
     footer .icon { height: 24px; width: 24px; margin: 0; }
-    #community-rooms { display: flex; padding: 1px; }
+    #community-rooms { display: flex; padding-top: 1px; }
     #community-rooms>div:first-child { flex: 1 1 auto; display: flex; align-items: center; height: 100%; overflow: hidden; }
     #community-rooms>div:first-child>div:last-child { overflow: hidden; text-overflow: ellipsis; }
     #community-rooms>div:last-child { flex: 0 0 auto; display: flex; align-items: center; height: 100%; }
     #community-rooms>div:last-child a.this{ pointer-events: none; opacity: 0.3; }
     footer>div:last-child { display: none; }
-    #active-rooms { border-top: 2px solid black; margin-bottom: 2px; }
-    #active-rooms>div { display: flex; flex-direction: row-reverse; overflow-y: hidden; overflow-x: auto; margin: 1px; }
+    #active-rooms { padding-bottom: 1px; }
+    #active-rooms>div { display: flex; flex-direction: row-reverse; overflow-y: hidden; overflow-x: auto; }
+    #active-rooms .frame+.frame { margin-left: 0; margin-right: 2px; }
     footer a.frame { position: relative; }
     footer a.frame[data-unread]:after { content:attr(data-unread-lang); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight));
                                                          color: rgb(var(--rgb-black)); width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none;
-                                                         box-shadow: -1px -1px 1px 1px #fffe; xtext-shadow: 0 0 0px rgb(var(--rgb-white)) ; }
+                                                         box-shadow: -1px -1px 1px 1px #fffe; }
     #more-rooms.none { pointer-events: none; opacity: 0.5; }
 
     textarea, pre, code, .CodeMirror { font-family: var(--monospace-font-family); }
@@ -251,7 +252,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #dummyresizerx { background: rgb(var(--rgb-black)); flex: 0 0 6px; }
 
     .pane { display: flex; }
-    .panecontrol { display: none; width: 28px; font-size: 24px; text-align: center; }
+    .panecontrol { display: none; width: 28px; font-size: 24px; text-align: center; flex: 0 0 auto; }
     @media (max-width: 576px){
       .hidepane { display: none; }
       .panecontrol { display: unset; }
@@ -1045,12 +1046,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?if($question){?>
         setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
       <?}?>
-      $('#active-spacer').click(function(){
-        var t = $(this);
-        if((t.prev().css('flex-shrink')==='1')&&(t.next().css('flex-shrink')==='1')) t.next().animate({ 'flex-shrink': 100 });
-        else if(t.next().css('flex-shrink')==='100') t.next().animate({ 'flex-shrink': 1 }).end().prev().animate({ 'flex-shrink': 100 });
-        else t.prev().animate({ 'flex-shrink': 1 });
-      });
       $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
       $('#chat-wrapper').on('click','#mute', function(){
         var t = $(this);
@@ -1389,6 +1384,25 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </main>
   <div id="dummyresizerx"></div>
   <div id="chat-wrapper" class="pane hidepane">
+    <footer>
+      <div id="community-rooms">
+        <div>
+          <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
+          <a class="frame this"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>" data-id="<?=$room?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
+          <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
+        </div>
+        <div>
+          <?if($auth){?>
+            <?$ch = curl_init('http://127.0.0.1/pinnedrooms?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+            <a id="more-rooms" class="frame none" href="." title="more rooms"><img class="icon roomicon" src="/image?hash=560e3af97ebebc1189b630f64012ae2adca14ecedb6d86e51823f5f180786f8f"></a>
+          <?}?>
+        </div>
+      </div>
+      <div>
+        <div id="active-rooms">
+        </div>
+      </div>
+    </footer>
     <div id="chat-bar" class="label container">
       <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
       <div class="element">
@@ -1459,25 +1473,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </div>
       <?}?>
     </div>
-    <footer>
-      <div id="community-rooms">
-        <div>
-          <div class="panecontrol fa fa-angle-double-left hidepane" onclick="localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane');"></div>
-          <a class="frame this"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>" data-id="<?=$room?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
-          <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
-        </div>
-        <div>
-          <?if($auth){?>
-            <?$ch = curl_init('http://127.0.0.1/pinnedrooms?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-            <a id="more-rooms" class="frame none" href="." title="more rooms"><img class="icon roomicon" src="/image?hash=560e3af97ebebc1189b630f64012ae2adca14ecedb6d86e51823f5f180786f8f"></a>
-          <?}?>
-        </div>
-      </div>
-      <div>
-        <div id="active-rooms">
-        </div>
-      </div>
-    </footer>
   </div>
 </body>
 </html>

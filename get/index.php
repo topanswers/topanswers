@@ -99,7 +99,6 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
           $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
           $('#qa .post').addClass('processed');
           $('#qa .post').slice(7).remove();
-          $('a').attr('target','_blank');
         });
       })();
     });
