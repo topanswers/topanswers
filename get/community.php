@@ -89,7 +89,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
-    footer { min-height: 30px; flex: 0 0 auto; pxadding: 1px 0; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
+    footer { min-height: 30px; flex: 0 0 auto; padding-bottom: 1px; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
     footer .icon { height: 24px; width: 24px; margin: 0; }
     #community-rooms { display: flex; padding: 1px; }
     #community-rooms>div:first-child { flex: 1 1 auto; display: flex; align-items: center; height: 100%; overflow: hidden; }

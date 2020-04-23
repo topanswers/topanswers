@@ -109,7 +109,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 <body>
   <header>
     <div class="container">
-      <a class="frame" style="background: rgb(var(--rgb-white));" href="/" title="home"><img class="icon" style="background: rgb(var(--rgb-dark));" src="/communityicon"></a>
+      <a class="frame" href="/" title="home"><img class="icon" src="/communityicon"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div>
