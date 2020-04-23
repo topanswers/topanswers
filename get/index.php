@@ -20,28 +20,38 @@ extract(cdb("select account_id from one"));
   <link rel="stylesheet" href="/fonts/source-sans-pro.css">
   <link rel="stylesheet" href="/fonts/source-code-pro.css">
   <link rel="icon" href="/image?hash=b42ff24d293d4c4e56fa76a7b7f4766ec971bfb63e257c080bfd59a2696aafc2" type="image/png">
+  <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
+  <link rel="stylesheet" href="/post.css">
   <style>
     html { box-sizing: border-box; font-family: source-sans-pro, serif; font-size: 16px; }
     body { display: flex; flex-direction: column; background: lightgrey; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; }
-    main>div { background: rgb(var(--rgb-white)); flex: 1 1 auto; margin: 5vh 20vw; padding: 1px 24px; border-radius: 3px; }
+    main>div:first-child>* { text-align: center; }
+    main>div:first-child>p { margin-bottom: 30px; }
+    main>div { flex: 1 1 auto; margin: 5vh 20vw; }
+    main>div:not(#qa) { background: rgb(var(--rgb-white)); border-radius: 3px; padding: 1px 24px; }
+    .question { max-width: 800px; margin-left: auto; margin-right: auto; }
 
     footer { display: flex; align-items: center; justify-content: safe center; height: 30px; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); white-space: nowrap; }
     footer *, footer a[href] { color: rgb(var(--rgb-light)); }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-light)); }
-    .communities { display: flex; flex-wrap: wrap; margin: 16px 0; margin-top: -24px; }
+    .communities { display: flex; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
     .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; line-height: 1; }
 
     @media (max-width: 576px){
-      main>div { margin: 16px 16px; }
+      main>div { margin: 16px 16px; padding: 0; }
+      h1 { font-size: 26px; }
+      .communities>a { font-size: 16px; margin: 4px; }
     }
   </style>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery.waitforimages.js"></script>
+  <?require '../markdown.php';?>
   <script>
     $(function(){
       $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
@@ -58,9 +68,40 @@ extract(cdb("select account_id from one"));
       });
       $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.post({ url: '//post.<?=config("SITE_DOMAIN")?>/profile', data: { action: 'link', link: pin }, async: false, xhrFields: { withCredentials: true } }).fail(function(r){ alert(r.responseText); }).done(function(){ location.reload(true); }); } });
       $('#community').change(function(){ window.location = '/'+$(this).find(':selected').attr('data-name'); });
+      function renderQuestion(){
+        $(this).find('.summary span[data-markdown]').renderMarkdownSummary();
+        $(this).find('.answers>.bar:first-child+.bar+.bar+.bar').each(function(){
+          var t = $(this), h = t.nextAll('.bar').addBack();
+          if(h.length>1){
+            t.prev().addClass('premore');
+            $('<div class="bar more"><span></span><a href=".">show '+h.length+' more</a><span></span></div>').appendTo(t.parent()).click(function(){
+              t.prev().removeClass('premore');
+              $(this).prevAll('.bar:hidden').slideDown().end().slideUp();
+              return false;
+            });
+            h.hide();
+          }
+        });
+        $(this).find('.when').each(function(){
+          var t = $(this);
+          $(this).text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||''));
+          $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+        });
+      }
+      (function(){
+        var promises = [];
+        $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(promises);
+        Promise.allSettled(promises).then(() => {
+          $('#qa .post:not(.processed) .question').each(renderQuestion);
+          $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
+          $('#qa .post').addClass('processed');
+          $('#qa .post').slice(7).remove();
+          $('a').attr('target','_blank');
+        });
+      })();
     });
   </script>
-  <title>TopAnswers — Building a Library of Knowledge for the Internet</title>
+  <title>TopAnswers — Knowledge Communities</title>
 </head>
 <body>
   <header>
@@ -77,8 +118,8 @@ extract(cdb("select account_id from one"));
     </div>
   </header>
   <main>
+    <div><h1>TopAnswers</h1><p>knowledge communities</p></div>
     <div>
-      <h1>TopAnswers Communities:</h1>
       <div class="communities">
         <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='public' order by random()") as $r){ extract($r);?>
           <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
@@ -93,15 +134,16 @@ extract(cdb("select account_id from one"));
         </div>
       <?}?>
     </div>
+    <div id="qa"><?$ch = curl_init('http://127.0.0.1/questions?community=meta&search='.urlencode('@+ {}{code golf}')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
     <div style="--rgb-dark: 0,0,240;">
-    <h1>Join TopAnswers, and help build a lasting library of knowledge.</h1>
+    <h1>Join TopAnswers, and help build a library of knowledge.</h1>
     <p>TopAnswers is what Stack Overflow should be: focused on communities and knowledge sharing, not profit. We share some of the same aims:</p>
     <ul>
       <li>Focus on questions and answers. Everything else we do is to <em>help</em> us produce useful answers to good questions.</li>
       <li>Keep the signal:noise ratio high with a voting system that helps good answers float to the top.</li>
       <li>Build communities of experts across a diverse range of subjects.</li>
     </ul>
-    <p>We aren't a clone though; we diverge in important areas:</p>
+    <p>We aren't a clone though:</p>
     <ul>
       <li>We have invested more in the community aspects of the platform, that encourage like-minded people to coalesce around the production and curation of the library of Q&A, but…</li>
       <li>…conversely, we've improved the focus on Q&A by moving comments to the side.</li>

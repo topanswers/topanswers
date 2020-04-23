@@ -93,7 +93,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#qa .post:not(.processed) .question').each(renderQuestion);
           $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
           $('#qa .post').addClass('processed');
-          $('#qa .post.imported').slice(0,8).remove();
           $('#qa .post').shuffle();
           $('#qa .post').slice(3).remove();
           $('a').attr('target','_blank');
