@@ -7,7 +7,7 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to activerooms,pg_temp");
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']) || fail(403,'access denied');
 extract(cdb("select community_name,community_language
-                  , (select jsonb_agg(z)
+                  , (select coalesce(jsonb_agg(z),'[]'::jsonb)
                      from (select room_group, jsonb_agg(z order by rn) rooms
                            from (select room_id,room_derived_name,room_question_id,community_display_name,community_name,community_rgb_light,listener_latest_read_chat_id,listener_unread
                                       , case when room_question_id is null then 1 else 2 end room_group
