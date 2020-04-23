@@ -6,6 +6,9 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to indx,pg_temp");
 $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
 extract(cdb("select account_id from one"));
+$community_name = 'meta';
+$community_code_language = '';
+$cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>
 <!doctype html>
 <html style="--rgb-light: 211,211,211;
