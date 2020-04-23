@@ -78,7 +78,12 @@ create function search(text) returns table (question_id integer, rn bigint) lang
 $$;
 --
 create function parse(text) returns table (community_id integer, kind_id integer, tag_ids integer[], not_tag_ids integer[]) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
-  with c as (select get_community_id() community_id union all select community_from_id from syndication where account_id=get_account_id() and community_to_id=get_community_id() and left($1,2)<>'! ')
+  with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
+     , c as (select get_community_id() community_id
+             union
+             select community_from_id from syndication cross join f where account_id=get_account_id() and community_to_id=get_community_id() and position('!' in flags)=0
+             union
+             select community_id from api._community cross join f where position('+' in flags)>0)
     , kt as (select lower(trim('{}' from m[1])) knd from regexp_matches($1,'{[^}]*}','g') m)
      , k as (select community_id,kind_id from kind natural join sanction where (select count(1) from kt)=0 or exists(select 1 from kt where knd=lower(kind_short_description)))
     , tt as (select lower(trim('[]' from m[1])) tag_name from regexp_matches($1,'\[[^!\]]+]','g') m)
@@ -94,14 +99,16 @@ create function parse(text) returns table (community_id integer, kind_id integer
 $$;
 --
 create function simple_recent(text,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
+  with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
   select question_id, (row_number() over (order by question_poll_major_id desc))::integer, (count(1) over ())::integer
-  from questions.parse($1) natural join question
-  where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids
+  from questions.parse($1) natural join question cross join f
+  where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
   order by question_poll_major_id desc offset ($2-1)*10 limit 10;
 $$;
 --
 create function fuzzy_closest(text,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
-  with c as (select get_community_id() community_id union all select community_from_id from syndication where account_id=get_account_id() and community_to_id=get_community_id())
+  with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
+     , c as (select distinct community_id from parse($1))
      , e as (select '%'||trim('"' from m[1])||'%' exacts from regexp_matches($1,'"[^%."]*"','g') m)
      , w as (select trim(regexp_replace($1,'\[[^\]]+]|{[^}]+}','','g')) search_text)
      , q as (select question_id, question_markdown txt, strict_word_similarity($1,question_markdown) word_similarity, similarity($1,question_markdown) similarity
@@ -115,8 +122,8 @@ create function fuzzy_closest(text,integer) returns table (question_id integer, 
              where (select search_text from w)<<%answer_markdown and ((select exacts from e) is null or answer_markdown ilike all((select exacts from e))))
      , s as (select question_id, bool_or(txt like '%'||(select search_text from w)||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
   select question_id, (row_number() over (order by exact desc, similarity desc))::integer, (count(1) over ())::integer
-  from s natural join db.question natural join parse($1)
-  where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids
+  from s natural join db.question natural join parse($1) cross join f
+  where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
   order by exact desc, similarity desc offset ($2-1)*10 limit 10;
 $$;
 --

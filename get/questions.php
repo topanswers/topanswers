@@ -13,7 +13,7 @@ if(isset($_GET['one'])&&!isset($_GET['community'])){
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]')::json from question where community_id=get_community_id() and question_poll_minor_id>$1",$_GET['fromid']));
 $search = $_GET['search']??'';
 $type = 'simple';
-if($search && trim(preg_replace('/\[[^\]]+]|{[^}]+}/','',$search),' !')) $type = 'fuzzy';
+if($search && trim(preg_replace('/\[[^\]]+]|{[^}]+}/','',$search),' !+@')) $type = 'fuzzy';
 if(isset($_GET['one'])) $type = 'one';
 $page = $_GET['page']??'1';
 extract(cdb("select account_id,community_name,community_language
