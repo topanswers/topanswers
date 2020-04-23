@@ -15,7 +15,6 @@ extract(cdb("select account_id
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
-$dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
 include '../lang/community.'.$community_language.'.php';
 $jslang = substr($community_language,0,1).substr(strtok($community_language,'-'),-1);
@@ -106,7 +105,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <body>
   <div id="qa">
     <div id="questions">
-      <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&search='.urlencode($_GET['search'])); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+      <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.'&search='.urlencode($_GET['search']??'')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     </div>
   </div>
 </body>
