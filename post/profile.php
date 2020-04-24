@@ -20,6 +20,10 @@ if($auth){
         if(isset($_POST['mono'])) db("select change_monospace_font($1)",$_POST['mono']);
         header('Location: '.$_POST['location']);
         exit;
+      case 'feeds':
+        db("select change_syndications(('{'||$1||'}')::integer[])",isset($_POST['feed'])?implode(',',$_POST['feed']):'');
+        header('Location: '.$_POST['location']);
+        exit;
       case 'se':
         isset($_POST['sesite']) || fail(400,'must have an "sesite" parameter');
         extract(cdb("select sesite_url from sesite where sesite_id=$1",$_POST['sesite']));

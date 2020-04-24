@@ -49,8 +49,8 @@ create table community(
 , community_light_shade bytea not null default decode('e7edf4','hex') check(length(community_light_shade)=3)
 , community_highlight_color bytea not null default decode('f79804','hex') check(length(community_highlight_color)=3)
 , community_code_language text 
-, community_regular_font_id integer default 3 not null references font
-, community_monospace_font_id integer default 2 not null references font
+, community_regular_font_id integer default 5 not null references font
+, community_monospace_font_id integer default 4 not null references font
 , community_display_name text not null
 , community_type community_type_enum not null default 'private'
 , community_warning_color bytea not null default decode('990000','hex') check(length(community_warning_color)=3)
@@ -147,13 +147,20 @@ create table communicant(
 , primary key (account_id,community_id)
 );
 
+create table syndicate(
+  syndicate_to_community_id integer references community
+, syndicate_from_community_id integer references community
+, primary key (syndicate_to_community_id,syndicate_from_community_id)
+, check (syndicate_to_community_id<>syndicate_from_community_id)
+);
+
 create table syndication(
   account_id integer
 , community_to_id integer
 , community_from_id integer
 , primary key (account_id,community_to_id,community_from_id)
-, foreign key (account_id,community_from_id) references communicant
-, foreign key (account_id,community_to_id) references communicant
+, foreign key (account_id,community_from_id) references communicant deferrable initially deferred
+, foreign key (account_id,community_to_id) references communicant deferrable initially deferred
 , check (community_from_id<>community_to_id)
 );
 

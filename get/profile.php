@@ -92,7 +92,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     input[type="submit"] { margin-left: 16px; }
 
     table { border-collapse: collapse; }
-    td,th { border: 1px solid rgb(var(--rgb-black)); white-space: nowrap; }
+    td,th { border: 1px solid rgb(var(--rgb-black)); white-space: nowrap; padding: 4px; }
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/jquery.js"></script>
@@ -118,7 +118,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?if(isset($_GET['highlight-recovery'])){?>$('#uuid').click();<?}?>
       $('#community').change(function(){ window.location = '/profile?community='+$(this).find(':selected').attr('data-name'); });
       $('input[value=save]').css('visibility','hidden');
-      $('table').DataTable({ select: true, dom: 'Pfrtip' });
+      $('table.data').DataTable({ select: true, dom: 'Pfrtip' });
       $('.select>div:last-child>div>div').each(function(){
         $(this).append('<a href="/profile?community='+$(this).data('community')+'">profile</a>');
       });
@@ -224,16 +224,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <input type="hidden" name="community" value="<?=$community_name?>">
           <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
           <?if(!$community_regular_font_is_locked){?>
-            <label>regular
+            <div>
+            <label>regular: 
               <select name="regular">
                 <?foreach(db("select font_id,font_name from font where not font_is_monospace") as $r){ extract($r);?>
                   <option value="<?=$font_id?>"<?=($font_id===$my_community_regular_font_id)?' selected':''?>><?=$font_name?></option>
                 <?}?>
               </select>
             </label>
+            </div>
           <?}?>
           <?if(!$community_monospace_font_is_locked){?>
-            <label>monospace
+            <label>monospace: 
               <select name="mono">
                 <?foreach(db("select font_id,font_name from font where font_is_monospace") as $r){ extract($r);?>
                   <option value="<?=$font_id?>"<?=($font_id===$my_community_monospace_font_id)?' selected':''?>><?=$font_name?></option>
@@ -244,19 +246,48 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <input type="submit" value="save">
         </form>
       </fieldset>
-      <?foreach(db("select sesite_id,sesite_url,selink_user_id from sesite order by sesite_ordinal") as $r){ extract($r);?>
+      <?if(ccdb("select count(1)>0 from sesite")){?>
         <fieldset>
-          <legend>linked account on <a href="<?=$sesite_url?>"><?=substr($sesite_url,8)?></a></legend>
-          <form action="//topanswers.xyz/profile" method="get">
-            <?if($selink_user_id){?>
-              <a href="<?=$sesite_url.'/users/'.$selink_user_id?>?>"><?=substr($sesite_url,8).'/users/'.$selink_user_id?></a>
-            <?}else{?>
-              <input type="hidden" name="action" value="se">
-              <input type="hidden" name="community" value="<?=$community_name?>">
-              <input type="hidden" name="sesite" value="<?=$sesite_id?>">
-              <input type="submit" value="authenticate with SE to link account">
-              <a href="/meta?q=409#a647" style="margin-left: 4px;">info</a>
+          <legend>linked accounts on Stack Exchange (<a href="/meta?q=409#a647">info</a>)</legend>
+          <ul>
+            <?foreach(db("select sesite_id,sesite_url,selink_user_id from sesite order by sesite_ordinal") as $r){ extract($r);?>
+              <li>
+                <form action="//topanswers.xyz/profile" method="get">
+                  <?if($selink_user_id){?>
+                    <a href="<?=$sesite_url.'/users/'.$selink_user_id?>?>"><?=substr($sesite_url,8).'/users/'.$selink_user_id?></a>
+                  <?}else{?>
+                    <input type="hidden" name="action" value="se">
+                    <input type="hidden" name="community" value="<?=$community_name?>">
+                    <input type="hidden" name="sesite" value="<?=$sesite_id?>">
+                    <input type="submit" style="margin-left: 0;" value="authenticate with SE to link <?=substr($sesite_url,8)?> account">
+                  <?}?>
+                </form>
+              </li>
             <?}?>
+          </ul>
+        </fieldset>
+      <?}?>
+      <?if(ccdb("select count(1)>0 from community where community_id<>$1",$community_id)){?>
+        <fieldset>
+          <legend>cross-community feeds</legend>
+          <form action="//post.topanswers.xyz/profile" method="post">
+            <input type="hidden" name="action" value="feeds">
+            <input type="hidden" name="community" value="<?=$community_name?>">
+            <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
+            <table>
+              <thead><tr><th>community</th><th>feed</th></tr></thead>
+              <tbody>
+                <?foreach(db("select community_id,community_display_name,community_feed_is_active
+                              from community
+                              order by community_my_votes desc nulls last, community_ordinal, community_name") as $r){ extract($r,EXTR_PREFIX_ALL,'c');?>
+                  <tr>
+                    <td><?=$c_community_display_name?></td>
+                     <td><input type="checkbox" name="feed[]" value="<?=$c_community_id?>"<?=$c_community_feed_is_active?' checked':''?>></td>
+                  </tr>
+                <?}?>
+              <tbody>
+            </table>
+            <input type="submit" style="margin-left: 0;" value="save">
           </form>
         </fieldset>
       <?}?>
@@ -265,7 +296,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <legend>community activity</legend>
       <fieldset>
         <legend>questions</legend>
-        <table data-order='[[0,"desc"]]' data-page-length='10'>
+        <table class="data" data-order='[[0,"desc"]]' data-page-length='10'>
           <thead>
             <tr><th>date/time</th><th>type</th><th>title</th><th>stars</th></tr>
           </thead>
@@ -286,7 +317,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       </fieldset>
       <fieldset>
         <legend>answers</legend>
-        <table data-order='[[0,"desc"]]' data-page-length='10'>
+        <table class="data" data-order='[[0,"desc"]]' data-page-length='10'>
           <thead>
             <tr><th>answer date/time</th><th>question type</th><th>title</th><th>answer stars</th><th>question date/time</th></tr>
           </thead>
