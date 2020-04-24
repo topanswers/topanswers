@@ -1,4 +1,4 @@
-header { min-height: 30px; display: grid; grid-auto-rows: 30px; grid-template-columns: max-content auto max-content; grid-column-gap: 5vw; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; padding-left: 2px; }
+header { min-height: 30px; display: grid; grid-auto-rows: 30px; grid-template-columns: max-content auto max-content; grid-column-gap: 2px; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; padding-left: 2px; }
 header a, header .element a, header a.element { color: rgb(var(--rgb-light)); }
 header a.button { background: rgb(var(--rgb-dark)); border: 1px solid rgba(var(--rgb-light),0.5); color: rgb(var(--rgb-light)); }
 header a.button[href]:hover { border-color: transparent; background: rgba(var(--rgb-light),0.2); }

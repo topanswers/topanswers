@@ -245,7 +245,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li>.prev { border-radius: 3px 0 0 3px; }
     .simple-pagination li>.next { border-radius: 0 3px 3px 0; }
 
-    #search { flex: 0 1 570px; min-width: 0; background: rgba(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 3px; padding: 4px; }
+    #search { flex: 0 1 300px; min-width: 0; background: rgba(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); border-radius: 3px; padding: 4px; }
     #search:focus { background: rgb(var(--rgb-white)); }
     #search+div { display: none; }
 
@@ -264,6 +264,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #chat-wrapper { margin: 0; }
       .simple-pagination li>* { height: 22px; width: 22px; line-height: 22px; font-size: 12px; }
       [data-rz-handle] { display: none; }
+      #search { flex: 0 1 570px; }
     }
   </style>
   <script src="/lib/js.cookie.js"></script>
