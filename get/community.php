@@ -125,7 +125,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .banner .button:last-child { margin-right: 0; }
     #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
-    #more { margin-bottom: 10px; display: none; display: flex; justify-content: center; }
+    .pages { margin-bottom: 10px; display: none; display: flex; justify-content: center; }
 
     <?if($question){?>
       <?if($auth){?>.tag:hover i { visibility: visible; }<?}?>
@@ -377,11 +377,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     loadQuestions();
                     return false;
                 } };
-        if(m>10) $('#more').show().pagination(o);
+        if(m>10) $('.pages').show().children().pagination(o);
         $('#qa>div.banner').show();
       }
       function loadQuestions(){
         $('#questions').children('.question').remove();
+        $('.pages').last().hide();
         $.get('/questions?community=<?=$community_name?>'+window.location.search.replace('?','&'),function(data) {
           var newquestions = $(data).filter('.question').prependTo($('#questions'));
           processNewQuestions();
@@ -1375,10 +1376,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <div class="markdown" data-markdown="<?=htmlspecialchars($community_banner_markdown)?>">&nbsp;</div>
           </div>
         <?}?>
-        <div id='more'></div>
+        <div class="pages"><div></div></div>
         <div id="questions">
           <?$ch = curl_init('http://127.0.0.1/questions?community='.$community_name.(isset($_GET['page'])?'&page='.$_GET['page']:'').(isset($_GET['search'])?'&search='.urlencode($_GET['search']):'')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
         </div>
+        <div class="pages"><div></div></div>
       <?}?>
     </div>
   </main>
