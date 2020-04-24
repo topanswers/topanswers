@@ -279,7 +279,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <tbody>
                 <?foreach(db("select community_id,community_display_name,community_feed_is_active
                               from community
-                              order by community_my_votes desc nulls last, community_ordinal, community_name") as $r){ extract($r,EXTR_PREFIX_ALL,'c');?>
+                              where community_id<>$1
+                              order by community_my_votes desc nulls last, community_ordinal, community_name",$community_id) as $r){ extract($r,EXTR_PREFIX_ALL,'c');?>
                   <tr>
                     <td><?=$c_community_display_name?></td>
                      <td><input type="checkbox" name="feed[]" value="<?=$c_community_id?>"<?=$c_community_feed_is_active?' checked':''?>></td>
