@@ -79,6 +79,9 @@ create function _markdownsummary(text) returns text language sql immutable secur
   select case when markdown~'^@@@ answer [1-9][0-9]*$'
                 then (select 'see [this answer on "'||question_title||'"](/'||community_name||'?q='||question_id||'#a'||answer_id||')'
                       from (select question_id,community_id,question_title from question) q natural join community natural join answer where answer_id=substr(markdown,11)::integer)
+              when markdown~'^@@@ question [1-9][0-9]*$'
+                then (select 'see ["'||question_title||'"](/'||community_name||'?q='||question_id||')'
+                      from question natural join community where question_id=substr(markdown,14)::integer)
               else markdown end
   from o;
 $$;
