@@ -11,7 +11,6 @@ create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_my_votes,community_ordinal,community_about_question_id
      , s.community_id is not null community_feed_is_active
 from api._community natural join db.community
-     natural join (select * from db.communicant where account_id=get_account_id()) c
      natural left join (select community_from_id community_id from db.syndication where community_to_id=get_community_id() and account_id=get_account_id()) s;
 --
 create view question with (security_barrier) as
@@ -196,6 +195,7 @@ $$;
 --
 create function change_syndications(ids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
+  select _ensure_communicant(get_account_id(),get_community_id());
   delete from syndication where account_id=get_account_id() and community_to_id=get_community_id();
   insert into syndication(account_id,community_to_id,community_from_id) select get_account_id(),get_community_id(),community_id from _community where community_id=any(ids);
 $$;

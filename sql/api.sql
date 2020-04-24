@@ -223,8 +223,13 @@ create function _ensure_communicant(aid integer, cid integer) returns void langu
   with s as (select syndicate_from_community_id
              from syndicate
              where syndicate_to_community_id=cid and not exists (select 1 from communicant where account_id=aid and community_id=syndicate_from_community_id))
-     , i as (insert into syndication(account_id,community_to_id,community_from_id) select aid,cid,syndicate_from_community_id from s)
   select _ensure_communicant(aid,syndicate_from_community_id) from s;
+  --
+  insert into syndication(account_id,community_to_id,community_from_id)
+  select aid,cid,syndicate_from_community_id
+  from syndicate
+  where syndicate_to_community_id=cid
+  on conflict do nothing;
 $$;
 --
 --

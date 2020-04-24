@@ -88,6 +88,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       (function(){
         var promises = [];
+        $('#qa .post.deleted').remove();
         $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(promises);
         Promise.allSettled(promises).then(() => {
           $('#qa .post:not(.processed) .question').each(renderQuestion);

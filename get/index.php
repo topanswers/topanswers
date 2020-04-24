@@ -93,6 +93,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       }
       (function(){
         var promises = [];
+        $('#qa .post.deleted').remove();
         $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(promises);
         Promise.allSettled(promises).then(() => {
           $('#qa .post:not(.processed) .question').each(renderQuestion);
