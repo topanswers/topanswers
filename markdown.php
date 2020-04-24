@@ -173,6 +173,10 @@ $jslang = $jslang??'en';
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://NIX.TA') tokens[idx].attrSet('href','/nix');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://META.TA') tokens[idx].attrSet('href','/meta');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://CODEGOLF.TA') tokens[idx].attrSet('href','/codegolf');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://DOTNET.TA') tokens[idx].attrSet('href','/dotnet');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://CSHARP.TA') tokens[idx].attrSet('href','/csharp');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://POWERSHELL.TA') tokens[idx].attrSet('href','/powershell');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://POSH.TA') tokens[idx].attrSet('href','/powershell');
     };
 
     md = window.markdownIt({ linkify: true
