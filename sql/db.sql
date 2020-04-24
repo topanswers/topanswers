@@ -420,6 +420,7 @@ create table answer_history(
 , answer_history_markdown text not null
 );
 create unique index answer_history_rate_limit_ind on answer_history(account_id,answer_history_at);
+create index answer_history_answer_ind on answer_history(answer_id) include(account_id);
 
 create table tag(
   tag_id integer generated always as identity primary key
