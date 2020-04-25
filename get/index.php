@@ -9,6 +9,7 @@ extract(cdb("select account_id from one"));
 $community_name = 'meta';
 $community_code_language = '';
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
+$codidact = json_decode(file_get_contents('https://codidact.com/communities.json'),true);
 ?>
 <!doctype html>
 <html style="--rgb-light: 211,211,211;
@@ -173,9 +174,9 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     </ul>
     <p>Finally, we share many goals (and some contributors) with  <a href="https://codidact.org/">Codidact</a>. Please consider participating in their communities:</p>
     <div id="colinks">
-      <a href="https://writing.codidact.com"?><img src="/image?hash=745fc01987fb09cfd07dc2be5bc008d42f0fed9b410cfb306635868612ec3752"></a>
-      <a href="https://meta.codidact.com"?><img src="/image?hash=6cda30e9b129c5a96c950d9131cd4d4ca00ea339b2573b20b3ee376276d33199"></a>
-      <a href="https://outdoors.codidact.com"?><img src="/image?hash=cd1b175d74fe7f90a5b5898123ab42a3f0dc15e4dccd1767418d932f595dc0ac"></a>
+      <?foreach($codidact as $s){?>
+        <a href="<?=$s['canonical_url']?>" title="<?=$s['name']?>"?><img src="<?=$s['logo_url']?>"></a>
+      <?}?>
     </div>
     </div>
   </main>
