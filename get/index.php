@@ -45,6 +45,10 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     .communities { display: flex; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
     .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; line-height: 1; }
 
+    #colinks { display: flex; flex-wrap: wrap; justify-content: center; }
+    #colinks a { min-width: 180px; margin: 20px; border: 1px solid rgb(var(--rgb-light)); padding: 5px; border-radius: 3px; text-align: center; }
+    #colinks img { height: 40px; }
+
     @media (max-width: 576px){
       main>div { margin: 16px 16px; padding: 0; }
       h1 { font-size: 26px; }
@@ -162,7 +166,12 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       <li><a href="/meta?q=182">Who will moderate and what tools will they have access to?</a></li>
       <li><a href="/meta?q=72">What markdown options are available?</a></li>
     </ul>
-    <p>Finally, we share many goals (and some contributors) with another project you might like to know about: <a href="https://codidact.org/">Codidact</a>.</p>
+    <p>Finally, we share many goals (and some contributors) with  <a href="https://codidact.org/">Codidact</a>. Please consider participating in their communities:</p>
+    <div id="colinks">
+      <a href="https://writing.codidact.com"?><img src="/image?hash=745fc01987fb09cfd07dc2be5bc008d42f0fed9b410cfb306635868612ec3752"></a>
+      <a href="https://meta.codidact.com"?><img src="/image?hash=6cda30e9b129c5a96c950d9131cd4d4ca00ea339b2573b20b3ee376276d33199"></a>
+      <a href="https://outdoors.codidact.com"?><img src="/image?hash=3c063f401756f558560d3632338b0eeb2c7c663567c5ce5f0540e22466f78ca0"></a>
+    </div>
     </div>
   </main>
   <footer>
