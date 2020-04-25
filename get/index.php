@@ -45,7 +45,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-light)); }
     .communities { display: flex; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
-    .communities>a { display: flex; align-items: center; border: 2px solid rgb(var(--rgb-dark)); border-radius: 6px; color: rgb(var(--rgb-dark)); background: rgb(var(--rgb-light));
+    .communities>a { display: flex; align-items: center; border: 2px solid rgb(var(--rgb-dark)); border-radius: 6px; color: rgb(var(--rgb-black)); background: rgb(var(--rgb-light));
                      text-decoration: none; padding: 8px 16px; font-size: 24px; margin: 8px; line-height: 1; }
     .communities img { margin-right: 10px; }
 
