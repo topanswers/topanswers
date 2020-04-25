@@ -93,7 +93,7 @@ switch($_POST['action']) {
      //error_log('length: '.strlen($markdown));
       // add the question
       if($qanon){
-        $id=ccdb("select new_questionanon($1,$2,$3,$4,$5,$6::timestamptz)",$title,$markdown,$_POST['sesiteid'],$tags,$seqid,$at);
+        $id=ccdb("select new_questionanon($1,$2,$3,$4,$5,$6::timestamptz)",$title,$markdown,$tags,$_POST['sesiteid'],$seqid,$at);
       }else{
         $id=ccdb("select new_question($1,$2,$3,$4,$5,$6,$7,$8::timestamptz)",$title,$markdown,$tags,$_POST['sesiteid'],$seqid,$seuid,$seuname,$at);
       }
