@@ -41,13 +41,17 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     footer { display: flex; align-items: center; justify-content: safe center; height: 30px; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); white-space: nowrap; }
     footer *, footer a[href] { color: rgb(var(--rgb-light)); }
 
+    .hover { display: none; }
+
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-light)); }
     .communities { display: flex; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
-    .communities>a { border: 3px solid rgb(var(--rgb-mid)); border-radius: 6px; text-decoration: none; color: rgb(var(--rgb-light)); background: rgb(var(--rgb-dark)); padding: 8px 16px; font-size: 24px; margin: 8px; line-height: 1; }
+    .communities>a { display: flex; align-items: center; border: 2px solid rgb(var(--rgb-dark)); border-radius: 6px; color: rgb(var(--rgb-dark)); background: rgb(var(--rgb-light));
+                     text-decoration: none; padding: 8px 16px; font-size: 24px; margin: 8px; line-height: 1; }
+    .communities img { margin-right: 10px; }
 
     #colinks { display: flex; flex-wrap: wrap; justify-content: center; }
-    #colinks a { min-width: 180px; margin: 20px; border: 1px solid rgb(var(--rgb-light)); padding: 5px; border-radius: 3px; text-align: center; }
-    #colinks img { height: 40px; }
+    #colinks a { min-width: 180px; margin: 20px; border: 1px solid rgb(var(--rgb-light)); padding: 5px; border-radius: 3px; }
+    #colinks img { height: 40px; display: block; margin: auto; }
 
     @media (max-width: 576px){
       main>div { margin: 16px 16px; padding: 0; }
@@ -89,19 +93,14 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
             h.hide();
           }
         });
-        $(this).find('.when').each(function(){
-          var t = $(this);
-          $(this).text((t.attr('data-prefix')||'')+moment.duration(t.data('seconds'),'seconds').humanize()+' ago'+(t.attr('data-postfix')||''));
-          $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
-        });
       }
       (function(){
         var promises = [];
         $('#qa .post.deleted').remove();
         $('#qa .post:not(.processed)').find('.markdown[data-markdown]').renderMarkdown(promises);
         Promise.allSettled(promises).then(() => {
-          $('#qa .post:not(.processed) .question').each(renderQuestion);
-          $('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
+          $('#qa .post:not(.processed).question').each(renderQuestion);
+          //$('#qa .post:not(.processed) .answers .summary span[data-markdown]').renderMarkdownSummary();
           $('#qa .post').addClass('processed');
           $('#qa .post').slice(7).remove();
         });
@@ -128,8 +127,14 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     <div><h1>TopAnswers</h1><p>knowledge communities</p></div>
     <div>
       <div class="communities">
-        <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='public' order by random()") as $r){ extract($r);?>
-          <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;"><?=$community_display_name?></a>
+        <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light
+                      from community
+                      where community_type='public'
+                      order by random()") as $r){ extract($r);?>
+          <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;">
+            <img class="icon" src="/communityicon?community=<?=$community_name?>">
+            <?=$community_display_name?>
+          </a>
         <?}?>
       </div>
       <?if(ccdb("select exists(select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light from community where community_type='private')")){?>
@@ -141,7 +146,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
         </div>
       <?}?>
     </div>
-    <div id="qa"><?$ch = curl_init('http://127.0.0.1/questions?community=meta&search='.urlencode('@+ {}{code golf}{blog}')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
+    <div id="qa"><?$ch = curl_init('http://127.0.0.1/questions?community=meta&search='.urlencode('@+ {}{code golf}')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
     <div style="--rgb-dark: 0,0,240;">
     <h1>Join TopAnswers, and help build a library of knowledge.</h1>
     <p>TopAnswers is what Stack Overflow should be: focused on communities and knowledge sharing, not profit. We share some of the same aims:</p>
@@ -152,13 +157,13 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     </ul>
     <p>We aren't a clone though:</p>
     <ul>
-      <li>We have invested more in the community aspects of the platform, that encourage like-minded people to coalesce around the production and curation of the library of Q&A, but…</li>
-      <li>…conversely, we've improved the focus on Q&A by moving comments to the side.</li>
+      <li>We have invested more in the community aspects of the platform, that encourage like-minded people to coalesce around the production and curation of the library of Q&amp;A, but…</li>
+      <li>…conversely, we've improved the focus on Q&amp;A by moving comments to the side.</li>
       <li>We are not for-profit, so contributors will never be the 'product', and our core aims will not evolve over time.</li>
       <li>As much as possible of our platform is published <a href="/meta?q=28">as open source</a> <a href="/meta?q=221#a580">on GitHub</a>.</li>
       <li>You are <a href="/meta?q=18#a8">free to decide how to license your contributions</a>.</li>
     </ul>
-    <p>We are growing steadily, and starting to register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">Databases</a> in October 2019, <a href="/tex">TeX</a> in January 2020, and <a href="/codegolf">Code Golf</a> in February. We also now have experimental <a href="/cplusplus">C++</a> and <a href="/meta?q=530">*nix</a> communities. If you would like to help start another community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a>.</p>
+    <p>We are growing steadily, and starting to register <a href="https://www.google.com/search?q=bmktopage">on search engines</a>. We launched <a href="/databases">Databases</a> in October 2019, <a href="/tex">TeX</a> in January 2020, and <a href="/codegolf">Code Golf</a> in February. We have since added a number of experimental communities like <a href="/cplusplus">C++</a> and <a href="/meta?q=530">*nix</a>. If you would like to help start another community here, <a href="/meta?q=211">you can</a>. If you are coming from an existing Stack Exchange community you will be able to <a href="/meta?q=236#a176">import your content</a>.</p>
     <p>There is a lot more detailed information on our <a href="/meta">meta</a> community (a place for questions and answers about TopAnswers itself), for example:</p>
     <ul>
       <li><a href="/meta?q=1">Why we are building TopAnswers</a></li>
