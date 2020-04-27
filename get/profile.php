@@ -81,7 +81,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
-    main>fieldset { display: flex; flex-direction: column; align-items: flex-start; }
+    main>fieldset { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-start; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
@@ -283,10 +283,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                               order by community_my_votes desc nulls last, community_ordinal, community_name",$community_id) as $r){ extract($r,EXTR_PREFIX_ALL,'c');?>
                   <tr>
                     <td><?=$c_community_display_name?></td>
-                     <td><input type="checkbox" name="feed[]" value="<?=$c_community_id?>"<?=$c_community_feed_is_active?' checked':''?>></td>
+                    <td><input type="checkbox" name="feed[]" value="<?=$c_community_id?>"<?=$c_community_feed_is_active?' checked':''?>></td>
                   </tr>
                 <?}?>
-              <tbody>
+              </tbody>
             </table>
             <input type="submit" style="margin-left: 0;" value="save">
           </form>
