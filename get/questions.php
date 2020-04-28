@@ -45,7 +45,7 @@ include '../lang/questions.'.$o_community_language.'.php';
        data-poll-minor-id="<?=$question_poll_minor_id?>"
        data-of="<?=$question_count?>">
     <div class="title">
-      <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
+      <a href="/<?=$community_name?>?q=<?=$question_id?>"><span title="<?=$question_title?>"><?=$question_title?></span></a>
       <?if($question_votes){?>
         <span class="stars" title="<?=$l_stars?>: <?=$l_num($question_votes)?>">
           <span><?=$l_num($question_votes)?></span>
@@ -86,12 +86,12 @@ include '../lang/questions.'.$o_community_language.'.php';
                       where question_id=$1
                       order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$question_id) as $i=>$r){ extract($r);?>
           <div class="bar<?=$answer_is_deleted?' deleted':''?>">
-            <div class="element summary shrink">
+            <div class="element summary shrink grow">
               <span class="stars" title="<?=$l_stars?>: <?=$l_num($answer_votes)?>">
                 <i class="fa fa-star<?=(($answer_account_id!==$o_account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>"></i>
                 <span><?=$l_num($answer_votes)?></span>
               </span>
-              <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element shrink"><span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
+              <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element shrink grow"><span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
             </div>
             <div>
               <?if($answer_change!=='answered'){?>

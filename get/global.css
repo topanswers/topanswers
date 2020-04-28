@@ -20,8 +20,9 @@ a[href] { color: rgb(var(--rgb-dark)); }
 .container:not(.shrink)  { flex: 0 0 auto; }
 .container.shrink { flex: 0 1 auto; }
 .element { margin: 0 4px; }
-.element:not(.shrink)  { flex: 0 0 auto; }
-.element.shrink { flex: 0 1 auto; }
+.element  { flex: 0 0 auto; }
+.element.shrink { flex-shrink: 1; }
+.element.grow { flex-grow: 1; }
 .element>.element:last-child { margin-right: 0; }
 .highlight { color: rgb(var(--rgb-highlight)); }
 .frame { display: inline-block; padding: 1px; margin: 1px 0; background: rgb(var(--rgb-light)); border-radius: 2px; }
