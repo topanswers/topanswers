@@ -147,7 +147,7 @@ $codidact = json_decode(file_get_contents('https://codidact.com/communities.json
         </div>
       <?}?>
     </div>
-    <div id="qa"><?$ch = curl_init('http://127.0.0.1/questions?community=meta&search='.urlencode('@+ {}{code golf}')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
+    <div id="qa"><?$ch = curl_init('http://127.0.0.1/questions?community=meta&search='.urlencode('@+ {}{code golf}{blog}')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
     <div style="--rgb-dark: 0,0,240;">
     <h1>Join TopAnswers, and help build a library of knowledge.</h1>
     <p>TopAnswers is what Stack Overflow should be: focused on communities and knowledge sharing, not profit. We share some of the same aims:</p>
