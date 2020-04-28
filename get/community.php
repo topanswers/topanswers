@@ -89,7 +89,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
-    footer { min-height: 30px; flex: 0 0 auto; font-size: 14px; padding-right: 2px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; }
+    footer { min-height: 30px; flex: 0 0 auto; font-size: 14px; padding-right: 2px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; margin: 0 -1px; }
     footer .icon { height: 24px; width: 24px; margin: 0; }
     #community-rooms { display: flex; padding-top: 1px; }
     #community-rooms>div:first-child { flex: 1 1 auto; display: flex; align-items: center; height: 100%; overflow: hidden; }
@@ -99,7 +99,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     footer>div:last-child { display: none; }
     #active-rooms { padding-bottom: 1px; }
     #active-rooms>div { display: flex; flex-direction: row-reverse; overflow-y: hidden; overflow-x: auto; }
-    #active-rooms .frame+.frame { margin-left: 0; margin-right: 2px; }
     footer a.frame { position: relative; }
     footer a.frame[data-unread]:after { content:attr(data-unread-lang); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight));
                                                          color: rgb(var(--rgb-black)); width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none;
@@ -500,6 +499,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         localStorage.setItem('read',JSON.stringify(read));
         _.forEach(read,function(e){ count += e.length; });
         localStorage.setItem('readCount',count);
+        $('#active-rooms>div').show().children().show();
         $('#community-rooms a').each(function(){
           var t = $(this);
           $('#active-rooms a[data-room="'+t.data('id')+'"]').each(function(){
@@ -509,10 +509,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               t.attr('data-unread-lang',u.attr('data-unread-lang'));
               t.attr('title',u.attr('title-lang'));
             }
-            if(u.siblings().length===0) u.parent().remove(); else u.remove();
+            if(u.siblings().length===0) u.parent().hide(); else u.hide();
           });
         });
         m = $('#active-rooms a[data-unread]').length;
+        $('#more-rooms').removeAttr('data-unread').removeAttr('data-unread-lang')
         if(m) $('#more-rooms').attr('data-unread',m).attr('data-unread-lang',m.toLocaleString('<?=$jslang?>'));
         $('#more-rooms').toggleClass('none',$('#active-rooms a').length===0);
       }
