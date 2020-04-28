@@ -152,6 +152,7 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
   --
   with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
              select community_id,get_room_id(),get_account_id(),msg,replyid from room where room_id=get_room_id() returning community_id,room_id,chat_id)
+    , rm as (update room r set room_latest_chat_id=i.chat_id from i where r.room_id=i.room_id)
      , h as (insert into chat_history(chat_id,chat_history_markdown) select chat_id,msg from i)
     , aa as (select account_id from (select account_id from chat where chat_id=replyid union select unnest(pingids)) a where account_id<>get_account_id())
      , n as (insert into notification(account_id) select account_id from aa returning *)

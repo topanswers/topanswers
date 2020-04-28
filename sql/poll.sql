@@ -11,9 +11,7 @@ select account_notification_id
      , (select max(chat_change_id) from db.chat natural join w) chat_max_change_id
      , (select max(question_poll_major_id) from db.question natural join c) question_max_poll_major_id
      , (select max(question_poll_minor_id) from db.question natural join w) question_max_poll_minor_id
-     , (select max((select max(chat_id) from db.chat where room_id=participant.room_id))
-        from db.participant 
-        where account_id=get_account_id() and room_id<>(select room_id from w) and participant_latest_chat_at+make_interval(hours=>60+least(participant_chat_count,182)*12)>current_timestamp) chat_active_room_max_id
+     , (select coalesce(max(room_latest_chat_id),0) from db.listener natural join db.room where account_id=get_account_id() and room_latest_chat_id is not null) chat_active_room_max_id
 from db.account where account_id=get_account_id();
 --
 --
