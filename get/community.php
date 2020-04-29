@@ -509,11 +509,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               t.attr('data-unread-lang',u.attr('data-unread-lang'));
               t.attr('title',u.attr('title-lang'));
             }
+            u.removeAttr('data-unread').removeAttr('data-unread-lang');
             if(u.siblings().length===0) u.parent().hide(); else u.hide();
           });
         });
         m = $('#active-rooms a[data-unread]').length;
-        $('#more-rooms').removeAttr('data-unread').removeAttr('data-unread-lang')
+        $('#more-rooms').removeAttr('data-unread').removeAttr('data-unread-lang');
         if(m) $('#more-rooms').attr('data-unread',m).attr('data-unread-lang',m.toLocaleString('<?=$jslang?>'));
         $('#more-rooms').toggleClass('none',$('#active-rooms a').length===0);
       }
