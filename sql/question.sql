@@ -120,13 +120,15 @@ create function new(knd integer, title text, markdown text, lic integer, lic_orl
   select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
   select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
   select _ensure_communicant(get_account_id(),get_community_id());
-  select _ensure_communicant(kind_account_id,get_community_id()) from kind where kind_id=knd and kind_account_id is not null;
   --
   with r as (insert into room(community_id) values(get_community_id()) returning room_id,community_id)
      , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
-     , q as (insert into question(community_id,account_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense)
-             select community_id,coalesce(kind_account_id,get_account_id()),knd,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
-             from r cross join (select kind_id,kind_account_id from kind where kind_id=knd) k
+     , q as (insert into question(community_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense
+                                 ,account_id)
+             select community_id,knd,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
+                  , case when (select kind_questions_by_community from kind where kind_id=knd) then (select community_wiki_account_id from community where community_id=get_community_id())
+                         else get_account_id() end
+             from r
              returning question_id)
      , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
              select question_id,get_account_id(),title,markdown from q)

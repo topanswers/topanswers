@@ -63,7 +63,7 @@ create table community(
 , community_image bytea check(length(community_image)>0)
 , community_ask_button_text text default 'Ask' not null
 , community_banner_markdown text default '' not null
-, community_wiki_account_id integer
+, community_wiki_account_id integer not null references account
 );
 
 create table source(
@@ -329,6 +329,8 @@ create table kind(
 , kind_allows_answer_multivotes boolean default true not null
 , kind_show_answer_summary_toc boolean default false not null
 , kind_account_id integer
+, kind_questions_by_community boolean default false not null
+, kind_answers_by_community boolean default false not null
 );
 
 create table sanction(
