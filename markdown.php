@@ -5,7 +5,7 @@ $jslang = $jslang??'en';
 <link rel="stylesheet" href="/lib/highlightjs/default.css">
 <link rel="stylesheet" href="/lib/prism/prism.css">
 <link rel="stylesheet" href="/lib/qp/qp.css">
-<?if($community_name==='codegolf'||$community_name==='test'){?>
+<?if($community_name==='codegolf'||$community_name==='test'||$community_name==='apl'){?>
   <link rel="stylesheet" href="/lib/katex/katex.min.css">
 <?}?>
 <style>
@@ -100,7 +100,7 @@ $jslang = $jslang??'en';
 <script src="/lib/markdown-it-object.js"></script>
 <script src="/lib/markdown-it-for-inline.js"></script>
 <script src="/lib/markdown-it-container.js"></script>
-<?if($community_name==='codegolf'||$community_name==='test'){?>
+<?if($community_name==='codegolf'||$community_name==='test'||$community_name==='apl'){?>
   <script src="/lib/katex/katex.min.js"></script>
   <script src="/lib/markdown-it-katex.js"></script>
 <?}?>
@@ -181,6 +181,7 @@ $jslang = $jslang??'en';
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://CSHARP.TA') tokens[idx].attrSet('href','/csharp');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://POWERSHELL.TA') tokens[idx].attrSet('href','/powershell');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://POSH.TA') tokens[idx].attrSet('href','/powershell');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://APL.TA') tokens[idx].attrSet('href','/apl');
     };
 
     md = window.markdownIt({ linkify: true
@@ -251,7 +252,7 @@ $jslang = $jslang??'en';
                                                        '<span>'+m[4]+'</span>';
                  else return '</div>';
                  } })
-               <?if($community_name==='codegolf'||$community_name==='test'){?>.use(window.markdownitKatex)<?}?>
+               <?if($community_name==='codegolf'||$community_name==='test'||$community_name==='apl'){?>.use(window.markdownitKatex)<?}?>
                .use(window.markdownItAnchor, { slugify: myslugify })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
                .use(window.markdownitForInline,'url-fix','link_open',shortcuts);
