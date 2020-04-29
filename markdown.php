@@ -251,7 +251,7 @@ $jslang = $jslang??'en';
                                                        '<span>'+m[4]+'</span>';
                  else return '</div>';
                  } })
-               <?if($community_name==='codegolf'||$community_name==='test'){?>.use(window.markdownitKatex)<?}?>
+               <?if($community_name==='codegolf'||$community_name==='test'||$community_name==='apl'){?>.use(window.markdownitKatex)<?}?>
                .use(window.markdownItAnchor, { slugify: myslugify })
                .use(window.markdownItTocDoneRight,{ level: [1,2,3], slugify: myslugify })
                .use(window.markdownitForInline,'url-fix','link_open',shortcuts);
