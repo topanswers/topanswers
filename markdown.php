@@ -3,6 +3,7 @@ include '../lang/markdown.'.($community_language??'en').'.php';
 $jslang = $jslang??'en';
 ?>
 <link rel="stylesheet" href="/lib/highlightjs/default.css">
+<link rel="stylesheet" href="/lib/prism/prism.css">
 <link rel="stylesheet" href="/lib/qp/qp.css">
 <?if($community_name==='codegolf'||$community_name==='test'){?>
   <link rel="stylesheet" href="/lib/katex/katex.min.css">
@@ -11,6 +12,7 @@ $jslang = $jslang??'en';
   .summary a { color: blue; }
   .summary a:visited { color: purple; }
   .summary code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
+
   .markdown { overflow: auto; overflow-wrap: break-word; }
   .markdown>pre { white-space: pre; }
   .markdown>:first-child { margin-top: 0; }
@@ -105,6 +107,8 @@ $jslang = $jslang??'en';
 <script src="/lib/markdownItAnchor.js"></script>
 <script src="/lib/markdownItTocDoneRight.js"></script>
 <script src="/lib/highlightjs/highlight.js"></script>
+<script src="/lib/clipboard.js"></script>
+<script src="/lib/prism/prism.js"></script>
 <script src="/lib/qp/qp.js"></script>
 <script src="/lib/promise-all-settled.js"></script>
 <script>
@@ -180,7 +184,15 @@ $jslang = $jslang??'en';
     };
 
     md = window.markdownIt({ linkify: true
-                           , highlight: function(str,lang){ lang = lang||'<?=$community_code_language?>'; if(lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; } })
+    <?if($community_name==='apl'){?>
+      , highlight: function(str,lang){
+        let hl;
+        try { hl = Prism.highlight(str, Prism.languages[lang||'<?=$community_code_language?>']) } catch (error) { <?if($dev){?>console.error(error); <?}?>hl = md.utils.escapeHtml(str); }
+        return `<pre class="language-${lang}"><code class="language-${lang}">${hl}</code></pre>`
+      } })
+    <?}else{?>
+      , highlight: function(str,lang){ lang = lang||'<?=$community_code_language?>'; if(lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; } })
+    <?}?>
                .use(window.markdownitSup)
                .use(window.markdownitSub)
                .use(window.markdownitEmoji)

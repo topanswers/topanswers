@@ -63,6 +63,7 @@ create table community(
 , community_image bytea check(length(community_image)>0)
 , community_ask_button_text text default 'Ask' not null
 , community_banner_markdown text default '' not null
+, community_wiki_account_id integer
 );
 
 create table source(
@@ -334,7 +335,7 @@ create table sanction(
   kind_id integer references kind not null
 , community_id integer not null references community
 , sanction_ordinal integer not null
-, sanction_is_default boolean default false
+, sanction_is_default boolean not null default false
 , primary key (kind_id,community_id)
 );
 create unique index sanction_ind on sanction(community_id,sanction_ordinal);
