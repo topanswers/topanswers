@@ -491,8 +491,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           if(read[r]){
             read[r] = $.map(read[r],function(v){ return (v>l)?v:null; });
             $(this).attr('data-unread',Math.max(0,$(this).attr('data-unread')-read[r].length));
-            $(this).attr('data-unread-lang',$(this).data('unread').toLocaleString('<?=$jslang?>'));
-            if($(this).attr('data-unread')==='0') $(this).removeAttr('data-unread');
+            $(this).attr('data-unread-lang',$(this).attr('data-unread').toLocaleString('<?=$jslang?>'));
+            if($(this).attr('data-unread')==='0') $(this).removeAttr('data-unread').removeAttr('data-unread-lang');
           }
           $(this).addClass('processed');
         });
