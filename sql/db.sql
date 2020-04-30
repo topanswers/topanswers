@@ -328,7 +328,6 @@ create table kind(
 , kind_allows_question_multivotes boolean default true not null
 , kind_allows_answer_multivotes boolean default true not null
 , kind_show_answer_summary_toc boolean default false not null
-, kind_account_id integer
 , kind_questions_by_community boolean default false not null
 , kind_answers_by_community boolean default false not null
 );
