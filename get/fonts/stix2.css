@@ -3,34 +3,34 @@
     font-weight: 400;
     font-style: normal;
     font-stretch: normal;
-    src: url('/fonts/stix2/STIX2Text-Regular.woff2') format('woff2'),
-         url('/fonts/stix2/STIX2Text-Regular.woff') format('woff'),
-         url('/fonts/stix2/STIX2Text-Regular.otf') format('opentype'),
+    src: url('/fonts/stix2/WOFF2/STIX2Text-Regular.woff2') format('woff2'),
+         url('/fonts/stix2/WOFF/STIX2Text-Regular.woff') format('woff'),
+         url('/fonts/stix2/OTF/STIX2Text-Regular.otf') format('opentype');
 }
 @font-face{
     font-family: 'stix2';
     font-weight: 700;
     font-style: normal;
     font-stretch: normal;
-    src: url('/fonts/stix2/STIX2Text-Bold.woff2') format('woff2'),
-         url('/fonts/stix2/STIX2Text-Bold.woff') format('woff'),
-         url('/fonts/stix2/STIX2Text-Bold.otf') format('opentype'),
+    src: url('/fonts/stix2/WOFF2/STIX2Text-Bold.woff2') format('woff2'),
+         url('/fonts/stix2/WOFF/STIX2Text-Bold.woff') format('woff'),
+         url('/fonts/stix2/OTF/STIX2Text-Bold.otf') format('opentype');
 }
 @font-face{
     font-family: 'stix2';
     font-weight: 400;
     font-style: italic;
     font-stretch: normal;
-    src: url('/fonts/stix2/STIX2Text-Italic.woff2') format('woff2'),
-         url('/fonts/stix2/STIX2Text-Italic.woff') format('woff'),
-         url('/fonts/stix2/STIX2Text-Italic.otf') format('opentype'),
+    src: url('/fonts/stix2/WOFF2/STIX2Text-Italic.woff2') format('woff2'),
+         url('/fonts/stix2/WOFF/STIX2Text-Italic.woff') format('woff'),
+         url('/fonts/stix2/OTF/STIX2Text-Italic.otf') format('opentype');
 }
 @font-face{
     font-family: 'stix2';
     font-weight: 700;
     font-style: italic;
     font-stretch: normal;
-    src: url('/fonts/stix2/STIX2Text-BoldItalic.woff2') format('woff2'),
-         url('/fonts/stix2/STIX2Text-BoldItalic.woff') format('woff'),
-         url('/fonts/stix2/STIX2Text-BoldItalic.otf') format('opentype'),
+    src: url('/fonts/stix2/WOFF2/STIX2Text-BoldItalic.woff2') format('woff2'),
+         url('/fonts/stix2/WOFF/STIX2Text-BoldItalic.woff') format('woff'),
+         url('/fonts/stix2/OTF/STIX2Text-BoldItalic.otf') format('opentype');
 }
