@@ -47,7 +47,7 @@ $id = $_GET['id']??ccdb("select recent()");
        data-pings="<?=$chat_pings?>"
        data-change-id="<?=$chat_change_id?>"
        data-at="<?=$chat_at_iso?>">
-    <span class="who" title="<?=$account_is_me?'Me':$account_name?> <?=$chat_reply_id?'replying to '.($reply_account_is_me?'Me':$reply_account_name):''?>">
+    <span class="who" title="<?=$account_is_me?'Me':$account_name?><?=$chat_reply_id?' replying to '.($reply_account_is_me?'Me':$reply_account_name):''?>">
       <?=$account_is_me?'<em>Me</em>':$account_name?>
       <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'">replying to</a> '.($reply_account_is_me?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>

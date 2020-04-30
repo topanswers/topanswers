@@ -27,7 +27,7 @@ header .select.open>div:last-child>div { display: flex; }
 header .select>div:last-child>div>div { display: flex; transition: all linear 0.1s; }
 header .select>div:last-child>div>div:not(:last-child) { border-bottom: 1px solid lightgray; }
 header .select>div:last-child>div>div:hover { background: rgb(var(--rgb-light)); }
-header .select>div:last-child>div>div>a { display: flex; color: rgb(var(--rgb-black)); line-height: 30px; }
+header .select>div:last-child>div>div>a { display: flex; color: rgb(var(--rgb-black)); line-height: 28px; }
 header .select>div:last-child>div>div>a>div { margin-right: 6px; outline: none; }
 header .select>div:last-child>div>div>a:not(:first-of-type) { font-size: 12px; padding-right: 4px; }
 header .select>div:last-child>div>div>a:first-child { flex: 1 0 auto; padding-right: 75px; text-decoration: none; }

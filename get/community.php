@@ -217,7 +217,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
     .message:not(:target).notify .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-dark)) inset; }
 
-    .notification { flex: 0 0 auto; padding: 4px; border-radius: 3px; margin: 2px; border: 1px solid rgba(var(--rgb-dark),0.6); }
+    .notification { flex: 0 0 auto; padding: 4px; border-radius: 3px; margin: 3px; border: 1px solid rgba(var(--rgb-dark),0.6); }
     .notification:not(.processed) { opacity: 0; }
     .notification:not(.message) { display: flex; overflow: hidden; font-size: 12px; white-space: nowrap; }
     .notification.message { padding-top: 1.3em; }
@@ -229,6 +229,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .notification .fa.fa-times-circle { color: rgb(var(--rgb-warning)); cursor: pointer; margin: 0 3px 0 1px; }
     .notification .fa.fa-spinner { color: rgb(var(--rgb-dark)); }
     .notification>a { color: rgb(var(--rgb-dark)); }
+    .notification + .notification { margin-top: 0; }
 
     #active-users { flex: 0 0 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 

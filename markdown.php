@@ -28,7 +28,7 @@ $jslang = $jslang??'en';
   .markdown th { background: rgb(var(--rgb-mid)); }
   .markdown td { background: rgb(var(--rgb-white)); }
   .markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid rgb(var(--rgb-black)); padding: 3px 5px; text-align: left; }
-  .markdown blockquote { padding: 8px 2px 8px 10px; margin: 16px 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background: rgba(var(--rgb-dark),0.1); }
+  .markdown blockquote { padding: 8px 4px 8px 8px; margin: 16px 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background: rgba(var(--rgb-dark),0.1); }
   .markdown blockquote>:first-child { margin-top: 0; }
   .markdown blockquote>:last-child { margin-bottom: 0; }
   .markdown code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
