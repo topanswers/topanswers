@@ -212,6 +212,20 @@ $jslang = $jslang??'en';
                      return '</div>\n';
                    }
                  } })
+               .use(window.markdownitContainer, 'tio', {
+                 marker: '<',
+                   validate: function(params) {
+                   return params.trim().match(/^[a-zA-Z0-9@\/]+$/);
+                 },
+                 render: function (tokens, idx) {
+                   var m = tokens[idx].info.trim().match(/^([a-zA-Z0-9@\/]+)$/);
+                   if (tokens[idx].nesting === 1) {
+                     return '<div class="tio">'+
+                              '<a href="https://tio.run/##'+m[1]+'">Try it online!</a>';
+                   } else {
+                     return '</div>\n';
+                   }
+                 } })
                .use(window.markdownitInjectLinenumbers)
                .use(window.markdownitObject,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens,idx){
                  var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/);
@@ -236,20 +250,20 @@ $jslang = $jslang??'en';
                                                        '</svg>';
                  else return '</div>';
                  } })
-               .use(window.markdownitObject,'xkcd',{ validate: function(p) { return p.trim().match(/^xkcd [1-9][0-9]* [0-9a-f]{64} "[^"<>]*" "[^"<>]*"$/); }, render: function (tokens,idx){
-                 var m = tokens[idx].info.trim().match(/^xkcd ([1-9][0-9]*) ([0-9a-f]{64}) "([^"<>]*)" "([^"<>]*)"$/);
-                 if (tokens[idx].nesting===1) return '<div class="xkcd" title="'+m[4]+'">'+
-                                                       '<div><a href="https://xkcd.com/'+m[1]+'">'+m[3]+'</a></div>'+
+               .use(window.markdownitObject,'xkcd',{ validate: function(p) { return p.trim().match(/^xkcd [1-9][0-9]* [0-9a-f]{64} "[^"]*" "[^"]*"$/); }, render: function (tokens,idx){
+                 var m = tokens[idx].info.trim().match(/^xkcd ([1-9][0-9]*) ([0-9a-f]{64}) "([^"]*)" "([^"]*)"$/);
+                 if (tokens[idx].nesting===1) return '<div class="xkcd" title="'+md.utils.escapeHtml(m[4])+'">'+
+                                                       '<div><a href="https://xkcd.com/'+m[1]+'">'+md.utils.escapeHtml(m[3])+'</a></div>'+
                                                        '<img src="/image?hash='+m[2]+'">';
                  else return '</div>';
                  } })
-               .use(window.markdownitObject,'wikipedia',{ validate: function(p) { return p.trim().match(/^wikipedia [0-9a-f]{64} [0-9a-zA-Z]+ "[^"<>]+" "[^"<>]+"$/); }, render: function (tokens,idx){
-                 var m = tokens[idx].info.trim().match(/^wikipedia ([0-9a-f]{64}) ([0-9a-zA-Z]+) "([^"<>]+)" "([^"<>]+)"$/);
+               .use(window.markdownitObject,'wikipedia',{ validate: function(p) { return p.trim().match(/^wikipedia [0-9a-f]{64} [0-9a-zA-Z]+ "[^"]+" "[^"]+"$/); }, render: function (tokens,idx){
+                 var m = tokens[idx].info.trim().match(/^wikipedia ([0-9a-f]{64}) ([0-9a-zA-Z]+) "([^"]+)" "([^"]+)"$/);
                  if (tokens[idx].nesting===1) return '<div class="wikipedia">'+
                                                        '<a href="https://en.wikipedia.org/wiki/Wikipedia_logo" class="wikipedia-logo"><img src="/image?hash=fda7e63a458c087cb49b2cb452efa8fd8c29e6de3df844e3e4043ba64efc3a11"></a>'+
-                                                       '<a href="https://w.wiki/'+m[2]+'">'+m[3]+'</a> '+
+                                                       '<a href="https://w.wiki/'+m[2]+'">'+md.utils.escapeHtml(m[3])+'</a> '+
                                                        ((m[1]==='0'.repeat(64))?'':'<img src="/image?hash='+m[1]+'">')+
-                                                       '<span>'+m[4]+'</span>';
+                                                       '<span>'+md.utils.escapeHtml(m[4])+'</span>';
                  else return '</div>';
                  } })
                <?if($community_name==='codegolf'||$community_name==='test'||$community_name==='apl'){?>.use(window.markdownitKatex)<?}?>
