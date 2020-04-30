@@ -49,11 +49,13 @@ $$;
 --
 create function listen() returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
+  select _ensure_communicant(get_account_id(),get_community_id());
   insert into listener(account_id,room_id,listener_latest_read_chat_id) select get_account_id(),get_room_id(),max(chat_id) from chat where room_id=get_room_id() on conflict do nothing;
 $$;
 --
 create function pin() returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
+  select _ensure_communicant(get_account_id(),get_community_id());
   insert into pinner(account_id,room_id) values (get_account_id(),get_room_id()) on conflict do nothing;
 $$;
 --
