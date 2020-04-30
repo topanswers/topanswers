@@ -10,7 +10,7 @@ create view font with (security_barrier) as select font_id,font_name,font_is_mon
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_my_votes,community_ordinal,community_about_question_id
      , s.community_id is not null community_feed_is_active
-from api._community natural join db.community
+from api._community natural join db.community natural join (select community_id from db.communicant where account_id=get_account_id()) cm
      natural left join (select community_from_id community_id from db.syndication where community_to_id=get_community_id() and account_id=get_account_id()) s;
 --
 create view question with (security_barrier) as
