@@ -98,13 +98,6 @@ create function parse(text) returns table (community_id integer, kind_id integer
   select community_id,kind_id,tag_ids,array[]::integer[] from u1 where (select count(1)=0 from ntt);
 $$;
 --
-create function simple_recent(text,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
-  with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
-  select question_id, (row_number() over (order by question_poll_major_id desc))::integer, (count(1) over ())::integer
-  from questions.parse($1) natural join question cross join f
-  where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
-  order by question_poll_major_id desc offset ($2-1)*10 limit 10;
-$$;
 create function simple_recent(text,integer,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
   select question_id, (row_number() over (order by question_poll_major_id desc))::integer, (count(1) over ())::integer
@@ -113,26 +106,6 @@ create function simple_recent(text,integer,integer) returns table (question_id i
   order by question_poll_major_id desc offset ($2-1)*$3 limit $3;
 $$;
 --
-create function fuzzy_closest(text,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
-  with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
-     , c as (select distinct community_id from parse($1))
-     , e as (select '%'||trim('"' from m[1])||'%' exacts from regexp_matches($1,'"[^%."]*"','g') m)
-     , w as (select trim(regexp_replace($1,'\[[^\]]+]|{[^}]+}','','g')) search_text)
-     , q as (select question_id, question_markdown txt, strict_word_similarity($1,question_markdown) word_similarity, similarity($1,question_markdown) similarity
-             from c natural join db.question
-             where (select search_text from w)<<%question_markdown and ((select exacts from e) is null or question_markdown ilike all((select exacts from e))))
-    , qt as (select question_id, question_title txt, strict_word_similarity($1,question_title)*2 word_similarity, similarity($1,question_title)*2 similarity
-             from c natural join db.question
-             where (select search_text from w)<<%question_title and ((select exacts from e) is null or question_title ilike all((select exacts from e))))
-     , a as (select question_id, answer_markdown txt, strict_word_similarity($1,answer_markdown) word_similarity, similarity($1,answer_markdown) similarity
-             from c natural join db.answer natural join (select question_id,community_id from db.question) z
-             where (select search_text from w)<<%answer_markdown and ((select exacts from e) is null or answer_markdown ilike all((select exacts from e))))
-     , s as (select question_id, bool_or(txt like '%'||(select search_text from w)||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
-  select question_id, (row_number() over (order by exact desc, similarity desc))::integer, (count(1) over ())::integer
-  from s natural join db.question natural join parse($1) cross join f
-  where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
-  order by exact desc, similarity desc offset ($2-1)*10 limit 10;
-$$;
 create function fuzzy_closest(text,integer,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
      , c as (select distinct community_id from parse($1))
@@ -152,14 +125,6 @@ create function fuzzy_closest(text,integer,integer) returns table (question_id i
   from s natural join db.question natural join parse($1) cross join f
   where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
   order by exact desc, similarity desc offset ($2-1)*$3 limit $3;
-$$;
---
-create function recent() returns integer language sql security definer set search_path=db,api,questions,pg_temp as $$
-  select greatest(min(question_poll_major_id)-1,0)::integer from (select question_poll_major_id from question where community_id=get_community_id() order by question_poll_major_id desc limit 10) z;
-$$;
---
-create function recent(page integer) returns table (startid integer, endid integer) language sql security definer set search_path=db,api,questions,pg_temp as $$
-  select coalesce(min(question_poll_major_id),0)::integer,coalesce(max(question_poll_major_id),0)::integer from (select question_poll_major_id from questions.question order by question_poll_major_id desc offset (page-1)*10 limit 10) z;
 $$;
 --
 revoke all on all functions in schema questions from public;

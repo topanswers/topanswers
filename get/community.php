@@ -1128,7 +1128,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         updateNotifications();
         return false;
       });
-      $('#search').on('input',()=>{ $('#questions>.question').remove(); $('.pages').hide(); });
+      $('#search').on('input',()=>{ $('#questions>.question').remove(); $('.pages').empty(); });
       $('#search').on('input',_.debounce(searchQuestions,1000));
       $('#search').keydown(function(e){
         if(e.which===27){
