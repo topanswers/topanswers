@@ -7,6 +7,7 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to community,pg_temp");
 if(isset($_COOKIE['uuid'])){ ccdb("select login($1::uuid)",$_COOKIE['uuid']) || fail(403,'access denied'); }
 if(ccdb("select exists(select 1 from private where community_name=$1)",$_GET['community'])) { header('Location: //topanswers.xyz/private?community='.$_GET['community']); exit; }
+$pagesize = $_COOKIE['pagesize']??'10';
 $clearlocal = $_COOKIE['clearlocal']??'';
 $environment = $_COOKIE['environment']??'prod';
 setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
@@ -45,7 +46,9 @@ $jslang = substr($community_language,0,1).substr(strtok($community_language,'-')
 $question = $_GET['q']??'0';
 $room = $room_id;
 $canchat = $room_can_chat;
-$cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
+$cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'')
+          .(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':'')
+          .(isset($_COOKIE['pagesize'])?'pagesize='.$_COOKIE['pagesize'].'; ':'');
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
@@ -125,6 +128,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }
     @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
     .pages { margin: 9px; display: flex; justify-content: center; }
+    .pages select { height: 38px; margin: 2px; margin-left: 8px; padding: 0 8px; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark));
+                    font-family: var(--regular-font-family); font-size: 16px;
+                    border: none; text-align: center; text-align-last: center; -moz-appearance: none; appearance: none; -webkit-appearance: none; }
+    .pages select:focus { outline-offset: 0; }
+    .pages option { height: 38px; margin: 2px; background: rgb(var(--rgb-light)); font-family: var(--regular-font-family); font-size: 16px; text-align: center; -moz-appearance: none; }
 
     <?if($question){?>
       <?if($auth){?>.tag:hover i { visibility: visible; }<?}?>
@@ -234,7 +242,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #active-users { flex: 0 0 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 
     .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
-    .simple-pagination ul { display: flex; padding: 0; margin: 2px; margin-top: 2px; }
+    .simple-pagination ul { display: flex; padding: 0; margin: 2px; }
     .simple-pagination li { position:relative; flex: 0 0 auto; list-style: none; outline-left: 1px solid rgb(var(--rgb-dark)); }
     .simple-pagination li>span { user-select: none; }
     .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: rgb(var(--rgb-black)); text-align: center; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark)); }
@@ -263,6 +271,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       #se { display: none; }
       #chat-wrapper { margin: 0; }
       .simple-pagination li>* { height: 22px; width: 22px; line-height: 22px; font-size: 12px; }
+      .pages select { display: none; }
       [data-rz-handle] { display: none; }
       #search { flex: 0 1 570px; }
     }
@@ -361,10 +370,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           , n = u.has('page')?+u.get('page'):1
           , s = u.has('search')?+u.get('search'):''
           , m = $('#questions').children('.question').data('of')
-          , p = Math.ceil(m/10)
+          , i = Cookies.get('pagesize')||10
+          , p = Math.ceil(m/i)
           , d = (n<7)?[8,8,8,8,7,6][n-1]:((n>(p-6))?[8,8,8,8,7,5][p-n]:5)
           , o = { items: m
-                , itemsOnPage: 10
+                , itemsOnPage: i
                 , currentPage: n
                 , prevText: '«'
                 , nextText: '»'
@@ -378,12 +388,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     loadQuestions();
                     return false;
                 } };
-        if(m>10) $('.pages').show().children().pagination(o);
+        if(m>i){
+          $('.pages').html('<div></div><select><option value="10">10/page</option><option value="25">25/page</option><option value="100">100/page</option></select>').children('div').pagination(o);
+          $('.pages select').val(i).change(function(){
+            var u = new URLSearchParams(window.location.search);
+            u.delete('page');
+            window.history.pushState({},'',(window.location.href.split('?')[0]+'?'+u.toString()).replace(/\?$/,''));
+            Cookies.set('pagesize',$(this).val(),{ secure: true, domain: '.topanswers.xyz' });
+            loadQuestions();
+            return false;
+          });
+        }
         $('#qa>div.banner').show();
       }
       function loadQuestions(){
         $('#questions').children('.question').remove();
-        $('.pages').last().hide();
+        $('.pages').empty();
         $.get('/questions?community=<?=$community_name?>'+window.location.search.replace('?','&'),function(data) {
           var newquestions = $(data).filter('.question').prependTo($('#questions'));
           processNewQuestions();

@@ -145,8 +145,11 @@ create function new(markdown text, lic integer, lic_orlater boolean, codelic int
   select _ensure_communicant(get_account_id(),get_community_id());
   update question set question_poll_major_id = default where question_id=get_question_id();
   --
-  with i as (insert into answer(question_id,account_id,answer_markdown,license_id,codelicense_id,answer_summary,answer_permit_later_license,answer_permit_later_codelicense)
-             values(get_question_id(),get_account_id(),markdown,lic,codelic,_markdownsummary(markdown),lic_orlater,codelic_orlater)
+  with i as (insert into answer(question_id,answer_markdown,license_id,codelicense_id,answer_summary,answer_permit_later_license,answer_permit_later_codelicense,account_id)
+             select question_id,markdown,lic,codelic,_markdownsummary(markdown),lic_orlater,codelic_orlater
+                  , case when kind_answers_by_community then community_wiki_account_id else get_account_id() end
+             from question natural join community natural join kind
+             where question_id=get_question_id()
              returning answer_id)
      , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id,answer_history_id)
     , nn as (select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=get_question_id() and account_id<>get_account_id()) z)
