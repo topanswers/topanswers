@@ -81,6 +81,12 @@ create function new(luuid uuid) returns uuid language sql security definer set s
              select notification_id
                    ,'Please make sure your [login key](/profile?highlight-recovery) is recorded somewhere safe before dismissing this message, so you don''t ever lose access to your account.'
              from n)
+    , n2 as (insert into notification(account_id) select account_id from a returning *)
+   , sn2 as (insert into system_notification(notification_id,system_notification_message)
+             select notification_id,'Certain features use cookies or HTML5 Local Storage. Please see "[Cookies on TopAnswers](/meta?q=974)" for more information.'
+             from n2)
+    , n3 as (insert into notification(account_id) select account_id from a returning *)
+   , sn3 as (insert into system_notification(notification_id,system_notification_message) select notification_id,'You must be 16 or over to participate here.' from n3)
   select account_uuid from a;
 $$;
 --

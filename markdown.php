@@ -73,6 +73,14 @@ $jslang = $jslang??'en';
   .markdown .wikipedia>a:nth-of-type(1) { float: right; width: 50px; }
   .markdown .wikipedia>a:nth-of-type(2) { font-size: 18px; display: block; margin-bottom: 10px; }
   .markdown .wikipedia>a:nth-of-type(3) { float: left; margin-top: 4px; margin-right: 12px; margin-bottom: 0; max-width: 30%; }
+  .markdown .tio { display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; gap: 4px; }
+  .markdown .tio>div.CodeMirror { grid-area: 1 / 1 / 2 / 3; margin: 0; justify-self: start; }
+  .markdown .tio>pre { grid-area: 2 / 1 / 3 / 2; margin: 0; justify-self: start; }
+  .markdown .tio>pre>code { padding: 0 2px; }
+  .markdown .tio>a { grid-area: 2 / 2 / 3 / 3; font-size: 12px; justify-self: end; align-self: end; }
+  .markdown:not(:hover)) .tio>a { visibility: hidden; }
+  .markdown .tio .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
+  .markdown .tio .CodeMirror-scroll { margin-bottom: -30px; }
 
   .dbfiddle { padding: 8px; background: rgb(var(--rgb-light)); border-radius: 3px; }
   .dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
@@ -98,6 +106,7 @@ $jslang = $jslang??'en';
 <script src="/lib/markdown-it-abbr.js"></script>
 <script src="/lib/markdown-it-container.js"></script>
 <script src="/lib/markdown-it-object.js"></script>
+<script src="/lib/markdown-it-codeinput.js"></script>
 <script src="/lib/markdown-it-for-inline.js"></script>
 <script src="/lib/markdown-it-container.js"></script>
 <?if($community_name==='codegolf'||$community_name==='test'||$community_name==='apl'){?>
@@ -212,6 +221,7 @@ $jslang = $jslang??'en';
                      return '</div>\n';
                    }
                  } })
+             <?if($community_name==='apl'){?>
                .use(window.markdownitContainer, 'tio', {
                  marker: '<',
                    validate: function(params) {
@@ -221,11 +231,13 @@ $jslang = $jslang??'en';
                    var m = tokens[idx].info.trim().match(/^([a-zA-Z0-9@\/]+)$/);
                    if (tokens[idx].nesting === 1) {
                      return '<div class="tio">'+
-                              '<a href="https://tio.run/##'+m[1]+'">Try it online!</a>';
+                              '<a href="https://tio.run/##'+m[1]+'">tio</a>';
                    } else {
                      return '</div>\n';
                    }
                  } })
+             <?}?>
+               .use(window.markdownitCodeInput)
                .use(window.markdownitInjectLinenumbers)
                .use(window.markdownitObject,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens,idx){
                  var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/);
@@ -301,6 +313,9 @@ $jslang = $jslang??'en';
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
         t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
+      <?if($community_name==='apl'){?>
+        t.find('textarea.code').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: 'apl' }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().trim()).then(function(r){ t.siblings('pre').children('code').text(r.output); }); },500)); });
+      <?}?>
         if(!t.hasClass('noexpander')){
           t.children('pre').each(function(){
             var t = $(this), h = t.height();

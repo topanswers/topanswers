@@ -247,6 +247,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     .simple-pagination li>span { user-select: none; }
     .simple-pagination li>* { display: block; height: 38px; width: 38px; line-height: 38px; text-decoration: none; color: rgb(var(--rgb-black)); text-align: center; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark)); }
     .simple-pagination li+li>* { border-left: 0; }
+    .simple-pagination li.disabled>* { color: rgba(0,0,0,0.4); }
     .simple-pagination li:not(.disabled):not(.active):hover>* { background: rgb(var(--rgb-mid)); }
     .simple-pagination li>.current:not(.prev):not(.next) { position: relative; z-index: 1; outline: 2px solid rgb(var(--rgb-highlight)); }
     .simple-pagination li>.ellipse { padding: 0 10px; user-select: none; }
@@ -282,6 +283,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/jquery.waitforimages.js"></script>
   <script src="/lib/codemirror/codemirror.js"></script>
   <script src="/lib/codemirror/sql.js"></script>
+  <script src="/lib/codemirror/apl.js"></script>
   <script src="/lib/vex/vex.combined.min.js"></script>
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
@@ -291,6 +293,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/starrr.js"></script>
   <script src="/lib/jquery.simplePagination.js"></script>
   <script src="/lib/paste.js"></script>
+  <script src="/lib/pako.js"></script>
+  <script src="/tio.js"></script>
   <script>
     moment.locale('<?=$jslang?>');
     $(function(){
@@ -389,7 +393,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                     return false;
                 } };
         if(m>i){
-          $('.pages').html('<div></div><select><option value="10">10/page</option><option value="25">25/page</option><option value="100">100/page</option></select>').children('div').pagination(o);
+          $('.pages').html('<div></div><?if($auth){?><select><option value="10">10/page</option><option value="25">25/page</option><option value="100">100/page</option></select><?}?>')
+                     .children('div').pagination(o);
           $('.pages select').val(i).change(function(){
             var u = new URLSearchParams(window.location.search);
             u.delete('page');
@@ -686,15 +691,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
       if(localStorage.getItem('chat')) $('.pane').toggleClass('hidepane');
       $('#join').click(function(){
-        if(confirm('This will set a cookie to identify your account. You must be 16 or over to join TopAnswers.')){
-          $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'new' }, async: false, xhrFields: { withCredentials: true } }).done(function(r){
-            alert('This login key should be kept confidential, just like a password.\nTo ensure continued access to your account, please record your key somewhere safe:\n\n'+r);
-            location.reload(true);
-          }).fail(function(r){
-            alert((r.status)===429?'Rate limit hit, please try again later':responseText);
-            location.reload(true);
-          });
-        }
+        $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'new' }, async: false, xhrFields: { withCredentials: true } }).done(function(r){
+          location.reload(true);
+        }).fail(function(r){
+          alert((r.status)===429?'Rate limit hit, please try again later':responseText);
+          location.reload(true);
+        });
       });
       $('#link').click(function(){ var pin = prompt('Enter PIN (or login key) from account profile'); if(pin!==null) { $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'link', link: pin }, async: false, xhrFields: { withCredentials: true } }).fail(function(r){ alert(r.responseText); }).done(function(){ location.reload(true); }); } });
       $('#poll').click(function(){ checkChat(); });
@@ -816,6 +818,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           , promises = []
           , onebox = false;
         sync = typeof sync !== 'undefined' ? sync : false;
+        $('#preview .markdown').html('&nbsp;');
         if(!onebox){
           s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
           if(s&&(s[2]===s[4])){
@@ -878,6 +881,30 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             onebox = true;
           }
         }
+      <?if($community_name==='apl'){?>
+        if(!onebox){
+          s = m.match(/^<<<\s*\n([\s\S]+)<<<$/);
+          if(s){
+            tioRequest(s[1].trim()).then(function(r){
+              if($('#chattext').val()===m){
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown','<<< '+r.req+'\n::: apl\n'+s[1].trim()+'\n:::\n``` none\n'+r.output+'\n```\n<<<').renderMarkdown(promises);
+              }
+            });
+            onebox = true;
+          }
+        }
+        if(!onebox){
+          s = m.match(/^< (.+)$/);
+          if(s){
+            tioRequest(s[1].trim()).then(function(r){
+              if($('#chattext').val()===m){
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown','<<< '+r.req+'\n::: apl\n'+s[1].trim()+'\n:::\n``` none\n'+r.output+'\n```\n<<<').renderMarkdown(promises);
+              }
+            });
+            onebox = true;
+          }
+        }
+      <?}?>
         if(!onebox) $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
         Promise.allSettled(promises).then(() => {
           $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed');
@@ -1162,7 +1189,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div class="container shrink"><input class="element" type="search" id="search" value="<?=$_GET['search']??''?>" placeholder="🔍&#xFE0E; <?=$l_search_placeholder?>" autocomplete="off"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
       <?}?>
       <div>
-        <?if(!$auth){?><span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span><?}?>
+        <?if(!$auth){?><span class="element"><input id="link" type="button" value="log in"><input id="join" type="button" value="join (sets cookie)"></span><?}?>
         <?if($auth){?>
           <?if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
           <?if($community_about_question_id){?><a href="/<?=$community_name?>?q=<?=$community_about_question_id?>" class="button wideonly">About</a><?}?>
