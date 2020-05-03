@@ -221,6 +221,7 @@ $jslang = $jslang??'en';
                      return '</div>\n';
                    }
                  } })
+               .use(window.markdownitCodeInput)
              <?if($community_name==='apl'){?>
                .use(window.markdownitContainer, 'tio', {
                  marker: '<',
@@ -237,7 +238,6 @@ $jslang = $jslang??'en';
                    }
                  } })
              <?}?>
-               .use(window.markdownitCodeInput)
                .use(window.markdownitInjectLinenumbers)
                .use(window.markdownitObject,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens,idx){
                  var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/);

@@ -883,11 +883,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       <?if($community_name==='apl'){?>
         if(!onebox){
-          s = m.match(/^<<<\s*\n([\s\S]+)<<<$/);
+          s = m.match(/^<<<\s*\n([\s\S]+)\n<<<$/);
           if(s){
-            tioRequest(s[1].trim()).then(function(r){
+            tioRequest(s[1]).then(function(r){
+              var f = '<<<';
+              while(RegExp(f).test(s[1])) f+='<';
+              while(RegExp(f).test(r.output)) f+='<';
               if($('#chattext').val()===m){
-                $('#preview .markdown').css('visibility','visible').attr('data-markdown','<<< '+r.req+'\n::: apl\n'+s[1].trim()+'\n:::\n``` none\n'+r.output+'\n```\n<<<').renderMarkdown(promises);
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown',f+' '+r.req+'\n::: apl\n'+s[1]+'\n:::\n``` none\n'+r.output+'\n```\n'+f).renderMarkdown(promises);
               }
             });
             onebox = true;
