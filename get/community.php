@@ -904,8 +904,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           s = m.match(/^< (.+)$/);
           if(s){
             tioRequest(s[1].trim()).then(function(r){
+              var f = '<<<', c = '§§§', o = '```';
+              while((new RegExp('^'+f,'m')).test(s[1])) f+='<';
+              while((new RegExp('^'+f,'m')).test(r.output)) f+='<';
+              while((new RegExp('^'+c,'m')).test(s[1])) c+='§';
+              while((new RegExp('^'+c,'m')).test(r.output)) c+='§';
+              while((new RegExp('^'+o,'m')).test(s[1])) o+='`';
+              while((new RegExp('^'+o,'m')).test(r.output)) o+='`';
               if($('#chattext').val()===m){
-                $('#preview .markdown').css('visibility','visible').attr('data-markdown','<<< '+r.req+'\n::: apl\n'+s[1].trim()+'\n:::\n``` none\n'+r.output+'\n```\n<<<').renderMarkdown(promises);
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown',f+' '+r.req+'\n'+c+' apl\n'+s[1]+'\n'+c+'\n'+o+' none\n'+r.output+'\n'+o+'\n'+f).renderMarkdown(promises);
               }
             });
             onebox = true;
