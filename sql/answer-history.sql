@@ -11,14 +11,6 @@ from (select account_id,answer_id,answer_history_at history_at,answer_history_id
       select account_id,answer_id,answer_flag_history_at,null,answer_flag_history_id from db.answer_flag_history where answer_id=get_answer_id()) z
      natural join api._account;
 --
-create view history2 as
-select account_id,answer_id,history_at,answer_history_id,answer_flag_history_id
-     , account_derived_name account_name
-from (select account_id,answer_id,answer_history_at history_at,answer_history_id,null::integer answer_flag_history_id from db.answer_history where answer_id=get_answer_id()
-      union all
-      select account_id,answer_id,answer_flag_history_at,null,answer_flag_history_id from db.answer_flag_history where answer_id=get_answer_id()) z
-     natural join api._account;
---
 create view answer_history as
 select answer_history_id,answer_history_markdown
      , lag(answer_history_markdown) over (order by answer_history_at) prev_markdown
