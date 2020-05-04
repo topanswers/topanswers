@@ -194,7 +194,7 @@ $jslang = $jslang??'en';
     };
 
     md = window.markdownIt({ linkify: true
-    <?if($community_name==='apl'){?>
+    <?if($community_name==='test'||$community_name==='apl'){?>
       , highlight: function(str,lang){
         let hl;
         try { hl = Prism.highlight(str, Prism.languages[lang||'<?=$community_code_language?>']) } catch (error) { <?if($dev){?>console.error(error); <?}?>hl = md.utils.escapeHtml(str); }
@@ -222,7 +222,7 @@ $jslang = $jslang??'en';
                    }
                  } })
                .use(window.markdownitCodeInput)
-             <?if($community_name==='apl'){?>
+             <?if($community_name==='test'||$community_name==='apl'){?>
                .use(window.markdownitContainer, 'tio', {
                  marker: '<',
                    validate: function(params) {
@@ -313,7 +313,7 @@ $jslang = $jslang??'en';
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
         t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
-      <?if($community_name==='apl'){?>
+      <?if($community_name==='test'||$community_name==='apl'){?>
         t.find('textarea.code').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: 'apl' }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().trim()).then(function(r){ t.siblings('pre').children('code').text(r.output); }); },500)); });
       <?}?>
         if(!t.hasClass('noexpander')){

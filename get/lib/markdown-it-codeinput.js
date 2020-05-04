@@ -16,7 +16,7 @@ module.exports = function codeinput_plugin(md, name, options) {
   options = options || {};
 
   var min_markers = 3,
-      marker_str  = options.marker || ':',
+      marker_str  = options.marker || '§',
       marker_char = marker_str.charCodeAt(0),
       marker_len  = marker_str.length,
       validate    = options.validate || validateDefault,

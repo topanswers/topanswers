@@ -27,7 +27,6 @@ function tioRequest(code){
   	return btoa(byteString).replace(/\+/g, "@").replace(/=+/, "");
   }
 
-
   return new Promise(function (resolve, reject) {
 		runRequest.onreadystatechange = function () {
 			if (runRequest.readyState !== 4) return;
