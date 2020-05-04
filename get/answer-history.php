@@ -11,6 +11,8 @@ extract(cdb("select account_id
                    ,community_name,community_display_name,community_code_language,community_tables_are_monospace
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                  , (select jsonb_agg(z)
+                     from (select answer_history_id,account_id,account_name,answer_history_markdown,answer_history_at,prev_markdown,rn from history order by answer_history_at desc) z) items
              from one"));
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>
@@ -141,9 +143,9 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   </header>
   <main>
     <div id="revisions">
-      <?foreach(db("select answer_history_id,account_id,account_name,answer_history_at,rn from history order by answer_history_at desc") as $i=>$r){ extract($r, EXTR_PREFIX_ALL, 'h');?>
+      <?foreach($items as $i=>$r){ extract($r, EXTR_PREFIX_ALL, 'h');?>
         <a id="h<?=$h_answer_history_id?>" href="#h<?=$h_answer_history_id?>">
-	  <div>
+          <div>
             <?=($h_rn===1)?($answer_is_imported?'Imported':'Answered'):'Edited'?> by <?=$h_account_name?>
             <div class="when"><?=$h_answer_history_at?></div>
           </div>
@@ -157,7 +159,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       </div>
     </div>
     <div id="content">
-      <?foreach(db("select answer_history_id,answer_history_markdown,prev_markdown,rn from history order by answer_history_at desc") as $i=>$r){ extract($r);?>
+      <?foreach($items as $i=>$r){ extract($r);?>
         <div class="h<?=$answer_history_id?>">
           <?if($rn>1){?>
             <div class="panel before-container">
