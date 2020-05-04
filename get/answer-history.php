@@ -19,7 +19,7 @@ extract(cdb("select account_id
                                 , coalesce(answer_history_id,answer_flag_history_id) id
                                 , coalesce((select to_jsonb(a) from answer_history a where a.answer_history_id=h.answer_history_id)
                                          , (select to_jsonb(f) from answer_flag_history f where f.answer_flag_history_id=h.answer_flag_history_id)) item_data
-                           from history2 h
+                           from history h
                            order by history_at desc) z) items
              from one"));
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
