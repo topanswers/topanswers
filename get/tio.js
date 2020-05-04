@@ -4,7 +4,7 @@ function tioRequest(code){
 
   function textToByteString(string) {return unescape(encodeURIComponent(string));}
   function codeToByteString(code) {
-    var value = textToByteString(code), runString = ["Vlang","1","apl-dyalog","Vargs","0","F.code.tio","0","F.input.tio"];
+    var value = textToByteString(code), runString = ["Vlang","1","apl-dyalog","Vargs","0","F.input.tio","0","F.code.tio"];
     runString.push(value.length);runString.push(value);runString.push("R");
     return runString.join("\0");
   }
@@ -36,7 +36,7 @@ function tioRequest(code){
         var output;
         try {output = byteStringToText(rawOutput);}catch(error) {output = rawOutput;}
         output = output.replace(new RegExp(output.slice(0,16).replace(/\W/g,t=>"\\"+t),"g"),"").split("\n").slice(0,-5).join("\n").trim();
-				resolve({ req: byteStringToBase64(byteArrayToByteString(deflate('apl-dyalogÿÿÿÿ'+textToByteString(code)))), output: output });
+				resolve({ req: byteStringToBase64(byteArrayToByteString(deflate('apl-dyalogÿÿ'+textToByteString(code)+'ÿÿ'))), output: output });
 			} else {
 				reject({
 					status: runRequest.status,
