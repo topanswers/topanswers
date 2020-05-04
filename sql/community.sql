@@ -54,7 +54,7 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=1) answer_i_flagged
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=-1) answer_i_counterflagged
      , case when answer_se_imported_at=answer_change_at then 'imported' when answer_change_at>answer_at then 'edited' else 'answered' end answer_change
-from api._answer natural join db.answer a natural join api._account natural join db.account natural join (select question_id,community_id from db.question) q natural join db.license natural join db.codelicense natural join db.communicant
+from api._answer natural join db.answer a natural join api._account natural join db.account natural join (select question_id,community_id,question_sesite_id from db.question) q natural join db.license natural join db.codelicense natural join db.communicant
      natural left join (select account_id,community_id,sesite_id question_sesite_id,selink_user_id from db.selink) s
      natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v
 where question_id=get_question_id()
