@@ -12,6 +12,25 @@ select answer_history_id,account_id,answer_history_markdown
 from db.answer_history natural join api._account
 where answer_id=get_answer_id();
 --
+create view history2 as
+select account_id,answer_id,history_at,answer_history_id,answer_flag_history_id
+     , account_derived_name account_name
+from (select account_id,answer_id,answer_history_at history_at,answer_history_id,null::integer answer_flag_history_id from db.answer_history where answer_id=get_answer_id()
+      union all
+      select account_id,answer_id,answer_flag_history_at,null,answer_flag_history_id from db.answer_flag_history where answer_id=get_answer_id()) z
+     natural join api._account;
+--
+create view answer_history as
+select answer_history_id,answer_history_markdown
+     , lag(answer_history_markdown) over (order by answer_history_at) prev_markdown
+from db.answer_history
+where answer_id=get_answer_id();
+--
+create view answer_flag_history as
+select answer_flag_history_id,answer_flag_history_direction,answer_flag_history_is_crew
+from db.answer_flag_history
+where answer_id=get_answer_id();
+--
 create view one with (security_barrier) as
 select answer_id
      , answer_se_answer_id is not null answer_is_imported

@@ -12,7 +12,15 @@ extract(cdb("select account_id
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                   , (select jsonb_agg(z)
-                     from (select answer_history_id,account_id,account_name,answer_history_markdown,answer_history_at,prev_markdown,rn from history order by answer_history_at desc) z) items
+                     from (select account_id,account_name
+                                , to_char(history_at,'YYYY-MM-DD HH24:MI:SS') history_at
+                                , case when answer_history_id is not null then 'h' else 'f' end item_type
+                                , case when answer_flag_history_id is null then (row_number() over (partition by answer_flag_history_id order by history_at)) end rn
+                                , coalesce(answer_history_id,answer_flag_history_id) id
+                                , coalesce((select to_jsonb(a) from answer_history a where a.answer_history_id=h.answer_history_id)
+                                         , (select to_jsonb(f) from answer_flag_history f where f.answer_flag_history_id=h.answer_flag_history_id)) item_data
+                           from history2 h
+                           order by history_at desc) z) items
              from one"));
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>
@@ -52,8 +60,8 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     .editor-wrapper { height: 100%; overflow-y: auto; }
 
     #revisions { height: 100%; background: rgb(var(--rgb-light)); border-right: 1px solid rgba(var(--rgb-dark),0.6); font-size: 14px; overflow-y: auto; grid-area: 1 / 1 / 3 / 2; }
-    #revisions > a { padding: 2px 2px 3px 5px; border-bottom: 1px solid rgba(var(--rgb-dark),0.6); display: grid; grid-template-rows: auto; grid-template-columns: auto 22px; grid-column-gap: 5px; cursor: pointer; color: unset; text-decoration: unset; }
-    #revisions > a.active { box-shadow: 0 0 0 1px rgb(var(--rgb-highlight)) inset; }
+    #revisions > div { padding: 2px 2px 3px 5px; border-bottom: 1px solid rgba(var(--rgb-dark),0.6); display: grid; grid-template-rows: auto; grid-template-columns: auto 22px; grid-column-gap: 5px; cursor: pointer; color: unset; text-decoration: unset; }
+    #revisions > div.active { box-shadow: 0 0 0 1px rgb(var(--rgb-highlight)) inset; }
     #history-bar { display: grid; grid-template-columns: auto 1fr auto; margin: 10px 10px 0 10px; font-size: 14px; grid-area: 1 / 2 / 2 / 3; }
     #history-bar > div { margin: 0; }
     #content { padding: 10px; grid-area: 2 / 2 / 3 / 3; overflow: hidden; height: 100%; }
@@ -110,7 +118,8 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
         $(this).addClass('rendered');
       }
 
-      $('#revisions > a').click(function(){
+      $('#revisions > div').click(function(){
+        $('#history-bar').toggle($(this).data('bar')==='visible');
         $('.active').removeClass('active');
         $(this).addClass('active');
         $('#content > div.'+$(this).attr('id')).addClass('active');
@@ -126,7 +135,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
         panel.css('visibility','visible');
         return false;
       });
-      if($('#revisions > a:target').length){ $('#revisions > a:target').click(); }else{ $('#revisions > a:first-child').click(); }
+      if($('#revisions > div:target').length){ $('#revisions > div:target').click(); }else{ $('#revisions > div[id^="h"]')[0].click(); }
     });
   </script>
   <title>Answer History - TopAnswers</title>
@@ -143,14 +152,19 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   </header>
   <main>
     <div id="revisions">
-      <?foreach($items as $i=>$r){ extract($r, EXTR_PREFIX_ALL, 'h');?>
-        <a id="h<?=$h_answer_history_id?>" href="#h<?=$h_answer_history_id?>">
+      <?foreach($items as $i=>$r){ extract($r,EXTR_PREFIX_ALL,'h'); extract($h_item_data,EXTR_PREFIX_ALL,'d');?>
+        <div id="<?=$h_item_type.$h_id?>" data-bar="<?=($h_item_type==='h')?'visible':'hidden'?>">
           <div>
-            <?=($h_rn===1)?($answer_is_imported?'Imported':'Answered'):'Edited'?> by <?=$h_account_name?>
-            <div class="when"><?=$h_answer_history_at?></div>
+            <?if($h_item_type==='h'){?>
+              <?$action = ($h_rn===1)?($answer_is_imported?'Imported':'Answered'):'Edited'?>
+            <?}else{?>
+              <?if($d_answer_flag_history_direction===1) $action = 'Flagged'; else if($d_answer_flag_history_direction===0) $action = 'Unflagged'; else $action = 'Counterflagged';?>
+            <?}?>
+            <?=$action?> by <?=$h_account_name?>
+            <div class="when"><?=$h_history_at?></div>
           </div>
           <img class="icon" data-id="<?=$h_account_id?>" src="/identicon?id=<?=$h_account_id?>">
-        </a>
+        </div>
       <?}?>
     </div>
     <div id="history-bar">
@@ -159,21 +173,23 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       </div>
     </div>
     <div id="content">
-      <?foreach($items as $i=>$r){ extract($r);?>
-        <div class="h<?=$answer_history_id?>">
-          <?if($rn>1){?>
-            <div class="panel before-container">
-              <textarea><?=$prev_markdown?></textarea>
+      <?foreach($items as $i=>$r){ extract($r,EXTR_PREFIX_ALL,'h'); extract($h_item_data,EXTR_PREFIX_ALL,'d');?>
+        <div class="<?=$h_item_type.$h_id?>">
+          <?if($h_item_type==='h'){?>
+            <?if($h_rn>1){?>
+              <div class="panel before-container">
+                <textarea><?=$d_prev_markdown?></textarea>
+                <div class="markdown"></div>
+              </div>
+            <?}?>
+            <div class="panel diff-container">
+              <div class="diff" data-from="<?=$d_prev_markdown?>" data-to="<?=$d_answer_history_markdown?>"></div>
+            </div>
+            <div class="panel after-container">
+              <textarea><?=$d_answer_history_markdown?></textarea>
               <div class="markdown"></div>
             </div>
           <?}?>
-          <div class="panel diff-container">
-            <div class="diff" data-from="<?=$prev_markdown?>" data-to="<?=$answer_history_markdown?>"></div>
-          </div>
-          <div class="panel after-container">
-            <textarea><?=$answer_history_markdown?></textarea>
-            <div class="markdown"></div>
-          </div>
         </div>
       <?}?>
     </div>
