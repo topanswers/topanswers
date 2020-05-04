@@ -48,7 +48,7 @@ select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answ
      , codelicense_name||(case when answer_permit_later_codelicense then ' or later' else '' end) answer_codelicense_name
      , codelicense_description answer_codelicense_description
      , coalesce(answer_vote_votes,0) answer_votes_from_me
-     , answer_at<>answer_change_at answer_has_history
+     , answer_at<>answer_change_at or exists(select 1 from db.answer_flag_history where answer_id=a.answer_id) answer_has_history
      , selink_user_id answer_selink_user_id
      , coalesce(communicant_votes,0) answer_communicant_votes
      , exists(select 1 from db.answer_flag f natural join db.login where login_uuid=get_login_uuid() and f.answer_id=a.answer_id and answer_flag_direction=1) answer_i_flagged
