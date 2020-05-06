@@ -286,6 +286,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/codemirror/colorize.js"></script>
   <script src="/lib/codemirror/sql.js"></script>
   <script src="/lib/codemirror/apl.js"></script>
+  <script src="/lib/codemirror/stex.js"></script>
   <script src="/lib/vex/vex.combined.min.js"></script>
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
@@ -885,16 +886,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       <?if($community_name==='test'||$community_name==='apl'){?>
         if(!onebox){
-          s = m.match(/^` ([^\n]+)$|^` ([a-z]+)? *\n([\s\S]+)$/);
+          s = m.match(/^`(?: ([^\n]+)| ?([a-z]+)? *\n([\s\S]+))$/);
           if(s){
             const lang = s[2], code = s[1]||s[3];
+            let f = ':::', c = '§§§', o = '```';
+            while((new RegExp('^'+f,'m')).test(code)) f+=':';
+            while((new RegExp('^'+c,'m')).test(code)) c+='§';
+            while((new RegExp('^'+o,'m')).test(code)) o+='`';
             tioRequest(code).then(function(r){
-              var f = ':::', c = '§§§', o = '```';
-              while((new RegExp('^'+f,'m')).test(code)) f+=':';
               while((new RegExp('^'+f,'m')).test(r.output)) f+=':';
-              while((new RegExp('^'+c,'m')).test(code)) c+='§';
               while((new RegExp('^'+c,'m')).test(r.output)) c+='§';
-              while((new RegExp('^'+o,'m')).test(code)) o+='`';
               while((new RegExp('^'+o,'m')).test(r.output)) o+='`';
               if($('#chattext').val()===m){
                 $('#preview .markdown').css('visibility','visible').attr('data-markdown',f+' tio '+r.req+'\n'+c+' apl\n'+code+'\n'+c+'\n'+o+' none\n'+r.output+'\n'+o+'\n'+f).renderMarkdown(promises);

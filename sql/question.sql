@@ -110,7 +110,7 @@ create function remove_tag(tid integer) returns void language sql security defin
   delete from question_tag_x where question_id=get_question_id() and tag_id=tid;
   update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
   --
-  update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from question_tag_x where question_id=get_question_id()) where question_id=get_question_id();
+  update question set question_poll_minor_id = default, question_tag_ids = (select coalesce(array_agg(tag_id),array[]::integer[]) from question_tag_x where question_id=get_question_id()) where question_id=get_question_id();
 $$;
 --
 create function new(knd integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,pg_temp as $$
