@@ -195,11 +195,22 @@ $jslang = $jslang??'en';
 
     md = window.markdownIt({ linkify: true
     <?if($community_name==='test'||$community_name==='apl'){?>
-      , highlight: function(str,lang){
-        let hl;
-        try { hl = Prism.highlight(str, Prism.languages[lang||'<?=$community_code_language?>']) } catch (error) { hl = md.utils.escapeHtml(str); }
-        return `<pre class="language-${lang}"><code class="language-${lang}">${hl}</code></pre>`
-      } })
+      , highlight: (code, lang) => {
+        let lastStyle
+        let sDom = ''
+        CodeMirror.runMode(code, lang||'<?=$community_code_language?>', (token, style) => {
+          if (lastStyle !== style) {
+            if (lastStyle !== undefined) sDom += '</span>'
+            sDom += '<span class="cm-'+style+'">'
+            lastStyle = style
+          }
+          sDom += token
+        })
+        if (lastStyle !== undefined) sDom += '</span>'
+        return sDom
+      }
+      
+       })
     <?}else{?>
       , highlight: function(str,lang){ lang = lang||'<?=$community_code_language?>'; if(lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; } })
     <?}?>
@@ -307,6 +318,7 @@ $jslang = $jslang??'en';
         var t = $(this), m = t.attr('data-markdown');
         prefix = t.closest('[data-id]').attr('id')||'';
         t.html(md.render(m,{ docId: prefix }));
+        t.children('pre').each(function(){ $(this).parent().addClass('cm-s-default'); });
         t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
         t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });

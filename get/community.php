@@ -282,6 +282,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.waitforimages.js"></script>
   <script src="/lib/codemirror/codemirror.js"></script>
+  <script src="/lib/codemirror/runmode.js"></script>
+  <script src="/lib/codemirror/colorize.js"></script>
   <script src="/lib/codemirror/sql.js"></script>
   <script src="/lib/codemirror/apl.js"></script>
   <script src="/lib/vex/vex.combined.min.js"></script>
