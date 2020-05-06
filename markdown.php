@@ -197,7 +197,7 @@ $jslang = $jslang??'en';
     <?if($community_name==='test'||$community_name==='apl'){?>
       , highlight: function(str,lang){
         let hl;
-        try { hl = Prism.highlight(str, Prism.languages[lang||'<?=$community_code_language?>']) } catch (error) { <?if($dev){?>console.error(error); <?}?>hl = md.utils.escapeHtml(str); }
+        try { hl = Prism.highlight(str, Prism.languages[lang||'<?=$community_code_language?>']) } catch (error) { hl = md.utils.escapeHtml(str); }
         return `<pre class="language-${lang}"><code class="language-${lang}">${hl}</code></pre>`
       } })
     <?}else{?>
@@ -211,7 +211,7 @@ $jslang = $jslang??'en';
                .use(window.markdownitAbbr)
                .use(window.markdownitContainer, 'quote', {
                  validate: function(params) {
-                   return params.trim().match(/^quote\s+(.*)$/);
+                   return params.trim().match(/^quote ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$/);
                  },
                  render: function (tokens, idx) {
                    var m = tokens[idx].info.trim().match(/^quote ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$/);
@@ -224,12 +224,11 @@ $jslang = $jslang??'en';
                .use(window.markdownitCodeInput)
              <?if($community_name==='test'||$community_name==='apl'){?>
                .use(window.markdownitContainer, 'tio', {
-                 marker: '<',
-                   validate: function(params) {
-                   return params.trim().match(/^[a-zA-Z0-9@\/]+$/);
+                 validate: function(params) {
+                   return params.trim().match(/^tio [a-zA-Z0-9@\/]+$/);
                  },
                  render: function (tokens, idx) {
-                   var m = tokens[idx].info.trim().match(/^([a-zA-Z0-9@\/]+)$/);
+                   var m = tokens[idx].info.trim().match(/^tio ([a-zA-Z0-9@\/]+)$/);
                    if (tokens[idx].nesting === 1) {
                      return '<div class="tio">'+
                               '<a href="https://tio.run/##'+m[1]+'">tio</a>';

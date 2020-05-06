@@ -883,36 +883,19 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         }
       <?if($community_name==='test'||$community_name==='apl'){?>
         if(!onebox){
-          s = m.match(/^<<<\s*\n([\s\S]+)\n<<<$/);
+          s = m.match(/^` ([^\n]+)$|^` ([a-z]+)? *\n([\s\S]+)$/);
           if(s){
-            tioRequest(s[1]).then(function(r){
-              var f = '<<<', c = '§§§', o = '```';
-              while((new RegExp('^'+f,'m')).test(s[1])) f+='<';
-              while((new RegExp('^'+f,'m')).test(r.output)) f+='<';
-              while((new RegExp('^'+c,'m')).test(s[1])) c+='§';
+            const lang = s[2], code = s[1]||s[3];
+            tioRequest(code).then(function(r){
+              var f = ':::', c = '§§§', o = '```';
+              while((new RegExp('^'+f,'m')).test(code)) f+=':';
+              while((new RegExp('^'+f,'m')).test(r.output)) f+=':';
+              while((new RegExp('^'+c,'m')).test(code)) c+='§';
               while((new RegExp('^'+c,'m')).test(r.output)) c+='§';
-              while((new RegExp('^'+o,'m')).test(s[1])) o+='`';
+              while((new RegExp('^'+o,'m')).test(code)) o+='`';
               while((new RegExp('^'+o,'m')).test(r.output)) o+='`';
               if($('#chattext').val()===m){
-                $('#preview .markdown').css('visibility','visible').attr('data-markdown',f+' '+r.req+'\n'+c+' apl\n'+s[1]+'\n'+c+'\n'+o+' none\n'+r.output+'\n'+o+'\n'+f).renderMarkdown(promises);
-              }
-            });
-            onebox = true;
-          }
-        }
-        if(!onebox){
-          s = m.match(/^< (.+)$/);
-          if(s){
-            tioRequest(s[1].trim()).then(function(r){
-              var f = '<<<', c = '§§§', o = '```';
-              while((new RegExp('^'+f,'m')).test(s[1])) f+='<';
-              while((new RegExp('^'+f,'m')).test(r.output)) f+='<';
-              while((new RegExp('^'+c,'m')).test(s[1])) c+='§';
-              while((new RegExp('^'+c,'m')).test(r.output)) c+='§';
-              while((new RegExp('^'+o,'m')).test(s[1])) o+='`';
-              while((new RegExp('^'+o,'m')).test(r.output)) o+='`';
-              if($('#chattext').val()===m){
-                $('#preview .markdown').css('visibility','visible').attr('data-markdown',f+' '+r.req+'\n'+c+' apl\n'+s[1]+'\n'+c+'\n'+o+' none\n'+r.output+'\n'+o+'\n'+f).renderMarkdown(promises);
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown',f+' tio '+r.req+'\n'+c+' apl\n'+code+'\n'+c+'\n'+o+' none\n'+r.output+'\n'+o+'\n'+f).renderMarkdown(promises);
               }
             });
             onebox = true;
