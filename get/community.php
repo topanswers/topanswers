@@ -71,7 +71,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
   <link rel="stylesheet" href="/lib/select2.css">
   <link rel="stylesheet" href="/lib/starrr.css">
-  <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
   <link rel="stylesheet" href="/lib/vex/vex.css">
   <link rel="stylesheet" href="/lib/vex/vex-theme-topanswers.css">
   <link rel="stylesheet" href="/global.css">
@@ -281,12 +280,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.waitforimages.js"></script>
-  <script src="/lib/codemirror/codemirror.js"></script>
-  <script src="/lib/codemirror/runmode.js"></script>
-  <script src="/lib/codemirror/colorize.js"></script>
-  <script src="/lib/codemirror/sql.js"></script>
-  <script src="/lib/codemirror/apl.js"></script>
-  <script src="/lib/codemirror/stex.js"></script>
   <script src="/lib/vex/vex.combined.min.js"></script>
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
@@ -801,6 +794,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#status').attr('data-editid','').attr('data-replyid','').attr('data-replyname','').data('update')();
         window.location.hash='';
         history.replaceState(null,null,url);
+      });
+      $('#xpreview a').click(function(){
+        $('#preview .markdown').toggle();
+        $(this).text($('#preview .markdown').is(':visible')?'<?=$l_hide_preview?>':'<?=$l_show_preview?>');
+        $('#chattext').focus();
+        $('#preview .CodeMirror').each(function(){ $(this).get(0).CodeMirror.refresh(); });
+        return false;
       });
       $('#community').change(function(){
         window.location = '/'+$(this).find(':selected').attr('data-name');
@@ -1334,7 +1334,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <div class="banner">
             <h3><?=$question_answer_count?> Answer<?=($question_answer_count!==1)?'s':''?></h3>
             <div style="flex: 1 1 0;"></div>
-            <a <?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'href="/answer?question='.$question.'"':'title="requires '.($kind_minimum_votes_to_answer-$question_votes).' more stars"'?> class="button"><?=$question_answered_by_me?$provide_another_answer:$provide_answer?></a>
+            <a <?=($auth&&( $question_votes>=$kind_minimum_votes_to_answer ))?'href="/answer?question='.$question.'"':'title="requires '.($kind_minimum_votes_to_answer-$question_votes).' more stars"'?> class="button"><?=$question_answered_by_me?$l_provide_another_answer:$l_provide_answer?></a>
           </div>
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history

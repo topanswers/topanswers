@@ -2,8 +2,7 @@
 include '../lang/markdown.'.($community_language??'en').'.php';
 $jslang = $jslang??'en';
 ?>
-<link rel="stylesheet" href="/lib/highlightjs/default.css">
-<link rel="stylesheet" href="/lib/prism/prism.css">
+<link rel="stylesheet" href="/lib/codemirror/codemirror.css">
 <link rel="stylesheet" href="/lib/qp/qp.css">
 <?if($community_name==='codegolf'||$community_name==='test'||$community_name==='apl'){?>
   <link rel="stylesheet" href="/lib/katex/katex.min.css">
@@ -63,6 +62,9 @@ $jslang = $jslang??'en';
   .markdown .table-of-contents ol { counter-reset: list-item-toc; }
   .markdown .table-of-contents li { display: block; counter-increment: list-item-toc; }
   .markdown .table-of-contents li:before { content: counters(list-item-toc,'.') ' '; }
+
+  .markdown.cm-s-default .cm-comment {color: rgba(0,0,0,0.5);}
+
   .markdown .youtube { position: relative; z-index: 0; }
   .markdown .youtube>svg { position: absolute; height: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
   .markdown .youtube>a>img { display: block; margin: 0; }
@@ -115,25 +117,19 @@ $jslang = $jslang??'en';
 <?}?>
 <script src="/lib/markdownItAnchor.js"></script>
 <script src="/lib/markdownItTocDoneRight.js"></script>
-<script src="/lib/highlightjs/highlight.js"></script>
+<script src="/lib/codemirror/codemirror.js"></script>
+<script src="/lib/codemirror/runmode.js"></script>
+<script src="/lib/codemirror/colorize.js"></script>
+<script src="/lib/codemirror/placeholder.js"></script>
+<?foreach(['apl','clike','clojure','css','erlang','gfm','go','haskell','htmlmixed','javascript','julia','markdown','mllike','php','powershell','python','shell','sql','stex','vb'] as $l){?>
+  <script src="/lib/codemirror/mode/<?=$l?>.min.js"></script>
+<?}?>
 <script src="/lib/clipboard.js"></script>
-<script src="/lib/prism/prism.js"></script>
 <script src="/lib/qp/qp.js"></script>
 <script src="/lib/promise-all-settled.js"></script>
 <script>
   //polyfill
   if (!Promise.allSettled) Promise.allSettled = allSettled;
-  // we have no idea why this works but without it cs highlighting doesn't happen
-  (function(){
-    var script = document.createElement( 'script' );
-    script.type = 'text/javascript';
-    script.async = false;
-    script.src = "/lib/highlightjs/highlight.js";
-    script.addEventListener("load", () => { hljs.initHighlighting(); })
-    script.addEventListener("error", () => { console.log("error"); hljs.initHighlighting(); })
-    document.querySelector("head").appendChild(script);
-  })();
-  //hljs.initHighlightingOnLoad();
 
   (function($){
     var md, mdsummary, prefix;
@@ -194,26 +190,22 @@ $jslang = $jslang??'en';
     };
 
     md = window.markdownIt({ linkify: true
-    <?if($community_name==='test'||$community_name==='apl'){?>
       , highlight: (code, lang) => {
         let lastStyle
         let sDom = ''
         CodeMirror.runMode(code, lang||'<?=$community_code_language?>', (token, style) => {
           if (lastStyle !== style) {
             if (lastStyle !== undefined) sDom += '</span>'
-            sDom += '<span class="cm-'+style+'">'
+            if (style !== undefined) sDom += '<span class="cm-'+style+'">'
             lastStyle = style
           }
-          sDom += token
+          sDom += md.utils.escapeHtml(token)
         })
         if (lastStyle !== undefined) sDom += '</span>'
         return sDom
       }
       
        })
-    <?}else{?>
-      , highlight: function(str,lang){ lang = lang||'<?=$community_code_language?>'; if(lang && hljs.getLanguage(lang)) { try { return hljs.highlight(lang, str).value; } catch (__) {} } return ''; } })
-    <?}?>
                .use(window.markdownitSup)
                .use(window.markdownitSub)
                .use(window.markdownitEmoji)

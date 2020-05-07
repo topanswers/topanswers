@@ -16,5 +16,5 @@ $l_unpin = 'unpin';
 $l_edit = 'edit';
 $l_history = 'history';
 $l_license = 'license';
-$provide_answer = 'provide an answer';
-$provide_another_answer = 'provide another answer';
+$l_provide_answer = 'provide an answer';
+$l_provide_another_answer = 'provide another answer';

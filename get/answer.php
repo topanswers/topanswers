@@ -36,7 +36,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
-  <link rel="stylesheet" href="/lib/codemirror/codemirror.css">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/post.css">
@@ -64,9 +63,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #editor-buttons>div i:last-child { margin-bottom: 0; }
     #editor-buttons>div br { margin-bottom: 12px; }
 
-    .CodeMirror { height: 100%; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; }
-    .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
-    .CodeMirror-wrap pre { word-break: break-word; }
+    #codemirror-container .CodeMirror { height: 100%; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; }
+    #codemirror-container .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
+    #codemirror-container .CodeMirror-wrap pre { word-break: break-word; }
 
     @media (max-width: 1500px){
       main { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 2fr; }
@@ -88,10 +87,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
-  <script src="/lib/codemirror/codemirror.js"></script>
-  <script src="/lib/codemirror/markdown.js"></script>
-  <script src="/lib/codemirror/sql.js"></script>
-  <script src="/lib/codemirror/placeholder.js"></script>
   <?require '../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
