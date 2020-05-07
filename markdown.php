@@ -64,6 +64,7 @@ $jslang = $jslang??'en';
   .markdown .table-of-contents li:before { content: counters(list-item-toc,'.') ' '; }
 
   .markdown.cm-s-default .cm-comment {color: rgba(0,0,0,0.5);}
+  .markdown .cm-s-default .cm-comment {color: rgba(0,0,0,0.5);}
 
   .markdown .youtube { position: relative; z-index: 0; }
   .markdown .youtube>svg { position: absolute; height: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
