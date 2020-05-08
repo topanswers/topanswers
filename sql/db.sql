@@ -392,6 +392,7 @@ create table question_history(
 , question_history_markdown text not null
 );
 create unique index question_history_rate_limit_ind on question_history(account_id,question_history_at);
+create index question_history_question_ind on question_history(question_id) include(account_id);
 
 create table answer(
   answer_id integer generated always as identity primary key

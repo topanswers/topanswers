@@ -72,7 +72,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     #content .diff-container { grid-template-columns: 1fr; }
     #content .before-container, #content .after-container { grid-template-columns: 1fr 1fr; visibility: hidden; }
 
-    .CodeMirror { height: auto; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
+    .CodeMirror { height: auto !important; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
     .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
     .CodeMirror-wrap pre { word-break: break-word; }
   </style>
