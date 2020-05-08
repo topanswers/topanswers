@@ -198,7 +198,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #chatbuttons>i:active { color: rgb(var(--rgb-mid)); }
     #chat<?=$hidepreview?'hide':'show'?>preview { display: none; }
     #chattext { flex: 1 1 auto; font-family: inherit; font-size: 14px; resize: none; outline: none; border: none; padding: 4px; margin: 0; background: rgb(var(--rgb-white)); color: rgb(var(--rgb-black)); }
-    #status { margin: 2px; display: none; }
+    #status { margin: 2px; display: none; width: 100%; font-size: 12px; }
 
     #chat-bar a.panel { pointer-events: none; }
     #chat-bar a[href].panel { pointer-events: auto; }
@@ -1516,7 +1516,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?if($canchat){?>
           <div id="canchat-wrapper">
             <div id="preview" class="message processed">
-              <div id="status" style="width: 100%; font-style: italic; font-size: 10px;" data-replyid="" data-replyname="" data-editid="">
+              <div id="status" data-replyid="" data-replyname="" data-editid="">
                 <span></span>
                 <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
               </div>
