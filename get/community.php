@@ -8,6 +8,7 @@ db("set search_path to community,pg_temp");
 if(isset($_COOKIE['uuid'])){ ccdb("select login($1::uuid)",$_COOKIE['uuid']) || fail(403,'access denied'); }
 if(ccdb("select exists(select 1 from private where community_name=$1)",$_GET['community'])) { header('Location: //topanswers.xyz/private?community='.$_GET['community']); exit; }
 $pagesize = $_COOKIE['pagesize']??'10';
+$hidepreview = ($_COOKIE['hidepreview']??'false') === 'true';
 $clearlocal = $_COOKIE['clearlocal']??'';
 $environment = $_COOKIE['environment']??'prod';
 setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
@@ -186,14 +187,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #starboard .message:not(:hover) .button-group:not(:first-child) { display: grid; }
     #starboard .message:not(:hover) .button-group:not(:first-child) .fa-link { display: none; }
 
-    #preview { display: block; width: 100%; background: rgb(var(--rgb-light)); border-top: 1px solid rgb(var(--rgb-dark)); padding: 4px; }
+    #preview { display: block; width: 100%; background: rgb(var(--rgb-light)); border-top: 1px solid rgb(var(--rgb-dark)); cursor: default; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    #preview .markdown { margin: 4px;<?=$hidepreview?' display: none;':''?> }
     #preview .markdown:empty { visibility: hidden; }
     #canchat-wrapper { flex: 0 0 auto; }
-    #chattext-wrapper { position: relative; display: flex; border-top: 1px solid rgb(var(--rgb-dark)); align-items: center; }
+    #chattext-wrapper { position: relative; display: flex; border-top: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-white)); }
     #chatuploadfile { display: none; }
-    #chatupload { position: absolute; right: 4px; font-size: 18px; color: rgb(var(--rgb-dark)); cursor: pointer; }
-    #chatupload:active { color: rgb(var(--rgb-mid)); }
-    #chattext { flex: 0 0 auto; font-family: inherit; font-size: 14px; width: 100%; height: 26px; resize: none; outline: none; border: none; padding: 4px; padding-right: 30px; margin: 0; background: rgb(var(--rgb-white)); color: rgb(var(--rgb-black)); }
+    #chatbuttons { display: flex; flex-wrap: wrap; background: white; align-items: center; align-content: center; width: 26px; }
+    #chatbuttons>i { width: 26px; font-size: 22px; color: rgb(var(--rgb-dark)); cursor: pointer; }
+    #chatbuttons>i:active { color: rgb(var(--rgb-mid)); }
+    #chat<?=$hidepreview?'hide':'show'?>preview { display: none; }
+    #chattext { flex: 1 1 auto; font-family: inherit; font-size: 14px; resize: none; outline: none; border: none; padding: 4px; margin: 0; background: rgb(var(--rgb-white)); color: rgb(var(--rgb-black)); }
+    #status { margin: 2px; display: none; }
 
     #chat-bar a.panel { pointer-events: none; }
     #chat-bar a[href].panel { pointer-events: auto; }
@@ -264,7 +269,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     @media (max-width: 576px){
       .hidepane { display: none; }
       .panecontrol { display: unset; }
-      textarea,select,input { font-size: 16px; }
+      textarea,select,input { font-size: 16px !important; }
       #search { line-height: 1; align-self: start; height: 26px; padding: 0 4px; }
       #chattext-wrapper:not(:hover) button { display: unset; }
       #poll { display: none; }
@@ -302,7 +307,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 
       vex.defaultOptions.className = 'vex-theme-topanswers';
 
-      $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
+      setTimeout(function(){ window.scrollTo(0,0); }, 100);
+      $('#chattext').blur(function(){ window.scrollTo(0,0); });
+      $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); setTimeout(function(){ window.scrollTo(0,0); },100); })).trigger('resize');
 
       <?if($clearlocal){?>
         localStorage.removeItem('<?=$clearlocal?>');
@@ -395,7 +402,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             var u = new URLSearchParams(window.location.search);
             u.delete('page');
             window.history.pushState({},'',(window.location.href.split('?')[0]+'?'+u.toString()).replace(/\?$/,''));
-            Cookies.set('pagesize',$(this).val(),{ secure: true, domain: '.topanswers.xyz' });
+            Cookies.set('pagesize',$(this).val(),{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
             loadQuestions();
             return false;
           });
@@ -781,10 +788,10 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         console.debug(_.map(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }),function(e){ return e[1]; }));
         if($('.ping').length) strings.push('Pinging: '+_.map(_.uniqBy($('.ping').map(function(){ return { 'id': $(this).data('id'), 'name': $(this).data('fullname') }; }).get(),function(e){ return e.id; }),function(e){ return e.name; }).join(', '));
         if(strings.length){
-          $('#status').children('span').text(strings.join(', '));
+          $('#status').show().children('span').text(strings.join(', '));
           $('#cancel').show();
         }else{
-          $('#status').children('span').text($('<div/>').html('<?=$l_preview?>:').text());
+          $('#status').hide().children('span').empty();
           $('#cancel').hide();
         }
       });
@@ -795,11 +802,19 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         window.location.hash='';
         history.replaceState(null,null,url);
       });
-      $('#xpreview a').click(function(){
-        $('#preview .markdown').toggle();
-        $(this).text($('#preview .markdown').is(':visible')?'<?=$l_hide_preview?>':'<?=$l_show_preview?>');
-        $('#chattext').focus();
+      $('#chatshowpreview').on('mousedown',function(){ return false; }).click(function(){
+        $('#preview .markdown').show();
+        $('#chathidepreview').show();
+        $(this).hide();
         $('#preview .CodeMirror').each(function(){ $(this).get(0).CodeMirror.refresh(); });
+        Cookies.set('hidepreview','false',{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
+        return false;
+      });
+      $('#chathidepreview').on('mousedown',function(){ return false; }).click(function(){
+        $('#preview .markdown').hide();
+        $('#chatshowpreview').show();
+        $(this).hide();
+        Cookies.set('hidepreview','true',{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
         return false;
       });
       $('#community').change(function(){
@@ -914,8 +929,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       var renderPreviewThrottle;
       renderPreviewThrottle = _.throttle(renderPreview,100);
-      $('#chattext').on('input', function(){
-        if(!$(this).data('initialheight')) $(this).data('initialheight',this.scrollHeight);
+      $('#chattext').each(function(){ $(this).css('height',this.scrollHeight).data('initialheight',this.scrollHeight); }).on('input', function(){
         if(this.scrollHeight>$(this).outerHeight()) $(this).css('height',this.scrollHeight);
         renderPreviewThrottle();
       }).trigger('input');
@@ -1500,18 +1514,22 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <?}?>
         </div>
         <?if($canchat){?>
-          <div id="preview" class="message processed">
-            <div id="status" style="width: 100%; font-style: italic; font-size: 10px;" data-replyid="" data-replyname="" data-editid="">
-              <span><?=$l_preview?>:</span>
-              <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
-            </div>
-            <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
-          </div>
           <div id="canchat-wrapper">
+            <div id="preview" class="message processed">
+              <div id="status" style="width: 100%; font-style: italic; font-size: 10px;" data-replyid="" data-replyname="" data-editid="">
+                <span></span>
+                <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
+              </div>
+              <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
+            </div>
+            <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
             <div id="chattext-wrapper">
-              <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
-              <i id="chatupload" class="fa fa-fw fa-picture-o" title="embed image"></i>
               <textarea id="chattext" rows="1" placeholder="<?=$l_chattext_placeholder?>" maxlength="5000"></textarea>
+              <div id="chatbuttons">
+                <i id="chatshowpreview" class="fa fa-fw fa-eye" title="<?=$l_show_preview?>"></i>
+                <i id="chathidepreview" class="fa fa-fw fa-eye-slash" title="<?=$l_hide_preview?>"></i>
+                <i id="chatupload" class="fa fa-fw fa-picture-o" title="<?=$l_embed_image?>"></i>
+              </div>
             </div>
           </div>
         <?}?>

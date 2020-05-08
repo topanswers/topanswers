@@ -18,3 +18,6 @@ $l_history = 'history';
 $l_license = 'license';
 $l_provide_answer = 'provide an answer';
 $l_provide_another_answer = 'provide another answer';
+$l_show_preview = 'show preview';
+$l_hide_preview = 'hide preview';
+$l_embed_image = 'embed image';
