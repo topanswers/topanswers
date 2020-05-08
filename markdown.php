@@ -76,10 +76,10 @@ $jslang = $jslang??'en';
   .markdown .wikipedia>a:nth-of-type(1) { float: right; width: 50px; }
   .markdown .wikipedia>a:nth-of-type(2) { font-size: 18px; display: block; margin-bottom: 10px; }
   .markdown .wikipedia>a:nth-of-type(3) { float: left; margin-top: 4px; margin-right: 12px; margin-bottom: 0; max-width: 30%; }
-  .markdown .tio { display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; gap: 4px; }
+  .markdown .tio { display: inline-grid; grid-template-columns: auto auto; grid-template-rows: auto auto; gap: 4px; background: rgba(var(--rgb-light,0.5)); border-radius: 3px; padding: 4px; }
   .markdown .tio>div.CodeMirror { grid-area: 1 / 1 / 2 / 3; margin: 0; justify-self: start; }
   .markdown .tio>pre { grid-area: 2 / 1 / 3 / 2; margin: 0; justify-self: start; }
-  .markdown .tio>pre>code { padding: 0 2px; }
+  .markdown .tio>pre>code { padding: 0 2px; border: 1px solid rgb(var(--rgb-dark)); }
   .markdown .tio>a { grid-area: 2 / 2 / 3 / 3; font-size: 12px; justify-self: end; align-self: end; }
   .markdown:not(:hover)) .tio>a { visibility: hidden; }
   .markdown .tio .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
@@ -118,6 +118,8 @@ $jslang = $jslang??'en';
 <?}?>
 <script src="/lib/markdownItAnchor.js"></script>
 <script src="/lib/markdownItTocDoneRight.js"></script>
+<script src="/tio.js"></script>
+<script src="/lib/pako.js"></script>
 <script src="/lib/codemirror/codemirror.js"></script>
 <script src="/lib/codemirror/runmode.js"></script>
 <script src="/lib/codemirror/colorize.js"></script>

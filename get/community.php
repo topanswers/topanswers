@@ -292,8 +292,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/starrr.js"></script>
   <script src="/lib/jquery.simplePagination.js"></script>
   <script src="/lib/paste.js"></script>
-  <script src="/lib/pako.js"></script>
-  <script src="/tio.js"></script>
   <script>
     moment.locale('<?=$jslang?>');
     $(function(){
