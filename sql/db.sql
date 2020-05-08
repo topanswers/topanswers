@@ -64,6 +64,7 @@ create table community(
 , community_ask_button_text text default 'Ask' not null
 , community_banner_markdown text default '' not null
 , community_wiki_account_id integer not null references account
+, community_tio_language text 
 );
 
 create table source(

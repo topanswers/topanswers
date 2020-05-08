@@ -72,7 +72,7 @@ if($auth){
   }
 }else{
   $uuid = exec('uuidgen');
-  setcookie("uuid",$uuid,2147483647,'/','.'.config("SITE_DOMAIN"),true,true);
+  setcookie("uuid",$uuid,['expires'=>2147483647,'path'=>'/','domain'=>'.'.config("SITE_DOMAIN"),'secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
   switch($_POST['action']){
     case 'link':
       if(is_numeric($_POST['link'])) db('select link($1,$2::bigint)',$uuid,$_POST['link']);

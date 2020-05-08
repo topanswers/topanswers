@@ -188,6 +188,7 @@ $jslang = $jslang??'en';
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://POWERSHELL.TA') tokens[idx].attrSet('href','/powershell');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://POSH.TA') tokens[idx].attrSet('href','/powershell');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://APL.TA') tokens[idx].attrSet('href','/apl');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://WEB.TA') tokens[idx].attrSet('href','/web');
     };
 
     md = window.markdownIt({ linkify: true
@@ -226,7 +227,6 @@ $jslang = $jslang??'en';
                    }
                  } })
                .use(window.markdownitCodeInput)
-             <?if($community_name==='test'||$community_name==='apl'){?>
                .use(window.markdownitContainer, 'tio', {
                  validate: function(params) {
                    return params.trim().match(/^tio [a-zA-Z0-9@\/]+$/);
@@ -240,7 +240,6 @@ $jslang = $jslang??'en';
                      return '</div>\n';
                    }
                  } })
-             <?}?>
                .use(window.markdownitInjectLinenumbers)
                .use(window.markdownitObject,'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens,idx){
                  var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/);
@@ -317,9 +316,7 @@ $jslang = $jslang??'en';
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
         t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
-      <?if($community_name==='test'||$community_name==='apl'){?>
-        t.find('textarea.code').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: 'apl' }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().trim()).then(function(r){ t.siblings('pre').children('code').text(r.output); }); },500)); });
-      <?}?>
+        t.find('textarea.code').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().trim(),t.attr('data-tio')).then(function(r){ t.siblings('pre').children('code').text(r.output); }); },500)); });
         if(!t.hasClass('noexpander')){
           t.children('pre').each(function(){
             var t = $(this), h = t.height();

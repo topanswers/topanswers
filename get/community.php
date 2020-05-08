@@ -21,10 +21,10 @@ if(!isset($_GET['room'])&&!isset($_GET['q'])){
 }else{
   fail(400,"exactly one of 'q' or 'room' must be set");
 }
-if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
+if($auth) setcookie("uuid",$_COOKIE['uuid'],['expires'=>2147483647,'path'=>'/','domain'=>'.'.config("SITE_DOMAIN"),'secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,account_id,account_is_dev,account_notification_id
-                   ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text,community_banner_markdown
+                   ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_tio_language,community_about_question_id,community_ask_button_text,community_banner_markdown
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
                    ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned
@@ -47,9 +47,7 @@ $jslang = substr($community_language,0,1).substr(strtok($community_language,'-')
 $question = $_GET['q']??'0';
 $room = $room_id;
 $canchat = $room_can_chat;
-$cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'')
-          .(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':'')
-          .(isset($_COOKIE['pagesize'])?'pagesize='.$_COOKIE['pagesize'].'; ':'');
+$cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':'');
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
@@ -899,27 +897,31 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             onebox = true;
           }
         }
-      <?if($community_name==='test'||$community_name==='apl'){?>
         if(!onebox){
-          s = m.match(/^`(?: ([^\n]+)| ?([a-z]+)? *\n([\s\S]+))$/);
+          s = m.match(/^(``?)(?: ([^\n]+)| ?([-a-z0-9]+)? *\n([\s\S]+))$/);
           if(s){
-            const lang = s[2], code = s[1]||s[3];
-            let f = ':::', c = '§§§', o = '```';
-            while((new RegExp('^'+f,'m')).test(code)) f+=':';
-            while((new RegExp('^'+c,'m')).test(code)) c+='§';
-            while((new RegExp('^'+o,'m')).test(code)) o+='`';
-            tioRequest(code).then(function(r){
-              while((new RegExp('^'+f,'m')).test(r.output)) f+=':';
-              while((new RegExp('^'+c,'m')).test(r.output)) c+='§';
-              while((new RegExp('^'+o,'m')).test(r.output)) o+='`';
-              if($('#chattext').val()===m){
-                $('#preview .markdown').css('visibility','visible').attr('data-markdown',f+' tio '+r.req+'\n'+c+' apl\n'+code+'\n'+c+'\n'+o+' none\n'+r.output+'\n'+o+'\n'+f).renderMarkdown(promises);
+            const live = s[1].length===1, codelang = s[3]?s[3].split('-')[0]:'<?=$community_code_language?>'||'none', tiolang = s[3]||'<?=$community_tio_language?>', code = s[2]||s[4];
+            if(tiolang){
+              let f = ':::', c = '§§§', o = '```';
+              while((new RegExp('^'+f,'m')).test(code)) f+=':';
+              while((new RegExp('^'+c,'m')).test(code)) c+='§';
+              while((new RegExp('^'+o,'m')).test(code)) o+='`';
+              if(live){
+                tioRequest(code,tiolang).then(function(r){
+                  while((new RegExp('^'+f,'m')).test(r.output)) f+=':';
+                  while((new RegExp('^'+c,'m')).test(r.output)) c+='§';
+                  while((new RegExp('^'+o,'m')).test(r.output)) o+='`';
+                  if($('#chattext').val()===m){
+                    $('#preview .markdown').css('visibility','visible').attr('data-markdown',f+' tio '+r.req+'\n'+c+' '+codelang+' '+tiolang+'\n'+code+'\n'+c+'\n'+o+' none\n'+r.output+'\n'+o+'\n'+f).renderMarkdown(promises);
+                  }
+                });
+              }else{
+                $('#preview .markdown').css('visibility','visible').attr('data-markdown',o+' '+codelang+'\n'+code+'\n'+o).renderMarkdown(promises);
               }
-            });
-            onebox = true;
+              onebox = true;
+            }
           }
         }
-      <?}?>
         if(!onebox) $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
         Promise.allSettled(promises).then(() => {
           $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed');
@@ -1112,7 +1114,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?if($question){?>
         setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
       <?}?>
-      $(window).on('hashchange',function(){ $(':target')[0].scrollIntoView(); });
+      $(window).on('hashchange',function(){ if($(':target').length) $(':target')[0].scrollIntoView(); });
       $('#chat-wrapper').on('click','#mute', function(){
         var t = $(this);
         $.post({ url: '//post.topanswers.xyz/room', data: { action: 'mute', id: <?=$room?> }, xhrFields: { withCredentials: true } }).done(function(){

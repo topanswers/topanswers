@@ -6,11 +6,11 @@
 
 module.exports = function codeinput_plugin(md, name, options) {
 
-  function validateDefault(p) { return p.trim().match(/^[a-z]+$/); }
+  function validateDefault(p) { return p.trim().match(/^[\/a-z]+ [-a-z0-9]+$/); }
 
   function renderDefault(tokens, idx, _options, env, self) {
-    var t = tokens[idx], m = t.info.trim().match(/^([a-z]+)$/);
-    return '<textarea class="code '+m[1]+'">' + md.utils.escapeHtml(t.content).trim() + "</textarea>\n";
+    var t = tokens[idx], m = t.info.trim().match(/^([\/a-z]+) ([-a-z0-9]+)$/);
+    return '<textarea class="code" data-mode="'+md.utils.escapeHtml(m[1])+'" data-tio="'+md.utils.escapeHtml(m[2])+'">' + md.utils.escapeHtml(t.content).trim() + "</textarea>\n";
   }
 
   options = options || {};
