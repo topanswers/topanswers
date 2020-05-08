@@ -16,6 +16,7 @@ extract(cdb("select account_id
                                 , to_char(history_at,'YYYY-MM-DD HH24:MI:SS') history_at
                                 , case when answer_history_id is not null then 'h' else 'f' end item_type
                                 , case when answer_flag_history_id is null then (row_number() over (partition by answer_flag_history_id order by history_at)) end rn
+                                , case when answer_flag_history_id is null then (count(1) over (partition by answer_flag_history_id)) end cnt
                                 , coalesce(answer_history_id,answer_flag_history_id) id
                                 , coalesce((select to_jsonb(a) from answer_history a where a.answer_history_id=h.answer_history_id)
                                          , (select to_jsonb(f) from answer_flag_history f where f.answer_flag_history_id=h.answer_flag_history_id)) item_data
@@ -63,6 +64,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     #revisions > div.active { box-shadow: 0 0 0 1px rgb(var(--rgb-highlight)) inset; }
     #history-bar { display: grid; grid-template-columns: auto 1fr auto; margin: 10px 10px 0 10px; font-size: 14px; grid-area: 1 / 2 / 2 / 3; }
     #history-bar > div { margin: 0; }
+    #history-bar > div:last-child { grid-area: 1 / 3 / 2 / 4; }
     #content { padding: 10px; grid-area: 2 / 2 / 3 / 3; overflow: hidden; height: 100%; }
     #content > div { overflow: hidden; height: 100%; position: relative; }
     #content > div:not(.active) { display: none; }
@@ -115,6 +117,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       }
 
       $('#revisions > div').click(function(){
+        $('#history-bar span').text($(this).data('rev'));
         $('#history-bar').toggle($(this).data('bar')==='visible');
         $('.active').removeClass('active');
         $(this).addClass('active');
@@ -149,7 +152,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <main>
     <div id="revisions">
       <?foreach($items as $i=>$r){ extract($r,EXTR_PREFIX_ALL,'h'); extract($h_item_data,EXTR_PREFIX_ALL,'d');?>
-        <div id="<?=$h_item_type.$h_id?>" data-bar="<?=($h_item_type==='h')?'visible':'hidden'?>">
+        <div id="<?=$h_item_type.$h_id?>" data-bar="<?=($h_item_type==='h')?'visible':'hidden'?>" data-rev="<?=( ($h_item_type==='h') && ($h_rn>1) )?('Revision '.($h_rn-1).' of '.($h_cnt-1)):''?>">
           <div>
             <?if($h_item_type==='h'){?>
               <?$action = ($h_rn===1)?($answer_is_imported?'Imported':'Answered'):'Edited'?>
@@ -166,6 +169,9 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     <div id="history-bar">
       <div>
         <a href="." class="panel" data-panel="before-container">before</a> / <a class="panel" data-panel="diff-container">diff</a> / <a href="." class="panel" data-panel="after-container">after</a>
+      </div>
+      <div>
+        <span></span>
       </div>
     </div>
     <div id="content">
