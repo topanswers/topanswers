@@ -122,7 +122,7 @@ $jslang = $jslang??'en';
 <script src="/lib/codemirror/runmode.js"></script>
 <script src="/lib/codemirror/colorize.js"></script>
 <script src="/lib/codemirror/placeholder.js"></script>
-<?foreach(['apl','clike','clojure','css','erlang','gfm','go','haskell','htmlmixed','javascript','julia','markdown','mllike','php','powershell','python','shell','sql','stex','vb'] as $l){?>
+<?foreach(['apl','clike','clojure','css','erlang','gfm','go','haskell','htmlmixed','javascript','julia','markdown','mllike','php','powershell','python','shell','sql','stex','vb','xml'] as $l){?>
   <script src="/lib/codemirror/mode/<?=$l?>.min.js"></script>
 <?}?>
 <script src="/lib/clipboard.js"></script>
