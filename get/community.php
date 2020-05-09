@@ -450,8 +450,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
         });
         Promise.allSettled(promises).then(() => {
-          if(scroll===true) scroller.scrollTop(1000000);
           $('#starboard>.message').addClass('processed').find('.question:not(.processed)').each(renderQuestion).addClass('processed');
+          if(scroll===true) setTimeout(function(){ scroller.scrollTop(1000000); },0);
         });
       }
       function updateStarboard(){
