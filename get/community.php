@@ -318,11 +318,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
 
       function setFinalSpacer(){
-        var scroller = $('#messages').parent()
-          , scroll = (scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5
-          , frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child')
+        var scroller = $('#messages').parent(), frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child');
         if(frst>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log10(1+frst)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(frst,'seconds').humanize()+' later');
-        if(scroll) scroller.scrollTop(1000000);
+        if(scroller.hasClass('follow')) scroller.scrollTop(1000000);
       }
       function setChatPollTimeout(){
         <?if($auth){?>
@@ -809,6 +807,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#canchat-wrapper').addClass('previewing');
         $('#preview .CodeMirror').each(function(){ $(this).get(0).CodeMirror.refresh(); });
         Cookies.set('hidepreview','false',{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
+        if($('#messages').parent().hasClass('follow')) $('#messages').parent().scrollTop(1000000);
         return false;
       });
       $('#chathidepreview').on('mousedown',function(){ return false; }).click(function(){
