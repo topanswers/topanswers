@@ -107,22 +107,23 @@ from (select community_id,community_name,community_dark_shade,community_mid_shad
       from db.community natural left join (select community_id,account_id from db.member where account_id=get_account_id()) m where community_type='public' or account_id is not null) c
      natural left join (select community_id,communicant_votes from db.communicant where account_id=get_account_id()) a;
 --
-create view _room with (security_barrier) as
-select room_id,community_id,room_can_chat
-     , coalesce(question_title,room_name,community_display_name||' Chat') room_derived_name
-from (select room_id,community_id,room_name
-           , get_account_id() is not null and (room_type='public' or account_id is not null) room_can_chat
-      from db.room natural left join (select * from db.writer where account_id=get_account_id()) a
-      where room_type<>'private' or account_id is not null) r
-     natural join (select community_id,community_display_name from api._community natural join db.community) c
-     natural left join (select question_id room_question_id,question_title, question_room_id room_id from db.question) q;
---
 create view _question with (security_barrier) as
 select question_id,community_id
      , question_crew_flags>0 or (question_crew_flags=0 and question_flags>0) question_is_deleted
 from db.question natural join _community
      natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
 where communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id() is not null or question_flags=0) and question_crew_flags=0) or account_id=get_account_id();
+--
+create view _room with (security_barrier) as
+select room_id,community_id,room_can_chat
+     , coalesce(question_title,room_name,community_display_name||' Chat') room_derived_name
+from (select room_id,community_id,room_name,room_question_id
+           , get_account_id() is not null and (room_type='public' or account_id is not null) room_can_chat
+      from db.room natural left join (select * from db.writer where account_id=get_account_id()) a
+      where room_type<>'private' or account_id is not null) r
+     natural join (select community_id,community_display_name from api._community natural join db.community) c
+     natural left join (select question_id room_question_id,question_title, question_room_id room_id from db.question natural join api._question) q
+where r.room_question_id is null or question_title is not null;
 --
 create view _answer with (security_barrier) as
 select answer_id,question_id,community_id
