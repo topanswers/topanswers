@@ -121,7 +121,7 @@ create function new(knd integer, title text, markdown text, lic integer, lic_orl
   select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
   select _ensure_communicant(get_account_id(),get_community_id());
   --
-  with r as (insert into room(community_id) values(get_community_id()) returning room_id,community_id)
+  with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning room_id,community_id)
      , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
      , q as (insert into question(community_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense
                                  ,account_id)
@@ -133,7 +133,9 @@ create function new(knd integer, title text, markdown text, lic integer, lic_orl
      , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
              select question_id,get_account_id(),title,markdown from q)
      , s as (insert into subscription(account_id,question_id) select get_account_id(),question_id from q)
-  select question_id from q;
+  select null;
+  --
+  update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
 $$;
 --
 create function change(title text, markdown text) returns void language sql security definer set search_path=db,api,pg_temp as $$

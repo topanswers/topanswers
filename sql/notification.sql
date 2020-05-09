@@ -24,7 +24,7 @@ select notification_id,room_id,community_id,chat_id,chat_at,chat_change_id,chat_
      , chat_flag_at is not null chat_i_flagged
      , chat_star_at is not null chat_i_starred
      , notification_id stack_id
-from notification natural join (select notification_id,chat_id from db.chat_notification) n natural join db.chat natural join api._room natural join api._community natural join db.community
+from notification natural join (select notification_id,chat_id from db.chat_notification) n natural join db.chat natural join db.room natural join api._room natural join api._community natural join db.community
      natural left join (select chat_id chat_reply_id, account_id chat_reply_account_id from db.chat) c
      natural left join (select chat_id,chat_flag_at from db.chat_flag where account_id=get_account_id()) f
      natural left join (select chat_id,chat_star_at from db.chat_star where account_id=get_account_id()) s;

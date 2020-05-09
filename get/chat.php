@@ -10,19 +10,6 @@ extract(cdb("select account_is_dev,community_name,community_language,room_name,r
 include '../lang/chat.'.$community_language.'.php';
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from chat where chat_change_id>$1",$_GET['fromid']));
 if(isset($_GET['quote'])) exit(ccdb("select quote($1,$2)::varchar",$_GET['room'],$_GET['id']));
-if(isset($_GET['activerooms'])){
-  foreach(db("select room_id,room_derived_name,room_question_id,community_name,listener_latest_read_chat_id,listener_unread
-              from room
-              order by participant_chat_count desc, participant_latest_chat_at desc") as $r){ extract($r);?>
-    <a<?if($room_id!==intval($_GET['room'])){?> href="/<?=$community_name?>?<?=$room_question_id?'q='.$room_question_id:'room='.$room_id?>"<?}?>
-                                                data-room="<?=$room_id?>"
-                                                data-latest="<?=$listener_latest_read_chat_id?>"
-                                                <?if($listener_unread>0){?>data-unread="<?=$listener_unread?>" data-unread-lang="<?=$l_num($listener_unread)?>"<?}?>>
-      <img title="<?=($room_derived_name)?$room_derived_name:''?>" class="icon roomicon" data-id="<?=$room_id?>" data-name="<?=$room_name?>" src="/roomicon?id=<?=$room_id?>">
-    </a><?
-  }
-  exit;
-}
 if(isset($_GET['activeusers'])){
   foreach(db("select account_id,account_name,account_is_me,communicant_votes from activeusers()") as $r){ extract($r);?>
     <img title="<?=($account_name)?$account_name:'Anonymous'?> (<?=$l_stars?>: <?=$l_num($communicant_votes)?>)" class="icon<?=$account_is_me?'':' pingable'?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>"><?

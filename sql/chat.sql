@@ -5,17 +5,6 @@ set local search_path to chat,api,pg_temp;
 --
 create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
 --
-create view room with (security_barrier) as
-with w as (select room_id,participant_latest_chat_at
-                , coalesce(participant_chat_count,0) participant_chat_count
-                , coalesce(listener_latest_read_chat_id,0) listener_latest_read_chat_id
-                , case when room_can_listen then (select count(1) from (select 1 from db.chat c where c.room_id=l.room_id and c.chat_id>coalesce(l.listener_latest_read_chat_id,0) limit 99) z) else 0 end listener_unread
-           from db.listener l natural join db.room r natural left join db.participant p
-           where account_id=get_account_id())
-select room_id,room_derived_name,room_question_id,community_name,listener_unread,listener_latest_read_chat_id,participant_chat_count,participant_latest_chat_at
-from w natural join api._room natural join db.community
-where listener_unread>0 or participant_latest_chat_at+make_interval(hours=>60+least(participant_chat_count,182)*12)>current_timestamp;
---
 create view one with (security_barrier) as
 select account_id,account_is_dev,community_id,community_name,community_language,community_code_language,room_id,room_name
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
@@ -107,7 +96,7 @@ create function quote(rid integer, cid bigint) returns text language sql securit
          ||':::'
   from (select chat_reply_id,room_id,room_question_id,room_derived_name,community_name,community_rgb_mid,community_rgb_dark,chat_at,chat_markdown,account_id,account_derived_name
              , to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"') chat_iso
-        from chat natural join api._community natural join community natural join api._account natural join _room
+        from chat natural join api._community natural join community natural join api._account natural join db.room natural join api._room
         where chat_id=cid) c
        natural left join (select chat_id chat_reply_id, account_derived_name reply_account_name from chat natural join api._account) r
 $$;

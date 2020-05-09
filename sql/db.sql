@@ -85,9 +85,11 @@ create table room(
 , room_image bytea check(length(room_image)>0)
 , room_can_listen boolean not null default true
 , room_latest_chat_id bigint
+, room_question_id integer references question deferrable initially deferred
 , unique (community_id,room_id)
 );
 create unique index room_latest_ind on room(room_id) include(room_latest_chat_id) where room_latest_chat_id is not null;
+create index room_question_id_fk_ind on room(room_question_id);
 
 alter table community add foreign key(community_room_id) references room deferrable initially deferred;
 

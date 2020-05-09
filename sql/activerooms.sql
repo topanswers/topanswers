@@ -4,8 +4,8 @@ set local search_path to activerooms,api,pg_temp;
 --
 --
 create view room with (security_barrier) as
-with r as (select room_id from db.listener where account_id=get_account_id() union select room_id from api._room where community_id=get_community_id() and room_question_id is null)
-   , w as (select room_id,participant_latest_chat_at
+with r as (select room_id from db.listener where account_id=get_account_id() union select room_id from db.room where community_id=get_community_id() and room_question_id is null)
+   , w as (select room_id,room_question_id,participant_latest_chat_at
                 , coalesce(participant_chat_count,0) participant_chat_count
                 , coalesce(listener_latest_read_chat_id,0) listener_latest_read_chat_id
                 , case when room_can_listen and l.account_id is not null
@@ -14,7 +14,7 @@ with r as (select room_id from db.listener where account_id=get_account_id() uni
            from r natural join db.room
                 natural left join (select * from db.listener where account_id=get_account_id()) l
                 natural left join (select * from db.participant where account_id=get_account_id()) p)
-select room_id,room_derived_name,room_question_id,community_name,community_display_name,community_rgb_light,listener_unread,listener_latest_read_chat_id,participant_chat_count,participant_latest_chat_at                                                                                                                                                               
+select room_id,room_derived_name,room_question_id,community_name,community_display_name,community_rgb_light,listener_unread,listener_latest_read_chat_id,participant_chat_count,participant_latest_chat_at
 from w natural join api._room natural join api._community natural join db.community
 where (community_id=get_community_id() and room_question_id is null) or listener_unread>0 or participant_latest_chat_at+make_interval(hours=>60+least(participant_chat_count,182)*12)>current_timestamp;
 
