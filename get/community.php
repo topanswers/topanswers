@@ -170,13 +170,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #notifications>hr { margin: 14px 6px; border: 1px solid rgb(var(--rgb-dark)); }
     #more-notifications { display: block; text-align: center; font-size: 12px; margin: 10px;}
     #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
-    #messages { flex: 1 1 0; display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth; background: rgb(var(--rgb-mid)); padding: 4px; }
+    #messages { display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
     .firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; flex: 1 1 0; }
     .firefoxwrapper>* { min-height: 100%; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { opacity: 0; }
-    #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: flex; visibility: hidden; flex-direction: column-reverse; scroll-behavior: smooth; }
+    #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column-reverse; }
     #starboard .message { padding: 4px; padding-top: 1.3em; }
     #starboard .message:not(:first-child) { border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
     #starboard .message .who { top: 0.2rem; font-size: 12px; }
@@ -185,18 +185,23 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #starboard .message:not(:hover) .button-group:not(:first-child) { display: grid; }
     #starboard .message:not(:hover) .button-group:not(:first-child) .fa-link { display: none; }
 
-    #preview { display: block; width: 100%; background: rgb(var(--rgb-light)); border-top: 1px solid rgb(var(--rgb-dark)); cursor: default; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-    #preview .markdown { margin: 4px;<?=$hidepreview?' display: none;':''?> }
-    #preview .markdown:empty { visibility: hidden; }
+    #preview { display: flex; width: 100%; background: rgb(var(--rgb-light)); cursor: default; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    #canchat-wrapper:not(.previewing) #preview { display: none; }
+    #canchat-wrapper.previewing #chatshowpreview { display: none; }
+    #canchat-wrapper:not(.previewing) #chathidepreview { display: none; }
+    #preview .markdown { margin: 4px; }
+    #canchat-wrapper:not(.previewing) #preview { display: none; }
+    #canchat-wrapper:not(.chatting) #preview { visibility: hidden; }
+    #canchat-wrapper:not(.chatting):not(.pinging) #status>span { visibility: hidden; }
+    #canchat-wrapper:not(.previewing):not(.pinging) #status>span { visibility: hidden; }
     #canchat-wrapper { flex: 0 0 auto; }
-    #chattext-wrapper { position: relative; display: flex; border-top: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-white)); }
+    #chattext-wrapper { display: flex; border-top: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-white)); }
     #chatuploadfile { display: none; }
     #chatbuttons { display: flex; flex-wrap: wrap; background: white; align-items: center; align-content: center; width: 26px; }
     #chatbuttons>i { width: 26px; font-size: 22px; color: rgb(var(--rgb-dark)); cursor: pointer; }
     #chatbuttons>i:active { color: rgb(var(--rgb-mid)); }
-    #chat<?=$hidepreview?'hide':'show'?>preview { display: none; }
     #chattext { flex: 1 1 auto; font-family: inherit; font-size: 14px; resize: none; outline: none; border: none; padding: 4px; margin: 0; background: rgb(var(--rgb-white)); color: rgb(var(--rgb-black)); }
-    #status { margin: 2px; display: none; width: 100%; font-size: 12px; }
+    #status { padding: 2px; width: 100%; line-height: 13px; font-size: 12px; border-top: 1px solid rgb(var(--rgb-dark)); }
 
     #chat-bar a.panel { pointer-events: none; }
     #chat-bar a[href].panel { pointer-events: auto; }
@@ -298,7 +303,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       var title = document.title, latestChatId;
       var chatTimer, maxChatChangeID = 0, maxActiveRoomChatID = 0, maxNotificationID = <?=$auth?$account_notification_id:'0'?>, numNewChats = 0;
       var maxQuestionPollMajorID = 0, maxQuestionPollMinorID = 0;
-      var firefox = false;
       var dismissed = 0;
 
       vex.defaultOptions.className = 'vex-theme-topanswers';
@@ -314,7 +318,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       <?}?>
 
       function setFinalSpacer(){
-        var scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages')
+        var scroller = $('#messages').parent()
           , scroll = (scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5
           , frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child')
         if(frst>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log10(1+frst)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(frst,'seconds').humanize()+' later');
@@ -442,7 +446,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         loadQuestions()
       }
       function processStarboard(scroll){
-        var t = $(this), promises = [] , scroller = $('.firefoxwrapper').length ? $('#starboard').parent() : $('#starboard');
+        var t = $(this), promises = [] , scroller = $('#starboard').parent()
         $('#starboard .markdown').renderMarkdown(promises);
         $('#starboard .when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
@@ -467,7 +471,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function processNewChat(scroll){
         var newchat = $('#messages>*:not(.processed)')
-          , scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages')
+          , scroller = $('#messages').parent()
           , promises = [];
         newchat.filter('.message').each(function(){ promises.push(...renderChat.call(this)); }).find('.when').each(function(){
           $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
@@ -477,9 +481,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         promises.push(document.fonts.ready);
         Promise.allSettled(promises).then(() => {
           if(scroll===true){
-            scroller.scrollTop(1000000);
+            setTimeout(function(){ scroller.scrollTop(1000000); },0);
           }else if(scroll===false){
-            scroller.addClass('newscroll').scroll(_.debounce(function(){ if((scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5){ scroller.removeClass('newscroll'); scroller.off('scroll'); } }));
+            if(!scroller.hasClass('follow')) scroller.addClass('newscroll');
           }
           newchat.addClass('processed');
         });
@@ -552,8 +556,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       }
       function updateChat(scroll){
         var maxChat = $('#messages>.message').first().data('id')
-          , scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages');
-        if(typeof scroll==='undefined') scroll = (scroller.scrollTop() - scroller[0].scrollHeight + scroller[0].offsetHeight) > -5;
+          , scroller = $('#messages').parent()
+        if(typeof scroll==='undefined') scroll = false;
+        if(scroller.hasClass('follow')) scroll = true;
         $.get('/chat?room=<?=$room?>'+(($('#messages>.message').length===0)?'':'&id='+maxChat),function(data) {
           if($('#messages>.message').first().data('id')===maxChat){
             var newchat;
@@ -597,7 +602,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           var merged = $('#c'+id).hasClass('merged');
           $('#c'+id).replaceWith(r);
           if(merged) $('#c'+id).addClass('merged');
-          processNewChat();
+          processNewChat(false);
           $('#c'+id).css('opacity',1);
           setChatPollTimeout();
         }).fail(setChatPollTimeout);
@@ -778,16 +783,18 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       $('#status').data('update',function(){
         var strings = [];
-        if($('#status').attr('data-editid')) strings.push('Editing');
-        if($('#status').attr('data-replyid')) strings.push('Replying to: '+$('#status').attr('data-replyname'));
+        if($('#status').attr('data-editid')) strings.push('editing');
+        if($('#status').attr('data-replyid')) strings.push('replying to: '+$('#status').attr('data-replyname'));
         console.debug(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }));
         console.debug(_.map(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }),function(e){ return e[1]; }));
-        if($('.ping').length) strings.push('Pinging: '+_.map(_.uniqBy($('.ping').map(function(){ return { 'id': $(this).data('id'), 'name': $(this).data('fullname') }; }).get(),function(e){ return e.id; }),function(e){ return e.name; }).join(', '));
+        if($('.ping').length) strings.push('pinging: '+_.map(_.uniqBy($('.ping').map(function(){ return { 'id': $(this).data('id'), 'name': $(this).data('fullname') }; }).get(),function(e){ return e.id; }),function(e){ return e.name; }).join(', '));
         if(strings.length){
-          $('#status').show().children('span').text(strings.join(', '));
+          $('#canchat-wrapper').addClass('pinging');
+          $('#status').children('span').text(strings.join(', '));
           $('#cancel').show();
         }else{
-          $('#status').hide().children('span').empty();
+          $('#canchat-wrapper').removeClass('pinging');
+          $('#status').children('span').text('<?=$l_preview?>:');
           $('#cancel').hide();
         }
       });
@@ -799,17 +806,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         history.replaceState(null,null,url);
       });
       $('#chatshowpreview').on('mousedown',function(){ return false; }).click(function(){
-        $('#preview .markdown').show();
-        $('#chathidepreview').show();
-        $(this).hide();
+        $('#canchat-wrapper').addClass('previewing');
         $('#preview .CodeMirror').each(function(){ $(this).get(0).CodeMirror.refresh(); });
         Cookies.set('hidepreview','false',{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
         return false;
       });
       $('#chathidepreview').on('mousedown',function(){ return false; }).click(function(){
-        $('#preview .markdown').hide();
-        $('#chatshowpreview').show();
-        $(this).hide();
+        $('#canchat-wrapper').removeClass('previewing');
         Cookies.set('hidepreview','true',{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
         return false;
       });
@@ -827,11 +830,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       function renderPreview(sync){
         var m = $('#chattext').val(), s
-          , scroller = $('.firefoxwrapper').length ? $('#messages').parent() : $('#messages')
+          , scroller = $('#messages').parent()
           , scroll = (scroller.scrollTop()+scroller.innerHeight()+40) > scroller.prop("scrollHeight")
           , promises = []
           , onebox = false;
         sync = typeof sync !== 'undefined' ? sync : false;
+        $('#canchat-wrapper').toggleClass('chatting',m?true:false);
         $('#preview .markdown').html('&nbsp;');
         if(!onebox){
           s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
@@ -942,11 +946,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               renderPreview(true);
               $('.ping').each(function(){ arr.push($(this).data('id')); });
               if(edit){
-                post = { msg: $('#preview .markdown').attr('data-markdown'), room: <?=$room?>, editid: editid, replyid: replyid, pings: arr, action: 'edit' };
+                post = { msg: $('#preview>.markdown').attr('data-markdown'), room: <?=$room?>, editid: editid, replyid: replyid, pings: arr, action: 'edit' };
                 $('#c'+editid).css('opacity',0.5);
               }else{
                 post = { room: <?=$room?>
-                       , msg: $('#preview .markdown').attr('data-markdown')
+                       , msg: $('#preview>.markdown').attr('data-markdown')
                        , replyid: replyid
                        , pings: arr
                        , action: 'new'
@@ -1073,12 +1077,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           $('#qa .post').addClass('processed');
         });
       })();
-      if(('netscape' in window) && / rv:/.test(navigator.userAgent)){
-        firefox -= true;
-        $('#starboard,#messages').wrap('<div class="firefoxwrapper"></div>');
-        $('#starboard').removeClass('panel').css('visibility','unset').parent().addClass('panel').css('visibility','hidden');
-        setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
-      }
+      setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
       processNewChat(true);
       updateActiveRooms();
       processNotifications();
@@ -1191,6 +1190,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         $('#active-rooms').parent().slideToggle(200);
         return false;
       });
+      $('.firefoxwrapper').on('scroll',_.debounce(function(){
+        var t = $(this), s = (t.scrollTop()-t[0].scrollHeight+t[0].offsetHeight) > -5;
+        t.toggleClass('follow',s);
+        if(s) t.removeClass('newscroll');
+      }));
+
     });
   </script>
   <title><?=isset($_GET['room']) ? ($room_name.' - ') : (isset($_GET['q'])?$question_title.' - ':'')?><?=$community_display_name?> - <?=$l_topanswers?></title>
@@ -1484,28 +1489,30 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <div id="chat-panels">
       <div id="messages-wrapper" class="panel">
         <div id="chat" class="panel">
-          <div id="messages">
-            <?if($room_has_chat){?>
-              <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-              <div style="flex: 1 0 10px;"></div>
-            <?}elseif($question){?>
-              <div style="flex: 1 0 10px;">
-                <div style="padding: 10vh 20%;">
-                  <?if($auth){?>
-                    <?if($question_se_question_id){?>
-                      <p>This is a dedicated room for discussion about this imported question.</p>
-                      <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+          <div class="firefoxwrapper follow">
+            <div id="messages">
+              <?if($room_has_chat){?>
+                <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+                <div style="flex: 1 0 10px;"></div>
+              <?}elseif($question){?>
+                <div style="flex: 1 0 10px;">
+                  <div style="padding: 10vh 20%;">
+                    <?if($auth){?>
+                      <?if($question_se_question_id){?>
+                        <p>This is a dedicated room for discussion about this imported question.</p>
+                        <p>You can direct a comment to any answer poster via the 'comment' link under their post.</p>
+                      <?}else{?>
+                        <p>This is a dedicated room for discussion about this question.</p>
+                        <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
+                      <?}?>
                     <?}else{?>
                       <p>This is a dedicated room for discussion about this question.</p>
-                      <p>You can direct a comment to the question poster (or any answer poster) via the 'comment' link under their post.</p>
+                      <p>Once logged in you can direct comments to the question poster (or any answer poster) here.</p>
                     <?}?>
-                  <?}else{?>
-                    <p>This is a dedicated room for discussion about this question.</p>
-                    <p>Once logged in you can direct comments to the question poster (or any answer poster) here.</p>
-                  <?}?>
+                  </div>
                 </div>
-              </div>
-            <?}?>
+              <?}?>
+            </div>
           </div>
           <?if($auth){?>
             <div id="active-users">
@@ -1514,14 +1521,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <?}?>
         </div>
         <?if($canchat){?>
-          <div id="canchat-wrapper">
-            <div id="preview" class="message processed">
-              <div id="status" data-replyid="" data-replyname="" data-editid="">
-                <span></span>
-                <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
-              </div>
-              <div style="display: flex;"><div class="markdown" data-markdown=""></div></div>
+          <div id="canchat-wrapper"<?=$hidepreview?'':' class="previewing"'?>>
+            <div id="status" data-replyid="" data-replyname="" data-editid="">
+              <span><?=$l_preview?>:</span>
+              <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
             </div>
+            <div id="preview" class="message processed"><div class="markdown" data-markdown="">&nbsp;</div></div>
             <form action="/upload" method="post" enctype="multipart/form-data"><input id="chatuploadfile" name="image" type="file" accept="image/*"></form>
             <div id="chattext-wrapper">
               <textarea id="chattext" rows="1" placeholder="<?=$l_chattext_placeholder?>" maxlength="5000"></textarea>
@@ -1535,9 +1540,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?}?>
       </div>
       <?if($auth){?>
-        <div id="starboard" class="panel">
-          <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-          <div style="flex: 1 0 0;"></div>
+        <div class="firefoxwrapper" class="panel" style="visibility: hidden">
+          <div id="starboard">
+            <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+            <div style="flex: 1 0 0;"></div>
+          </div>
         </div>
         <div id="notifications" class="panel">
           <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>

@@ -35,7 +35,7 @@ function tioRequest(code,lang){
         var rawOutput = inflate(response.slice(10));
         var output;
         try {output = byteStringToText(rawOutput);}catch(error) {output = rawOutput;}
-        output = output.replace(new RegExp(output.slice(0,16).replace(/\W/g,t=>"\\"+t),"g"),"").split("\n").slice(0,-5).join("\n").trim();
+        output = output.replace(new RegExp(output.slice(0,16).replace(/\W/g,t=>"\\"+t),"g"),"").split("\n").slice(0,-5).join("\n").replace(/\n+$/g,'');
 				resolve({ req: byteStringToBase64(byteArrayToByteString(deflate(lang+'ÿÿ'+textToByteString(code)+'ÿÿ'))), output: output });
 			} else {
 				reject({
