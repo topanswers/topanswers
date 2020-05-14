@@ -90,15 +90,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     main { flex-direction: column; flex: 1 1 <?=$login_resizer_percent?>%; overflow: hidden; }
 
-    footer { min-height: 30px; flex: 0 0 auto; font-size: 14px; padding-right: 2px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; margin: 0 -1px; }
+    footer { min-height: 30px; flex: 0 0 auto; font-size: 14px; padding-right: 2px; background: rgb(var(--rgb-dark)); color: rgb(var(--rgb-light)); white-space: nowrap; margin: 0 -1px; position: relative; }
     footer .icon { height: 24px; width: 24px; margin: 0; }
-    #community-rooms { display: flex; padding-top: 1px; }
+    #community-rooms { display: flex; padding: 1px 0; }
     #community-rooms>div:first-child { flex: 1 1 auto; display: flex; align-items: center; height: 100%; overflow: hidden; }
     #community-rooms>div:first-child>div:last-child { overflow: hidden; text-overflow: ellipsis; }
     #community-rooms>div:last-child { flex: 0 0 auto; display: flex; align-items: center; height: 100%; }
     #community-rooms>div:last-child a.this{ pointer-events: none; opacity: 0.3; }
-    footer>div:last-child { display: none; }
-    #active-rooms { padding-bottom: 1px; }
+    #active-rooms { display: none; position: absolute; top: calc(100% - 1px); right: 0; left: 0; background: rgb(var(--rgb-dark)); z-index: 1; padding: 0 2px 1px 0; }
     #active-rooms>div { display: flex; flex-direction: row-reverse; overflow-y: hidden; overflow-x: auto; }
     footer a.frame { position: relative; }
     footer a.frame[data-unread]:after { content:attr(data-unread-lang); position: absolute; bottom: 1px; right: 1px; font-family: sans-serif; font-size: 9px; background: rgb(var(--rgb-highlight));
@@ -1185,7 +1184,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       });
       processStarboard(true);
       $('#more-rooms').click(function(){
-        $('#active-rooms').parent().slideToggle(200);
+        $('#active-rooms').slideToggle(200);
         return false;
       });
       $('.firefoxwrapper').on('scroll',_.debounce(function(){
@@ -1468,9 +1467,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <?}?>
         </div>
       </div>
-      <div>
-        <div id="active-rooms">
-        </div>
+      <div id="active-rooms">
       </div>
     </footer>
     <div id="chat-bar" class="label container">
