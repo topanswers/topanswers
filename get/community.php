@@ -1202,7 +1202,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <body>
   <main class="pane">
     <header>
-      <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+      <?$ch = curl_init('http://127.0.0.1/navigationx?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
       <?if(!$question){?>
         <div class="container shrink"><input class="element" type="search" id="search" value="<?=$_GET['search']??''?>" placeholder="🔍&#xFE0E; <?=$l_search_placeholder?>" autocomplete="off"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
       <?}?>

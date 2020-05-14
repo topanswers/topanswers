@@ -230,7 +230,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 </head>
 <body>
   <header>
-    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+    <?$ch = curl_init('http://127.0.0.1/navigationx?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div>
       <?if($answer_id){?>
         <span class="element">editing <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>">an answer</a> on <a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></span>

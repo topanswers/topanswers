@@ -1,0 +1,35 @@
+html { box-sizing: border-box; font-family: var(--font-regular), sans-serif; }
+html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
+main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 32px 1fr; grid-gap: 10px; padding: 10px; max-width: 3000px; margin: 0 auto; height: 100%; }
+textarea, pre, code, .CodeMirror { font-family: var(--font-monospace), monospace !important; }
+.icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
+
+#form { flex: 1 0 0; min-height: 0; }
+#title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgba(var(--rgb-dark),0.6); padding: 5px; font-size: 18px; font-family: var(--font-regular), sans-serif; }
+#codemirror-container { grid-area: 2 / 1 / 3 / 2; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
+#codemirror-container>textarea { width: 100%; height: 100%; resize: none; }
+#markdown { grid-area: 2 / 2 / 3 / 3; background: rgb(var(--rgb-white)); padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
+#license>span+span { display: none; }
+#imageupload { display: none; }
+
+#editor-buttons { grid-area: 2 / 1 / 3 / 2; justify-self: start; min-height: 0; }
+#editor-buttons>div { display: flex; flex-direction: column; background: rgb(var(--rgb-light)); border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px 0 0 3px; padding: 5px; }
+#editor-buttons>div i { padding: 4px; text-align: center; width: 24px; height: 24px; text-align: center; }
+#editor-buttons>div i:hover { box-shadow: 0 0 0 1px rgba(var(--rgb-dark),0.6) inset; cursor: pointer; background: rgb(var(--rgb-mid)); border-radius: 3px; }
+#editor-buttons>div i:last-child { margin-bottom: 0; }
+#editor-buttons>div br { margin-bottom: 12px; }
+
+#codemirror-container .CodeMirror { height: 100%; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; }
+#codemirror-container .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
+#codemirror-container .CodeMirror-wrap pre { word-break: break-word; }
+
+@media (max-width: 576px){
+  main { grid-template-columns: 1fr; grid-template-rows: 32px 1fr 1fr; padding: 2px; grid-gap: 2px; }
+  #title { grid-area: 1 / 1 / 2 / 2; }
+  #codemirror-container { grid-area: 2 / 1 / 3 / 2; margin: 35px 0 0 0; }
+  #markdown { grid-area: 3 / 1 / 4 / 2; }
+  #editor-buttons { grid-area: 2 / 1 / 3 / 2; }
+  #editor-buttons>div { flex-direction: row; border-radius: 3px 3px 0 0; }
+  #editor-buttons>div br { margin: 0 12px 0 0; }
+}

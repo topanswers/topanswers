@@ -128,7 +128,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 </head>
 <body>
   <header>
-    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+    <?$ch = curl_init('http://127.0.0.1/navigationx?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div>
       <a class="frame"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
     </div>

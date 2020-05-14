@@ -40,7 +40,12 @@ include '../lang/questions.'.$o_community_language.'.php';
 <?foreach($o_questions as $r){ extract($r);?>
   <div id="q<?=$question_id?>"
        class="question post<?=$question_is_deleted?' deleted':''?><?=($community_name!==$o_community_name)?' foreign':''?><?=$question_is_imported?' imported':''?>"
-       style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>; --rgb-highlight: <?=$community_rgb_highlight?>; --rgb-warning: <?=$community_rgb_warning?>;"
+       style="--rgb-dark: <?=$community_rgb_dark?>;
+              --rgb-mid: <?=$community_rgb_mid?>;
+              --rgb-light: <?=$community_rgb_light?>;
+              --rgb-highlight: <?=$community_rgb_highlight?>;
+              --rgb-warning: <?=$community_rgb_warning?>;
+              "
        data-id="<?=$question_id?>"
        data-poll-major-id="<?=$question_poll_major_id?>"
        data-poll-minor-id="<?=$question_poll_minor_id?>"

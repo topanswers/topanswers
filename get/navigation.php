@@ -14,24 +14,6 @@ $_GET['community']===$community_name || fail(400,'invalid community');
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <div class="container">
-  <script>
-    $(function(){
-      $('#environment').change(function(){
-        var v = $(this).val();
-        if(v==='prod'){
-          Cookies.remove('environment',{ secure: true, domain: '.topanswers.xyz' });
-        }else{
-          Cookies.set('environment',v,{ secure: true, domain: '.topanswers.xyz' });
-        }
-        $(this).attr('disabled',true);
-        window.location.reload(true);
-      });
-      $('.select>div:first-child').click(function(e){ $(this).parent().toggleClass('open'); e.stopPropagation(); });
-      $('.select>div:last-child a').click(function(e){ e.stopPropagation(); return true; });
-      $('.select>div:last-child').click(function(e){ return false; });
-      $('body').click(function(){ $('.select').removeClass('open'); });
-    });
-  </script>
   <a class="frame" href="/" title="home"><img class="icon" src="/communityicon"></a>
   <a class="frame" href="/<?=$community_name?>" title="<?=$community_display_name?> home"><img class="icon" src="/communityicon?community=<?=$community_name?>"></a>
   <div class="select element">

@@ -1,7 +1,7 @@
 <?
 include '../config.php';
 include '../db.php';
-include '../locache.php';
+include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to private,pg_temp");
 isset($_GET['community']) || fail(400,'community must be set');
