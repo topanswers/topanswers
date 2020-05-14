@@ -107,7 +107,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #more-rooms.none { pointer-events: none; opacity: 0.5; }
 
     textarea, pre, code, .CodeMirror { font-family: var(--monospace-font-family); }
-    textarea, pre, :not(pre)>code, .CodeMirror { font-size: 90%; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; }
     .icon:not(.roomicon) { border-radius: 2px; }

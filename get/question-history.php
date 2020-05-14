@@ -32,9 +32,9 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
              --rgb-warning: <?=$community_rgb_warning?>;
              --rgb-white: 255, 255, 255;
              --rgb-black: 0, 0, 0;
-             --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
-             --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
-             --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
+             --font-regular:<?=$my_community_regular_font_name?>;
+             --font-monospace:<?=$my_community_monospace_font_name?>;
+             --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
              ">
 <head>
   <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
@@ -50,11 +50,12 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; scroll-behavior: smooth; }
     body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
     main { display: grid; align-items: start; grid-template-columns: auto 1fr; grid-template-rows: max-content 1fr; overflow: hidden; flex: 1 0 0; }
-    textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
+    textarea, pre, code { font-family: var(--font-monospace), monospace; }
+    .CodeMirror { font-family: var(--font-monospace), monospace !important; }
 
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
     .when { font-size: 14px; color: rgb(var(--rgb-dark)); white-space: nowrap; }
-    .diff { background: rgb(var(--rgb-light)); overflow-wrap: break-word; white-space: pre-wrap; font-family: monospace; padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; max-height: 100%; }
+    .diff { background: rgb(var(--rgb-light)); overflow-wrap: break-word; white-space: pre-wrap; font-family: var(--font-monospace), monospace; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; max-height: 100%; font-size: 90%; }
     .title { background: rgb(var(--rgb-white)); padding: 5px; font-size: 18px; border: 1px solid rgba(var(--rgb-dark),0.6); grid-area: 1 / 1 / 2 / 3; }
     .markdown { background: rgb(var(--rgb-white)); padding: 8px; font-size: 16px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; max-height: 100%; overflow-y: auto; }
     .editor-wrapper { height: 100%; overflow-y: auto; }
@@ -72,9 +73,9 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     #content .diff-container { grid-template-columns: 1fr; }
     #content .before-container, #content .after-container { grid-template-columns: 1fr 1fr; visibility: hidden; }
 
-    .CodeMirror { height: auto !important; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; }
-    .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
-    .CodeMirror-wrap pre { word-break: break-word; }
+    .panel>div>.CodeMirror { height: auto !important; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; font-size: 90%; }
+    .panel>div>.CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
+    .panel>div>.CodeMirror-wrap pre { word-break: break-word; }
   </style>
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>

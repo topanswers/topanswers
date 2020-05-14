@@ -20,7 +20,7 @@
 .markdown blockquote { padding: 8px 4px 8px 8px; margin: 16px 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background: rgba(var(--rgb-dark),0.1); }
 .markdown blockquote>:first-child { margin-top: 0; }
 .markdown blockquote>:last-child { margin-bottom: 0; }
-.markdown code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
+.markdown code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; font-size: 90%; }
 .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 6px; overflow-wrap: unset; }
 .markdown nav ol { counter-reset: list-item; }
 .markdown nav li { display: block; counter-increment: list-item; }
@@ -72,11 +72,11 @@
 .markdown .tio>pre>code { padding: 0 2px; border: 1px solid rgb(var(--rgb-dark)); }
 .markdown .tio>a { grid-area: 2 / 2 / 3 / 3; font-size: 12px; justify-self: end; align-self: end; }
 .markdown:not(:hover)) .tio>a { visibility: hidden; }
-.markdown .tio .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
+.markdown .tio .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; font-size: 90%; }
 .markdown .tio .CodeMirror-scroll { margin-bottom: -30px; }
 
 .dbfiddle { padding: 8px; background: rgb(var(--rgb-light)); border-radius: 3px; }
-.dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; }
+.dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; font-size: 90%; }
 .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
 .dbfiddle .tablewrapper { margin-top: 8px; }
 .dbfiddle>div { margin-top: 8px; }

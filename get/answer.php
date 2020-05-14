@@ -26,9 +26,9 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
              --rgb-warning: <?=$community_rgb_warning?>;
              --rgb-white: 255, 255, 255;
              --rgb-black: 0, 0, 0;
-             --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
-             --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
-             --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
+             --font-regular:<?=$my_community_regular_font_name?>;
+             --font-monospace:<?=$my_community_monospace_font_name?>;
+             --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
              ">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -45,7 +45,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
     body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
     main { display: grid; grid-template-columns: 2fr 3fr 3fr; grid-template-rows: auto 1fr; grid-gap: 10px; padding: 10px; max-width: 3000px; margin: 0 auto; height: 100%; }
-    textarea, pre, code, .CodeMirror { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
+    textarea, pre, code { font-family: var(--font-monospace), monospace; }
+    .CodeMirror { font-family: var(--font-monospace), monospace !important; }
     .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
     #form { flex: 1 0 0; min-height: 0; }
@@ -53,7 +54,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #question>.title { flex: 0 0 auto; padding: 8px; font-size: 19px; border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
     #question>.title>a { color: rgb(var(--rgb-black)); text-decoration: none; }
     #question>.markdown { overflow-y: auto; padding: 8px; min-height: 0; }
-    #codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
     #markdown { grid-area: 1 / 3 / 3 / 4; background: rgb(var(--rgb-white)); padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
 
     #editor-buttons { grid-area: 1 / 2 / 2 / 3; justify-self: start; min-height: 0; }
@@ -63,9 +63,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #editor-buttons>div i:last-child { margin-bottom: 0; }
     #editor-buttons>div br { margin-bottom: 12px; }
 
-    #codemirror-container .CodeMirror { height: 100%; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; }
-    #codemirror-container .CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
-    #codemirror-container .CodeMirror-wrap pre { word-break: break-word; }
+    #codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
+    #codemirror-container>textarea { width: 100%; height: 100%; resize: none; margin: 0; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; font-size: 90%; }
+    #codemirror-container>.CodeMirror { height: 100%; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; font-size: 90%; }
+    #codemirror-container>.CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
+    #codemirror-container>.CodeMirror-wrap pre { word-break: break-word; }
 
     @media (max-width: 1500px){
       main { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 2fr; }
@@ -295,7 +297,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </div>
       </div>
       <div id="codemirror-container">
-        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" rows="1" autofocus required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
+        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
       </div>
       <div id="markdown" class="markdown noexpander"></div>
     </main>
