@@ -297,7 +297,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </div>
       </div>
       <div id="codemirror-container">
-        <textarea name="markdown" minlength="50" maxlength="50000" autocomplete="off" required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
+        <textarea name="markdown" autocomplete="off" required placeholder="your answer"><?=$answer_id?$answer_markdown:''?></textarea>
       </div>
       <div id="markdown" class="markdown noexpander"></div>
     </main>
