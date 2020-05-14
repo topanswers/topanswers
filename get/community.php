@@ -474,15 +474,24 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         });
 
         newchat.find('img').each(function(){ promises.push(new Promise(r => { const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); })); });
-        promises.push(document.fonts.ready);
-        Promise.allSettled(promises).then(() => {
+        if(typeof document.fonts === 'undefined'){ // for BB
           if(scroll===true){
-            setTimeout(function(){ scroller.scrollTop(1000000); },0);
+            setTimeout(function(){ scroller.scrollTop(1000000); },1000);
           }else if(scroll===false){
             if(!scroller.hasClass('follow')) scroller.addClass('newscroll');
           }
           newchat.addClass('processed');
-        });
+        }else{
+          promises.push(document.fonts.ready);
+          Promise.allSettled(promises).then(() => {
+            if(scroll===true){
+              setTimeout(function(){ scroller.scrollTop(1000000); },0);
+            }else if(scroll===false){
+              if(!scroller.hasClass('follow')) scroller.addClass('newscroll');
+            }
+            newchat.addClass('processed');
+          });
+        }
 
         $('.message').each(function(){
           var id = $(this).data('id'), rid = id;
