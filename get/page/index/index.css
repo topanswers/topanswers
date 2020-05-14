@@ -1,0 +1,42 @@
+html { box-sizing: border-box; font-family: var(--font-regular); font-size: 16px; }
+body { display: flex; flex-direction: column; background: rgb(var(--rgb-light)); }
+html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+main { display: flex; flex-direction: column; flex: 1 1 auto; overflow: auto; scroll-behavior: smooth; padding: 30px 0; }
+main>div { flex: 1 1 auto; padding: 30px 10px; }
+main>div>div { max-width: 600px; margin: auto; }
+.question { max-width: 800px; margin-left: auto; margin-right: auto; }
+
+footer { display: flex; align-items: center; justify-content: safe center; height: 30px; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); white-space: nowrap; }
+footer *, footer a[href] { color: rgb(var(--rgb-light)); }
+
+#logo>img { width: 400px; max-width: 40vw; display: block; margin: auto; margin-bottom: 10px; }
+#logo>div { display: grid; grid-template: auto auto / auto auto; justify-content: center; justify-items: start; font-family: charis; line-height: 1; }
+#logo>div>:nth-child(1) { grid-area: 1 / 1 / 2 / 2; font-size: 50px; }
+#logo>div>:nth-child(2) { grid-area: 1 / 2 / 2 / 3; font-size: 50px; }
+#logo>div>:nth-child(3) { grid-area: 2 / 2 / 3 / 3; font-size: 18px; }
+
+.hover { display: none; }
+
+.icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; background: rgb(var(--rgb-light)); }
+#communities { display: flex; flex-wrap: wrap; justify-content: center; margin-top: -8px auto; }
+#communities>a { display: flex; align-items: center; border: 2px solid rgb(var(--rgb-dark)); border-radius: 6px; color: rgb(var(--rgb-black)); background: rgb(var(--rgb-light));
+                 text-decoration: none; padding: 8px 16px; font-size: 24px; margin: 8px; line-height: 1; }
+#communities img { margin-right: 10px; }
+
+#info-wrapper { background: white; }
+#xinfo { font-family: charis; line-height: 1.3; }
+#info a { color: rgb(0,0,240); }
+
+#colinks { display: flex; flex-wrap: wrap; justify-content: center; }
+#colinks a { min-width: 180px; margin: 20px; border: 1px solid rgb(var(--rgb-light)); padding: 5px; border-radius: 3px; }
+#colinks img { height: 40px; display: block; margin: auto; }
+
+@media (max-width: 576px){
+  h1 { font-size: 26px; }
+  #communities { margin-top: -4px auto; }
+  #communities>a { font-size: 16px; margin: 4px; padding: 4px 4px; }
+  #communities img { margin-right: 4px; }
+  #logo>div>:nth-child(1) { font-size: 30px; }
+  #logo>div>:nth-child(2) { font-size: 30px; }
+  #logo>div>:nth-child(3) { font-size: 12px; }
+}
