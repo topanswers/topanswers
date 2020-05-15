@@ -1,5 +1,5 @@
 require(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,CodeMirror],moment){
-  var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'gfm', inputStyle: 'contenteditable', spellcheck: true, extraKeys: {
+  var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', inputStyle: 'contenteditable', spellcheck: true, extraKeys: {
     Home: "goLineLeft",
     End: "goLineRight",
     'Ctrl-B': function(){ $('.button.fa-bold').click(); },
@@ -30,11 +30,10 @@ require(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_
     });
     map = [];
     $('#markdown [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
-    <?if(isset($_GET['new'])){?>localStorage.setItem($('html').css('--community')+'.ask',cm.getValue());<?}?>
+    <?if(isset($_GET['new'])){?>localStorage.setItem($('html').css('--community')+'.answer.<?=$_GET['question']?>',cm.getValue());<?}?>
   }
 
-  $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, 'margin-top': '4px', 'margin-left': '10px' }).attr('tabindex','-1');
-  $('#community').change(function(){ window.location = '?community='+$(this).val().toLowerCase(); });
+  $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');
   cm.on('change',_.debounce(function(){
     render();
     $('textarea[name="markdown"]').val(cm.getValue()).show();
@@ -46,21 +45,13 @@ require(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_
     else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#markdown').animate({ scrollTop: $('#markdown').prop("scrollHeight")-$('#markdown').height() });
     else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
   },200));
-  <?if(isset($_GET['new'])){?>$('input[name="title"]').on('input',function(){ localStorage.setItem($('html').css('--community')+'.ask.title',$(this).val()); });<?}?>
-  <?if(isset($_GET['new'])&&!isset($_GET['fiddle'])){?>
-    if(localStorage.getItem($('html').css('--community')+'.ask')) cm.setValue(localStorage.getItem($('html').css('--community')+'.ask'));
-    if(localStorage.getItem($('html').css('--community')+'.ask.title')) $('input[name="title"]').val(localStorage.getItem($('html').css('--community')+'.ask.title'));
-    if(localStorage.getItem($('html').css('--community')+'.ask.type')) $('#type').val(localStorage.getItem($('html').css('--community')+'.ask.type'));
+  <?if(isset($_GET['new'])){?>
+    if(localStorage.getItem('<?=$community_name?>.answer.<?=$_GET['question']?>')) cm.setValue(localStorage.getItem($('html').css('--community')+'.answer.<?=$_GET['question']?>'));
   <?}?>
-  $('#type').change(function(){
-    $('#submit').val('submit '+$(this).val());
-    $('input[name="type"').val($(this).children(":selected").text());
-    <?if(isset($_GET['new'])){?> localStorage.setItem($('html').css('--community')+'.ask.type',$(this).val());<?}?>
-  }).trigger('change');
   $('#uploadfile').change(function() { if(this.files[0].size > 2097152){ alert("File is too big — maximum 2MB"); $(this).val(''); }else{ $('#imageupload').submit(); }; });
   $('#imageupload').submit(function(){
     var d = new FormData($(this)[0]);
-    $.ajax({ url: "//post.topanswers.xyz/upload", type: "POST", data: d, processData: false, cache: false, contentType: false, xhrFields: { withCredentials: true } }).done(function(r){
+    $.post({ url: "//post.topanswers.xyz/upload", data: d, processData: false, cache: false, contentType: false, xhrFields: { withCredentials: true } }).done(function(r){
       var selectionStart = cm.getCursor(), selectionEnd = cm.getCursor();
       cm.replaceSelection('!['+d.get('image').name+'](/image?hash='+r+')');
       cm.focus();
@@ -73,13 +64,13 @@ require(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_
   });
   $('.button.fa-bold').click(function(){
     var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
-    if(cm.somethingSelected()){ cm.replaceSelection('**'+cm.getSelection()+'**'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+2),line:selectionStart.line},{ch:(selectionEnd.ch+2),line:selectionEnd.line});
-    }else{ cm.replaceSelection('**bold**'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+2),line:selectionStart.line},{ch:(selectionStart.ch+6),line:selectionStart.line}); }
+    if(cm.somethingSelected()){ cm.replaceSelection('**'+cm.getSelection()+'**'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+2), line: selectionStart.line },{ ch: (selectionEnd.ch+2), line: selectionEnd.line });
+    }else{ cm.replaceSelection('**bold**'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+2), line: selectionStart.line },{ ch: (selectionStart.ch+6), line: selectionStart.line }); }
   });
   $('.button.fa-italic').click(function(){
     var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false);
-    if(cm.somethingSelected()){ cm.replaceSelection('*'+cm.getSelection()+'*'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionEnd.ch+1),line:selectionEnd.line});
-    }else{ cm.replaceSelection('*italic*'); cm.focus(); cm.setSelection({ch:(selectionStart.ch+1),line:selectionStart.line},{ch:(selectionStart.ch+7),line:selectionStart.line}); }
+    if(cm.somethingSelected()){ cm.replaceSelection('*'+cm.getSelection()+'*'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+1), line: selectionStart.line },{ ch: (selectionEnd.ch+1), line: selectionEnd.line });
+    }else{ cm.replaceSelection('*italic*'); cm.focus(); cm.setSelection({ ch: (selectionStart.ch+1), line: selectionStart.line },{ ch: (selectionStart.ch+7), line: selectionStart.line }); }
   });
   $('.button.fa-link').click(function(){
     var selectionStart = cm.getCursor(true), selectionEnd = cm.getCursor(false), selectionLength = cm.getSelection().length;
@@ -130,7 +121,6 @@ require(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_
   });
   $('.button.fa-undo').click(function(){ cm.undo(); cm.focus(); });
   $('.button.fa-repeat').click(function(){ cm.redo(); cm.focus(); });
-  $('#license a').click(function(){ $(this).parent().hide().next().show(); return false; });
   $('[name="license"],[name="codelicense"]').on('change',function(){
     if($(this).children('option:selected').data('versioned')===true){
       $(this).next().css('color','unset').find('input').prop('disabled',false);
@@ -139,14 +129,6 @@ require(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_
     }
   }).trigger('change');
   render();
-  $('#join').click(function(){
-    if(confirm('This will set a cookie to identify your account.\nYou must be 16 or over to join TopAnswers and post your question.')){
-      $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'new' }, async: false, xhrFields: { withCredentials: true } }).fail(function(r){
-        alert((r.status)===429?'Rate limit hit, please try again later':responseText);
-      }).done(function(r){
-        alert('This login key should be kept confidential, just like a password.\nTo ensure continued access to your account, please record your key somewhere safe:\n\n'+r);
-        window.location = '/question?community=databases';
-      });
-    }
-  }).click();
+  $('#question .markdown').renderMarkdown();
+  $('#license a').click(function(){ $(this).parent().hide().next().show(); return false; });
 });

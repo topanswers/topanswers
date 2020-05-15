@@ -342,7 +342,9 @@ create table sanction(
 , community_id integer not null references community
 , sanction_ordinal integer not null
 , sanction_is_default boolean not null default false
-, sanction_label_description text
+, sanction_label_called text
+, sanction_label_is_mandatory boolean default false not null
+, sanction_default_label_id integer references label
 , unique (community_id,kind_id,sanction_id)
 );
 create unique index sanction_ind on sanction(community_id,sanction_ordinal);
