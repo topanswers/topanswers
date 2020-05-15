@@ -322,7 +322,6 @@ create table chat_hour(
 
 create table kind(
   kind_id integer generated always as identity primary key
-, kind_short_description text default '' not null
 , kind_can_all_edit boolean default true not null
 , kind_has_answers boolean default true not null
 , kind_has_question_votes boolean default false not null

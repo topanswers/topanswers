@@ -75,7 +75,7 @@ select account_id
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,sanction_short_description
-      ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
+      ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,kind_show_answer_summary_toc
      , selink_user_id question_selink_user_id
       ,question_communicant_votes
@@ -106,7 +106,6 @@ from db.room r natural join db.community natural join api._community
                               ,sesite_url,selink_user_id
                               ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
                               ,kind_show_answer_summary_toc
-                             , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
                              , sanction_short_description
                              , license_name||(case when question_permit_later_license then ' or later' else '' end) question_license_name
                              , license_description question_license_description
