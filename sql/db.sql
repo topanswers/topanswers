@@ -342,6 +342,7 @@ create table sanction(
 , community_id integer not null references community
 , sanction_ordinal integer not null
 , sanction_is_default boolean not null default false
+, sanction_label_description text
 , unique (community_id,kind_id,sanction_id)
 );
 create unique index sanction_ind on sanction(community_id,sanction_ordinal);
@@ -432,6 +433,14 @@ create table answer_history(
 );
 create unique index answer_history_rate_limit_ind on answer_history(account_id,answer_history_at);
 create index answer_history_answer_ind on answer_history(answer_id) include(account_id);
+
+create table label(
+  label_id integer generated always as identity primary key
+, kind_id integer not null references kind
+, label_name text not null
+, label_code_language text 
+, label_tio_language text
+);
 
 create table tag(
   tag_id integer generated always as identity primary key
