@@ -9,7 +9,7 @@ main>div>div { max-width: 600px; margin: auto; }
 footer { display: flex; align-items: center; justify-content: safe center; height: 30px; flex: 0 0 auto; font-size: 14px; background: rgb(var(--rgb-dark)); white-space: nowrap; }
 footer *, footer a[href] { color: rgb(var(--rgb-light)); }
 
-#logo>img { width: 400px; max-width: 40vw; display: block; margin: auto; margin-bottom: 10px; }
+#logo>img { width: 200px; max-width: 40vw; display: block; margin: auto; margin-bottom: 10px; }
 #logo>div { display: grid; grid-template: auto auto / auto auto; justify-content: center; justify-items: start; font-family: charis; line-height: 1; }
 #logo>div>:nth-child(1) { grid-area: 1 / 1 / 2 / 2; font-size: 50px; }
 #logo>div>:nth-child(2) { grid-area: 1 / 2 / 2 / 3; font-size: 50px; }
