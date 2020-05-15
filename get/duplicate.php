@@ -10,7 +10,7 @@ ccdb("select count(1) from answer where answer_id=$1",$_GET['id'])===1 || fail(4
 $auth = ccdb("select login_answer(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['id']);
 extract(cdb("select account_id
                    ,community_name,community_language,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-                   ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me,kind_short_description
+                   ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me,sanction_short_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                   , extract('epoch' from current_timestamp-question_at)::bigint question_when
                    ,answer_id,answer_summary,answer_account_id,answer_account_name,answer_votes,answer_votes_from_me,answer_communicant_votes
@@ -31,7 +31,7 @@ include '../lang/duplicate.'.$community_language.'.php';
   </div>
   <div class="bar">
     <div class="element container shrink">
-      <?if($kind_short_description){?><span class="kind element"><?=$kind_short_description?></span><?}?>
+      <?if($sanction_short_description){?><span class="kind element"><?=$sanction_short_description?></span><?}?>
       <?foreach(db("select tag_id,tag_name from tag order by tag_question_count") as $r){ extract($r);?>
         <span class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
       <?}?>

@@ -74,6 +74,7 @@ select account_id
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged,question_i_counterflagged
       ,question_when,question_account_id,question_account_name,question_account_is_imported
+      ,sanction_short_description
       ,kind_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,kind_show_answer_summary_toc
      , selink_user_id question_selink_user_id
@@ -106,6 +107,7 @@ from db.room r natural join db.community natural join api._community
                               ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
                               ,kind_show_answer_summary_toc
                              , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
+                             , sanction_short_description
                              , license_name||(case when question_permit_later_license then ' or later' else '' end) question_license_name
                              , license_description question_license_description
                              , license_href question_license_href
@@ -125,7 +127,8 @@ from db.room r natural join db.community natural join api._community
                              , coalesce(communicant_votes,0) question_communicant_votes
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at)::bigint question_when
-                        from api._question natural join db.question q natural join db.kind natural join api._account natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
+                        from api._question natural join db.question q natural join db.sanction natural join db.kind natural join api._account natural join db.account natural join db.community
+                                           natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select account_id,community_id,sesite_id question_sesite_id,selink_user_id,sesite_url from db.selink natural join db.sesite) s
                              natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
                         where question_id=get_question_id()) q

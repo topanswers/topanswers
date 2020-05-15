@@ -13,7 +13,7 @@ create view answer with (security_barrier) as select answer_id, community_name f
 create view one with (security_barrier) as
 select get_account_id() account_id
       ,community_name,community_language,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-      ,question_id,question_at,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,kind_short_description
+      ,question_id,question_at,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,kind_short_description,sanction_short_description
      , coalesce(question_vote_votes,0) question_votes_from_me
       ,answer_id,answer_at,answer_summary,answer_account_id,answer_account_name,answer_votes,answer_communicant_votes
      , coalesce(answer_vote_votes,0) answer_votes_from_me
@@ -27,10 +27,11 @@ from (select community_id,question_id,answer_id,answer_at,answer_summary,answer_
      natural join api._community
      natural join (select question_id,question_at,question_title,question_votes
                         , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
+                        , sanction_short_description
                         , account_id question_account_id
                         , account_name question_account_name
                         , coalesce(communicant_votes,0) question_communicant_votes
-                   from api._question natural join db.question natural join db.kind natural join db.account natural join db.communicant
+                   from api._question natural join db.question natural join db.sanction natural join db.kind natural join db.account natural join db.communicant
                    where not question_is_deleted) q
      natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) qv
      natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) av

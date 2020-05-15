@@ -7,6 +7,7 @@ create view question with (security_barrier) as
 select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title
       ,community_id,community_name,community_display_name,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , case when community_id=1 and kind_id=2 then '' else kind_short_description end kind_short_description
+     , sanction_short_description
      , account_id question_account_id
      , account_derived_name question_account_name
      , coalesce(question_vote_votes,0) question_votes_from_me
@@ -14,7 +15,7 @@ select question_id,question_at,question_change_at,question_votes,question_poll_m
      , case when question_se_imported_at=question_change_at then 'imported' when question_change_at>question_at then 'edited' else 'asked' end question_change
      , exists(select 1 from api._answer a where a.question_id=q.question_id) question_is_answered
      , question_se_imported_at is not null question_is_imported
-from api._question natural join db.question q natural join api._account natural join api._community natural join db.community natural join db.communicant natural join db.kind
+from api._question natural join db.question q natural join api._account natural join api._community natural join db.community natural join db.communicant natural join db.sanction natural join db.kind
      natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v;
 --
 create view tag with (security_barrier) as
