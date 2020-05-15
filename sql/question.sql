@@ -5,10 +5,9 @@ set local search_path to question,api,pg_temp;
 --
 create view license with (security_barrier) as select license_id,license_name,license_href,license_is_versioned from db.license;
 create view codelicense with (security_barrier) as select codelicense_id,codelicense_name,codelicense_is_versioned from db.codelicense;
-create view kind with (security_barrier) as select kind_id,kind_description,sanction_ordinal,sanction_is_default from db.kind natural join db.sanction where community_id=get_community_id();
 --
 create view sanction with (security_barrier) as
-select sanction_id,kind_id,kind_description sanction_description,sanction_ordinal,sanction_is_default from db.kind natural join db.sanction where community_id=get_community_id();
+select sanction_id,kind_id,sanction_description,sanction_ordinal,sanction_is_default from db.kind natural join db.sanction where community_id=get_community_id();
 --
 create view one with (security_barrier) as
 select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license_name,account_codelicense_name,account_has_codelicense
