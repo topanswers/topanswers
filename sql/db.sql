@@ -64,7 +64,8 @@ create table community(
 , community_ask_button_text text default 'Ask' not null
 , community_banner_markdown text default '' not null
 , community_wiki_account_id integer not null references account
-, community_tio_language text 
+, community_tio_language text
+, community_import_sanction_id integer references sanction
 );
 
 create table source(
@@ -336,11 +337,12 @@ create table kind(
 );
 
 create table sanction(
-  kind_id integer references kind not null
+  sanction_id integer generated always as identity primary key
+, kind_id integer references kind not null
 , community_id integer not null references community
 , sanction_ordinal integer not null
 , sanction_is_default boolean not null default false
-, primary key (kind_id,community_id)
+, unique (community_id,kind_id,sanction_id)
 );
 create unique index sanction_ind on sanction(community_id,sanction_ordinal);
 create unique index sanction_default_ind on sanction(community_id) where sanction_is_default;
@@ -372,8 +374,9 @@ create table question(
 , question_tag_ids integer[] default array[]::integer[] not null
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
+, sanction_id integer references sanction not null
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
-, foreign key (community_id,kind_id) references sanction(community_id,kind_id)
+, foreign key (community_id,kind_id,sanction_id) references sanction(community_id,kind_id,sanction_id)
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
 create unique index question_se_question_id_ind on question(community_id,question_sesite_id,question_se_question_id);

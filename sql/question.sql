@@ -7,6 +7,9 @@ create view license with (security_barrier) as select license_id,license_name,li
 create view codelicense with (security_barrier) as select codelicense_id,codelicense_name,codelicense_is_versioned from db.codelicense;
 create view kind with (security_barrier) as select kind_id,kind_description,sanction_ordinal,sanction_is_default from db.kind natural join db.sanction where community_id=get_community_id();
 --
+create view sanction with (security_barrier) as
+select sanction_id,kind_id,kind_description sanction_description,sanction_ordinal,sanction_is_default from db.kind natural join db.sanction where community_id=get_community_id();
+--
 create view one with (security_barrier) as
 select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license_name,account_codelicense_name,account_has_codelicense
       ,community_id,community_name,community_display_name,community_code_language,community_my_power,community_tables_are_monospace
@@ -123,12 +126,36 @@ create function new(knd integer, title text, markdown text, lic integer, lic_orl
   --
   with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning room_id,community_id)
      , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
-     , q as (insert into question(community_id,kind_id,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_permit_later_license,question_permit_later_codelicense
-                                 ,account_id)
-             select community_id,knd,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
+     , q as (insert into question(community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
+                                 ,question_permit_later_license,question_permit_later_codelicense,account_id)
+             select community_id,knd,(select sanction_id from sanction where community_id=r.community_id and kind_id=knd),title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
                   , case when (select kind_questions_by_community from kind where kind_id=knd) then (select community_wiki_account_id from community where community_id=get_community_id())
                          else get_account_id() end
              from r
+             returning question_id)
+     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select question_id,get_account_id(),title,markdown from q)
+     , s as (insert into subscription(account_id,question_id) select get_account_id(),question_id from q)
+  select null;
+  --
+  update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
+$$;
+create function new2(sid integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid community') where not exists (select 1 from community where community_id=get_community_id());
+  select _error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
+  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
+  select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
+  select _ensure_communicant(get_account_id(),get_community_id());
+  --
+  with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning room_id,community_id)
+     , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
+     , q as (insert into question(community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
+                                 ,question_permit_later_license,question_permit_later_codelicense,account_id)
+             select community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
+                  , case when (select kind_questions_by_community from kind k where k.kind_id=s.kind_id) then (select community_wiki_account_id from community where community_id=get_community_id())
+                         else get_account_id() end
+             from r cross join (select kind_id,sanction_id from sanction where sanction_id=sid) s
              returning question_id)
      , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
              select question_id,get_account_id(),title,markdown from q)

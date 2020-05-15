@@ -90,10 +90,10 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
               <label><input type="checkbox" name="codelicense-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later</label>
             </span>
           </span>
-          <select class="element" name="kind" form="form" required>
+          <select class="element" name="sanction" form="form" required>
             <option value="" disabled selected>choose post type</option>
-            <?foreach(db("select kind_id,kind_description,sanction_is_default from kind order by sanction_ordinal") as $r){ extract($r);?>
-              <option value="<?=$kind_id?>"<?=$sanction_is_default?' selected':''?>><?=$kind_description?></option>
+            <?foreach(db("select sanction_id,sanction_description,sanction_is_default from sanction order by sanction_ordinal") as $r){ extract($r);?>
+              <option value="<?=$sanction_id?>"<?=$sanction_is_default?' selected':''?>><?=$sanction_description?></option>
             <?}?>
           </select>
         <?}?>

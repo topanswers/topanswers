@@ -198,6 +198,7 @@ create function _new_community(cname text) returns integer language plpgsql secu
 declare
   rid integer;
   cid integer;
+  sid integer;
 begin
   with r as (insert into room(community_id) values(0) returning room_id)
      , a as (insert into account(account_name) values('Community') returning account_id)
@@ -206,12 +207,13 @@ begin
              from a cross join r
              returning community_id,community_room_id,community_regular_font_id,community_monospace_font_id,community_wiki_account_id)
      , m as (insert into member(account_id,community_id) select 2,community_id from c)
-     , k as (insert into sanction(kind_id,community_id,sanction_ordinal,sanction_is_default) select 1,community_id,10,true from c)
+     , k as (insert into sanction(kind_id,community_id,sanction_ordinal,sanction_is_default) select 1,community_id,10,true from c returning community_id,community_room_id,sanction_id)
     , cm as (insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
              select community_wiki_account_id,community_id,community_regular_font_id,community_monospace_font_id from c)
-  select community_id,community_room_id into strict cid,rid from c;
+  select community_id,community_room_id,sanction_id into strict cid,rid,sid from m;
   --
-  update room set community_id=cid where room_id=rid;
+  update community set community_import_sanction_id = sid where community_id=cid;
+  update room set community_id = cid where room_id=rid;
   return cid;
 end$$;
 --

@@ -48,9 +48,12 @@ create function _new_question(aid integer, title text, markdown text, tags text,
   select _error(400,'already imported') where exists (select 1 from question where community_id=get_community_id() and question_se_question_id=seqid);
   select _ensure_communicant(aid,get_community_id());
   --
-  with r as (insert into room(community_id) values(get_community_id()) returning community_id,room_id)
-     , q as (insert into question(community_id,account_id,kind_id,question_at,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id,question_se_imported_at,question_sesite_id)
-             select community_id,aid,1,seat,title,markdown,room_id,4,1,seqid,current_timestamp,sesid from r returning question_id)
+  with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning community_id,room_id)
+     , q as (insert into question(community_id,account_id,kind_id,sanction_id,question_at,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id
+                                 ,question_se_imported_at,question_sesite_id)
+             select community_id,aid,kind_id,community_import_sanction_id,seat,title,markdown,room_id,4,1,seqid,current_timestamp,sesid
+             from r natural join community natural join (select sanction_id community_import_sanction_id, kind_id from sanction) s
+             returning question_id)
      , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
              select question_id,get_account_id(),title,markdown from q)
      , t as (with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag natural join (select * from regexp_split_to_table(tags,' ') tag_name) z where community_id=get_community_id()
@@ -59,7 +62,9 @@ create function _new_question(aid integer, title text, markdown text, tags text,
              select (select question_id from q),tag_id,community_id,aid from w natural join tag where tag_id not in (select tag_id from question_tag_x where question_id=(select question_id from q)))
      , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id) select distinct question_id,tag_id,community_id,aid from t returning tag_id)
      , u as (update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i))
-  select question_id from q;
+  select null;
+  --
+  update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
 $$;
 --
 create function new_question(title text, markdown text, tags text, sesid integer, seqid integer, seuid integer, seuname text, seat timestamptz) returns integer language sql security definer set search_path=db,api,import,pg_temp as $$
