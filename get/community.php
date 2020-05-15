@@ -170,7 +170,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
     #messages { display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; background: rgb(var(--rgb-mid)); padding: 4px; }
     .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
-    .firefoxwrapper { overflow-y: auto; overflow-x: hidden; height: 100%; flex: 1 1 0; }
+    .firefoxwrapper { overflow-y: auto; overflow-x: hidden; xheight: 100%; flex: 1 1 0; }
     .firefoxwrapper>* { min-height: 100%; }
     #messages .message .who { top: -1.3em; }
     #messages .message:not(:hover) .when { opacity: 0; }
@@ -296,6 +296,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/jquery.simplePagination.js"></script>
   <script src="/lib/paste.js"></script>
   <script>
+    'use strict';
     moment.locale('<?=$jslang?>');
     $(function(){
       var title = document.title, latestChatId;

@@ -195,6 +195,7 @@ $jslang = $jslang??'en';
 
     md = window.markdownIt({ linkify: true
       , highlight: (code, lang) => {
+        'use strict';
         let lastStyle
         let sDom = ''
         CodeMirror.runMode(code, lang||'<?=$community_code_language?>', (token, style) => {

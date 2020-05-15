@@ -73,6 +73,14 @@ if(isset($_GET['month'])){
   <link rel="stylesheet" href="/header.css">
   <link rel="stylesheet" href="/post.css">
   <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
+  <noscript>
+    <style>
+      .message:not(.processed) { opacity: unset !important; }
+      .notification:not(.processed) { opacity: unset !important; }
+      #qa .post:not(.processed) { opacity: unset !important; }
+      .markdown>pre.noscript { white-space: pre-wrap; }
+    </style>
+  </noscript>
   <style>
     html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
     html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
@@ -265,7 +273,7 @@ if(isset($_GET['month'])){
               <?}?>
             </small>
             <img class="icon" src="/identicon?id=<?=$account_id?>">
-            <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
+            <div class="markdown" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
             <span class="buttons">
               <span class="button-group show">
                 <i class="stars <?=$i_starred?'me ':''?>fa fa-star" data-count="<?=$chat_star_count?>"></i>
