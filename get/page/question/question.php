@@ -16,7 +16,8 @@ if(isset($_GET['id'])){
 extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
                   , account_license_name||(case when account_permit_later_license then ' or later' else '' end)
                        ||(case when account_has_codelicense then ' + '||account_codelicense_name||(case when account_permit_later_codelicense then ' or later' else '' end) else '' end) account_license
-                   ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_language
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
                   , question_license_name||(case when question_permit_later_license then ' or later' else '' end)
@@ -26,6 +27,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_license_href,question_has_codelicense,question_codelicense_name
              from one"));
+include '../../../lang/question.'.$community_language.'.php';
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 //ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
@@ -91,13 +93,13 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
             </span>
           </span>
           <select class="element" name="sanction" form="form" required>
-            <option value="" disabled selected>choose post type</option>
+            <option value="" disabled selected><?=$l_choose_post_type?></option>
             <?foreach(db("select sanction_id,sanction_description,sanction_is_default from sanction order by sanction_ordinal") as $r){ extract($r);?>
               <option value="<?=$sanction_id?>"<?=$sanction_is_default?' selected':''?>><?=$sanction_description?></option>
             <?}?>
           </select>
         <?}?>
-        <button class="element" id="submit" type="submit" form="form"><?=$question_id?'update<span class="wideonly"> post under '.$license.'</span>':'submit'?></button>
+        <button class="element" id="submit" type="submit" form="form"><?=$question_id?'update<span class="wideonly"> post under '.$license.'</span>':$l_submit?></button>
         <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
       <?}else{?>
         <input class="element" id="join" type="button" value="join">
@@ -113,7 +115,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       <input type="hidden" name="community" value="<?=$community_name?>">
     <?}?>
     <main>
-      <input id="title" name="title" placeholder="your question title" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
+      <input id="title" name="title" placeholder="<?=$l_your_question_title?>" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
       <div id="editor-buttons">
         <div>
           <i title="Bold (Ctrl + B)" class="button fa fa-bold"></i>
@@ -135,7 +137,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
         </div>
       </div>
       <div id="codemirror-container">
-        <textarea name="markdown" autocomplete="off" required placeholder="your question"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:&#13;&#10;&#13;&#10;<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
+        <textarea name="markdown" autocomplete="off" required placeholder="<?=$l_your_question?>"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:&#13;&#10;&#13;&#10;<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
       </div>
       <div id="markdown" class="markdown noexpander"></div>
     </main>

@@ -11,7 +11,7 @@ select sanction_id,kind_id,sanction_description,sanction_ordinal,sanction_is_def
 --
 create view one with (security_barrier) as
 select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license_name,account_codelicense_name,account_has_codelicense
-      ,community_id,community_name,community_display_name,community_code_language,community_my_power,community_tables_are_monospace
+      ,community_id,community_name,community_display_name,community_code_language,community_my_power,community_tables_are_monospace,community_language
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,sesite_url
       ,question_id,question_title,question_markdown,question_license_name,question_se_question_id
