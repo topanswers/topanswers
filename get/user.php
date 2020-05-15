@@ -102,14 +102,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <tr><th>answer date/time</th><th>question type</th><th>title</th><th>answer stars</th><th>question date/time</th></tr>
           </thead>
           <tbody>
-            <?foreach(db("select question_id,question_title,question_votes,answer_id,answer_votes,kind_description
+            <?foreach(db("select question_id,question_title,question_votes,answer_id,answer_votes,sanction_description
                                , to_char(answer_at,'YYYY-MM-DD HH24:MI') answer_at_desc
                                , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
                           from answer
                           order by question_at desc") as $r){extract($r);?>
               <tr>
                 <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$answer_at_desc?></td>
-                <td><?=$kind_description?></td>
+                <td><?=$sanction_description?></td>
                 <td><a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>"><?=$question_title?></a></td>
                 <td><?=$answer_votes?></td>
                 <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
@@ -124,13 +124,13 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <tr><th>date/time</th><th>type</th><th>title</th><th>stars</th></tr>
           </thead>
           <tbody>
-            <?foreach(db("select question_id,question_title,question_votes,kind_description,kind_has_question_votes
+            <?foreach(db("select question_id,question_title,question_votes,sanction_description,kind_has_question_votes
                                , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
                           from question
                           order by question_at desc") as $r){extract($r);?>
               <tr>
                 <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
-                <td><?=$kind_description?></td>
+                <td><?=$sanction_description?></td>
                 <td><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></td>
                 <td><?=$kind_has_question_votes?$question_votes:''?></td>
               </tr>

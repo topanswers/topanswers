@@ -339,6 +339,8 @@ create table kind(
 create table sanction(
   sanction_id integer generated always as identity primary key
 , kind_id integer references kind not null
+, sanction_description text not null
+, sanction_short_description text default '' not null
 , community_id integer not null references community
 , sanction_ordinal integer not null
 , sanction_is_default boolean not null default false

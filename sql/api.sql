@@ -207,7 +207,10 @@ begin
              from a cross join r
              returning community_id,community_room_id,community_regular_font_id,community_monospace_font_id,community_wiki_account_id)
      , m as (insert into member(account_id,community_id) select 2,community_id from c)
-     , k as (insert into sanction(kind_id,community_id,sanction_ordinal,sanction_is_default) select 1,community_id,10,true from c returning community_id,community_room_id,sanction_id)
+     , k as (insert into sanction(kind_id,community_id,sanction_description,sanction_ordinal,sanction_is_default)
+             select 1,community_id,'Question',10,true from c returning community_id,community_room_id,sanction_id)
+     , k as (insert into sanction(kind_id,community_id,sanction_description,sanction_short_description,sanction_ordinal)
+             select 2,community_id,'Meta Question','Meta',20 from c returning community_id,community_room_id,sanction_id)
     , cm as (insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
              select community_wiki_account_id,community_id,community_regular_font_id,community_monospace_font_id from c)
   select community_id,community_room_id,sanction_id into strict cid,rid,sid from m;
