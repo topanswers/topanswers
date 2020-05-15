@@ -28,18 +28,20 @@ header('Cache-Control: max-age=60');
           <?if($result['head']){?>
             <div class="tablewrapper">
               <table>
-                <tbody>
+                <thead>
                   <tr>
                     <?foreach($result['head'] as $head){?>
                       <th><?=$head?></th>
                     <?}?>
                   </tr>
+                </thead>
+                <tbody>
                   <?foreach(transpose($result['data']) as $row){?>
                     <tr>
                       <?foreach($row as $data){?>
-                        <td><?=htmlspecialchars($data)?></td>
+                        <td class="<?=trim((($data===null)?'null ':'').(($align===1)?'right ':''))?>"><?=htmlspecialchars($data)?></td>
                       <?}?>
-                    <tr>
+                    </tr>
                   <?}?>
                 </tbody>
               </table>
