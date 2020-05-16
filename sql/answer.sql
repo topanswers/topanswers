@@ -145,35 +145,6 @@ create function change(markdown text) returns void language sql security definer
   update answer set answer_markdown = markdown, answer_summary = _markdownsummary(markdown), answer_change_at = default where answer_id=get_answer_id();
 $$;
 --
-create function new(markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,answer,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid question') where get_question_id() is null;
-  select _error('question needs more votes before answers are permitted') from question natural join kind where question_id=get_question_id() and question_votes<kind_minimum_votes_to_answer;
-  select _error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
-  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
-  select _error(429,'rate limit') where (select count(*) from answer where account_id=get_account_id() and answer_at>current_timestamp-'2m'::interval)>3;
-  --
-  select _ensure_communicant(get_account_id(),get_community_id());
-  update question set question_poll_major_id = default where question_id=get_question_id();
-  --
-  with i as (insert into answer(question_id,community_id,kind_id,sanction_id,answer_markdown,license_id,codelicense_id,answer_summary,answer_permit_later_license,answer_permit_later_codelicense,account_id)
-             select question_id,community_id,kind_id,sanction_id,markdown,lic,codelic,_markdownsummary(markdown),lic_orlater,codelic_orlater
-                  , case when kind_answers_by_community then community_wiki_account_id else get_account_id() end
-             from question natural join community natural join kind natural join sanction
-             where question_id=get_question_id()
-             returning answer_id)
-     , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id,answer_history_id)
-    , nn as (select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=get_question_id() and account_id<>get_account_id()) z)
-     , n as (insert into notification(account_id) select account_id from nn returning *)
-    , an as (insert into answer_notification(notification_id,answer_history_id) select notification_id,answer_history_id from nn natural join n)
-     , a as (update account set account_notification_id = default where account_id in (select account_id from n))
-     , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
-             select get_account_id(),question_room_id,(select max(chat_id) from chat where room_id=question_room_id)
-             from question natural join room
-             where question_id=get_question_id() and room_can_listen
-             on conflict do nothing)
-  select answer_id from i;
-$$;
 create function new(markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean, label integer) returns integer language sql security definer
                 set search_path=db,api,answer,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
