@@ -1,7 +1,7 @@
 <?
-include '../config.php';
-include '../db.php';
-include '../nocache.php';
+include '../../../config.php';
+include '../../../db.php';
+include '../../../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to community,pg_temp");
@@ -42,7 +42,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
              from one"));
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
-include '../lang/community.'.$community_language.'.php';
+include '../../../lang/community.'.$community_language.'.php';
 $jslang = substr($community_language,0,1).substr(strtok($community_language,'-'),-1);
 $question = $_GET['q']??'0';
 $room = $room_id;
@@ -287,7 +287,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.waitforimages.js"></script>
   <script src="/lib/vex/vex.combined.min.js"></script>
-  <?require '../markdown.php';?>
+  <?require '../../../markdown.php';?>
   <script src="/lib/lightbox2/js/lightbox.min.js"></script>
   <script src="/lib/moment.js"></script>
   <script src="/lib/resizer.js"></script>
