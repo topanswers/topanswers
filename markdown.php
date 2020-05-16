@@ -8,8 +8,8 @@ $jslang = $jslang??'en';
   <link rel="stylesheet" href="/lib/katex/katex.min.css">
 <?}?>
 <style>
-  .summary a { color: blue; }
-  .summary a:visited { color: purple; }
+  .summary a:not(.label) { color: blue; }
+  .summary a:visited:not(.label) { color: purple; }
   .summary code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; }
 
   .markdown { overflow: auto; overflow-wrap: break-word; }

@@ -23,14 +23,15 @@ from db.question_tag_x qt natural join db.tag t
 where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
 create view answer with (security_barrier) as
-select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted,answer_summary
+select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted,answer_summary,label_name,label_url
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , account_id answer_account_id
      , account_derived_name answer_account_name
      , coalesce(communicant_votes,0) answer_communicant_votes
      , case when answer_se_imported_at=answer_change_at then 'imported' when answer_change_at>answer_at then 'edited' else 'answered' end answer_change
 from api._answer natural join db.answer natural join api._account natural left join db.communicant
-     natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v;
+     natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) v
+     natural left join db.label;
 --
 create view one with (security_barrier) as
 select account_id,community_id,community_name,community_language,community_code_language,community_my_power

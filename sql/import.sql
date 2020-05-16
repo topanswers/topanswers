@@ -82,8 +82,8 @@ create function _new_answer(aid integer, markdown text, seaid integer, seat time
   --
   update question set question_poll_major_id = default where question_id=get_question_id();
   --
-  with i as (insert into answer(question_id,account_id,answer_at,answer_markdown,answer_summary,license_id,codelicense_id,answer_se_answer_id,answer_se_imported_at)
-             values(get_question_id(),aid,seat,markdown,_markdownsummary(markdown),4,1,seaid,current_timestamp)
+  with i as (insert into answer(question_id,community_id,kind_id,sanction_id,account_id,answer_at,answer_markdown,answer_summary,license_id,codelicense_id,answer_se_answer_id,answer_se_imported_at)
+             select question_id,community_id,kind_id,sanction_id,aid,seat,markdown,_markdownsummary(markdown),4,1,seaid,current_timestamp from question where question_id=get_question_id()
              returning answer_id)
   insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id;
 $$;

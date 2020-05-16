@@ -83,6 +83,7 @@ include '../lang/questions.'.$o_community_language.'.php';
     <?if($question_is_answered){?>
       <div class="answers">
         <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
+                            ,label_name,label_url
                            , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                            , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
                            , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
@@ -97,6 +98,13 @@ include '../lang/questions.'.$o_community_language.'.php';
                 <i class="fa fa-star<?=(($answer_account_id!==$o_account_id)&&($answer_votes_from_me<$community_my_power))?'-o':''?><?=$answer_votes_from_me?' highlight':''?>"></i>
                 <span><?=$l_num($answer_votes)?></span>
               </span>
+              <?if($label_name){?>
+                <?if($label_url){?>
+                  <a href="<?=$label_url?>" class="label element"><?=$label_name?></a>
+                <?}else{?>
+                  <span class="label element"><?=$label_name?></span>
+                <?}?>
+              <?}?>
               <a href="/<?=$community_name?>?q=<?=$question_id?>#a<?=$answer_id?>" class="element shrink grow"><span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
             </div>
             <div>

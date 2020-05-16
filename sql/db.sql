@@ -377,6 +377,7 @@ create table question(
 , question_tag_ids integer[] default array[]::integer[] not null
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
+, unique (community_id,question_id,kind_id,sanction_id)
 , sanction_id integer references sanction not null
 , foreign key (community_id,question_room_id) references room(community_id,room_id)
 , foreign key (community_id,kind_id,sanction_id) references sanction(community_id,kind_id,sanction_id)
@@ -422,6 +423,12 @@ create table answer(
 , answer_summary text not null
 , answer_permit_later_license boolean default false not null
 , answer_permit_later_codelicense boolean default false not null
+, community_id integer not null references community
+, kind_id integer not null references kind
+, sanction_id integer not null references community
+, label_id integer references label
+, foreign key (question_id,community_id,kind_id,sanction_id) references question(question_id,community_id,kind_id,sanction_id)
+, foreign key (kind_id,label_id) references label(kind_id,label_id)
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 create index answer_question_id_ind on answer(question_id);
@@ -442,6 +449,8 @@ create table label(
 , label_name text not null
 , label_code_language text 
 , label_tio_language text
+, label_url text
+, unique (kind_id,label_id)
 );
 
 create table tag(

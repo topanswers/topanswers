@@ -14,14 +14,19 @@ if(isset($_GET['id'])){
 extract(cdb("select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license
                    ,answer_id,answer_markdown,answer_license
                    ,question_id,question_title,question_markdown
+                   ,sanction_label_called,sanction_label_is_mandatory,sanction_default_label_id
+                   ,label_code_language,label_tio_language
                    ,community_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
+                   ,(select jsonb_agg(z) from (select license_id,license_name,license_is_versioned from license) z) licenses
+                   ,(select jsonb_agg(z) from (select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense) z) codelicenses
+                   ,(select jsonb_agg(z) from (select label_id,label_name,label_code_language,label_tio_language from label) z) labels
              from one"));
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>
 <!doctype html>
 <html style="--community:<?=$community_name?>;
-             --lang-code:<?=$community_code_language?>;
+             --lang-code:<?=$label_code_language?:$community_code_language?>;
              --rgb-dark:<?=$community_rgb_dark?>;
              --rgb-mid:<?=$community_rgb_mid?>;
              --rgb-light:<?=$community_rgb_light?>;
@@ -63,18 +68,28 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       <?}?>
     </div>
     <div>
+      <?if(count($labels)){?>
+        <select class="element" name="label" form="form"<?=$sanction_label_is_mandatory?' required':''?>>
+          <option value=""<?=$sanction_label_is_mandatory?' disabled':''?><?=$sanction_default_label_id?'':' selected'?>>
+            choose <?=$sanction_label_called?><?=$sanction_label_is_mandatory?'':' (optional)'?>
+          </option>
+          <?foreach($labels as $r){ extract($r);?>
+            <option value="<?=$label_id?>" <?=($label_id===$sanction_default_label_id)?' selected':''?>><?=$label_name?></option>
+          <?}?>
+        </select>
+      <?}?>
       <?if(!$answer_id){?>
         <span id="license">
           <span class="element"><?=$account_license?> (<a href=".">change</a>)</span>
           <span class="element wideonly" style="display: none;">
             <select name="license" form="form">
-              <?foreach(db("select license_id,license_name,license_is_versioned from license") as $r){ extract($r);?>
+              <?foreach($licenses as $r){ extract($r);?>
                 <option value="<?=$license_id?>" data-versioned="<?=$license_is_versioned?'true':'false'?>"<?=($license_id===$account_license_id)?' selected':''?>><?=$license_name?></option>
               <?}?>
             </select>
             <label><input type="checkbox" name="license-orlater" form="form"<?=$account_permit_later_license?'checked':''?>>or later </label>
             <select name="codelicense" form="form">
-              <?foreach(db("select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense") as $r){ extract($r);?>
+              <?foreach($codelicenses as $r){ extract($r);?>
                 <option value="<?=$codelicense_id?>" data-versioned="<?=$codelicense_is_versioned?'true':'false'?>"<?=($codelicense_id===$account_codelicense_id)?' selected':''?>><?=$codelicense_name?></option>
               <?}?>
             </select>

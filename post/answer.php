@@ -16,7 +16,8 @@ switch($_POST['action']) {
   case 'vote': exit(ccdb("select vote($1)",$_POST['votes']));
   case 'flag': exit(ccdb("select flag($1)",$_POST['direction']));
   case 'new':
-    $id=ccdb("select new($1,$2,$3,$4,$5)",$_POST['markdown'],$_POST['license'],isset($_POST['license-orlater'])?'t':'f',$_POST['codelicense'],isset($_POST['codelicense-orlater'])?'t':'f');
+    $id=ccdb("select new($1,$2,$3,$4,$5,nullif($6,'')::integer)"
+            ,$_POST['markdown'],$_POST['license'],isset($_POST['license-orlater'])?'t':'f',$_POST['codelicense'],isset($_POST['codelicense-orlater'])?'t':'f',$_POST['label']??'');
     setcookie('clearlocal',$_POST['community'].'.answer.'.$_POST['question'],0,'/','topanswers.xyz',true,true);
     header('Location: //topanswers.xyz/'.$_POST['community'].'?q='.$_POST['question'].'#a'.$id);
     exit;

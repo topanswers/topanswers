@@ -1332,7 +1332,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <?if($kind_show_answer_summary_toc&&$question_is_answered){?>
             <div style="height: 3px; background: rgba(var(--rgb-dark),0.6);"></div>
             <div class="answers">
-              <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
+              <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes
+                                  ,answer_summary,label_name,label_url
                                  , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                                  , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
                                  , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
@@ -1340,7 +1341,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                             from answer
                             order by answer_votes desc, answer_communicant_votes desc, answer_id desc") as $i=>$r){ extract($r);?>
                 <div class="bar<?=$answer_is_deleted?' deleted':''?>">
-                  <a href="/<?=$community_name?>?q=<?=$question?>#a<?=$answer_id?>" class="element summary shrink"><?=($i===0)?'Top ':''?>Answer<?=($i>0)?' #'.($i+1):''?>: <span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
+                  <div>
+                    <?if($label_name){?>
+                      <?if($label_url){?>
+                        <a href="<?=$label_url?>" class="label element"><?=$label_name?></a>
+                      <?}else{?>
+                        <span class="label element"><?=$label_name?></span>
+                      <?}?>
+                    <?}?>
+                    <a href="/<?=$community_name?>?q=<?=$question?>#a<?=$answer_id?>" class="element summary shrink"><span data-markdown="<?=$answer_summary?>"><?=$answer_summary?></span></a>
+                  </div>
                   <div>
                     <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
                     <?if($answer_votes){?>
@@ -1365,7 +1375,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
                             ,answer_license_href,answer_license_name,answer_codelicense_name,answer_license_description,answer_codelicense_description,answer_account_name,answer_account_is_imported
-                            ,answer_communicant_votes,answer_selink_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags
+                            ,answer_communicant_votes,answer_selink_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags,label_name,label_url
                            , answer_account_id=$1 answer_account_is_me
                            , answer_crew_flags>0 answer_is_deleted
                            , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
@@ -1378,7 +1388,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
                                                                                ?><?=$answer_i_counterflagged?' counterflagged':''?><?
                                                                                ?><?=$answer_is_deleted?' deleted':''?>">
             <div class="bar">
-              <div><span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span></div>
+              <div>
+                <span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span>
+                <?if($label_name){?>
+                  <?if($label_url){?>
+                    <a href="<?=$label_url?>" class="label element"><?=$label_name?></a>
+                  <?}else{?>
+                    <span class="label element"><?=$label_name?></span>
+                  <?}?>
+                <?}?>
+              </div>
               <div>
                 <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
                 <span class="element">
