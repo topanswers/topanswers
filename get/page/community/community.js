@@ -96,7 +96,7 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
                 return false;
             } };
     if(!$('html').css('--question')){
-      if(m>i){
+      if((m>i)||(i>10)){
         $('.pages').html('<div></div>'+('auth' in $('html').data()?'<select><option value="10">10/page</option><option value="25">25/page</option><option value="100">100/page</option></select>':'')).children('div').pagination(o);
         $('.pages select').val(i).change(function(){
           var u = new URLSearchParams(window.location.search);
