@@ -1,13 +1,18 @@
 var require = {
   baseUrl: '/lib',
+  enforceDefine: true,
+  waitSeconds: 0,
   paths: { 'jquery': 'jquery.6ad657dafdfaa495' },
   shim: {
     'markdown-it-katex.689b2993b1958946': ['katex.9460c91fb69cca2c'],
     'select2.6b983cad5301a9a7': ['jquery.6ad657dafdfaa495'],
-    'starrr.a95baf4870cd4d81': ['jquery.6ad657dafdfaa495'],
+    'starrr.a95baf4870cd4d81': { deps: ['jquery.6ad657dafdfaa495'], exports: 'jQuery.fn.starrr' },
     'jquery.waitforimages.ddbd1d428d6bff75': ['jquery.6ad657dafdfaa495'],
-    'jquery.simplePagination.b892c57d7f01a4e5': ['jquery.6ad657dafdfaa495'],
-    'paste.6bcdb4817596af13': ['jquery.6ad657dafdfaa495'],
+    'jquery.simplePagination.b892c57d7f01a4e5': { deps: ['jquery.6ad657dafdfaa495'], exports: 'jQuery.fn.pagination' },
+    'paste.6bcdb4817596af13': { deps: ['jquery.6ad657dafdfaa495'], exports: 'jQuery.fn.pastableTextarea' },
+    'resizer.acc48d85f03977b4': { exports: 'Resizer' },
+    'promise-all-settled.b9101ad6b2a74f8b': { exports: 'Promise.allSettled' },
+    'jquery.6ad657dafdfaa495': { exports: 'jQuery' },
   },
   map: { '*': {
     'codemirror/mode/apl/apl':'codemirror/mode/apl/apl.71cadc768dcd17aa',
@@ -130,7 +135,7 @@ var require = {
     'katex':'katex.9460c91fb69cca2c',
     'tio':'../tio.0984e7f3a524834f',
     'navigation':'../navigation.c546209755df730d',
-    'require.config':'../require.config.65822ca0d3c044da',
+    'require.config':'../require.config.6f87b738b0c10b31',
     'markdown':'../markdown.47da41e30c1e41bf',
  } },
 };

@@ -1,7 +1,7 @@
 <?
 require '../../../config.php';
 ?>
-require(['markdown','jquery.waitforimages'],function([$,_],moment){
+define(['markdown','jquery.waitforimages'],function([$,_],moment){
   $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
   $('#join').click(function(){
     $.post({ url: '//post.<?=config("SITE_DOMAIN")?>/profile', data: { action: 'new' }, async: false, xhrFields: { withCredentials: true } }).done(function(r){

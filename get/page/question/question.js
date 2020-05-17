@@ -1,4 +1,4 @@
-require(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,CodeMirror],moment){
+define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,CodeMirror],moment){
   var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'gfm', inputStyle: 'contenteditable', spellcheck: true, extraKeys: {
     Home: "goLineLeft",
     End: "goLineRight",

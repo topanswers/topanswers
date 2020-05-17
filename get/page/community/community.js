@@ -1,4 +1,4 @@
-require(['markdown','moment','js.cookie','vex/vex','select2','navigation','lightbox2/js/lightbox','jquery.waitforimages','resizer','starrr','jquery.simplePagination','paste']
+define(['markdown','moment','js.cookie','vex/vex','select2','navigation','lightbox2/js/lightbox','jquery.waitforimages','resizer','starrr','jquery.simplePagination','paste']
        ,function([$,_,CodeMirror],moment,Cookies,vex){
   moment.locale($('html').css('--jslang'));
   var title = document.title, latestChatId;

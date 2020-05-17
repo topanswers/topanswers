@@ -19,14 +19,19 @@ array_walk($filtered,function($h,$f){ global $omodules,$hashes; $omodules .= "  
 $j = <<<EOT
 var require = {
   baseUrl: '/lib',
+  enforceDefine: true,
+  waitSeconds: 0,
   paths: { 'jquery': 'jquery.{$hashes['/lib/jquery.js']}' },
   shim: {
     'markdown-it-katex.{$hashes['/lib/markdown-it-katex.js']}': ['katex.{$hashes['/lib/katex.js']}'],
     'select2.{$hashes['/lib/select2.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
-    'starrr.{$hashes['/lib/starrr.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
+    'starrr.{$hashes['/lib/starrr.js']}': { deps: ['jquery.{$hashes['/lib/jquery.js']}'], exports: 'jQuery.fn.starrr' },
     'jquery.waitforimages.{$hashes['/lib/jquery.waitforimages.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
-    'jquery.simplePagination.{$hashes['/lib/jquery.simplePagination.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
-    'paste.{$hashes['/lib/paste.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
+    'jquery.simplePagination.{$hashes['/lib/jquery.simplePagination.js']}': { deps: ['jquery.{$hashes['/lib/jquery.js']}'], exports: 'jQuery.fn.pagination' },
+    'paste.{$hashes['/lib/paste.js']}': { deps: ['jquery.{$hashes['/lib/jquery.js']}'], exports: 'jQuery.fn.pastableTextarea' },
+    'resizer.{$hashes['/lib/resizer.js']}': { exports: 'Resizer' },
+    'promise-all-settled.{$hashes['/lib/promise-all-settled.js']}': { exports: 'Promise.allSettled' },
+    'jquery.{$hashes['/lib/jquery.js']}': { exports: 'jQuery' },
   },
   map: { '*': {
 {$modules}{$omodules} } },
