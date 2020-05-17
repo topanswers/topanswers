@@ -62,6 +62,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
              --l_listen:<?=$l_listen?>;
              --l_pin:<?=$l_pin?>;
              --l_unpin:<?=$l_unpin?>;
+             --l_show_more_lines:<?=$l_show_more_lines?>;
              <?if($question_id){?>--question:<?=$question_id?>;<?}?>
              --notification:<?=$auth?$account_notification_id:'0'?>;
              --room:<?=$room_id?>;

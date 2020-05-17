@@ -261,7 +261,7 @@ define(['jquery'
             var t = $(this), h = t.height();
             if(h>450){
               t.innerHeight(300).addClass('expandable');
-              $('<div class="expander"><?=$l_showmorelines?></div>'.replace(/%/,Math.round((h-300)/14.4).toLocaleString('<?=$jslang?>'))).prependTo(t).click(function(){ t.animate({ height: h }, function(){ t.height(''); }).removeClass('expandable'); $(this).remove(); });
+              $('<div class="expander">'+$('html').css('--l_show_more_lines').replace(/%/,Math.round((h-300)/14.4).toLocaleString($('html').css('--jslang')))+'</div>').prependTo(t).click(function(){ t.animate({ height: h }, function(){ t.height(''); }).removeClass('expandable'); $(this).remove(); });
             }
           });
         }
