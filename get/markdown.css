@@ -16,7 +16,7 @@
 .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
 .markdown th { background: rgb(var(--rgb-mid)); }
 .markdown td { background: rgb(var(--rgb-white)); }
-.markdown td, .markdown th { font-family: var(--markdown-table-font-family); font-size: 90%; white-space: pre; border: 1px solid rgb(var(--rgb-black)); padding: 3px 5px; text-align: left; }
+.markdown td, .markdown th { font-family: var(--font-table); font-size: 90%; white-space: pre; border: 1px solid rgb(var(--rgb-black)); padding: 3px 5px; text-align: left; }
 .markdown blockquote { padding: 8px 4px 8px 8px; margin: 16px 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background: rgba(var(--rgb-dark),0.1); }
 .markdown blockquote>:first-child { margin-top: 0; }
 .markdown blockquote>:last-child { margin-bottom: 0; }
@@ -44,7 +44,7 @@
 .markdown .post .title > a { color: rgb(var(--rgb-black)); }
 .markdown .expandable { overflow: hidden; position: relative; border-bottom: 1px dashed rgb(var(--rgb-mid)); }
 .markdown .expandable>code { overflow: hidden; }
-.markdown .expander { position: absolute; z-index: 1; height: 50px; top: 250px; padding-top: 34px; left: 0; right: 0; font-family: var(--regular-font-family); font-size: 12px; text-align: center; color: rgb(var(--rgb-dark));
+.markdown .expander { position: absolute; z-index: 1; height: 50px; top: 250px; padding-top: 34px; left: 0; right: 0; font-family: var(--font-regular); font-size: 12px; text-align: center; color: rgb(var(--rgb-dark));
                       border: 1px solid rgb(var(--rgb-mid)); border-style: none solid;
                       background: linear-gradient(to bottom, rgba(var(--rgb-light),0) 0%, rgb(var(--rgb-light)) 40%, rgb(var(--rgb-light)) 25%); }
 .markdown .expander:hover { text-decoration: underline; cursor: pointer; }
@@ -72,17 +72,17 @@
 .markdown .tio>pre>code { padding: 0 2px; border: 1px solid rgb(var(--rgb-dark)); }
 .markdown .tio>a { grid-area: 2 / 2 / 3 / 3; font-size: 12px; justify-self: end; align-self: end; }
 .markdown:not(:hover)) .tio>a { visibility: hidden; }
-.markdown .tio .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; font-size: 90%; }
+.markdown .tio .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--font-monospace); border-radius: 3px; font-size: 90%; }
 .markdown .tio .CodeMirror-scroll { margin-bottom: -30px; }
 
 .dbfiddle { padding: 8px; background: rgb(var(--rgb-light)); border-radius: 3px; }
-.dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--monospace-font-family); border-radius: 3px; font-size: 90%; }
+.dbfiddle .CodeMirror { height: auto; border: 1px solid rgb(var(--rgb-dark)); font-family: var(--font-monospace); border-radius: 3px; font-size: 90%; }
 .dbfiddle .CodeMirror-scroll { margin-bottom: -30px; }
 .dbfiddle .tablewrapper { margin-top: 8px; }
 .dbfiddle>div { margin-top: 8px; }
 .dbfiddle .batch.hidden { display: none; }
 .dbfiddle .batch { overflow: hidden; min-width: 0; }
-.dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--monospace-font-family); background: rgba(var(--rgb-highlight),0.25); }
+.dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--font-monospace); background: rgba(var(--rgb-highlight),0.25); }
 .dbfiddle a { font-size: smaller; }
 .dbfiddle td.null::after { content: 'null'; font-style: italic; opacity: 0.5; }
 .dbfiddle td:not(.null):empty:after { content: ' '; visibility: hidden; }
