@@ -1,5 +1,5 @@
 define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,CodeMirror],moment){
-  var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: 'markdown', inputStyle: 'contenteditable', spellcheck: true, extraKeys: {
+  var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: { name: 'gfm', gitHubSpice: false, taskLists: false, defaultLang: $('html').css('--lang-code') }, inputStyle: 'contenteditable', spellcheck: true, extraKeys: {
     Home: "goLineLeft",
     End: "goLineRight",
     'Ctrl-B': function(){ $('.button.fa-bold').click(); },
