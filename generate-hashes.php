@@ -28,7 +28,7 @@ var require = {
     'jquery.simplePagination.{$hashes['/lib/jquery.simplePagination.js']}': { deps: ['jquery'], exports: 'jQuery.fn.pagination' },
     'paste.{$hashes['/lib/paste.js']}': { deps: ['jquery'], exports: 'jQuery.fn.pastableTextarea' },
     'resizer.{$hashes['/lib/resizer.js']}': { exports: 'Resizer' },
-    'promise-all-settled.{$hashes['/lib/promise-all-settled.js']}': { exports: 'Promise.allSettled' },
+    'promise-all-settled.{$hashes['/lib/promise-all-settled.js']}': { exports: 'allSettled' },
     'jquery.{$hashes['/lib/jquery.js']}': { exports: 'jQuery' },
   },
   map: { '*': {

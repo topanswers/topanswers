@@ -9,7 +9,7 @@ var require = {
     'jquery.simplePagination.b892c57d7f01a4e5': { deps: ['jquery'], exports: 'jQuery.fn.pagination' },
     'paste.6bcdb4817596af13': { deps: ['jquery'], exports: 'jQuery.fn.pastableTextarea' },
     'resizer.acc48d85f03977b4': { exports: 'Resizer' },
-    'promise-all-settled.b9101ad6b2a74f8b': { exports: 'Promise.allSettled' },
+    'promise-all-settled.b9101ad6b2a74f8b': { exports: 'allSettled' },
     'jquery.6ad657dafdfaa495': { exports: 'jQuery' },
   },
   map: { '*': {
@@ -132,7 +132,7 @@ var require = {
     'katex':'katex.9460c91fb69cca2c',
     'tio':'../tio.0984e7f3a524834f',
     'navigation':'../navigation.c546209755df730d',
-    'require.config':'../require.config.cbb813970f97d5a3',
+    'require.config':'../require.config.7dd116dfd0b93c50',
     'markdown':'../markdown.f9f72b44a42e1b8e',
  } },
 };
