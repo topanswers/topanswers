@@ -12,7 +12,6 @@ define(['jquery'
        ,'<?=implode(array_map(function($e){ return 'codemirror/mode/'.$e.'/'.$e; },['apl','clike','clojure','css','erlang','gfm','go','haskell','htmlmixed','javascript','julia','lua'
                                                                                    ,'markdown','mllike','php','powershell','python','shell','sql','stex','vb','xml']),"','")?>'
                                                                                    ],function($,_,QP,CodeMirror){
-
   function tioRequest(code,lang){                                                                       
     var oneTimeToken = "'" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + "'";                                               
     var runRequest = new XMLHttpRequest;                                                                                                                                             

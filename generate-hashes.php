@@ -20,14 +20,13 @@ $j = <<<EOT
 var require = {
   baseUrl: '/lib',
   enforceDefine: true,
-  waitSeconds: 0,
   paths: { 'jquery': 'jquery.{$hashes['/lib/jquery.js']}' },
   shim: {
     'markdown-it-katex.{$hashes['/lib/markdown-it-katex.js']}': ['katex.{$hashes['/lib/katex.js']}'],
-    'select2.{$hashes['/lib/select2.js']}': { deps: ['jquery.{$hashes['/lib/jquery.js']}'], exports: 'jQuery.fn.select2' },
-    'starrr.{$hashes['/lib/starrr.js']}': { deps: ['jquery.{$hashes['/lib/jquery.js']}'], exports: 'jQuery.fn.starrr' },
-    'jquery.simplePagination.{$hashes['/lib/jquery.simplePagination.js']}': { deps: ['jquery.{$hashes['/lib/jquery.js']}'], exports: 'jQuery.fn.pagination' },
-    'paste.{$hashes['/lib/paste.js']}': { deps: ['jquery.{$hashes['/lib/jquery.js']}'], exports: 'jQuery.fn.pastableTextarea' },
+    'select2.{$hashes['/lib/select2.js']}': ['jquery'],
+    'starrr.{$hashes['/lib/starrr.js']}': { deps: ['jquery'], exports: 'jQuery.fn.starrr' },
+    'jquery.simplePagination.{$hashes['/lib/jquery.simplePagination.js']}': { deps: ['jquery'], exports: 'jQuery.fn.pagination' },
+    'paste.{$hashes['/lib/paste.js']}': { deps: ['jquery'], exports: 'jQuery.fn.pastableTextarea' },
     'resizer.{$hashes['/lib/resizer.js']}': { exports: 'Resizer' },
     'promise-all-settled.{$hashes['/lib/promise-all-settled.js']}': { exports: 'Promise.allSettled' },
     'jquery.{$hashes['/lib/jquery.js']}': { exports: 'jQuery' },

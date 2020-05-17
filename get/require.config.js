@@ -1,14 +1,13 @@
 var require = {
   baseUrl: '/lib',
   enforceDefine: true,
-  waitSeconds: 0,
   paths: { 'jquery': 'jquery.6ad657dafdfaa495' },
   shim: {
     'markdown-it-katex.689b2993b1958946': ['katex.9460c91fb69cca2c'],
-    'select2.6b983cad5301a9a7': { deps: ['jquery.6ad657dafdfaa495'], exports: 'jQuery.fn.select2' },
-    'starrr.a95baf4870cd4d81': { deps: ['jquery.6ad657dafdfaa495'], exports: 'jQuery.fn.starrr' },
-    'jquery.simplePagination.b892c57d7f01a4e5': { deps: ['jquery.6ad657dafdfaa495'], exports: 'jQuery.fn.pagination' },
-    'paste.6bcdb4817596af13': { deps: ['jquery.6ad657dafdfaa495'], exports: 'jQuery.fn.pastableTextarea' },
+    'select2.6b983cad5301a9a7': ['jquery'],
+    'starrr.a95baf4870cd4d81': { deps: ['jquery'], exports: 'jQuery.fn.starrr' },
+    'jquery.simplePagination.b892c57d7f01a4e5': { deps: ['jquery'], exports: 'jQuery.fn.pagination' },
+    'paste.6bcdb4817596af13': { deps: ['jquery'], exports: 'jQuery.fn.pastableTextarea' },
     'resizer.acc48d85f03977b4': { exports: 'Resizer' },
     'promise-all-settled.b9101ad6b2a74f8b': { exports: 'Promise.allSettled' },
     'jquery.6ad657dafdfaa495': { exports: 'jQuery' },
@@ -132,7 +131,7 @@ var require = {
     'katex':'katex.9460c91fb69cca2c',
     'tio':'../tio.0984e7f3a524834f',
     'navigation':'../navigation.c546209755df730d',
-    'require.config':'../require.config.09bb858df83528ca',
-    'markdown':'../markdown.2f46966380fd8000',
+    'require.config':'../require.config.9f52972c60198d1f',
+    'markdown':'../markdown.9a1eb20bd7999b8d',
  } },
 };
