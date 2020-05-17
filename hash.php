@@ -74,7 +74,6 @@ function h($f){
     "/lib/fork-awesome/src/doc/assets/js/share.min.js": "5772093bd8072e4d",
     "/lib/fork-awesome/src/doc/assets/js/site.js": "40875edfad44d67d",
     "/lib/jquery.js": "6ad657dafdfaa495",
-    "/lib/jquery.waitforimages.js": "ddbd1d428d6bff75",
     "/lib/js.cookie.js": "76935a70978b8098",
     "/lib/lightbox2/css/lightbox.css": "9e313f797f5ef92b",
     "/lib/lightbox2/css/lightbox.min.css": "c751699f512b3838",
@@ -282,7 +281,6 @@ function h($f){
     "/lib/jquery-3.4.1.min.js": "6ad657dafdfaa495",
     "/lib/jquery.mark.min.js": "9c62caf8b13d1f17",
     "/lib/jquery.simplePagination.js": "b892c57d7f01a4e5",
-    "/lib/jquery.waitforimages.min.js": "ddbd1d428d6bff75",
     "/lib/js.cookie-2.2.1.min.js": "76935a70978b8098",
     "/lib/lodash.min.js": "0205cae71b99e29f",
     "/lib/markdown-it-abbr.min.js": "a4c1600fcf93c532",
@@ -333,16 +331,16 @@ function h($f){
     "/tio.js": "0984e7f3a524834f",
     "/navigation.js": "c546209755df730d",
     "/noscript.css": "4f7e2c6342642088",
-    "/require.config.js": "35be36713ff4153e",
+    "/require.config.js": "09bb858df83528ca",
     "/markdown.css": "e688990f44f18962",
-    "/markdown.js": "47da41e30c1e41bf",
+    "/markdown.js": "2f46966380fd8000",
     "/page/question/question.css": "b014b5f79aeab248",
-    "/page/question/question.js": "0fcd7496df00b6dd",
+    "/page/question/question.js": "91e4eefca44a1e9a",
     "/page/index/index.css": "e1255dd738e52b37",
-    "/page/index/index.js": "0cb875100f61dadc",
+    "/page/index/index.js": "f90704108fbbf9cd",
     "/page/answer/answer.css": "979b25c3ef9a2fa2",
-    "/page/answer/answer.js": "d4d34b50cc643143",
+    "/page/answer/answer.js": "9aba1b930fa68c79",
     "/page/community/community.css": "839e7ff583c64128",
-    "/page/community/community.js": "f019a522598f2c95"
+    "/page/community/community.js": "69ecc24ad80811ab"
 }',true)[$f]).'.$2',$f);
 }

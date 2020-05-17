@@ -1,1 +1,0 @@
-jquery.waitforimages.min.js

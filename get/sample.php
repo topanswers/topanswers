@@ -53,7 +53,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <script src="/lib/js.cookie.js"></script>
   <script src="/lib/lodash.js"></script>
   <script src="/lib/jquery.js"></script>
-  <script src="/lib/jquery.waitforimages.js"></script>
   <?require '../markdown.php';?>
   <script>
     $(function(){
