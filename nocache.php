@@ -1,2 +1,2 @@
 <?    
-header("Cache-Control: no-cache");
+header("Cache-Control: no-store");

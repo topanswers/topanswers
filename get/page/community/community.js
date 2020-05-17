@@ -1,4 +1,4 @@
-define(['markdown','moment','js.cookie','vex/vex','select2','navigation','lightbox2/js/lightbox','resizer','starrr','jquery.simplePagination','paste']
+define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lightbox','paste','resizer'].concat(document.documentElement.style.getPropertyValue('--question')?['starrr','select2']:['jquery.simplePagination'])
        ,function([$,_,CodeMirror],moment,Cookies,vex){
   moment.locale($('html').css('--jslang'));
   var title = document.title, latestChatId;
@@ -95,16 +95,18 @@ define(['markdown','moment','js.cookie','vex/vex','select2','navigation','lightb
                 loadQuestions();
                 return false;
             } };
-    if(m>i){
-      $('.pages').html('<div></div>'+('auth' in $('html').data()?'<select><option value="10">10/page</option><option value="25">25/page</option><option value="100">100/page</option></select>':'')).children('div').pagination(o);
-      $('.pages select').val(i).change(function(){
-        var u = new URLSearchParams(window.location.search);
-        u.delete('page');
-        window.history.pushState({},'',(window.location.href.split('?')[0]+'?'+u.toString()).replace(/\?$/,''));
-        Cookies.set('pagesize',$(this).val(),{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
-        loadQuestions();
-        return false;
-      });
+    if(!$('html').css('--question')){
+      if(m>i){
+        $('.pages').html('<div></div>'+('auth' in $('html').data()?'<select><option value="10">10/page</option><option value="25">25/page</option><option value="100">100/page</option></select>':'')).children('div').pagination(o);
+        $('.pages select').val(i).change(function(){
+          var u = new URLSearchParams(window.location.search);
+          u.delete('page');
+          window.history.pushState({},'',(window.location.href.split('?')[0]+'?'+u.toString()).replace(/\?$/,''));
+          Cookies.set('pagesize',$(this).val(),{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
+          loadQuestions();
+          return false;
+        });
+      }
     }
     $('#qa>div.banner').show();
   }
@@ -524,12 +526,6 @@ define(['markdown','moment','js.cookie','vex/vex','select2','navigation','lightb
   $('#community').change(function(){
     window.location = '/'+$(this).find(':selected').attr('data-name');
   });
-  $('#tags').select2({ placeholder: "select a tag" });
-  function tagdrop(){ $('#tags').select2('open'); };
-  $('#tags').on('select2:close', function (e) { setTimeout(function(){ $('.newtag').one('click',tagdrop); },200); });
-  $('#tags').change(function(){ $.post({ url: '//post.topanswers.xyz/question', data: { id: $(this).data('question-id'), tagid: $(this).val(), action: 'new-tag' }, xhrFields: { withCredentials: true } }).done(function(){ window.location.reload(); }); });
-  $('.newtag').one('click',tagdrop);
-  $('.tag i').click(function(){ $.post({ url: '//post.topanswers.xyz/question', data: { id: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }, xhrFields: { withCredentials: true } }).done(function(){ window.location.reload(); }); });
   $('#room').change(function(){
     window.location = '/'+$('html').css('--community')+'?room='+$(this).val();
   });
@@ -739,32 +735,40 @@ define(['markdown','moment','js.cookie','vex/vex','select2','navigation','lightb
     return false;
   });
   $('#notifications .when').each(function(){ $(this).text(moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' })); });
-  if('auth' in $('html').data()){
-    $('#question .starrr, #qa .answer .starrr').each(function(){
-      var t = $(this), v = t.data('votes'), vv = t.prev().data('total');
-      t.starrr({
-        rating: v,
-        max: $('html').css('--power'),
-        change: function(e,n){
-          n = n||0;
-          if(n!==v){
-            t.css({'opacity':'0.3','pointer-events':'none'});
-            $.post({ url: '//post.topanswers.xyz/'+t.data('type'), data: { action: 'vote', id: t.data('id'), votes: n }, xhrFields: { withCredentials: true } }).done(function(r){
-              var req;
-              vv = vv-v+n;
-              v = n;
-              t.css({'opacity':'1','pointer-events':'auto'}).prev().attr('data-total',vv);
-              if(t.data('type')==='question'){
-                req = $('html').css('--required')-vv;
-                t.prev().attr('data-required',req);
-                $('#provide').prop('disabled',req>0)
-              }
-            }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); });
+  if($('html').css('--question')){
+    $('#tags').select2({ placeholder: "select a tag" });
+    function tagdrop(){ $('#tags').select2('open'); };
+    $('#tags').on('select2:close', function (e) { setTimeout(function(){ $('.newtag').one('click',tagdrop); },200); });
+    $('#tags').change(function(){ $.post({ url: '//post.topanswers.xyz/question', data: { id: $(this).data('question-id'), tagid: $(this).val(), action: 'new-tag' }, xhrFields: { withCredentials: true } }).done(function(){ window.location.reload(); }); });
+    $('.newtag').one('click',tagdrop);
+    $('.tag i').click(function(){ $.post({ url: '//post.topanswers.xyz/question', data: { id: $(this).parent().data('question-id'), tagid: $(this).parent().data('tag-id'), action: 'remove-tag' }, xhrFields: { withCredentials: true } }).done(function(){ window.location.reload(); }); });
+    if('auth' in $('html').data()){
+      $('#question .starrr, #qa .answer .starrr').each(function(){
+        var t = $(this), v = t.data('votes'), vv = t.prev().data('total');
+        t.starrr({
+          rating: v,
+          max: $('html').css('--power'),
+          change: function(e,n){
+            n = n||0;
+            if(n!==v){
+              t.css({'opacity':'0.3','pointer-events':'none'});
+              $.post({ url: '//post.topanswers.xyz/'+t.data('type'), data: { action: 'vote', id: t.data('id'), votes: n }, xhrFields: { withCredentials: true } }).done(function(r){
+                var req;
+                vv = vv-v+n;
+                v = n;
+                t.css({'opacity':'1','pointer-events':'auto'}).prev().attr('data-total',vv);
+                if(t.data('type')==='question'){
+                  req = $('html').css('--required')-vv;
+                  t.prev().attr('data-required',req);
+                  $('#provide').prop('disabled',req>0)
+                }
+              }).fail(function(r){ alert((r.status)===429?'Rate limit hit, please try again later':r.responseText); });
+            }
           }
-        }
+        });
+        t.find('a').removeAttr('href');
       });
-      t.find('a').removeAttr('href');
-    });
+    }
   }
   processNewQuestions(true);
   paginateQuestions();

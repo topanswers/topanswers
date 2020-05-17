@@ -88,8 +88,6 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
   <link rel="stylesheet" href="<?=h("/fonts/$my_community_monospace_font_name.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/fork-awesome/css/fork-awesome.min.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/lightbox2/css/lightbox.min.css")?>">
-  <link rel="stylesheet" href="<?=h("/lib/select2.css")?>">
-  <link rel="stylesheet" href="<?=h("/lib/starrr.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/vex/vex.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/vex/vex-theme-topanswers.css")?>">
   <link rel="stylesheet" href="<?=h("/global.css")?>">
@@ -100,6 +98,10 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
   <link rel="stylesheet" href="<?=h("/lib/codemirror/codemirror.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/qp/qp.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/katex/katex.min.css")?>">
+  <?if($question_id){?>
+    <link rel="stylesheet" href="<?=h("/lib/starrr.css")?>">
+    <link rel="stylesheet" href="<?=h("/lib/select2.css")?>">
+  <?}?>
   <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
   <title><?=isset($_GET['room']) ? ($room_name.' - ') : (isset($_GET['q'])?$question_title.' - ':'')?><?=$community_display_name?> - <?=$l_topanswers?></title>
   <script src="<?=h("/require.config.js")?>"></script>
