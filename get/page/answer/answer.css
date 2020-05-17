@@ -1,4 +1,4 @@
-html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; }
+html { box-sizing: border-box; font-family: var(--font-regular); }
 html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
 body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
 main { display: grid; grid-template-columns: 2fr 3fr 3fr; grid-template-rows: auto 1fr; grid-gap: 10px; padding: 10px; max-width: 3000px; margin: 0 auto; height: 100%; }
