@@ -273,7 +273,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
         <?}?>
         <?foreach(db("select answer_id,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_has_history
                             ,answer_license_href,answer_license_name,answer_codelicense_name,answer_license_description,answer_codelicense_description,answer_account_name,answer_account_is_imported
-                            ,answer_communicant_votes,answer_selink_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags,label_name,label_url
+                            ,answer_communicant_votes,answer_selink_user_id,answer_se_answer_id,answer_i_flagged,answer_i_counterflagged,answer_crew_flags,answer_active_flags,label_name,label_url,label_code_language
                            , answer_account_id=$1 answer_account_is_me
                            , answer_crew_flags>0 answer_is_deleted
                            , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
@@ -282,9 +282,8 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                            , answer_active_flags>(answer_i_flagged::integer) answer_other_flags
                       from answer
                       order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$account_id) as $i=>$r){ extract($r);?>
-          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>" class="post answer<?=$answer_i_flagged?' flagged':''?><?
-                                                                               ?><?=$answer_i_counterflagged?' counterflagged':''?><?
-                                                                               ?><?=$answer_is_deleted?' deleted':''?>">
+          <div id="a<?=$answer_id?>" data-id="<?=$answer_id?>"<?if($label_code_language){?> style="--lang-code:<?=$label_code_language?>"<?}?>
+               class="post answer<?=$answer_i_flagged?' flagged':''?><?=$answer_i_counterflagged?' counterflagged':''?><?=$answer_is_deleted?' deleted':''?>">
             <div class="bar">
               <div>
                 <span class="element"><?=($i===0)?'Top Answer':('Answer #'.($i+1))?></span>

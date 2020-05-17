@@ -70,7 +70,7 @@ define(['jquery'
   if (!Promise.allSettled) Promise.allSettled = allSettled;
   
   (function(){
-    var md, mdsummary, prefix;
+    var md, mdsummary, prefix, rendering;
     function fiddleMarkdown(){
       var promises = [];
       function addfiddle(o,r){
@@ -132,7 +132,7 @@ define(['jquery'
       , highlight: (code, lang) => {
         let lastStyle
         let sDom = ''
-        CodeMirror.runMode(code, lang||$('html').css('--lang-code'), (token, style) => {
+        CodeMirror.runMode(code, lang||rendering.css('--lang-code'), (token, style) => {
           if (lastStyle !== style) {
             if (lastStyle !== undefined) sDom += '</span>'
             if (style !== undefined) sDom += '<span class="cm-'+style+'">'
@@ -224,7 +224,7 @@ define(['jquery'
     if(['test','codegolf','apl'].includes($('html').css('--community'))) md.use(require('markdown-it-katex'));
   
     md.renderer.rules.code_block = function(tokens, idx, options, env, slf){
-      var token = tokens[idx], langName = $('html').css('--lang-code'), highlighted, i, tmpAttrs, tmpToken;
+      var token = tokens[idx], langName = rendering.css('--lang-code'), highlighted, i, tmpAttrs, tmpToken;
   
       if (options.highlight) {
         highlighted = options.highlight(token.content, langName) || md.utils.escapeHtml(token.content);
@@ -246,6 +246,7 @@ define(['jquery'
     $.fn.renderMarkdown = function(promises = []){
       this.filter('[data-markdown]').each(function(){
         var t = $(this), m = t.attr('data-markdown');
+        rendering = t;
         prefix = t.closest('[data-id]').attr('id')||'';
         t.html(md.render(m,{ docId: prefix }));
         t.children('pre').each(function(){ $(this).parent().addClass('cm-s-default'); });
@@ -271,6 +272,7 @@ define(['jquery'
   
     $.fn.renderMarkdownSummary = function(){
       this.filter('[data-markdown]').each(function(){
+        rendering = $(this);
         $(this).html(mdsummary.renderInline($(this).attr('data-markdown')).split('\n')[0]);
       });
       return this;
