@@ -1,4 +1,4 @@
-html { box-sizing: border-box; font-family: var(--regular-font-family); font-size: 16px; }
+html { box-sizing: border-box; font-family: var(--font-regular); font-size: 16px; }
 body { display: flex; background: rgb(var(--rgb-mid)); }
 html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
 main { flex-direction: column; flex: 1 1 calc(var(--resizer) * 1%); overflow: hidden; }
@@ -18,7 +18,7 @@ footer a.frame[data-unread]:after { content:attr(data-unread-lang); position: ab
                                                      box-shadow: -1px -1px 1px 1px #fffe; }
 #more-rooms.none { pointer-events: none; opacity: 0.5; }
 
-textarea, pre, code, .CodeMirror { font-family: var(--monospace-font-family); }
+textarea, pre, code, .CodeMirror { font-family: var(--font-monospace); }
 
 .icon { width: 20px; height: 20px; display: block; margin: 1px; }
 .icon:not(.roomicon) { border-radius: 2px; }
@@ -38,10 +38,10 @@ a[data-lightbox] img { cursor: zoom-in; }
 @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
 .pages { margin: 9px; display: flex; justify-content: center; }
 .pages select { height: 38px; margin: 2px; margin-left: 8px; padding: 0 8px; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark));
-                font-family: var(--regular-font-family); font-size: 16px;
+                font-family: var(--font-regular); font-size: 16px;
                 border: none; text-align: center; text-align-last: center; -moz-appearance: none; appearance: none; -webkit-appearance: none; }
 .pages select:focus { outline-offset: 0; }
-.pages option { height: 38px; margin: 2px; background: rgb(var(--rgb-light)); font-family: var(--regular-font-family); font-size: 16px; text-align: center; -moz-appearance: none; }
+.pages option { height: 38px; margin: 2px; background: rgb(var(--rgb-light)); font-family: var(--font-regular); font-size: 16px; text-align: center; -moz-appearance: none; }
 
 <?if(isset($_GET['question'])){?>
   <?if(isset($_GET['auth'])){?>.tag:hover i { visibility: visible; }<?}?>
