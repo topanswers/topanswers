@@ -13,7 +13,6 @@ $pagesize = $_COOKIE['pagesize']??'10';
 $hidepreview = ($_COOKIE['hidepreview']??'false') === 'true';
 $clearlocal = $_COOKIE['clearlocal']??'';
 $environment = $_COOKIE['environment']??'prod';
-setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
 if(!isset($_GET['room'])&&!isset($_GET['q'])){
   $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 }elseif(isset($_GET['room'])&&!isset($_GET['q'])){

@@ -7,7 +7,6 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to community,pg_temp");
 if(isset($_COOKIE['uuid'])){ ccdb("select login($1::uuid)",$_COOKIE['uuid']) || fail(403,'access denied'); }
 $environment = $_COOKIE['environment']??'prod';
-setcookie('clearlocal','',0,'/','topanswers.xyz',true,true);
 $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
 extract(cdb("select account_id
