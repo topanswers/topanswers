@@ -474,7 +474,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
       <?}?>
     </div>
   </div>
-  <dialog>
+  <dialog style="display: none;">
     <p>Enter question or answer id or url (and optionally further answer ids/urls from the same question) from
        <select name="site"><?foreach(db("select sesite_id,sesite_url,source_is_default from sesite") as $r){extract($r,EXTR_PREFIX_ALL,'s');?><option value="<?=$s_sesite_id?>"<?=$s_source_is_default?" selected":""?>><?=$s_sesite_url?></option><?}?></select>
     </p>
