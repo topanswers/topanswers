@@ -1,8 +1,14 @@
 var require = {
   baseUrl: '/lib',
-  xxpaths: { 'katex': 'katex/katex' },
   paths: { 'jquery': 'jquery.6ad657dafdfaa495' },
-  shim: { 'markdown-it-katex.689b2993b1958946': ['katex.9460c91fb69cca2c'] },
+  shim: {
+    'markdown-it-katex.689b2993b1958946': ['katex.9460c91fb69cca2c'],
+    'select2.6b983cad5301a9a7': ['jquery.6ad657dafdfaa495'],
+    'starrr.a95baf4870cd4d81': ['jquery.6ad657dafdfaa495'],
+    'jquery.waitforimages.ddbd1d428d6bff75': ['jquery.6ad657dafdfaa495'],
+    'jquery.simplePagination.b892c57d7f01a4e5': ['jquery.6ad657dafdfaa495'],
+    'paste.6bcdb4817596af13': ['jquery.6ad657dafdfaa495'],
+  },
   map: { '*': {
     'codemirror/mode/apl/apl':'codemirror/mode/apl/apl.71cadc768dcd17aa',
     'codemirror/mode/clike/clike':'codemirror/mode/clike/clike.215e8d258f779286',
@@ -124,7 +130,7 @@ var require = {
     'katex':'katex.9460c91fb69cca2c',
     'tio':'../tio.0984e7f3a524834f',
     'navigation':'../navigation.c546209755df730d',
-    'markdown':'../markdown.86706dd2b49a3dca',
-    'require.config':'../require.config.ce49c5591806713c',
+    'markdown':'../markdown.7026aaba7f1d084c',
+    'require.config':'../require.config.caf161a3352a0a09',
  } },
 };

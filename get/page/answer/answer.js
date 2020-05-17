@@ -46,7 +46,7 @@ require(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_
     else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
   },200));
   <?if(isset($_GET['new'])){?>
-    if(localStorage.getItem('<?=$community_name?>.answer.<?=$_GET['question']?>')) cm.setValue(localStorage.getItem($('html').css('--community')+'.answer.<?=$_GET['question']?>'));
+    if(localStorage.getItem($('html').css('--community')+'.answer.<?=$_GET['question']?>')) cm.setValue(localStorage.getItem($('html').css('--community')+'.answer.<?=$_GET['question']?>'));
   <?}?>
   $('#uploadfile').change(function() { if(this.files[0].size > 2097152){ alert("File is too big — maximum 2MB"); $(this).val(''); }else{ $('#imageupload').submit(); }; });
   $('#imageupload').submit(function(){

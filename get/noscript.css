@@ -1,0 +1,4 @@
+.message:not(.processed) { opacity: unset !important; }
+.notification:not(.processed) { opacity: unset !important; }
+#qa .post:not(.processed) { opacity: unset !important; }
+.markdown>pre.noscript { white-space: pre-wrap; }

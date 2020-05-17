@@ -19,9 +19,15 @@ array_walk($filtered,function($h,$f){ global $omodules,$hashes; $omodules .= "  
 $j = <<<EOT
 var require = {
   baseUrl: '/lib',
-  xxpaths: { 'katex': 'katex/katex' },
   paths: { 'jquery': 'jquery.{$hashes['/lib/jquery.js']}' },
-  shim: { 'markdown-it-katex.{$hashes['/lib/markdown-it-katex.js']}': ['katex.{$hashes['/lib/katex.js']}'] },
+  shim: {
+    'markdown-it-katex.{$hashes['/lib/markdown-it-katex.js']}': ['katex.{$hashes['/lib/katex.js']}'],
+    'select2.{$hashes['/lib/select2.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
+    'starrr.{$hashes['/lib/starrr.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
+    'jquery.waitforimages.{$hashes['/lib/jquery.waitforimages.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
+    'jquery.simplePagination.{$hashes['/lib/jquery.simplePagination.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
+    'paste.{$hashes['/lib/paste.js']}': ['jquery.{$hashes['/lib/jquery.js']}'],
+  },
   map: { '*': {
 {$modules}{$omodules} } },
 };
@@ -29,7 +35,7 @@ EOT;
 
 $hashes['/require.config.js'] = exec('xxhsum get/require.config.js | cut -f 1 -d " " | tr -d "\n"');
 
-$json = json_encode($hashes);
+$json = json_encode($hashes,JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
 $p = <<<EOT
 <?php
 function h(\$f){
