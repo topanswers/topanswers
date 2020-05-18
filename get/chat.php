@@ -41,12 +41,12 @@ include '../lang/chat.'.$o_community_language.'.php';
     <?if($authenticated){?>
       <span class="buttons">
         <span class="button-group show">
-          <i class="stars <?=$i_starred?'me ':''?>fa fa-star<?=($room_can_chat&&!$i_starred&&!$account_is_me)?'-o':''?>" data-count="<?=$chat_star_count?>"></i>
+          <i class="stars <?=$i_starred?'me ':''?>fa fa-star<?=($o_room_can_chat&&!$i_starred&&!$account_is_me)?'-o':''?>" data-count="<?=$chat_star_count?>"></i>
           <i></i>
           <i class="flags <?=$i_flagged?'me ':''?>fa fa-flag<?=($account_is_me||$i_flagged)?'':'-o'?>" data-count="<?=$chat_flag_count?>"></i>
           <i></i>
         </span>
-        <?if($room_can_chat){?>
+        <?if($o_room_can_chat){?>
           <?if($account_is_me){?>
             <span class="button-group show">
               <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
