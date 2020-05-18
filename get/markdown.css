@@ -22,6 +22,9 @@
 .markdown blockquote>:last-child { margin-bottom: 0; }
 .markdown code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; font-size: 90%; }
 .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 6px; overflow-wrap: unset; }
+.markdown blockquote>p>code { background: rgb(var(--rgb-white)); }
+.markdown blockquote>pre>code { background: rgb(var(--rgb-white)); }
+.markdown .quoted-message>blockquote>p>code { background: rgb(var(--rgb-light)); }
 .markdown nav ol { counter-reset: list-item; }
 .markdown nav li { display: block; counter-increment: list-item; }
 .markdown nav li:before { content: counters(list-item,'.') ' '; }
