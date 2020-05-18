@@ -73,16 +73,6 @@ create function range(startid bigint, endid bigint)
   order by chat_at desc;
 $$;
 --
-create function activeusers() returns table (account_id integer, account_name text, account_is_me boolean, communicant_votes integer) language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select account_id
-       , account_derived_name account_name
-       , account_id=get_account_id() account_is_me
-       , coalesce(communicant_votes,0) communicant_votes
-  from room natural join participant natural join api._account natural join communicant
-  where room_id=get_room_id() and participant_latest_chat_at>(current_timestamp-'14d'::interval)
-  order by participant_latest_chat_at desc;
-$$;
---
 create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
   select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
   select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);

@@ -6,16 +6,10 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('room not set');
 db("set search_path to chat,pg_temp");
 $authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
-extract(cdb("select account_is_dev,community_name,community_language,room_name,room_can_chat,community_code_language from one"));
-include '../lang/chat.'.$community_language.'.php';
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from chat where chat_change_id>$1",$_GET['fromid']));
 if(isset($_GET['quote'])) exit(ccdb("select quote($1,$2)::varchar",$_GET['room'],$_GET['id']));
-if(isset($_GET['activeusers'])){
-  foreach(db("select account_id,account_name,account_is_me,communicant_votes from activeusers()") as $r){ extract($r);?>
-    <img title="<?=($account_name)?$account_name:'Anonymous'?> (<?=$l_stars?>: <?=$l_num($communicant_votes)?>)" class="icon<?=$account_is_me?'':' pingable'?>" data-id="<?=$account_id?>" data-name="<?=explode(' ',$account_name)[0]?>" data-fullname="<?=$account_name?>" src="/identicon?id=<?=$account_id?>"><?
-  }
-  exit;
-}
+extract(cdb("select account_is_dev,community_name,community_language,room_name,room_can_chat,community_code_language from one"));
+include '../lang/chat.'.$community_language.'.php';
 $id = $_GET['id']??ccdb("select recent()");
 ?>
 <?if(!isset($_GET['one'])){?><div class="spacer" style="line-height: 0; min-height: 0;"></div><?}?>
