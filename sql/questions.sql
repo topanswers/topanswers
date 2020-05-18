@@ -50,7 +50,7 @@ where community_id=get_community_id();
 create function login_community(uuid,text) returns boolean language sql security definer as $$select api.login_room($1,(select community_room_id from db.community where community_name=$2));$$;
 create function login_question(uuid,integer) returns boolean language sql security definer as $$select api.login_room($1,(select question_room_id from db.question where question_id=$2));$$;
 --
-create function parse(text) returns table (community_id integer, sanction_id integer, tag_ids integer[], not_tag_ids integer[]) language sql security definer
+create function parse(text) returns table (community_id integer, sanction_id integer, kind_id integer, tag_ids integer[], not_tag_ids integer[], label_ids integer[]) language sql security definer
                             set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
      , c as (select get_community_id() community_id
@@ -59,17 +59,23 @@ create function parse(text) returns table (community_id integer, sanction_id int
              union
              select community_id from api._community cross join f where position('+' in flags)>0)
     , kt as (select lower(trim('{}' from m[1])) knd from regexp_matches($1,'{[^}]*}','g') m)
-     , k as (select community_id,sanction_id from sanction where (select count(1) from kt)=0 or exists(select 1 from kt where knd=lower(sanction_short_description)))
+     , k as (select community_id,sanction_id,kind_id from sanction where (select count(1) from kt)=0 or exists(select 1 from kt where knd=lower(sanction_short_description)))
     , tt as (select lower(trim('[]' from m[1])) tag_name from regexp_matches($1,'\[[^!\]]+]','g') m)
      , t as (select community_id, array_agg(tag_id) tag_ids from tag natural join tt group by community_id)
    , ntt as (select lower(trim('[!]' from m[1])) tag_name from regexp_matches($1,'\[![^!\]]+]','g') m)
     , nt as (select community_id, array_agg(tag_id) not_tag_ids from tag natural join ntt group by community_id)
-    , u1 as (select community_id,sanction_id,tag_ids from c natural join k natural join t where (select count(1)>0 from tt)
+    , lt as (select lower(trim('()' from m[1])) label_prefix from regexp_matches($1,'\([^\)]+\)','g') m)
+     , l as (select kind_id, array_agg(label_id) label_ids from label join lt on label_name~*('^'||label_prefix) group by kind_id)
+    , u1 as (select community_id,sanction_id,kind_id,tag_ids from c natural join k natural join t where (select count(1)>0 from tt)
              union all
-             select community_id,sanction_id,array[]::integer[] from c natural join k where (select count(1)=0 from tt))
-  select community_id,sanction_id,tag_ids,coalesce(not_tag_ids,array[]::integer[]) from u1 natural left join nt where (select count(1)>0 from ntt)
-  union all
-  select community_id,sanction_id,tag_ids,array[]::integer[] from u1 where (select count(1)=0 from ntt);
+             select community_id,sanction_id,kind_id,null from c natural join k where (select count(1)=0 from tt))
+    , u2 as (select community_id,sanction_id,kind_id,tag_ids,not_tag_ids from u1 natural left join nt where (select count(1)>0 from ntt)
+             union all
+             select community_id,sanction_id,kind_id,tag_ids,null from u1 where (select count(1)=0 from ntt))
+    , u3 as (select community_id,sanction_id,kind_id,tag_ids,not_tag_ids,label_ids from u2 natural join l where exists(select 1 from lt)
+             union all
+             select community_id,sanction_id,kind_id,tag_ids,not_tag_ids,null from u2 where not exists (select 1 from lt))
+  select community_id,sanction_id,kind_id,coalesce(tag_ids,array[]::integer[]),coalesce(not_tag_ids,array[]::integer[]),coalesce(label_ids,array[]::integer[]) from u3;
 $$;
 --
 create function simple_recent(text,integer,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
