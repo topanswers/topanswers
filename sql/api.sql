@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists activeusers cascade;
 drop schema if exists pinnedrooms cascade;
 drop schema if exists activerooms cascade;
 drop schema if exists usr cascade;
@@ -283,5 +284,6 @@ end$$;
 \i ~/git/sql/user.sql
 \i ~/git/sql/activerooms.sql
 \i ~/git/sql/pinnedrooms.sql
+\i ~/git/sql/activeusers.sql
 --
 commit;
