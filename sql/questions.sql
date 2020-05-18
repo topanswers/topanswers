@@ -67,7 +67,7 @@ create function parse(text) returns table (community_id integer, sanction_id int
     , u1 as (select community_id,sanction_id,tag_ids from c natural join k natural join t where (select count(1)>0 from tt)
              union all
              select community_id,sanction_id,array[]::integer[] from c natural join k where (select count(1)=0 from tt))
-  select community_id,sanction_id,tag_ids,not_tag_ids from u1 natural join nt where (select count(1)>0 from ntt)
+  select community_id,sanction_id,tag_ids,coalesce(not_tag_ids,array[]::integer[]) from u1 natural left join nt where (select count(1)>0 from ntt)
   union all
   select community_id,sanction_id,tag_ids,array[]::integer[] from u1 where (select count(1)=0 from ntt);
 $$;
