@@ -3,7 +3,7 @@ grant usage on schema chat to get,post;
 set local search_path to chat,api,pg_temp;
 --
 --
-create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
+--create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
 --
 create view one with (security_barrier) as
 select community_language,room_id,room_can_chat
