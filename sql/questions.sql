@@ -23,7 +23,7 @@ from db.question_tag_x qt natural join db.tag t
 where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
 create view answer with (security_barrier) as
-select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted,answer_summary,label_name,label_url
+select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted,answer_summary,label_id,label_name,label_url
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , account_id answer_account_id
      , account_derived_name answer_account_name
@@ -65,7 +65,7 @@ create function parse(text) returns table (community_id integer, sanction_id int
    , ntt as (select lower(trim('[!]' from m[1])) tag_name from regexp_matches($1,'\[![^!\]]+]','g') m)
     , nt as (select community_id, array_agg(tag_id) not_tag_ids from tag natural join ntt group by community_id)
     , lt as (select lower(trim('()' from m[1])) label_prefix from regexp_matches($1,'\([^\)]+\)','g') m)
-     , l as (select kind_id, array_agg(label_id) label_ids from label join lt on label_name~*('^'||label_prefix) group by kind_id)
+     , l as (select kind_id, array_agg(label_id) label_ids from label join lt on label_name~*('^'||label_prefix||'\y') group by kind_id)
     , u1 as (select community_id,sanction_id,kind_id,tag_ids from c natural join k natural join t where (select count(1)>0 from tt)
              union all
              select community_id,sanction_id,kind_id,null from c natural join k where (select count(1)=0 from tt))
@@ -75,14 +75,15 @@ create function parse(text) returns table (community_id integer, sanction_id int
     , u3 as (select community_id,sanction_id,kind_id,tag_ids,not_tag_ids,label_ids from u2 natural join l where exists(select 1 from lt)
              union all
              select community_id,sanction_id,kind_id,tag_ids,not_tag_ids,null from u2 where not exists (select 1 from lt))
-  select community_id,sanction_id,kind_id,coalesce(tag_ids,array[]::integer[]),coalesce(not_tag_ids,array[]::integer[]),coalesce(label_ids,array[]::integer[]) from u3;
+  select community_id,sanction_id,kind_id,coalesce(tag_ids,array[]::integer[]),coalesce(not_tag_ids,array[]::integer[]),label_ids from u3;
 $$;
 --
 create function simple_recent(text,integer,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
   select question_id, (row_number() over (order by question_poll_major_id desc))::integer, (count(1) over ())::integer
-  from questions.parse($1) natural join question cross join f
+  from questions.parse($1) natural join question q cross join f
   where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
+        and (label_ids is null or exists (select 1 from answer a where a.question_id=q.question_id and label_id = any(label_ids)))
   order by question_poll_major_id desc offset ($2-1)*$3 limit $3;
 $$;
 --
@@ -102,8 +103,9 @@ create function fuzzy_closest(text,integer,integer) returns table (question_id i
              where (select search_text from w)<<%answer_markdown and ((select exacts from e) is null or answer_markdown ilike all((select exacts from e))))
      , s as (select question_id, bool_or(txt like '%'||(select search_text from w)||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
   select question_id, (row_number() over (order by exact desc, similarity desc))::integer, (count(1) over ())::integer
-  from s natural join db.question natural join parse($1) cross join f
+  from s natural join db.question q natural join parse($1) cross join f
   where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
+        and (label_ids is null or exists (select 1 from answer a where a.question_id=q.question_id and label_id = any(label_ids)))
   order by exact desc, similarity desc offset ($2-1)*$3 limit $3;
 $$;
 --

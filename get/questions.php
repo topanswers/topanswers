@@ -13,7 +13,7 @@ if(isset($_GET['one'])&&!isset($_GET['community'])){
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]')::json from question where community_id=get_community_id() and question_poll_minor_id>$1",$_GET['fromid']));
 $search = $_GET['search']??'';
 $type = 'simple';
-if($search && trim(preg_replace('/\[[^\]]+]|{[^}]*}/','',$search),' !+@')) $type = 'fuzzy';
+if($search && trim(preg_replace('/\[[^\]]+]|{[^}]*}|\([^\)]*\)/','',$search),' !+@')) $type = 'fuzzy';
 if(isset($_GET['one'])) $type = 'one';
 $page = $_GET['page']??'1';
 $pagesize = $_COOKIE['pagesize']??'10';
@@ -82,7 +82,8 @@ include '../lang/questions.'.$o_community_language.'.php';
     </div>
     <?if($question_is_answered){?>
       <div class="answers">
-        <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
+        <?foreach(db("with l as (select unnest(label_ids) label_id from (select label_ids from questions.parse($1) limit 1) z)
+                      select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
                             ,label_name,label_url
                            , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                            , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
@@ -90,8 +91,8 @@ include '../lang/questions.'.$o_community_language.'.php';
                            , extract('epoch' from current_timestamp-answer_change_at)::bigint answer_change_when
                            , count(*) over () answer_count
                       from answer
-                      where question_id=$1
-                      order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$question_id) as $i=>$r){ extract($r);?>
+                      where question_id=$2 and (label_id in (select label_id from l) or not exists (select 1 from l))
+                      order by answer_votes desc, answer_communicant_votes desc, answer_id desc",$search,$question_id) as $i=>$r){ extract($r);?>
           <div class="bar<?=$answer_is_deleted?' deleted':''?>">
             <div class="element summary shrink grow">
               <span class="stars" title="<?=$l_stars?>: <?=$l_num($answer_votes)?>">

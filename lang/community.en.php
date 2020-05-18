@@ -1,6 +1,6 @@
 <?
 include_once 'en.php';
-$l_search_placeholder = '{type} [tag] &quot;exact phrase&quot; fuzzy';
+$l_search_placeholder = '{type} [tag] (label) &quot;exact phrase&quot; fuzzy';
 $l_chattext_placeholder = 'type message here';
 $l_chat = 'chat';
 $l_comments = 'comments';
