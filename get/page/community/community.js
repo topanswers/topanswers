@@ -279,7 +279,7 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
         newchat.filter('.message[data-reply-id]').each(function(){ $('#c'+$(this).attr('data-reply-id')).removeAttr('data-notification-id').removeClass('notify'); });
         processNewChat(scroll);
         if('auth' in $('html').data()){
-          $.get('/chat?room='+$('html').css('--room')+'&activeusers').done(function(r){
+          $.get('/activeusers?room='+$('html').css('--room')).done(function(r){
             var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
             $('#active-users').html(r);
             $.each(savepings,function(){ $('#active-users .icon[data-id='+this+']').addClass('ping'); });
