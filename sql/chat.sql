@@ -42,7 +42,7 @@ create function range(startid bigint, endid bigint)
                                   , chat_flag_count integer
                                   , chat_star_count integer
                                   , chat_has_history boolean
-                                  , chat_pings json
+                                  , chat_pings text
                                   , notification_id bigint
                                   , chat_account_is_repeat boolean
                                   , rn bigint
@@ -64,7 +64,7 @@ create function range(startid bigint, endid bigint)
                    , (select count(1)::integer from chat_flag where chat_id=c.chat_id) chat_flag_count
                    , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
                    , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
-                   , (select json_agg(p.account_id) from ping p where p.chat_id=c.chat_id and c.account_id=get_account_id()) chat_pings
+                   , (select json_agg(p.account_id) from ping p where p.chat_id=c.chat_id and c.account_id=get_account_id())::text chat_pings
                    , notification_id
               from chat c
                    natural join account
