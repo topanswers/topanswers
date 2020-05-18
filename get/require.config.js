@@ -132,7 +132,7 @@ var require = {
     'katex':'katex.9460c91fb69cca2c',
     'tio':'../tio.0984e7f3a524834f',
     'navigation':'../navigation.c546209755df730d',
-    'require.config':'../require.config.8fcc922076ff72ae',
+    'require.config':'../require.config.f0a385e654c8d5de',
     'markdown':'../markdown.a87649b330108466',
  } },
 };

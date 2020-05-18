@@ -14,7 +14,7 @@ include '../lang/chat.'.$o_community_language.'.php';
   <img title="<?=$account_derived_name?> (<?=$l_stars?>: <?=$l_num($communicant_votes)?>)"
        class="icon<?=($account_id===$o_account_id)?'':' pingable'?>"
        data-id="<?=$account_id?>"
-       data-name="<?=explode(' ',$account_name)[0]?>"
-       data-fullname="<?=$account_name?>"
+       data-name="<?=explode(' ',$account_derived_name)[0]?>"
+       data-fullname="<?=$account_derived_name?>"
        src="/identicon?id=<?=$account_id?>">
 <?}?>
