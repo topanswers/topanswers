@@ -221,6 +221,7 @@ create table chat(
 create index chat_latest_ind on chat(room_id,chat_at);
 create index chat_search_ind on chat using gin (room_id, chat_markdown gin_trgm_ops);
 create index chat_room_id_chat_id_fk_ind on chat(room_id,chat_id);
+create index chat_poll_ind on chat(room_id,chat_change_id) include(chat_id);
 
 create table ping(
   chat_id bigint references chat

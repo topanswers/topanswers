@@ -6,18 +6,21 @@ set local search_path to chat,api,pg_temp;
 create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
 --
 create view one with (security_barrier) as
-select account_id,account_is_dev,community_id,community_name,community_language,community_code_language,room_id,room_name
-     , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
-     , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-     , (room_type='public' or x.account_id is not null) room_can_chat
-from db.room natural join api._community natural join db.community
+select community_language,room_id,room_can_chat
+     , room_derived_name, room_derived_name room_name
+from api._room natural join api._community
      natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
-     natural left join db.communicant
-     natural left join db.writer x
 where room_id=get_room_id();
 --
 --
 create function login_room(uuid,integer) returns boolean language sql security definer as $$select * from api.login_room($1,$2);$$;
+--
+create function changes(integer) returns table (chat_id bigint, chat_change_id bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
+  select chat_id,chat_change_id
+  from (select chat_id,chat_change_id,exists(select 1 from api._chat a where a.chat_id=c.chat_id) e from chat c where room_id=get_room_id() and chat_change_id>$1) z
+  where e
+  limit 50;
+$$;
 --
 create function range(startid bigint, endid bigint)
                      returns table (chat_id bigint
@@ -107,7 +110,7 @@ end$$;
 --
 --
 create function new(msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
   select _error(413,'message too long') where length(msg)>5000;
   select _ensure_communicant(get_account_id(),community_id) from room where room_id=get_room_id();
   --
@@ -189,14 +192,14 @@ $$;
 create function set_flag(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
   select _error('cant flag own message') where exists(select 1 from chat where chat_id=cid and account_id=get_account_id());
   select _error('already flagged') where exists(select 1 from chat_flag where chat_id=cid and account_id=get_account_id());
-  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
   insert into chat_flag(chat_id,account_id) select chat_id,get_account_id() from chat where chat_id=cid;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
 create function remove_flag(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
   select _error('not already flagged') where not exists(select 1 from chat_flag where chat_id=cid and account_id=get_account_id());
-  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
   delete from chat_flag where chat_id=cid and account_id=get_account_id();
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
@@ -204,14 +207,14 @@ $$;
 create function set_star(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
   select _error('cant star own message') where exists(select 1 from chat where chat_id=cid and account_id=get_account_id());
   select _error('already starred') where exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
-  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
   insert into chat_star(chat_id,account_id,room_id) select chat_id,get_account_id(),room_id from chat where chat_id=cid;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
 create function remove_star(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
   select _error('not already starred') where not exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
-  select _error('access denied') where not exists(select 1 from chat.one where room_can_chat);
+  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
   delete from chat_star where chat_id=cid and account_id=get_account_id();
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
