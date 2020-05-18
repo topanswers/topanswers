@@ -18,9 +18,9 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id,account
                    ,label_code_language,label_tio_language
                    ,community_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
-                   ,(select jsonb_agg(z) from (select license_id,license_name,license_is_versioned from license) z) licenses
-                   ,(select jsonb_agg(z) from (select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense) z) codelicenses
-                   ,(select jsonb_agg(z) from (select label_id,label_name,label_code_language,label_tio_language from label) z) labels
+                   ,(select jsonb_agg(z) from (select license_id,license_name,license_is_versioned from license order by license_name) z) licenses
+                   ,(select jsonb_agg(z) from (select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense order by codelicense_id=1 desc, codelicense_name) z) codelicenses
+                   ,(select jsonb_agg(z) from (select label_id,label_name,label_code_language,label_tio_language from label order by label_name) z) labels
              from one"));
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>
