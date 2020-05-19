@@ -884,8 +884,8 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
     if(!panel.hasClass('panel')) panel = panel.parent();
     $('#chat-bar a.panel:not([href])').attr('href','.');
     $(this).removeAttr('href');
-    panels.css('visibility','hidden');
-    panel.css('visibility','visible');
+    panels.css({ 'visibility': 'hidden', 'z-index': '-1' });
+    panel.css({ 'visibility': 'visible', 'z-index': 'unset' });
     return false;
   });
   processStarboard(true);

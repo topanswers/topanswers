@@ -462,13 +462,13 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
         <?}?>
       </div>
       <?if($auth){?>
-        <div class="firefoxwrapper" class="panel" style="visibility: hidden">
+        <div class="firefoxwrapper" class="panel" style="visibility: hidden; z-index: -1;">
           <div id="starboard">
             <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
             <div style="flex: 1 0 0;"></div>
           </div>
         </div>
-        <div id="notifications" class="panel">
+        <div id="notifications" class="panel" style="visibility: hidden; z-index: -1;">
           <?$ch = curl_init('http://127.0.0.1/notification?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
         </div>
       <?}?>
