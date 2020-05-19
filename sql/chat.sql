@@ -20,7 +20,7 @@ create function changes(integer) returns table (chat_id bigint, chat_change_id b
   limit 50;
 $$;
 --
-create function range(startid bigint, endid bigint)
+create function range(startid bigint, endid bigint, lim integer = 100)
                      returns table (chat_id bigint
                                   , account_id integer
                                   , chat_reply_id integer
@@ -52,25 +52,25 @@ create function range(startid bigint, endid bigint)
              where room_id=(select room_id from g) and startid is not null and endid is not null and chat_id>=startid and chat_id<=endid
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
              order by chat_id desc
-             limit 102)
+             limit lim+2)
    , cc2 as (select *
              from chat
              where room_id=(select room_id from g) and startid is null and endid is not null and chat_id<=endid
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
              order by chat_id desc
-             limit 101)
+             limit lim+1)
    , cc3 as (select *
              from chat
              where room_id=(select room_id from g) and startid is not null and endid is null and chat_id>=startid
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
              order by chat_id
-             limit 101)
+             limit lim+1)
    , cc4 as (select *
              from chat
              where room_id=(select room_id from g) and startid is null and endid is null
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
              order by chat_id
-             limit 100)
+             limit lim)
     , cc as (select * from cc1 union all select * from cc2 union all select * from cc3 union all select * from cc4)
      , c as (select *, row_number() over(order by chat_at desc) rn
              from (select *, (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
