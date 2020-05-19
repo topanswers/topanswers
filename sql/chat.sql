@@ -45,15 +45,37 @@ create function range(startid bigint, endid bigint)
                                   , chat_account_is_repeat boolean
                                   , rn bigint
                                    ) language sql security definer set search_path=db,api,chat,pg_temp as $$
-  with g as (select get_account_id() account_id)
-    , cc as (select chat_id
-             from api._chat
-             where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)
-             limit 1001)
+  with g as (select get_account_id() account_id, get_room_id() room_id)
+    , cr as (select coalesce((select communicant_is_post_flag_crew from db.communicant c where c.account_id = g.account_id and community_id=get_community_id()),false) is_crew from g)
+   , cc1 as (select *
+             from chat
+             where room_id=(select room_id from g) and startid is not null and endid is not null and chat_id>=startid and chat_id<=endid
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
+             order by chat_id desc
+             limit 102)
+   , cc2 as (select *
+             from chat
+             where room_id=(select room_id from g) and startid is null and endid is not null and chat_id<=endid
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
+             order by chat_id desc
+             limit 101)
+   , cc3 as (select *
+             from chat
+             where room_id=(select room_id from g) and startid is not null and endid is null and chat_id>=startid
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
+             order by chat_id
+             limit 101)
+   , cc4 as (select *
+             from chat
+             where room_id=(select room_id from g) and startid is null and endid is null
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
+             order by chat_id
+             limit 100)
+    , cc as (select * from cc1 union all select * from cc2 union all select * from cc3 union all select * from cc4)
      , c as (select *, row_number() over(order by chat_at desc) rn
              from (select *, (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
-                   from (select *, round(extract('epoch' from chat_at-(lead(chat_at) over (order by chat_at desc))))::integer chat_gap from cc natural join chat) z) z
-             where chat_id>startid or endid is not null)
+                   from (select *, round(extract('epoch' from chat_at-(lead(chat_at) over (order by chat_at desc))))::integer chat_gap from cc) z) z
+             where startid=endid or ((chat_id>startid or startid is null) and (chat_id<endid or endid is null)))
   select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id
        , account_id=(select account_id from g) account_is_me
        , coalesce(nullif(account_name,''),'Anonymous') account_name
