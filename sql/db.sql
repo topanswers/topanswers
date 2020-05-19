@@ -214,6 +214,9 @@ create table chat(
 , chat_at timestamptz not null default current_timestamp
 , chat_change_at timestamptz not null default current_timestamp
 , chat_markdown text not null check (length(chat_markdown) between 1 and 5500)
+, chat_flags integer default 0 not null
+, chat_crew_flags integer default 0 not null
+, chat_active_flags integer default 0 not null
 , unique (room_id,chat_id)
 , foreign key (community_id,room_id) references room(community_id,room_id)
 , foreign key (room_id,chat_reply_id) references chat(room_id,chat_id)
@@ -271,7 +274,19 @@ create table chat_flag(
   chat_id bigint references chat
 , account_id integer references account
 , chat_flag_at timestamptz not null default current_timestamp
+, chat_flag_direction integer not null check (chat_flag_direction in (-1,0,1))
+, chat_flag_is_crew boolean default false not null
 , primary key (chat_id,account_id)
+);
+
+create table chat_flag_history(
+  chat_flag_history_id integer generated always as identity primary key
+, chat_id integer not null
+, account_id integer not null
+, chat_flag_history_at timestamptz default current_timestamp not null
+, chat_flag_history_direction integer not null check (chat_flag_history_direction in (-1,0,1))
+, chat_flag_history_is_crew boolean default false not null
+, foreign key(chat_id,account_id) references chat_flag deferrable initially deferred
 );
 
 create table chat_star(

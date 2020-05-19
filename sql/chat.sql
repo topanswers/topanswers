@@ -3,8 +3,6 @@ grant usage on schema chat to get,post;
 set local search_path to chat,api,pg_temp;
 --
 --
---create view chat with (security_barrier) as select chat_id,chat_at,chat_change_id,chat_reply_id,chat_markdown from db.chat where room_id=get_room_id();
---
 create view one with (security_barrier) as
 select community_language,room_id,room_can_chat
      , room_derived_name, room_derived_name room_name
@@ -48,32 +46,37 @@ create function range(startid bigint, endid bigint)
                                   , rn bigint
                                    ) language sql security definer set search_path=db,api,chat,pg_temp as $$
   with g as (select get_account_id() account_id)
-  select *, row_number() over(order by chat_at desc) rn
-  from (select *, (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
-        from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id
-                   , account_id=(select account_id from g) account_is_me
-                   , coalesce(nullif(account_name,''),'Anonymous') account_name
-                   , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
-                   , (select account_id=(select account_id from g) from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
-                   , round(extract('epoch' from chat_at-(lead(chat_at) over (order by chat_at desc))))::integer chat_gap
-                   , coalesce(communicant_votes,0) communicant_votes
-                   , extract('epoch' from current_timestamp-chat_at)<240 chat_editable_age
-                   , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=(select account_id from g)) i_flagged
-                   , exists(select 1 from chat_star where chat_id=c.chat_id and account_id=(select account_id from g)) i_starred
-                   , (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and (lead(chat_reply_id) over (order by chat_at desc)) is null chat_account_will_repeat
-                   , (select count(1)::integer from chat_flag where chat_id=c.chat_id) chat_flag_count
-                   , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
-                   , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
-                   , (select json_agg(p.account_id) from ping p where p.chat_id=c.chat_id and c.account_id=get_account_id())::text chat_pings
-                   , notification_id
-              from chat c
-                   natural join account
-                   natural join (select account_id,community_id,communicant_votes from communicant) v
-                   natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id() and notification_dismissed_at is null) n
-              where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)) z
-        where (select account_id from g) is not null or chat_flag_count=0) z
-  where chat_id>startid or endid is not null
-  order by chat_at desc;
+    , cc as (select chat_id
+             from api._chat
+             where room_id=get_room_id() and chat_id>=startid and (endid is null or chat_id<=endid)
+             limit 1001)
+     , c as (select *, row_number() over(order by chat_at desc) rn
+             from (select *, (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
+                   from (select *, round(extract('epoch' from chat_at-(lead(chat_at) over (order by chat_at desc))))::integer chat_gap from cc natural join chat) z) z
+             where chat_id>startid or endid is not null)
+  select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id
+       , account_id=(select account_id from g) account_is_me
+       , coalesce(nullif(account_name,''),'Anonymous') account_name
+       , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+       , (select account_id=(select account_id from g) from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
+       , chat_gap
+       , coalesce(communicant_votes,0) communicant_votes
+       , extract('epoch' from current_timestamp-chat_at)<240 chat_editable_age
+       , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=(select account_id from g) and chat_flag_direction>0) i_flagged
+       , exists(select 1 from chat_star where chat_id=c.chat_id and account_id=(select account_id from g)) i_starred
+       , (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and (lead(chat_reply_id) over (order by chat_at desc)) is null chat_account_will_repeat
+       , chat_flags chat_flag_count
+       , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
+       , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
+       , (select json_agg(p.account_id) from ping p where p.chat_id=c.chat_id and c.account_id=get_account_id())::text chat_pings
+       , notification_id
+       , chat_account_is_repeat
+       , rn
+  from c
+       natural join account
+       natural join (select account_id,community_id,communicant_votes from communicant) v
+       natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id() and notification_dismissed_at is null) n
+  order by rn;
 $$;
 --
 create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
@@ -187,6 +190,47 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
   --
   with w as (select chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
   update account set account_notification_id = default where account_id in(select account_id from w);
+$$;
+--
+create function flag(id bigint, direction integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
+  select _error('invalid flag direction') where direction not in(-1,0,1);
+  select _error(429,'rate limit') where (select count(1) from chat_flag_history where account_id=get_account_id() and chat_flag_history_at>current_timestamp-'1m'::interval)>6;
+  --
+  select _ensure_communicant(get_account_id(),get_community_id());
+  --
+  with d as (delete from chat_flag where chat_id=id and account_id=get_account_id() returning *)
+     , q as (update chat set chat_active_flags = chat_active_flags-abs(d.chat_flag_direction)
+                           , chat_flags = chat_flags-(case when d.chat_flag_is_crew then 0 else d.chat_flag_direction end)
+                           , chat_crew_flags = chat_crew_flags-(case when d.chat_flag_is_crew then d.chat_flag_direction else 0 end)
+             from d
+             where chat.chat_id=id)
+  select chat_id,account_id,chat_flag_at,chat_flag_direction,chat_flag_is_crew from d;
+  --
+  with i as (insert into chat_flag(chat_id,account_id,chat_flag_direction,chat_flag_is_crew)
+             select id,account_id,direction,communicant_is_post_flag_crew
+             from db.communicant
+             where account_id=get_account_id() and community_id=get_community_id()
+             returning *)
+     , u as (update chat set chat_active_flags = chat_active_flags+abs(i.chat_flag_direction)
+                           , chat_flags = chat_flags+(case when i.chat_flag_is_crew then 0 else i.chat_flag_direction end)
+                           , chat_crew_flags = chat_crew_flags+(case when i.chat_flag_is_crew then i.chat_flag_direction else 0 end)
+             from i
+             where chat.chat_id=id)
+     , h as (insert into chat_flag_history(chat_id,account_id,chat_flag_history_direction,chat_flag_history_is_crew)
+             select chat_id,account_id,chat_flag_direction,chat_flag_is_crew from i
+             returning chat_flag_history_id,chat_flag_history_direction)
+/*    , nn as (select chat_flag_history_id,account_id
+             from h cross join (select account_id from communicant where community_id=get_community_id() and communicant_is_post_flag_crew and account_id<>get_account_id()) c
+             where chat_flag_history_direction>0)
+     , n as (insert into notification(account_id) select account_id from nn returning *)
+   , qfn as (insert into chat_flag_notification(notification_id,chat_flag_history_id) select notification_id,chat_flag_history_id from nn natural join n)*/
+     , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
+             select get_account_id(),get_room_id(),max(chat_id) from chat where room_id=get_room_id()
+             on conflict on constraint listener_pkey do update set listener_latest_read_chat_id=excluded.listener_latest_read_chat_id)
+  select null;
+--  update account set account_notification_id = default where account_id in (select account_id from n);
 $$;
 --
 create function set_flag(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$

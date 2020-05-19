@@ -136,7 +136,8 @@ where communicant_is_post_flag_crew or answer_crew_flags<0 or ((get_account_id()
 create view _chat with (security_barrier) as
 select chat_id,room_id,community_id
 from db.chat natural join _room
-where get_account_id() is not null or not exists (select 1 from db.chat_flag where chat_flag.chat_id=chat.chat_id);
+     natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
+where communicant_is_post_flag_crew or chat_crew_flags<0 or ((get_account_id() is not null or chat_flags=0) and chat_crew_flags=0) or account_id=get_account_id();
 --
 --
 create function login(uuid uuid) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
