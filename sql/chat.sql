@@ -51,7 +51,6 @@ create function range(startid bigint, endid bigint, lim integer = 100)
              from chat
              where room_id=(select room_id from g) and startid is not null and endid is not null and chat_id>=startid and chat_id<=endid
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
-             order by chat_id desc
              limit lim+2)
    , cc2 as (select *
              from chat
@@ -69,7 +68,7 @@ create function range(startid bigint, endid bigint, lim integer = 100)
              from chat
              where room_id=(select room_id from g) and startid is null and endid is null
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
-             order by chat_id
+             order by chat_id desc
              limit lim)
     , cc as (select * from cc1 union all select * from cc2 union all select * from cc3 union all select * from cc4)
      , c as (select *, row_number() over(order by chat_at desc) rn
