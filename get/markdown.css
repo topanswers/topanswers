@@ -17,14 +17,11 @@
 .markdown th { background: rgb(var(--rgb-mid)); }
 .markdown td { background: rgb(var(--rgb-white)); }
 .markdown td, .markdown th { font-family: var(--font-table); font-size: 90%; white-space: pre; border: 1px solid rgb(var(--rgb-black)); padding: 3px 5px; text-align: left; }
-.markdown blockquote { padding: 8px 4px 8px 8px; margin: 16px 0; border-left: 4px solid rgba(var(--rgb-dark),0.6); background: rgba(var(--rgb-dark),0.1); }
+.markdown blockquote { padding: 8px; margin: 16px 0; border: 1px solid rgba(var(--rgb-dark),0.5); border-left: 3px solid rgb(var(--rgb-dark)); }
 .markdown blockquote>:first-child { margin-top: 0; }
 .markdown blockquote>:last-child { margin-bottom: 0; }
 .markdown code { padding: 0 3px; background: rgb(var(--rgb-light)); border: 1px solid rgb(var(--rgb-mid)); overflow-wrap: break-word; font-size: 90%; }
 .markdown pre>code { display: block; max-width: 100%; overflow-x: auto; padding: 6px; overflow-wrap: unset; }
-.markdown blockquote>p>code { background: rgb(var(--rgb-white)); }
-.markdown blockquote>pre>code { background: rgb(var(--rgb-white)); }
-.markdown .quoted-message>blockquote>p>code { background: rgb(var(--rgb-light)); }
 .markdown nav ol { counter-reset: list-item; }
 .markdown nav li { display: block; counter-increment: list-item; }
 .markdown nav li:before { content: counters(list-item,'.') ' '; }
