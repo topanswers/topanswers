@@ -192,7 +192,8 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
   update account set account_notification_id = default where account_id in(select account_id from w);
 $$;
 --
-create function flag(id bigint, direction integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+create function flag(id bigint, direction integer) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('cant flag own message') where exists(select 1 from chat where chat_id=id and account_id=get_account_id());
   select _error('access denied') where get_account_id() is null;
   select _error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
   select _error('invalid flag direction') where direction not in(-1,0,1);
@@ -205,8 +206,8 @@ create function flag(id bigint, direction integer) returns void language sql sec
                            , chat_flags = chat_flags-(case when d.chat_flag_is_crew then 0 else d.chat_flag_direction end)
                            , chat_crew_flags = chat_crew_flags-(case when d.chat_flag_is_crew then d.chat_flag_direction else 0 end)
              from d
-             where chat.chat_id=id)
-  select chat_id,account_id,chat_flag_at,chat_flag_direction,chat_flag_is_crew from d;
+             where chat.chat_id=d.chat_id)
+  select null;
   --
   with i as (insert into chat_flag(chat_id,account_id,chat_flag_direction,chat_flag_is_crew)
              select id,account_id,direction,communicant_is_post_flag_crew
@@ -216,8 +217,10 @@ create function flag(id bigint, direction integer) returns void language sql sec
      , u as (update chat set chat_active_flags = chat_active_flags+abs(i.chat_flag_direction)
                            , chat_flags = chat_flags+(case when i.chat_flag_is_crew then 0 else i.chat_flag_direction end)
                            , chat_crew_flags = chat_crew_flags+(case when i.chat_flag_is_crew then i.chat_flag_direction else 0 end)
+                           , chat_change_id = default
              from i
-             where chat.chat_id=id)
+             where chat.chat_id=i.chat_id
+             returning chat_change_id)
      , h as (insert into chat_flag_history(chat_id,account_id,chat_flag_history_direction,chat_flag_history_is_crew)
              select chat_id,account_id,chat_flag_direction,chat_flag_is_crew from i
              returning chat_flag_history_id,chat_flag_history_direction)
@@ -229,23 +232,8 @@ create function flag(id bigint, direction integer) returns void language sql sec
      , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
              select get_account_id(),get_room_id(),max(chat_id) from chat where room_id=get_room_id()
              on conflict on constraint listener_pkey do update set listener_latest_read_chat_id=excluded.listener_latest_read_chat_id)
-  select null;
 --  update account set account_notification_id = default where account_id in (select account_id from n);
-$$;
---
-create function set_flag(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('cant flag own message') where exists(select 1 from chat where chat_id=cid and account_id=get_account_id());
-  select _error('already flagged') where exists(select 1 from chat_flag where chat_id=cid and account_id=get_account_id());
-  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
-  insert into chat_flag(chat_id,account_id) select chat_id,get_account_id() from chat where chat_id=cid;
-  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
-$$;
---
-create function remove_flag(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('not already flagged') where not exists(select 1 from chat_flag where chat_id=cid and account_id=get_account_id());
-  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
-  delete from chat_flag where chat_id=cid and account_id=get_account_id();
-  update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
+  select chat_change_id from u;
 $$;
 --
 create function set_star(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$

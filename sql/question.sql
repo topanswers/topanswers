@@ -223,8 +223,8 @@ create function flag(direction integer) returns void language sql security defin
                                , question_flags = question_flags-(case when d.question_flag_is_crew then 0 else d.question_flag_direction end)
                                , question_crew_flags = question_crew_flags-(case when d.question_flag_is_crew then d.question_flag_direction else 0 end)
              from d
-             where question.question_id=get_question_id())
-  select question_id,account_id,question_flag_at,question_flag_direction,question_flag_is_crew from d;
+             where question.question_id=d.question_id)
+  select null;
   --
   with i as (insert into question_flag(question_id,account_id,question_flag_direction,question_flag_is_crew)
              select get_question_id(),account_id,direction,communicant_is_post_flag_crew
@@ -235,7 +235,7 @@ create function flag(direction integer) returns void language sql security defin
                                , question_flags = question_flags+(case when i.question_flag_is_crew then 0 else i.question_flag_direction end)
                                , question_crew_flags = question_crew_flags+(case when i.question_flag_is_crew then i.question_flag_direction else 0 end)
              from i
-             where question.question_id=get_question_id())
+             where question.question_id=i.question_id)
      , h as (insert into question_flag_history(question_id,account_id,question_flag_history_direction,question_flag_history_is_crew)
              select question_id,account_id,question_flag_direction,question_flag_is_crew from i
              returning question_flag_history_id,question_flag_history_direction)
