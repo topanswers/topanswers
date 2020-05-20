@@ -36,7 +36,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 #qa .banner .button:last-child { margin-right: 0; }
 #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }
 @supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
-@supports (-webkit-touch-callout: none) { #messages * { -webkit-transform: translate3d(0, 0, 0); } }
+@supports (-webkit-touch-callout: none) { #chat * { -webkit-transform: translate3d(0, 0, 0); } }
 .pages { margin: 9px; display: flex; justify-content: center; }
 .pages select { height: 38px; margin: 2px; margin-left: 8px; padding: 0 8px; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark));
                 font-family: var(--font-regular); font-size: 16px;
