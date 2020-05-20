@@ -10,7 +10,7 @@ if(isset($_GET['one'])&&!isset($_GET['community'])){
 }else{
   $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 }
-if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]')::json from question where community_id=get_community_id() and question_poll_minor_id>$1",$_GET['fromid']));
+if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(question_id,question_poll_minor_id)),'[]')::json from question where community_id=get_community_id() and question_poll_minor_id>$1",$_GET['from']));
 $search = $_GET['search']??'';
 $type = 'simple';
 if($search && trim(preg_replace('/\[[^\]]+]|{[^}]*}|\([^\)]*\)/','',$search),' !+@')) $type = 'fuzzy';

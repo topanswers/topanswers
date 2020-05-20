@@ -35,7 +35,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 #qa .banner { display: flex; margin: 10px; align-items: center; }
 #qa .banner .button:last-child { margin-right: 0; }
 #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }
-@supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }
+@supports (-webkit-touch-callout: none) { * { -webkit-transform: translate3d(0, 0, 0); } }
 .pages { margin: 9px; display: flex; justify-content: center; }
 .pages select { height: 38px; margin: 2px; margin-left: 8px; padding: 0 8px; background: rgb(var(--rgb-light)); outline: 1px solid rgb(var(--rgb-dark));
                 font-family: var(--font-regular); font-size: 16px;
@@ -88,6 +88,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 .firefoxwrapper>* { min-height: 100%; }
 #messages .message .who { top: -1.3em; }
 #messages .message:not(:hover) .when { opacity: 0; }
+#messages>i { display: block; visibility: hidden; margin: auto; margin-bottom: 20px; }
 #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column-reverse; }
 #starboard .message { padding: 4px; padding-top: 1.3em; }
 #starboard .message:not(:first-child) { border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
@@ -143,6 +144,8 @@ a[data-lightbox] img { cursor: zoom-in; }
 .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
 .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
 .message:not(:target).notify .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-dark)) inset; }
+@keyframes targt { 0% { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; } 90% { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; } 100% { box-shadow: none; } }
+.message.target .markdown { animation: targt 2s; }
 
 .notification { flex: 0 0 auto; padding: 4px; border-radius: 3px; margin: 3px; border: 1px solid rgba(var(--rgb-dark),0.6); }
 .notification:not(.processed) { opacity: 0; }

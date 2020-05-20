@@ -173,7 +173,8 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
   function processNewChat(scroll){
     var newchat = $('#messages>*:not(.processed)')
       , scroller = $('#messages').parent()
-      , promises = [];
+      , promises = []
+      , promise;
     newchat.filter('.message').each(function(){ promises.push(...renderChat.call(this)); }).find('.when').each(function(){
       $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
     });
@@ -188,7 +189,7 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
       newchat.addClass('processed');
     }else{
       promises.push(document.fonts.ready);
-      Promise.allSettled(promises).then(() => {
+      promise = Promise.allSettled(promises).then(() => {
         if(scroll===true){
           setTimeout(function(){ scroller.scrollTop(1000000); },0);
         }else if(scroll===false){
@@ -207,15 +208,19 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
       }
       foo.call(this);
     });
+
     newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
     setFinalSpacer();
-    newchat.filter('.message').find('.who a').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
+    $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
+    $('.message').find('.who a.reply').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
       var id = $(this).attr('href').substring(2);
       $(this).attr('href','/transcript?room='+$('html').css('--room')+'&id='+id+'#c'+id);
     });
     if(!maxChatChangeID) $('#messages').children().last().next().filter('.spacer').remove();
     if(!maxChatChangeID) $('#messages>.message').last().removeClass('merged');
     $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
+
+    return promise;
   }
   function updateRoomLatest(){
     var read, count = 0, m;
@@ -269,7 +274,7 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
       , scroller = $('#messages').parent()
     if(typeof scroll==='undefined') scroll = false;
     if(scroller.hasClass('follow')) scroll = true;
-    $.get('/chat?room='+$('html').css('--room')+(($('#messages>.message').length===0)?'':'&id='+maxChat),function(data) {
+    $.get('/chat?room='+$('html').css('--room')+(($('#messages>.message').length===0)?'':'&from='+maxChat),function(data) {
       if($('#messages>.message').first().data('id')===maxChat){
         var newchat;
         $('#messages>.spacer:first-child').remove();
@@ -295,20 +300,20 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
     },'html').fail(setChatPollTimeout);
   }
   function updateChatChangeIDs(){
-    $.get('/chat?changes&room='+$('html').css('--room')+'&fromid='+maxChatChangeID,function(r){
+    $.get('/chat?changes&room='+$('html').css('--room')+'&from='+maxChatChangeID,function(r){
       _(JSON.parse(r)).forEach(function(e){ $('#c'+e[0]).each(function(){ if(e[1]>$(this).data('change-id')) $(this).addClass('changed'); }); });
       setChatPollTimeout();
     }).fail(setChatPollTimeout);
   }
   function updateQuestionPollIDs(){
-    $.get('/questions?changes&community='+$('html').css('--community')+'&fromid='+maxQuestionPollMinorID,function(r){
+    $.get('/questions?changes&community='+$('html').css('--community')+'&from='+maxQuestionPollMinorID,function(r){
       _(JSON.parse(r)).forEach(function(e){ $('#q'+e[0]).each(function(){ if(e[1]>$(this).data('poll-minor-id')) $(this).addClass('changed'); }); });
       setChatPollTimeout();
     }).fail(setChatPollTimeout);
   }
   function actionChatChange(id){
     $('#c'+id).css('opacity',0.5);
-    $.get('/chat?one&room='+$('html').css('--room')+'&id='+id,function(r){
+    $.get('/chat?room='+$('html').css('--room')+'&from='+id+'&to='+id,function(r){
       var merged = $('#c'+id).hasClass('merged');
       $('#c'+id).replaceWith(r);
       if(merged) $('#c'+id).addClass('merged');
@@ -491,8 +496,8 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
     var strings = [];
     if($('#status').attr('data-editid')) strings.push('editing');
     if($('#status').attr('data-replyid')) strings.push('replying to: '+$('#status').attr('data-replyname'));
-    console.debug(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }));
-    console.debug(_.map(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }),function(e){ return e[1]; }));
+    //console.debug(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }));
+    //console.debug(_.map(_.uniqBy($('.ping').map(function(){ return [$(this).data('id'),$(this).data('fullname')]; }).get(),function(e){ return e[0]; }),function(e){ return e[1]; }));
     if($('.ping').length) strings.push('pinging: '+_.map(_.uniqBy($('.ping').map(function(){ return { 'id': $(this).data('id'), 'name': $(this).data('fullname') }; }).get(),function(e){ return e.id; }),function(e){ return e.name; }).join(', '));
     if(strings.length){
       $('#canchat-wrapper').addClass('pinging');
@@ -786,7 +791,7 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
       $('#qa .post').addClass('processed');
     });
   })();
-  setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
+  //setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
   processNewChat(true);
   updateActiveRooms();
   processNotifications();
@@ -867,7 +872,7 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
   });
   $('#chat-wrapper').on('click','#more-notifications', function(){
     dismissed = $(this).data('dismissed');
-    $(this).html('<a class="fa fa-fw fa-spinner fa-pulse"></i>');
+    $(this).html('<i class="fa fa-fw fa-spinner fa-pulse"></i>');
     updateNotifications();
     return false;
   });
@@ -897,9 +902,33 @@ define(['markdown','moment','js.cookie','vex/vex','navigation','lightbox2/js/lig
     var t = $(this), s = (t.scrollTop()-t[0].scrollHeight+t[0].offsetHeight) > -5;
     t.toggleClass('follow',s);
     if(s) t.removeClass('newscroll');
-  }));
+  },100));
   $('.panecontrol.fa-angle-double-right').click(function(){ localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur(); });
   $('.panecontrol.fa-angle-double-left').click(function(){ localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane'); });
   $('a.comment').click(function(){ $(this).closest('.post').find('.icon').click(); return false; });
   $('a.license').click(function(){ $(this).hide().next('.element').show(); return false; });
+  $('#chat>.firefoxwrapper').on('scroll',_.debounce(function(){
+    const f = $(this);
+    if(f.scrollTop()===0){
+      $('#messages>i').each(function(){
+        const t = $(this), minChat = $('#messages>.message').last().data('id'), m = $('#messages>.message').last(), s = m.offset().top;
+        t.addClass('fa-pulse').css('visibility','visible');
+        $.get('/chat?room='+$('html').css('--room')+'&to='+minChat+'&limit='+$('#messages>.message').length,function(data) {
+          t.remove();
+          $('#messages>.spacer:last-child').remove();
+          let newchat = $(data).appendTo($('#messages'));
+          f.scrollTop(m.offset().top-s);
+          processNewChat().then(()=>{ f.scrollTop(f.scrollTop()+m.offset().top-s); });
+        },'html');
+      });
+    }
+  },100)).trigger('scroll');
+  $('#chat').on('click','a.reply[href^="#"]', function(){
+    const hash = $(this).attr('href');
+    $(hash)[0].scrollIntoView({ behavior: 'smooth' });
+    $(hash).addClass('target').children('.markdown').off('animationend').on('animationend',function(){
+      $(hash).removeClass('target');
+    });
+    return false;
+  });
 });

@@ -415,7 +415,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
           <div class="firefoxwrapper follow">
             <div id="messages">
               <?if($room_has_chat){?>
-                <?$ch = curl_init('http://127.0.0.1/chat?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+                <?$ch = curl_init('http://127.0.0.1/chat?room='.$room.'&limit=20'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
                 <div style="flex: 1 0 10px;"></div>
               <?}elseif($question){?>
                 <div style="flex: 1 0 10px;">

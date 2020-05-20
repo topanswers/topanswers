@@ -53,7 +53,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <span>&nbsp;in&nbsp;</span>
           <a class="ellipsis" href="/<?=$d_community_name?>?<?=$d_chat_is_question_room?'q='.$d_room_question_id:'room='.$d_room_id?>" data-room="<?=$d_room_id?>" title="<?=$d_chat_room_name?>"><?=$d_chat_room_name?></a>
         <?}else{?>
-          <?=$d_chat_reply_id?'<a href="#c'.$d_chat_reply_id.'">&nbsp;replying to&nbsp;</a> '.($d_chat_reply_account_is_me?'<em>Me</em>':$d_chat_reply_account_name):''?>
+          <?=$d_chat_reply_id?'<a class="reply" href="#c'.$d_chat_reply_id.'">&nbsp;replying to&nbsp;</a> '.($d_chat_reply_account_is_me?'<em>Me</em>':$d_chat_reply_account_name):''?>
         <?}?>
       </span>
       <img title="<?=$d_chat_from_account_name?>" class="icon" src="/identicon?id=<?=$d_chat_from_account_id?>">

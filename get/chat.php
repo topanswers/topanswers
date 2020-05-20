@@ -6,19 +6,27 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('room not set');
 db("set search_path to chat,pg_temp");
 $authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
-if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from changes($1)",$_GET['fromid']));
+if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from changes($1)",$_GET['from']));
 if(isset($_GET['quote'])) exit(ccdb("select quote($1,$2)::varchar",$_GET['room'],$_GET['id']));
-$id = $_GET['id']??'';
+$one = isset($_GET['from']) && isset($_GET['to']);
+$limited = false;
+if(isset($_GET['limit'])){
+  $limit = min(250,intval($_GET['limit']));
+  $limited = true;
+}
 extract(cdb("select community_language,room_can_chat
                   , (select jsonb_agg(z)
                      from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,communicant_votes
                                  ,chat_editable_age,i_flagged,i_starred,chat_account_will_repeat,chat_flag_count,chat_star_count,chat_has_history,chat_pings,notification_id,chat_account_is_repeat,rn
                                 , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
-                           from range(nullif($1,'')::bigint,nullif($2,'')::bigint) z) z) chats
-             from one",$id,isset($_GET['one'])?$id:''),EXTR_PREFIX_ALL,'o');
+                           from range(nullif($1,'')::bigint,nullif($2,'')::bigint,nullif($3::integer,0)) z) z) chats
+             from one",$_GET['from']??'',$_GET['to']??'',$limited?$limit+1:0),EXTR_PREFIX_ALL,'o');
+$chat_gap = end($o_chats)['chat_gap'];
+$more = $limited && (count($o_chats)>$limit);
+if($more) array_pop($o_chats);
 include '../lang/chat.'.$o_community_language.'.php';
 ?>
-<?if(!isset($_GET['one'])){?><div class="spacer" style="line-height: 0; min-height: 0;"></div><?}?>
+<?if(!$one){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
 <?foreach($o_chats as $n=>$r){ extract($r);?>
   <div id="c<?=$chat_id?>"
        class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?><?=$notification_id?' notify':''?>"
@@ -33,7 +41,7 @@ include '../lang/chat.'.$o_community_language.'.php';
        data-at="<?=$chat_at_iso?>">
     <span class="who" title="<?=$account_is_me?'Me':$account_name?><?=$chat_reply_id?' replying to '.($reply_account_is_me?'Me':$reply_account_name):''?>">
       <?=$account_is_me?'<em>Me</em>':$account_name?>
-      <?=$chat_reply_id?'<a href="#c'.$chat_reply_id.'">replying to</a> '.($reply_account_is_me?'<em>Me</em>':$reply_account_name):''?>
+      <?=$chat_reply_id?'<a class="reply" href="#c'.$chat_reply_id.'">replying to</a> '.($reply_account_is_me?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
     <img title="<?=($account_name)?$account_name:'Anonymous'?> (<?=$l_stars?>: <?=$l_num($communicant_votes)?>)" class="icon" src="/identicon?id=<?=$account_id?>">
@@ -79,7 +87,10 @@ include '../lang/chat.'.$o_community_language.'.php';
       </span>
     <?}?>
   </div>
-  <?if(!$chat_account_is_repeat&&!isset($_GET['one'])){?>
+  <?if(!$chat_account_is_repeat&&!$one){?>
     <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div>
   <?}?>
+<?}?>
+<?if($more){?>
+  <i class="fa fa-fw fa-spinner"></i>
 <?}?>
