@@ -339,12 +339,14 @@ function h($f){
     "/page/community/community.js": "0943381cc23b6632",
     "/page/index/index.css": "e1255dd738e52b37",
     "/page/index/index.js": "1de6607b508b85ec",
-    "/page/question/question.css": "b014b5f79aeab248",
-    "/page/question/question.js": "3dc958d4181cfffb",
     "/page/question-history/question-history.css": "0b1e05e19dedad50",
     "/page/question-history/question-history.js": "6af05959cb4f2100",
+    "/page/question/question.css": "b014b5f79aeab248",
+    "/page/question/question.js": "3dc958d4181cfffb",
+    "/page/answer-history/answer-history.css": "e261ad744f68003f",
+    "/page/answer-history/answer-history.js": "ec8312ff47542d2d",
     "/post.css": "8f644eb2c7044a01",
-    "/tio.js": "0984e7f3a524834f",
-    "/require.config.js": "cc1e7ab658ebc4ea"
+    "/require.config.js": "8a15545aa8ca9905",
+    "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }

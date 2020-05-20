@@ -1,0 +1,29 @@
+html { box-sizing: border-box; font-family: var(--font-regular), sans-serif; }
+html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; scroll-behavior: smooth; }
+body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
+main { display: grid; align-items: start; grid-template-columns: auto 1fr; grid-template-rows: max-content 1fr; overflow: hidden; flex: 1 0 0; }
+textarea, pre, code { font-family: var(--font-monospace), monospace; }
+.CodeMirror { font-family: var(--font-monospace), monospace !important; }
+
+.icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
+.when { font-size: 14px; color: rgb(var(--rgb-dark)); white-space: nowrap; }
+.diff { background: rgb(var(--rgb-light)); overflow-wrap: break-word; white-space: pre-wrap; font-family: var(--font-monospace), monospace; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; max-height: 100%; font-size: 90%; }
+.markdown { background: rgb(var(--rgb-white)); padding: 8px; font-size: 16px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; max-height: 100%; overflow-y: auto; }
+.editor-wrapper { height: 100%; overflow-y: auto; }
+
+#revisions { height: 100%; background: rgb(var(--rgb-light)); border-right: 1px solid rgba(var(--rgb-dark),0.6); font-size: 14px; overflow-y: auto; grid-area: 1 / 1 / 3 / 2; }
+#revisions > div { padding: 2px 2px 3px 5px; border-bottom: 1px solid rgba(var(--rgb-dark),0.6); display: grid; grid-template-rows: auto; grid-template-columns: auto 22px; grid-column-gap: 5px; cursor: pointer; color: unset; text-decoration: unset; }
+#revisions > div.active { box-shadow: 0 0 0 1px rgb(var(--rgb-highlight)) inset; }
+#history-bar { display: grid; grid-template-columns: auto 1fr auto; margin: 10px 10px 0 10px; font-size: 14px; grid-area: 1 / 2 / 2 / 3; }
+#history-bar > div { margin: 0; }
+#history-bar > div:last-child { grid-area: 1 / 3 / 2 / 4; }
+#content { padding: 10px; grid-area: 2 / 2 / 3 / 3; overflow: hidden; height: 100%; }
+#content > div { overflow: hidden; height: 100%; position: relative; }
+#content > div:not(.active) { display: none; }
+#content .panel { display: grid; grid-template-rows: 1fr; grid-gap: 10px; align-items: start; overflow: hidden; width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+#content .diff-container { grid-template-columns: 1fr; }
+#content .before-container, #content .after-container { grid-template-columns: 1fr 1fr; visibility: hidden; }
+
+.panel>div>.CodeMirror { height: auto !important; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; font-size: 90%; }
+.panel>div>.CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
+.panel>div>.CodeMirror-wrap pre { word-break: break-word; }
