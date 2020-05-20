@@ -80,15 +80,14 @@ a[data-lightbox] img { cursor: zoom-in; }
 #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: flex; visibility: hidden; flex-direction: column; scroll-behavior: smooth; }
 #notifications>hr { margin: 14px 6px; border: 1px solid rgb(var(--rgb-dark)); }
 #more-notifications { display: block; text-align: center; font-size: 12px; margin: 10px;}
-#more-chat { display: block; text-align: center; font-size: 12px; margin: 10px;}
 #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
 #messages { display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; background: rgb(var(--rgb-mid)); padding: 4px; }
 .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }
-.firefoxwrapper { overflow-y: auto; overflow-x: hidden; xheight: 100%; flex: 1 1 0; }
+.firefoxwrapper { overflow-y: auto; overflow-x: hidden; flex: 1 1 0; }
 .firefoxwrapper>* { min-height: 100%; }
 #messages .message .who { top: -1.3em; }
 #messages .message:not(:hover) .when { opacity: 0; }
-#messages>i { display: block; visibility: hidden; margin: auto; margin-bottom: 20px; }
+#messages>i { display: block; visibility: hidden; margin: auto; margin-bottom: 20px; color: rgb(var(--rgb-dark)); }
 #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column-reverse; }
 #starboard .message { padding: 4px; padding-top: 1.3em; }
 #starboard .message:not(:first-child) { border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
