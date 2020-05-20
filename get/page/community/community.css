@@ -87,7 +87,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 .firefoxwrapper>* { min-height: 100%; }
 #messages .message .who { top: -1.3em; }
 #messages .message:not(:hover) .when { opacity: 0; }
-#messages>i { display: block; visibility: hidden; margin: auto; margin-bottom: 20px; color: rgb(var(--rgb-dark)); }
+#messages>i { display: block; visibility: hidden; margin: 10px auto; color: rgb(var(--rgb-dark)); }
 #starboard { background: rgb(var(--rgb-mid)); overflow-x: hidden; overflow-y: auto; display: flex; flex-direction: column-reverse; }
 #starboard .message { padding: 4px; padding-top: 1.3em; }
 #starboard .message:not(:first-child) { border-bottom: 1px solid rgba(var(--rgb-dark),0.6); }
