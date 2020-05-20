@@ -65,33 +65,41 @@ begin
 end$$;
 --
 --
-create function _new_question_tag(aid integer, qid integer, tid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid question') where not exists (select 1 from question where question_id=qid and community_id=get_community_id());
-  select _error('invalid tag') where not exists (select 1 from tag where tag_id=tid and community_id=get_community_id());
-  --
-  select _ensure_communicant(get_account_id(),community_id) from question where question_id=qid;
-  --
-  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
-                                                  union all
-                                                  select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
-     , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id)
-             select qid,tag_id,community_id,aid
-             from w natural join tag
-             where tag_id not in (select tag_id from question_tag_x where question_id=qid)
-             returning tag_id)
-  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
-  --
-  update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from question_tag_x where question_id=qid) where question_id=qid;
-$$;
---
 create function new_tag(id integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('invalid question') where get_question_id() is null;
+  select _error('invalid tag') where not exists (select 1 from tag where tag_id=id and community_id=get_community_id());
   select _error(429,'rate limit') where exists (select 1
                                                 from question_tag_x_history
                                                 where question_tag_x_history_added_by_account_id=get_account_id() and question_tag_x_added_at>current_timestamp-'1s'::interval);
-  select _new_question_tag(get_account_id(),get_question_id(),id);
+  --
+  select _ensure_communicant(get_account_id(),community_id) from question where question_id=get_question_id();
+  --
+  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=id
+                                                  union all
+                                                  select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
+     , i as (insert into question_tag_x(question_id,tag_id,community_id,account_id)
+             select get_question_id(),tag_id,community_id,get_account_id()
+             from w natural join tag
+             where tag_id not in (select tag_id from question_tag_x where question_id=get_question_id())
+             returning tag_id)
+  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
+  --
+  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=id
+                                                  union all
+                                                  select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
+     , i as (insert into mark(question_id,tag_id,community_id,account_id)
+             select get_question_id(),tag_id,community_id,get_account_id()
+             from w natural join tag
+             where tag_id not in (select tag_id from mark where question_id=get_question_id())
+             returning tag_id)
+     , h as (insert into mark_history(question_id,tag_id,community_id,account_id)
+             select get_question_id(),tag_id,community_id,get_account_id()
+             from w natural join tag
+             where tag_id not in (select tag_id from mark where question_id=get_question_id()))
+  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
+  --
+  update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from question_tag_x where question_id=get_question_id()) where question_id=get_question_id();
 $$;
 --
 create function remove_tag(tid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
@@ -103,8 +111,8 @@ create function remove_tag(tid integer) returns void language sql security defin
                                                 where question_tag_x_history_removed_by_account_id=get_account_id() and question_tag_x_removed_at>current_timestamp-'1s'::interval);
   --
   select question.remove_tag(tag_implies_id)
-  from question_tag_x natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
-  where question_id=get_question_id() and tag_id=tid and tag_name like parent_name||'%' and not exists(select 1 from question_tag_x natural join tag where question_id=get_question_id() and tag_id<>tid and tag_implies_id=t.tag_implies_id);
+  from mark natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
+  where question_id=get_question_id() and tag_id=tid and tag_name like parent_name||'%' and not exists(select 1 from mark natural join tag where question_id=get_question_id() and tag_id<>tid and tag_implies_id=t.tag_implies_id);
   --
   insert into question_tag_x_history(question_id,tag_id,community_id,question_tag_x_history_added_by_account_id,question_tag_x_history_removed_by_account_id,question_tag_x_added_at)
   select question_id,tid,community_id,account_id,get_account_id(),question_tag_x_at from question_tag_x where question_id=get_question_id() and tag_id=tid;
@@ -112,7 +120,13 @@ create function remove_tag(tid integer) returns void language sql security defin
   delete from question_tag_x where question_id=get_question_id() and tag_id=tid;
   update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
   --
-  update question set question_poll_minor_id = default, question_tag_ids = (select coalesce(array_agg(tag_id),array[]::integer[]) from question_tag_x where question_id=get_question_id()) where question_id=get_question_id();
+  insert into mark_history(question_id,tag_id,community_id,account_id,mark_history_is_removal)
+  select question_id,tid,community_id,get_account_id(),true from mark where question_id=get_question_id() and tag_id=tid;
+  --
+  delete from mark where question_id=get_question_id() and tag_id=tid;
+  update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
+  --
+  update question set question_poll_minor_id = default, question_tag_ids = (select coalesce(array_agg(tag_id),array[]::integer[]) from mark where question_id=get_question_id()) where question_id=get_question_id();
 $$;
 --
 create function new(sid integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,pg_temp as $$

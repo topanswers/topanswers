@@ -483,6 +483,32 @@ create table tag(
 );
 create index tag_implies_id_fk_ind on tag(tag_implies_id);
 
+create table mark(
+  question_id integer
+, tag_id integer
+, community_id integer not null
+, account_id integer not null references account
+, mark_at timestamptz default current_timestamp not null
+, primary key (question_id,tag_id)
+, unique (tag_id,question_id)
+, foreign key (community_id,question_id) references question (community_id,question_id)
+, foreign key (community_id,tag_id) references tag (community_id,tag_id)
+);
+
+create table mark_history(
+  mark_history_id integer generated always as identity primary key
+, question_id integer
+, tag_id integer
+, community_id integer not null
+, account_id integer not null references account
+, mark_history_is_removal boolean default false not null
+, mark_history_at timestamptz default current_timestamp not null
+, foreign key (community_id,question_id) references question (community_id,question_id)
+, foreign key (community_id,tag_id) references tag (community_id,tag_id)
+);
+create index mark_history_question_id_fk_ind on mark_history(question_id,tag_id);
+create index mark_history_tag_id_fk_ind on mark_history(tag_id,question_id);
+
 create table question_tag_x(
   question_id integer
 , tag_id integer
