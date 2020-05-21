@@ -35,13 +35,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <?if($s_community_about_question_id){?><a href="/<?=$s_community_name?>?q=<?=$s_community_about_question_id?>">about</a><?}?>
           </div>
         <?}?>
-        <?if($dev){?>
-          <select id="environment" class="element" style="margin: 6px;">
-            <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
-              <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
-            <?}?>
-          </select>
-        <?}?>
       </div>
     </div>
   </div>

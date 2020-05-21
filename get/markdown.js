@@ -9,6 +9,7 @@ define(['jquery'
        ,'pako'
        ,'clipboard'
        ,'promise-all-settled'
+       ,'lightbox2/js/lightbox'
        ,'<?=implode(array_map(function($e){ return 'codemirror/mode/'.$e.'/'.$e; },['apl','clike','clojure','css','erlang','gfm','go','haskell','htmlmixed','javascript','julia','lua'
                                                                                    ,'markdown','mllike','php','powershell','python','shell','sql','stex','vb','xml']),"','")?>'
                                                                                    ],function($,_,QP,CodeMirror){

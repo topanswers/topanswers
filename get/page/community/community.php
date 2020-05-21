@@ -112,7 +112,17 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
     <header>
       <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
       <?if(!$question){?>
-        <div class="container shrink"><input class="element" type="search" id="search" value="<?=$_GET['search']??''?>" placeholder="🔍&#xFE0E; <?=$l_search_placeholder?>" autocomplete="off"><div class="element fa fa-fw fa-spinner fa-pulse"></div></div>
+        <div class="container shrink">
+          <input class="element" type="search" id="search" value="<?=$_GET['search']??''?>" placeholder="🔍&#xFE0E; <?=$l_search_placeholder?>" autocomplete="off">
+          <div class="element fa fa-fw fa-spinner fa-pulse"></div>
+          <?if($dev){?>
+            <select id="environment" class="element" style="margin: 6px;">
+              <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
+                <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
+              <?}?>
+            </select>
+          <?}?>
+        </div>
       <?}?>
       <div>
         <?if(!$auth){?><span class="element"><input id="link" type="button" value="log in"><input id="join" type="button" value="join (sets cookie)"></span><?}?>
@@ -125,7 +135,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
               <input type="hidden" name="community" value="<?=$community_name?>">
               <input type="hidden" name="sesiteid" value="">
               <input type="hidden" name="seids" value="">
-              <a id="se" href="." class="button">Import</a>
+              <a id="import" href="." class="button">Import</a>
             </form>
           <?}?>
           <a href="/question?community=<?=$community_name?>" class="button"><?=$community_ask_button_text?></a>
@@ -379,7 +389,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
       <?}?>
     </div>
   </main>
-  <div id="dummyresizerx"></div>
+  <div id="dummyresizer"></div>
   <div id="chat-wrapper" class="pane hidepane">
     <footer>
       <div id="community-rooms">
