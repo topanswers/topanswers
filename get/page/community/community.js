@@ -527,6 +527,10 @@ define(['markdown','moment','js.cookie']
   $('#chat-wrapper').on('click','.fa-star', function(){ starflag($(this),'star',-1); return false; });
   $('#chat-wrapper').on('click','.fa-flag-o', function(){ starflag($(this),'flag',1); return false; });
   $('#chat-wrapper').on('click','.fa-flag', function(){ starflag($(this),'flag',-1); return false; });
+  if('crew' in $('html').data()){
+    $('#chat-wrapper').on('click','.fa-flag-o', function(){ const m = $(this).closest('.message'); m.attr('data-crew-flags',m.data('crew-flags')+1); return false; });
+    $('#chat-wrapper').on('click','.fa-flag', function(){ const m = $(this).closest('.message'); m.attr('data-crew-flags',m.data('crew-flags')-1); return false; });
+  }
   $('#chat-wrapper').on('click','.notify', function(){
     var t = $(this);
     $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: t.attr('data-notification-id') }, xhrFields: { withCredentials: true } }).done(function(){

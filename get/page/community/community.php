@@ -81,6 +81,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
              "
       <?=$auth?'data-auth ':''?>
       <?=$dev?'data-dev ':''?>
+      <?=$communicant_is_post_flag_crew?'data-crew ':''?>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <noscript><link rel="stylesheet" href="<?=h("/noscript.css")?>"></noscript>

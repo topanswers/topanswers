@@ -17,7 +17,7 @@ if(isset($_GET['limit'])){
 extract(cdb("select community_language,room_can_chat
                   , (select jsonb_agg(z)
                      from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,communicant_votes
-                                 ,chat_editable_age,i_flagged,i_starred,chat_account_will_repeat,chat_is_deleted,chat_flag_count,chat_star_count,chat_has_history,chat_pings,notification_id
+                                 ,chat_editable_age,i_flagged,i_starred,chat_account_will_repeat,chat_crew_flags,chat_flag_count,chat_star_count,chat_has_history,chat_pings,notification_id
                                  ,chat_account_is_repeat,rn
                                 , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
                            from range(nullif($1,'')::bigint,nullif($2,'')::bigint,nullif($3::integer,0)) z) z) chats
@@ -30,7 +30,7 @@ include '../lang/chat.'.$o_community_language.'.php';
 <?if(!$one){?><div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div><?}?>
 <?foreach($o_chats as $n=>$r){ extract($r);?>
   <div id="c<?=$chat_id?>"
-       class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?><?=$notification_id?' notify':''?><?=$chat_is_deleted?' deleted':''?>"
+       class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?><?=$notification_id?' notify':''?><?=($chat_crew_flags>0)?' deleted':''?>"
        data-id="<?=$chat_id?>"
        data-chat-id="<?=$chat_id?>"
        <?if($notification_id){?>data-notification-id="<?=$notification_id?>"<?}?>
@@ -38,6 +38,7 @@ include '../lang/chat.'.$o_community_language.'.php';
        data-reply-id="<?=$chat_reply_id?$chat_reply_id:''?>"
        data-reply-name="<?=$reply_account_name?>"
        data-pings="<?=$chat_pings?>"
+       data-crew-flags="<?=$chat_crew_flags?>"
        data-change-id="<?=$chat_change_id?>"
        data-at="<?=$chat_at_iso?>">
     <span class="who" title="<?=$account_is_me?'Me':$account_name?><?=$chat_reply_id?' replying to '.($reply_account_is_me?'Me':$reply_account_name):''?>">

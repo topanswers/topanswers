@@ -38,6 +38,7 @@ create function range(startid bigint, endid bigint, lim integer = 100)
                                   , i_starred boolean
                                   , chat_account_will_repeat boolean
                                   , chat_is_deleted boolean
+                                  , chat_crew_flags integer
                                   , chat_flag_count integer
                                   , chat_star_count integer
                                   , chat_has_history boolean
@@ -88,6 +89,7 @@ create function range(startid bigint, endid bigint, lim integer = 100)
        , exists(select 1 from chat_star where chat_id=c.chat_id and account_id=(select account_id from g)) i_starred
        , (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and (lead(chat_reply_id) over (order by chat_at desc)) is null chat_account_will_repeat
        , chat_crew_flags>0 chat_is_deleted
+       , chat_crew_flags
        , chat_flags+chat_crew_flags chat_flag_count
        , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
        , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
