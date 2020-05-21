@@ -111,19 +111,19 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
   <main class="pane">
     <header>
       <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-      <?if(!$question){?>
-        <div class="container shrink">
+      <div class="container shrink">
+        <?if(!$question){?>
           <input class="element" type="search" id="search" value="<?=$_GET['search']??''?>" placeholder="🔍&#xFE0E; <?=$l_search_placeholder?>" autocomplete="off">
           <div class="element fa fa-fw fa-spinner fa-pulse"></div>
-          <?if($dev){?>
-            <select id="environment" class="element" style="margin: 6px;">
-              <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
-                <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
-              <?}?>
-            </select>
-          <?}?>
-        </div>
-      <?}?>
+        <?}?>
+        <?if($dev){?>
+          <select id="environment" class="element" style="margin: 6px;">
+            <?foreach(db("select environment_name from environment") as $r){ extract($r);?>
+              <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
+            <?}?>
+          </select>
+        <?}?>
+      </div>
       <div>
         <?if(!$auth){?><span class="element"><input id="link" type="button" value="log in"><input id="join" type="button" value="join (sets cookie)"></span><?}?>
         <?if($auth){?>

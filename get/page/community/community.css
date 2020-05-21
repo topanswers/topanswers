@@ -128,6 +128,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 .message .who>a[href^='#'] { text-decoration: none; }
 .message .when { color: rgb(var(--rgb-dark)); transition: opacity linear 0.1s; }
 .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: rgb(var(--rgb-white)); overflow: auto; transition: background linear 0.1s; }
+.message.deleted .markdown { background: linear-gradient(rgba(var(--rgb-warning),0.13),rgba(var(--rgb-warning),0.13)), rgb(var(--rgb-white)); }
 .message .markdown img { max-height: 120px; }
 .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-top: 1px; margin-left: 1px; }
 .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }

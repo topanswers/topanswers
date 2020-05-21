@@ -723,56 +723,58 @@ define(['markdown','moment','js.cookie']
   }).trigger('input');
   $('#chattext').keydown(function(e){
     var t = $(this), msg = t.val(),  replyid = $('#status').attr('data-replyid'), c = $('#c'+replyid), edit = $('#status').attr('data-editid')!=='', editid = $('#status').attr('data-editid'), post, arr = [];
-    if(e.which===13) {
-      if(!e.shiftKey) {
-        if(msg.trim()){
-          clearTimeout(chatTimer);
-          renderPreview(true);
-          $('.ping').each(function(){ arr.push($(this).data('id')); });
-          if(edit){
-            post = { msg: $('#preview>.markdown').attr('data-markdown'), room: $('html').css('--room'), editid: editid, replyid: replyid, pings: arr, action: 'edit' };
-            $('#c'+editid).css('opacity',0.5);
-          }else{
-            post = { room: $('html').css('--room')
-                   , msg: $('#preview>.markdown').attr('data-markdown')
-                   , replyid: replyid
-                   , pings: arr
-                   , action: 'new'
-                   , read: $.map(JSON.parse(localStorage.getItem('read')), function(v){ return _.last(v); }) };
-          }
-          $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).done(function(){
-            localStorage.removeItem('read');
-            localStorage.removeItem('readCount');
+    if(!t.prop('disabled')) { //Safari workaround for double-posting
+      if(e.which===13) {
+        if(!e.shiftKey) {
+          if(msg.trim()){
+            $(this).prop('disabled',true);
+            clearTimeout(chatTimer);
+            renderPreview(true);
+            $('.ping').each(function(){ arr.push($(this).data('id')); });
             if(edit){
-              $('#c'+editid).css('opacity',1).find('.markdown').attr('data-markdown',msg).attr('data-reply-id',replyid).end().each(renderChat);
-              checkChat();
+              post = { msg: $('#preview>.markdown').attr('data-markdown'), room: $('html').css('--room'), editid: editid, replyid: replyid, pings: arr, action: 'edit' };
+              $('#c'+editid).css('opacity',0.5);
             }else{
-              if(replyid) $('#notifications .message[data-id='+replyid+']').remove();
-              updateChat(true);
+              post = { room: $('html').css('--room')
+                     , msg: $('#preview>.markdown').attr('data-markdown')
+                     , replyid: replyid
+                     , pings: arr
+                     , action: 'new'
+                     , read: $.map(JSON.parse(localStorage.getItem('read')), function(v){ return _.last(v); }) };
             }
-            $('#cancel').click();
-            t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
-            $('#listen').html($('html').css('--l_mute')).attr('id','mute');
-          }).fail(function(r){
-            alert(r.status+' '+r.statusText+'\n'+r.responseText);
-            t.prop('disabled',false).focus();
-          });
-          $('.ping').removeClass('ping locked');
-          $(this).prop('disabled',true);
+            $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).done(function(){
+              localStorage.removeItem('read');
+              localStorage.removeItem('readCount');
+              if(edit){
+                $('#c'+editid).css('opacity',1).find('.markdown').attr('data-markdown',msg).attr('data-reply-id',replyid).end().each(renderChat);
+                checkChat();
+              }else{
+                if(replyid) $('#notifications .message[data-id='+replyid+']').remove();
+                updateChat(true);
+              }
+              $('#cancel').click();
+              t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
+              $('#listen').html($('html').css('--l_mute')).attr('id','mute');
+            }).fail(function(r){
+              alert(r.status+' '+r.statusText+'\n'+r.responseText);
+              t.prop('disabled',false).focus();
+            });
+            $('.ping').removeClass('ping locked');
+          }
+          return false;
+        }else{
+          textareaInsertTextAtCursor($(this),'  ');
         }
+      }else if(e.which===38){
+        if(msg===''){
+          $('#messages .message.mine').first().find('.fa-edit').click()
+          return false;
+        }
+      }else if(e.which===27){
+        $('#cancel').click();
+        t.val('').css('height',$(this).data('initialheight')).css('min-height',0).focus().trigger('input');
         return false;
-      }else{
-        textareaInsertTextAtCursor($(this),'  ');
       }
-    }else if(e.which===38){
-      if(msg===''){
-        $('#messages .message.mine').first().find('.fa-edit').click()
-        return false;
-      }
-    }else if(e.which===27){
-      $('#cancel').click();
-      t.val('').css('height',$(this).data('initialheight')).css('min-height',0).focus().trigger('input');
-      return false;
     }
   });
   document.addEventListener('visibilitychange', function(){ numNewChats = 0; if(document.visibilityState==='visible') document.title = title; else latestChatId = $('#messages .message:first').data('id'); }, false);
