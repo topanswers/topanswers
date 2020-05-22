@@ -1,7 +1,7 @@
 try { for (let f of document.getElementsByClassName('firefoxwrapper')) f.scrollTop = 1000000; }catch(e){ console.error(e); }
 
 define(['markdown','moment','js.cookie']
-       .concat(document.documentElement.style.getPropertyValue('--question')?['starrr','select2']:['jquery.simplePagination']),function([$,_,CodeMirror],moment,Cookies){
+       .concat(document.documentElement.style.getPropertyValue('--question')?['starrr','select2']:['jquery.simplePagination']),function([$,_,CodeMirror,tioRequest],moment,Cookies){
 
   moment.locale($('html').css('--jslang'));
 

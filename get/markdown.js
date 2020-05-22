@@ -1,18 +1,18 @@
 define(['jquery'
        ,'lodash'
        ,'qp/qp'
+       ,'pako'
        ,'codemirror/lib/codemirror'
        ,'codemirror/mode/meta','codemirror/addon/mode/overlay','codemirror/addon/runmode/runmode','codemirror/addon/runmode/colorize','codemirror/addon/display/placeholder'
        ,'katex'
        ,'markdown-it','markdown-it-sup','markdown-it-sub','markdown-it-emoji','markdown-it-deflist','markdown-it-footnote','markdown-it-abbr','markdown-it-container'
        ,'markdown-it-inject-linenumbers','markdown-it-object','markdown-it-codeinput','markdown-it-for-inline','markdown-it-katex','markdownItAnchor','markdownItTocDoneRight'
-       ,'pako'
        ,'clipboard'
        ,'promise-all-settled'
        ,'lightbox2/js/lightbox'
        ,'<?=implode(array_map(function($e){ return 'codemirror/mode/'.$e.'/'.$e; },['apl','clike','clojure','css','erlang','gfm','go','haskell','htmlmixed','javascript','julia','lua'
                                                                                    ,'markdown','mllike','php','powershell','python','shell','sql','stex','vb','xml']),"','")?>'
-                                                                                   ],function($,_,QP,CodeMirror){
+                                                                                   ],function($,_,QP,pako,CodeMirror){
   function tioRequest(code,lang){                                                                       
     var oneTimeToken = "'" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + "'";                                               
     var runRequest = new XMLHttpRequest;                                                                                                                                             
@@ -280,6 +280,6 @@ define(['jquery'
   
   }());
 
-  return [$,_,CodeMirror];
+  return [$,_,CodeMirror,tioRequest];
 
 });
