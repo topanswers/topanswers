@@ -17,7 +17,8 @@ create extension "pgcrypto" schema x_pgcrypto;
 create schema x_pg_stat_statements;
 create extension "pg_stat_statements" schema x_pg_stat_statements;
 
-alter database postgres set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
+select current_database() \gset
+alter database :current_database set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
 set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
 
 create table one(
@@ -38,8 +39,65 @@ create table font(
 , font_is_monospace boolean not null
 );
 
-create type community_type_enum as enum ('public','private');
+create table license(
+  license_id integer generated always as identity primary key
+, license_name text unique not null
+, license_href text
+, license_is_versioned boolean default false not null
+, license_description text unique not null
+);
 
+create table codelicense(
+  codelicense_id integer generated always as identity primary key
+, codelicense_name text unique not null
+, codelicense_is_versioned boolean default false not null
+, codelicense_description text unique not null
+);
+
+create table kind(
+  kind_id integer generated always as identity primary key
+, kind_can_all_edit boolean default true not null
+, kind_has_answers boolean default true not null
+, kind_has_question_votes boolean default false not null
+, kind_has_answer_votes boolean default true not null
+, kind_minimum_votes_to_answer integer default 0 not null
+, kind_allows_question_multivotes boolean default true not null
+, kind_allows_answer_multivotes boolean default true not null
+, kind_show_answer_summary_toc boolean default false not null
+, kind_questions_by_community boolean default false not null
+, kind_answers_by_community boolean default false not null
+);
+
+create table label(
+  label_id integer generated always as identity primary key
+, kind_id integer not null references kind
+, label_name text not null
+, label_code_language text 
+, label_tio_language text
+, label_url text
+, unique (kind_id,label_id)
+);
+
+create table account(
+  account_id integer generated always as identity primary key
+, account_name text
+, account_create_at timestamptz not null default current_timestamp
+, account_change_at timestamptz not null default current_timestamp
+, account_image bytea check(length(account_image)>0)
+, account_change_id bigint generated always as identity unique
+, account_uuid uuid not null default x_uuid_ossp.uuid_generate_v4()
+, account_is_dev boolean default false not null
+, account_license_id integer references license default 4 not null
+, account_codelicense_id integer references codelicense default 1 not null
+, account_notification_id integer generated always as identity unique
+, account_is_imported boolean default false not null
+, account_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
+, account_permit_later_license boolean default false not null
+, account_permit_later_codelicense boolean default false not null
+);
+create unique index account_rate_limit_ind on account(account_create_at);
+
+create type community_type_enum as enum ('public','private');
 create table community(
   community_id integer generated always as identity primary key
 , community_name text not null
@@ -65,7 +123,7 @@ create table community(
 , community_banner_markdown text default '' not null
 , community_wiki_account_id integer not null references account
 , community_tio_language text
-, community_import_sanction_id integer references sanction
+, community_import_sanction_id integer -- references sanction
 );
 
 create table source(
@@ -86,28 +144,13 @@ create table room(
 , room_image bytea check(length(room_image)>0)
 , room_can_listen boolean not null default true
 , room_latest_chat_id bigint
-, room_question_id integer references question deferrable initially deferred
+, room_question_id integer -- references question deferrable initially deferred
 , unique (community_id,room_id)
 );
 create unique index room_latest_ind on room(room_id) include(room_latest_chat_id) where room_latest_chat_id is not null;
 create index room_question_id_fk_ind on room(room_question_id);
 
 alter table community add foreign key(community_room_id) references room deferrable initially deferred;
-
-create table license(
-  license_id integer generated always as identity primary key
-, license_name text unique not null
-, license_href text
-, license_is_versioned boolean default false not null
-, license_description text unique not null
-);
-
-create table codelicense(
-  codelicense_id integer generated always as identity primary key
-, codelicense_name text unique not null
-, codelicense_is_versioned boolean default false not null
-, codelicense_description text unique not null
-);
 
 create table notification(
   notification_id bigint generated always as identity primary key
@@ -117,25 +160,6 @@ create table notification(
 , unique (account_id,notification_id)
 );
 create index notification_latest_ind on notification(account_id,notification_dismissed_at desc nulls first);
-
-create table account(
-  account_id integer generated always as identity primary key
-, account_name text
-, account_create_at timestamptz not null default current_timestamp
-, account_change_at timestamptz not null default current_timestamp
-, account_image bytea check(length(account_image)>0)
-, account_change_id bigint generated always as identity unique
-, account_uuid uuid not null default x_uuid_ossp.uuid_generate_v4()
-, account_is_dev boolean default false not null
-, account_license_id integer references license default 4 not null
-, account_codelicense_id integer references codelicense default 1 not null
-, account_notification_id integer generated always as identity unique
-, account_is_imported boolean default false not null
-, account_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
-, account_permit_later_license boolean default false not null
-, account_permit_later_codelicense boolean default false not null
-);
-create unique index account_rate_limit_ind on account(account_create_at);
 
 create table member(
   account_id integer references account
@@ -336,20 +360,6 @@ create table chat_hour(
 , foreign key (room_id,chat_year,chat_month,chat_day) references chat_day
 );
 
-create table kind(
-  kind_id integer generated always as identity primary key
-, kind_can_all_edit boolean default true not null
-, kind_has_answers boolean default true not null
-, kind_has_question_votes boolean default false not null
-, kind_has_answer_votes boolean default true not null
-, kind_minimum_votes_to_answer integer default 0 not null
-, kind_allows_question_multivotes boolean default true not null
-, kind_allows_answer_multivotes boolean default true not null
-, kind_show_answer_summary_toc boolean default false not null
-, kind_questions_by_community boolean default false not null
-, kind_answers_by_community boolean default false not null
-);
-
 create table sanction(
   sanction_id integer generated always as identity primary key
 , kind_id integer references kind not null
@@ -365,6 +375,7 @@ create table sanction(
 );
 create unique index sanction_ind on sanction(community_id,sanction_ordinal);
 create unique index sanction_default_ind on sanction(community_id) where sanction_is_default;
+alter table community add foreign key(community_import_sanction_id) references sanction;
 
 create table question(
   question_id integer generated always as identity primary key
@@ -405,6 +416,7 @@ create index question_search_title_ind on question using gin (community_id, ques
 create index question_search_markdown_ind on question using gin (community_id, question_markdown gin_trgm_ops);
 create index question_search_simple_ind on question using gin (community_id,kind_id,question_tag_ids,question_poll_major_id);
 create index question_room_id_fk_ind on question(question_room_id);
+alter table room add foreign key(room_question_id) references question deferrable initially deferred;
 
 alter table community add foreign key (community_about_question_id) references question;
 alter table community add foreign key (community_id,community_about_question_id) references question(community_id,question_id);
@@ -458,16 +470,6 @@ create table answer_history(
 );
 create unique index answer_history_rate_limit_ind on answer_history(account_id,answer_history_at);
 create index answer_history_answer_ind on answer_history(answer_id) include(account_id);
-
-create table label(
-  label_id integer generated always as identity primary key
-, kind_id integer not null references kind
-, label_name text not null
-, label_code_language text 
-, label_tio_language text
-, label_url text
-, unique (kind_id,label_id)
-);
 
 create table tag(
   tag_id integer generated always as identity primary key

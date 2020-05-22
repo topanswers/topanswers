@@ -1,0 +1,39 @@
+1	4	APL (Dyalog Unicode)	apl	apl-dyalog	https://www.dyalog.com
+2	4	SQL (Postgres)	text/x-pgsql	\N	https://www.postgresql.org/docs/current/sql.html
+3	4	Python 2	text/x-python	\N	https://docs.python.org/2
+4	4	Kotlin	text/x-kotlin	\N	https://kotlinlang.org
+5	4	05AB1E	\N	\N	https://github.com/Adriandmen/05AB1E
+6	4	APL (Dyalog Extended)	apl	apl-dyalog-extended	https://github.com/abrudz/dyalog-apl-extended
+7	4	Haskell	text/x-haskell	haskell	https://www.haskell.org
+8	4	golfscript	\N	golfscript	http://www.golfscript.com
+9	4	CJam	\N	cjam	https://sourceforge.net/p/cjam/wiki/Home
+10	4	W	\N	\N	https://github.com/A-ee/w
+11	4	Stax	\N	stax	https://github.com/tomtheisen/stax
+12	4	Clojure	text/x-clojure	clojure	https://clojure.org
+13	4	NST	\N	\N	https://github.com/A-ee/NST
+14	4	MathGolf	\N	mathgolf	https://github.com/maxbergmark/mathgolf
+15	4	Python 3	text/x-python	python3	https://docs.python.org/3
+16	4	Clean	\N	clean	https://clean.cs.ru.nl/Clean
+17	4	C (gcc)	text/x-csrc	c-gcc	https://gcc.gnu.org
+18	4	Erlang (escript)	text/x-erlang	erlang-escript	http://erlang.org/doc/man/escript.html
+19	4	Julia 1.0	text/x-julia	julia1x	https://julialang.org
+20	4	J	\N	j	https://www.jsoftware.com/#/README
+21	4	Retina	\N	retina	https://github.com/m-ender/retina/wiki/The-Language
+22	4	QuadR	apl	quadr	https://github.com/abrudz/QuadRS
+23	4	TeX	text/x-stex	\N	https://www.tug.org/begin.html
+24	4	Underload	\N	underload	https://github.com/catseye/stringie
+25	4	SQL (Oracle)	text/x-sql	\N	https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/index.html
+26	4	PowerShell Core	application/x-powershell	powershell-core	https://github.com/PowerShell/PowerShell
+27	4	Ahead	\N	ahead	https://github.com/ajc2/ahead
+28	4	Stuck	\N	\N	https://esolangs.org/wiki/Stuck
+29	4	Actually	\N	actually	https://github.com/Mego/Seriously
+30	4	Keg	\N	keg	https://github.com/JonoCode9374/Keg
+31	4	Japt	\N	japt	https://github.com/ETHproductions/japt
+32	4	Agony	\N	agony	https://esolangs.org/wiki/Agony
+33	4	SQL (SQLite)	text/x-sql	sqlite	https://sqlite.org/lang.html
+34	4	ABC Assembler	\N	abc-assembler	https://repository.ubn.ru.nl/handle/2066/113882
+35	4	PHP	text/x-php	php	https://www.php.net
+36	4	Triangularity	\N	triangularity	https://github.com/Mr-Xcoder/Triangularity
+37	4	C#	text/x-csharp	cs-core	https://en.wikipedia.org/wiki/C_Sharp_(programming_language)
+38	4	LuaTeX	text/x-stex	null	http://www.luatex.org/
+39	4	LaTeX	text/x-stex	null	https://www.latex-project.org

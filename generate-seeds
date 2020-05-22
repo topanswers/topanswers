@@ -1,0 +1,70 @@
+#!/bin/bash
+psql postgres postgres -c "\copy (select '\x0000000000000000000000000000000000000000000000000000000000000000','',one_image from one) to '~/git/sql/seed/one'"
+psql postgres postgres -c "\copy (select sesite_id,sesite_url from sesite order by sesite_id) to '~/git/sql/seed/sesite'"
+psql postgres postgres -c "\copy (select font_id,font_name,font_is_monospace from font order by font_id) to '~/git/sql/seed/font'"
+psql postgres postgres -c "\copy (select license_id,license_name,license_href,license_is_versioned,license_description from license order by license_id) to '~/git/sql/seed/license'"
+psql postgres postgres -c "\copy (select codelicense_id,codelicense_name,codelicense_is_versioned,codelicense_description from codelicense order by codelicense_id) to '~/git/sql/seed/codelicense'"
+
+psql postgres postgres -c "\copy (select kind_id
+                                       , kind_can_all_edit
+                                       , kind_has_answers
+                                       , kind_has_question_votes
+                                       , kind_has_answer_votes
+                                       , kind_minimum_votes_to_answer
+                                       , kind_allows_question_multivotes
+                                       , kind_allows_answer_multivotes
+                                       , kind_show_answer_summary_toc
+                                       , kind_questions_by_community
+                                       , kind_answers_by_community
+                                 from kind
+                                 order by kind_id) to '~/git/sql/seed/kind'"
+
+psql postgres postgres -c "\copy (select label_id,kind_id,label_name,label_code_language,label_tio_language,label_url from label order by label_id) to '~/git/sql/seed/label'"
+
+psql postgres postgres -c "\copy (select account_id
+                                       , account_name
+                                       , account_create_at
+                                       , current_timestamp
+                                       , account_image
+                                       , account_change_id
+                                       , x_uuid_ossp.uuid_generate_v4()
+                                       , account_is_dev
+                                       , 4
+                                       , 1
+                                       , account_notification_id
+                                       , account_is_imported
+                                       , x_pgcrypto.gen_random_bytes(32)
+                                       , account_permit_later_license
+                                       , account_permit_later_codelicense
+                                  from account
+                                  where account_id in (select community_wiki_account_id from community)
+                                  order by account_id) to '~/git/sql/seed/account'"
+
+psql postgres postgres -c "\copy (select community_id
+                                        ,community_name
+                                        ,community_room_id
+                                        ,community_dark_shade
+                                        ,community_mid_shade
+                                        ,community_light_shade
+                                        ,community_highlight_color
+                                        ,community_code_language
+                                        ,community_regular_font_id
+                                        ,community_monospace_font_id
+                                        ,community_display_name
+                                        ,community_type
+                                        ,community_warning_color
+                                        ,community_regular_font_is_locked
+                                        ,community_monospace_font_is_locked
+                                        ,community_tables_are_monospace
+                                        ,community_is_coming_soon
+                                        ,community_ordinal
+                                        ,community_about_question_id
+                                        ,community_image
+                                        ,community_ask_button_text
+                                        ,community_banner_markdown
+                                        ,community_wiki_account_id
+                                        ,community_tio_language
+                                        ,community_import_sanction_id
+                                  from community
+                                  where community_type='public'
+                                  order by community_id) to '~/git/sql/seed/community'"
