@@ -1,7 +1,9 @@
+try { for (let f of document.getElementsByClassName('firefoxwrapper')) f.scrollTop = 1000000; }catch(e){ console.error(e); }
+
 define(['markdown','moment','js.cookie']
        .concat(document.documentElement.style.getPropertyValue('--question')?['starrr','select2']:['jquery.simplePagination']),function([$,_,CodeMirror],moment,Cookies){
-  moment.locale($('html').css('--jslang'));
 
+  moment.locale($('html').css('--jslang'));
 
   try{ // common header navigation
     require(['navigation']);
@@ -99,7 +101,7 @@ define(['markdown','moment','js.cookie']
   function setFinalSpacer(){
     var scroller = $('#messages').parent(), frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child');
     if(frst>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log10(1+frst)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(frst,'seconds').humanize()+' later');
-    if(scroller.hasClass('follow')) scroller.scrollTop(1000000);
+    if(scroller.hasClass('follow')) scroller.animate({ scrollTop: (scroller.prop('scrollHeight')-scroller.innerHeight())+'px' },'fast');
   }
   function setChatPollTimeout(){
     if('auth' in $('html').data()){
@@ -268,31 +270,32 @@ define(['markdown','moment','js.cookie']
       promises.push(document.fonts.ready);
       promise = Promise.allSettled(promises).then(() => {
         if(scroll===true){
-          setTimeout(function(){ scroller.scrollTop(1000000); },0);
+          scroller.animate({ scrollTop: (scroller.prop('scrollHeight')-scroller.innerHeight())+'px' },'fast');
         }else if(scroll===false){
           if(!scroller.hasClass('follow')) scroller.addClass('newscroll');
         }
         newchat.addClass('processed');
+
+        $('.message').each(function(){
+          var id = $(this).data('id'), rid = id;
+          function foo(b){
+            if(arguments.length!==0) $(this).addClass('t'+id);
+            if(arguments.length===0 || b===true) if($(this).data('reply-id')) $('.message[data-id='+$(this).data('reply-id')+']').each(function(){ foo.call(this,true) });
+            if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
+          }
+          foo.call(this);
+        });
+
+        $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
+        $('.message').find('.who a.reply').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
+          var id = $(this).attr('href').substring(2);
+          $(this).attr('href','/transcript?room='+$('html').css('--room')+'&id='+id+'#c'+id);
+        });
+
       });
     }
 
-    $('.message').each(function(){
-      var id = $(this).data('id'), rid = id;
-      function foo(b){
-        if(arguments.length!==0) $(this).addClass('t'+id);
-        if(arguments.length===0 || b===true) if($(this).data('reply-id')) $('.message[data-id='+$(this).data('reply-id')+']').each(function(){ foo.call(this,true) });
-        if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
-      }
-      foo.call(this);
-    });
-
     newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-    setFinalSpacer();
-    $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
-    $('.message').find('.who a.reply').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
-      var id = $(this).attr('href').substring(2);
-      $(this).attr('href','/transcript?room='+$('html').css('--room')+'&id='+id+'#c'+id);
-    });
     if(!maxChatChangeID) $('#messages').children().last().next().filter('.spacer').remove();
     if(!maxChatChangeID) $('#messages>.message').last().removeClass('merged');
     $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
@@ -856,7 +859,6 @@ define(['markdown','moment','js.cookie']
       $('#qa .post').addClass('processed');
     });
   })();
-  //setTimeout(function(){ $('.firefoxwrapper').css('scroll-behavior','smooth'); },2000);
   processNewChat(true);
   updateActiveRooms();
   processNotifications();
@@ -965,7 +967,6 @@ define(['markdown','moment','js.cookie']
         t.addClass('fa-pulse').css('visibility','visible');
         $.get('/chat?room='+$('html').css('--room')+'&to='+minChat+'&limit='+$('#messages>.message').length,function(data) {
           t.remove();
-          $('#messages>.spacer:last-child').remove();
           let newchat = $(data).appendTo($('#messages'));
           f.scrollTop(m.offset().top-s);
           processNewChat().then(()=>{ f.scrollTop(f.scrollTop()+m.offset().top-s); });
@@ -975,6 +976,7 @@ define(['markdown','moment','js.cookie']
   },100)).trigger('scroll');
   $('#chat').on('click','a.reply[href^="#"]', function(){
     const hash = $(this).attr('href');
+    $('#messages').parent().removeClass('follow');
     $(hash)[0].scrollIntoView({ behavior: 'smooth' });
     $(hash).addClass('target').children('.markdown').off('animationend').on('animationend',function(){ $(hash).removeClass('target'); });
     return false;

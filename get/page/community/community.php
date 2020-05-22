@@ -427,22 +427,19 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
             <div id="messages">
               <?if($room_has_chat){?>
                 <?$ch = curl_init('http://127.0.0.1/chat?room='.$room.'&limit=20'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-                <div style="flex: 1 0 10px;"></div>
               <?}elseif($question){?>
-                <div style="flex: 1 0 10px;">
-                  <div style="padding: 10vh 20%;">
-                    <?if($auth){?>
-                      <?if($question_se_question_id){?>
-                        <p>This room is for discussion about this imported question.</p>
-                      <?}else{?>
-                        <p>This room is for discussion about this question.</p>
-                        <p>You can direct a comment to any contributor via the 'comment' link under their post.</p>
-                      <?}?>
+                <div style="padding: 10vh 20%; flex: 1 0 auto;">
+                  <?if($auth){?>
+                    <?if($question_se_question_id){?>
+                      <p>This room is for discussion about this imported question.</p>
                     <?}else{?>
                       <p>This room is for discussion about this question.</p>
-                      <p>Once logged in you can direct comments to any contributor here.</p>
+                      <p>You can direct a comment to any contributor via the 'comment' link under their post.</p>
                     <?}?>
-                  </div>
+                  <?}else{?>
+                    <p>This room is for discussion about this question.</p>
+                    <p>Once logged in you can direct comments to any contributor here.</p>
+                  <?}?>
                 </div>
               <?}?>
             </div>

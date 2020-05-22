@@ -103,6 +103,89 @@ create function range(startid bigint, endid bigint, lim integer = 100)
        natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id() and notification_dismissed_at is null) n
   order by rn;
 $$;
+create function range2(startid bigint, endid bigint, lim integer)
+                     returns table (chat_id bigint
+                                  , account_id integer
+                                  , chat_reply_id integer
+                                  , chat_markdown text
+                                  , chat_at timestamptz
+                                  , chat_change_id bigint
+                                  , account_is_me boolean
+                                  , account_name text
+                                  , reply_account_name text
+                                  , reply_account_is_me boolean
+                                  , chat_gap integer
+                                  , chat_next_gap integer
+                                  , communicant_votes integer
+                                  , chat_editable_age boolean
+                                  , i_flagged boolean
+                                  , i_starred boolean
+                                  , chat_crew_flags integer
+                                  , chat_flag_count integer
+                                  , chat_star_count integer
+                                  , chat_has_history boolean
+                                  , chat_pings text
+                                  , notification_id bigint
+                                  , chat_account_is_repeat boolean
+                                   ) language sql security definer set search_path=db,api,chat,pg_temp as $$
+  with g as (select get_account_id() account_id, get_room_id() room_id)
+    , cr as (select coalesce((select communicant_is_post_flag_crew from db.communicant c where c.account_id = g.account_id and community_id=get_community_id()),false) is_crew from g)
+   , cc1 as (select *
+             from chat
+             where room_id=(select room_id from g) and startid is not null and endid is not null and chat_id>=startid and chat_id<=endid
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
+             limit least(lim,201)+2)
+   , cc2 as (select *
+             from chat
+             where room_id=(select room_id from g) and startid is null and endid is not null and chat_id<=endid
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
+             order by chat_id desc
+             limit least(lim,201)+1)
+   , cc3 as (select *
+             from chat
+             where room_id=(select room_id from g) and startid is not null and endid is null and chat_id>=startid
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
+             order by chat_id
+             limit least(lim,201)+1)
+   , cc4 as (select *
+             from chat
+             where room_id=(select room_id from g) and startid is null and endid is null
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
+             order by chat_id desc
+             limit least(lim,201))
+    , cc as (select * from cc1 union all select * from cc2 union all select * from cc3 union all select * from cc4)
+     , c as (select *, row_number() over(order by chat_at desc) rn
+             from (select *, (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
+                   from (select *
+                              , round(extract('epoch' from chat_at-(lead(chat_at) over (order by chat_at desc))))::integer chat_gap
+                              , round(extract('epoch' from coalesce(lag(chat_at) over (order by chat_at desc),current_timestamp)-chat_at))::integer chat_next_gap
+                         from cc) z) z
+             where startid=endid or ((chat_id>startid or startid is null) and (chat_id<endid or endid is null)))
+  select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id
+       , account_id=(select account_id from g) account_is_me
+       , coalesce(nullif(account_name,''),'Anonymous') account_name
+       , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+       , (select account_id=(select account_id from g) from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
+       , chat_gap
+       , chat_next_gap
+       , coalesce(communicant_votes,0) communicant_votes
+       , extract('epoch' from current_timestamp-chat_at)<240 chat_editable_age
+       , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=(select account_id from g) and chat_flag_direction>0) i_flagged
+       , exists(select 1 from chat_star where chat_id=c.chat_id and account_id=(select account_id from g)) i_starred
+       , chat_crew_flags
+       , chat_flags+chat_crew_flags chat_flag_count
+       , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
+       , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
+       , (select json_agg(p.account_id) from ping p where p.chat_id=c.chat_id and c.account_id=get_account_id())::text chat_pings
+       , notification_id
+       , chat_account_is_repeat
+  from c
+       natural join account
+       natural join (select account_id,community_id,communicant_votes from communicant) v
+       natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id() and notification_dismissed_at is null) n
+  where rn<=least(lim,201)
+  order by rn;
+$$;
 --
 create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
   select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
