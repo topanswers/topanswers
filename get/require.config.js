@@ -133,7 +133,7 @@ var require = {
     'vex':'vex.ce8070c89395b6ea',
     'resizer':'resizer.acc48d85f03977b4',
     'tio':'../tio.0984e7f3a524834f',
-    'require.config':'../require.config.043e66c780a0c067',
+    'require.config':'../require.config.94212e4930c37b89',
     'markdown':'../markdown.9a7cfe1b7f1374dc',
     'navigation':'../navigation.f0ad7bc6582996ae',
  } },
