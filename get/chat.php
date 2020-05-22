@@ -20,7 +20,7 @@ extract(cdb("select community_language,room_can_chat
                                  ,communicant_votes,chat_editable_age,i_flagged,i_starred,chat_account_is_repeat,chat_crew_flags,chat_flag_count,chat_star_count,chat_has_history,chat_pings
                                  ,notification_id
                                 , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
-                           from range2(nullif($1,'')::bigint,nullif($2,'')::bigint,nullif($3::integer,0)) z) z) chats
+                           from range(nullif($1,'')::bigint,nullif($2,'')::bigint,nullif($3::integer,0)) z) z) chats
              from one",$_GET['from']??'',$_GET['to']??'',$limited?$limit+1:0),EXTR_PREFIX_ALL,'o');
 $more = $limited && (count($o_chats)>$limit);
 if($more) array_pop($o_chats);
