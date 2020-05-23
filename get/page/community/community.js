@@ -114,7 +114,6 @@ define(['markdown','moment','js.cookie']
       else chatPollInterval = 60000;
       if('dev' in $('html').data()) console.log('set poll interval to '+chatPollInterval);
       clearTimeout(chatTimer);
-      setFinalSpacer();
       chatTimer = setTimeout(checkChat,chatPollInterval);
     }
   }
@@ -296,8 +295,8 @@ define(['markdown','moment','js.cookie']
     }
 
     newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-    if(!maxChatChangeID) $('#messages').children().last().next().filter('.spacer').remove();
-    if(!maxChatChangeID) $('#messages>.message').last().removeClass('merged');
+    //if(!maxChatChangeID) $('#messages').children().last().next().filter('.spacer').remove();
+    //if(!maxChatChangeID) $('#messages>.message').last().removeClass('merged');
     $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
 
     return promise;
@@ -435,6 +434,7 @@ define(['markdown','moment','js.cookie']
     var query = new URLSearchParams(window.location.search)
       , page = query.has('page')?+query.get('page'):1
       , srch = query.has('search')?query.get('search'):''
+    setFinalSpacer();
     $.get('/poll?room='+$('html').css('--room')).done(function(r){
       var j = JSON.parse(r);
       if(j.c>+$('#messages>.message').first().data('id')){
@@ -950,30 +950,38 @@ define(['markdown','moment','js.cookie']
     $('#active-rooms').slideToggle(200);
     return false;
   });
-  $('.firefoxwrapper').on('scroll',_.debounce(function(){
-    var t = $(this), s = (t.scrollTop()-t[0].scrollHeight+t[0].offsetHeight) > -5;
-    t.toggleClass('follow',s);
-    if(s) t.removeClass('newscroll');
-  },100));
   $('.panecontrol.fa-angle-double-right').click(function(){ localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur(); });
   $('.panecontrol.fa-angle-double-left').click(function(){ localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane'); });
   $('a.comment').click(function(){ $(this).closest('.post').find('.icon').click(); return false; });
   $('a.license').click(function(){ $(this).hide().next('.element').show(); return false; });
-  $('#chat>.firefoxwrapper').on('scroll',_.debounce(function(){
-    const f = $(this);
-    if(f.scrollTop()===0){
-      $('#messages>i').each(function(){
-        const t = $(this), minChat = $('#messages>.message').last().data('id'), m = $('#messages>.message').last(), s = m.offset().top;
-        t.addClass('fa-pulse').css('visibility','visible');
-        $.get('/chat?room='+$('html').css('--room')+'&to='+minChat+'&limit='+$('#messages>.message').length,function(data) {
-          t.remove();
-          let newchat = $(data).appendTo($('#messages'));
-          f.scrollTop(m.offset().top-s);
-          processNewChat().then(()=>{ f.scrollTop(f.scrollTop()+m.offset().top-s); });
-        },'html');
-      });
-    }
-  },100)).trigger('scroll');
+  let gettingchat = false;
+  setTimeout(function(){
+    $('#chat>.firefoxwrapper').on('scroll',_.debounce(function(){
+      const f = $(this), b = (f.prop('clientHeight')>=f.prop('scrollHeight')) || ((f.scrollTop()-f[0].scrollHeight+f[0].offsetHeight) > -5);
+
+      if(!gettingchat){
+        if(f.scrollTop()===0){
+          gettingchat = true;
+          $('#messages>i').each(function(){
+            const t = $(this), minChat = $('#messages>.message').last().data('id'), m = $('#messages>.message').last(), s = m.offset().top;
+            t.addClass('fa-pulse').css('visibility','visible');
+            $.get('/chat?room='+$('html').css('--room')+'&to='+minChat+'&limit='+$('#messages>.message').length,function(data) {
+              t.remove();
+              let newchat = $(data).appendTo($('#messages'));
+              f.scrollTop(f.hasClass('follow')?1000000:(f.scrollTop()+m.offset().top-s));
+              processNewChat().then(()=>{
+                f.scrollTop(f.hasClass('follow')?1000000:(f.scrollTop()+m.offset().top-s));
+                gettingchat = false;
+              });
+            },'html');
+          });
+        }else{
+          f.toggleClass('follow',b);
+          if(b) f.removeClass('newscroll');
+        }
+      }
+    },10)).trigger('scroll');
+  },1000);
   $('#chat').on('click','a.reply[href^="#"]', function(){
     const hash = $(this).attr('href');
     $('#messages').parent().removeClass('follow');

@@ -16,7 +16,7 @@ if(isset($_GET['limit'])){
 }
 extract(cdb("select community_language,room_can_chat
                   , (select coalesce(jsonb_agg(z),'[]'::jsonb)
-                     from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,0 chat_next_gap
+                     from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,chat_next_gap
                                  ,communicant_votes,chat_editable_age,i_flagged,i_starred,chat_account_is_repeat,chat_crew_flags,chat_flag_count,chat_star_count,chat_has_history,chat_pings
                                  ,notification_id
                                 , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
