@@ -22,4 +22,7 @@ for t in one sesite font license codelicense kind label account community; do
                         -c "do \$\$ begin execute ( select coalesce(string_agg('select setval(pg_get_serial_sequence(''$t'','''||attname||'''), max('||attname||')) from $t;',E'\n'),'select;') from pg_attribute where attrelid='$t'::regclass and attidentity='a' ); end\$\$;"
 done
 
+echo 'creating api'
+psql seed postgres --set ON_ERROR_STOP=on -bqf ~/git/sql/api.sql
+
 echo 'finished'
