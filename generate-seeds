@@ -33,7 +33,7 @@ psql postgres postgres -c "\copy (select account_id
                                        , 1
                                        , account_notification_id
                                        , account_is_imported
-                                       , x_pgcrypto.gen_random_bytes(32)
+                                       , '\x0000000000000000000000000000000000000000000000000000000000000000'
                                        , account_permit_later_license
                                        , account_permit_later_codelicense
                                   from account
