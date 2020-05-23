@@ -27,7 +27,7 @@ psql postgres postgres -c "\copy (select account_id
                                        , current_timestamp
                                        , account_image
                                        , account_change_id
-                                       , x_uuid_ossp.uuid_generate_v4()
+                                       , x_uuid_ossp.uuid_generate_v3(x_uuid_ossp.uuid_nil(),account_id::text)
                                        , account_is_dev
                                        , 4
                                        , 1
