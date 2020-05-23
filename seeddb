@@ -16,7 +16,7 @@ psql seed postgres --set ON_ERROR_STOP=on -qc "alter table community drop constr
 psql seed postgres --set ON_ERROR_STOP=on -qc "alter table community drop constraint community_community_id_fkey"
 psql seed postgres --set ON_ERROR_STOP=on -qc "alter table community drop constraint community_community_room_id_fkey"
 
-for t in one sesite font license codelicense kind label account community; do
+for t in one sesite font license codelicense kind label account community source room communicant syndicate sanction tag; do
   echo "loadind data and setting identity sequences for table $t"
   psql seed postgres -q -c "\copy $t from '~/git/sql/seed/$t'" \
                         -c "do \$\$ begin execute ( select coalesce(string_agg('select setval(pg_get_serial_sequence(''$t'','''||attname||'''), max('||attname||')) from $t;',E'\n'),'select;') from pg_attribute where attrelid='$t'::regclass and attidentity='a' ); end\$\$;"

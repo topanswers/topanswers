@@ -1,0 +1,41 @@
+2	1	Question		6	10	t	\N	f	\N
+3	1	Question		4	10	t	\N	f	\N
+4	1	Question		2	10	t	\N	f	\N
+5	1	Question		8	10	t	\N	f	\N
+6	2	Question		1	10	t	\N	f	\N
+13	8	Wiki Post	Wiki	1	30	f	\N	f	\N
+18	2	Meta Question	Meta	7	60	f	\N	f	\N
+19	3	Blog Post	Blog	7	70	f	\N	f	\N
+20	8	Wiki Post	Wiki	7	80	f	\N	f	\N
+21	5	Tips	Tips	7	50	f	\N	f	\N
+23	2	Meta Question	Meta	6	20	f	\N	f	\N
+24	2	Meta Question	Meta	2	20	f	\N	f	\N
+26	3	Blog Post	Blog	6	30	f	\N	f	\N
+27	2	Meta Question	Meta	8	20	f	\N	f	\N
+28	3	Blog Post	Blog	1	20	f	\N	f	\N
+29	3	Blog Post	Blog	2	30	f	\N	f	\N
+30	4	Code Golf	Code Golf	7	10	f	language	f	\N
+31	8	Wiki Post	Wiki	4	50	f	\N	f	\N
+32	4	Least Operations	Least Operations	7	20	f	language	f	\N
+33	3	Blog Post	Blog	4	40	f	\N	f	\N
+34	2	Meta Question	Meta	4	30	f	\N	f	\N
+35	7	Contest	Contest	4	20	f	\N	f	\N
+36	4	Speed Challenge	Speed Challenge	7	30	f	language	f	\N
+37	4	Other Competition	Other Competition	7	40	f	language	f	\N
+39	12	New Community Proposal	Community Proposal	1	40	f	\N	f	\N
+40	1	प्रश्न		10	10	t	\N	f	\N
+41	8	विकीलेख	विकीलेख	10	50	f	\N	f	\N
+42	3	लेख	लेख	10	40	f	\N	f	\N
+43	2	मेटावरील प्रश्न	मेटावरील	10	30	f	\N	f	\N
+44	7	स्पर्धा	स्पर्धा	10	20	f	\N	f	\N
+45	1	Question		11	10	t	\N	f	\N
+46	2	Meta Question	Meta	11	20	f	\N	f	\N
+47	1	Question		12	10	t	\N	f	\N
+48	2	Meta Question	Meta	12	20	f	\N	f	\N
+49	1	Question		13	10	t	\N	f	\N
+50	2	Meta Question	Meta	13	20	f	\N	f	\N
+56	13	Poll	Poll	1	35	f	\N	f	\N
+57	1	Question		15	10	t	\N	f	\N
+58	2	Meta Question	Meta	15	20	f	\N	f	\N
+59	13	Meta Poll	Meta Poll	15	30	f	\N	f	\N
+60	13	Meta Poll	Meta Poll	2	25	f	\N	f	\N
