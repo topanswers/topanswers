@@ -24,7 +24,7 @@ psql postgres postgres -c "\copy (select label_id,kind_id,label_name,label_code_
 psql postgres postgres -c "\copy (select account_id
                                        , account_name
                                        , account_create_at
-                                       , current_timestamp
+                                       , account_create_at
                                        , account_image
                                        , account_change_id
                                        , x_uuid_ossp.uuid_generate_v3(x_uuid_ossp.uuid_nil(),account_id::text)
