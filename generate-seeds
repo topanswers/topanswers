@@ -78,10 +78,10 @@ psql postgres postgres -c "\copy (select room_id
                                         ,community_id
                                         ,room_type
                                         ,room_name
-                                        ,room_image
                                         ,room_can_listen
                                         ,null
                                         ,room_question_id
+                                        ,room_image_hash
                                   from room natural join community
                                   where community_type='public' and room_type<>'private' and room_question_id is null
                                   order by room_id) to '~/git/sql/seed/room'"

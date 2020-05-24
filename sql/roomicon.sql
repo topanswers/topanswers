@@ -3,7 +3,7 @@ grant usage on schema roomicon to get;
 set local search_path to roomicon,api,pg_temp;
 --
 --
-create view one with (security_barrier) as select room_id,room_image,community_dark_shade from db.room natural join db.community where room_id=get_room_id();
+create view one with (security_barrier) as select room_id,community_dark_shade from db.room natural join db.community where room_id=get_room_id();
 --
 --
 create function login_room(uuid,integer) returns boolean language sql security definer as $$select * from api.login_room($1,$2);$$;
