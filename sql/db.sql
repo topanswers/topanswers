@@ -145,6 +145,7 @@ create table room(
 , room_can_listen boolean not null default true
 , room_latest_chat_id bigint
 , room_question_id integer -- references question deferrable initially deferred
+, room_image_hash bytea check(length(room_image_hash)=32)
 , unique (community_id,room_id)
 );
 create unique index room_latest_ind on room(room_id) include(room_latest_chat_id) where room_latest_chat_id is not null;

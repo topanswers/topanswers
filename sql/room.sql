@@ -8,10 +8,10 @@ select account_id,account_is_dev
       ,community_id,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-      ,room_id,room_name
-     , room_image is not null room_has_image
+      ,room_id,room_name,room_image_url
+     , room_image_hash is not null room_has_image
      , (select question_id from db.question where question_room_id=room_id) question_id
-from db.room natural join api._community natural join db.community
+from db.room natural join api._room natural join api._community natural join db.community
      natural join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
 where room_id=get_room_id();
@@ -36,10 +36,10 @@ create function change_name(nname text) returns void language sql security defin
   update room set room_name = nname where room_id=get_room_id();
 $$;
 --
-create function change_image(image bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$
+create function change_image(bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('not authorised') from room.one where not account_is_dev;
-  update room set room_image = image where room_id=get_room_id();
+  update room set room_image_hash = $1 where room_id=get_room_id();
 $$;
 --
 create function mute() returns void language sql security definer set search_path=db,api,pg_temp as $$

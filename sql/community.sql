@@ -72,9 +72,10 @@ where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
 select account_id
-      ,community_id,community_name,community_display_name,community_language,community_my_power,community_code_language,community_tio_language,room_id,community_tables_are_monospace
+      ,community_id,community_name,community_display_name,community_language,community_my_power,community_code_language,community_tio_language,community_tables_are_monospace
       ,community_about_question_id,community_ask_button_text,community_banner_markdown,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+      ,room_id,room_image_url
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged
       ,question_i_counterflagged,question_when,question_account_id,question_account_name,question_account_is_imported
@@ -100,7 +101,7 @@ select account_id
      , l.account_id is not null and room_can_listen room_can_mute
      , l.account_id is null and room_can_listen room_can_listen
      , p.account_id is not null room_is_pinned
-from db.room r natural join db.community natural join api._community
+from db.room r natural join api._room natural join db.community natural join api._community
      natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
      natural left join db.listener l

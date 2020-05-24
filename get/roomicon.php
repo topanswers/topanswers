@@ -2,23 +2,18 @@
 include '../config.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
+isset($_GET['id']) || fail(400,'room id must be set');
 db("set search_path to roomicon,pg_temp");
-$auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'');
-extract(cdb("select room_id,room_image
-                  , room_image is not null room_has_image
+db("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']);
+extract(cdb("select room_id
                   , get_byte(community_dark_shade,0) community_dark_shade_r
                   , get_byte(community_dark_shade,1) community_dark_shade_g
                   , get_byte(community_dark_shade,2) community_dark_shade_b
              from one"));
 
 header('X-Powered-By: ');
-header('Cache-Control: max-age=8600');
+header('Cache-Control: public, max-age=31536000, immutable');
 
-if($room_has_image){
-  header("Content-Type: image/jpeg");
-  echo pg_unescape_bytea($room_image);
-  exit;
-}
 
 // Settings
 define('MARGIN_X', 10);        // Margin on the left and right edge in px

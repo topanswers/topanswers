@@ -4,7 +4,7 @@ set local search_path to pinnedrooms,api,pg_temp;
 --
 --
 create view room with (security_barrier) as
-select room_id,room_derived_name,room_question_id,community_name,community_display_name,community_rgb_light,participant_chat_count,participant_latest_chat_at
+select room_id,room_derived_name,room_question_id,room_image_url,community_name,community_display_name,community_rgb_light,participant_chat_count,participant_latest_chat_at
 from db.pinner natural join db.room natural join api._room natural join api._community natural join db.community
      natural left join db.participant
 where account_id=get_account_id();

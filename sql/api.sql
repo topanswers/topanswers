@@ -119,7 +119,8 @@ where communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id
 create view _room with (security_barrier) as
 select room_id,community_id,room_can_chat
      , coalesce(question_title,room_name,community_display_name||' Chat') room_derived_name
-from (select room_id,community_id,room_name,room_question_id
+     , case when room_image_hash is null then '/roomicon?id='||room_id else '/image?hash='||encode(room_image_hash,'hex') end room_image_url
+from (select room_id,community_id,room_name,room_question_id,room_image_hash
            , get_account_id() is not null and (room_type='public' or account_id is not null) room_can_chat
       from db.room natural left join (select * from db.writer where account_id=get_account_id()) a
       where room_type<>'private' or account_id is not null) r

@@ -5,7 +5,7 @@ include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to room,pg_temp");
 ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
-extract(cdb("select account_id,room_id,room_name,room_has_image,community_name,my_community_regular_font_name,my_community_monospace_font_name
+extract(cdb("select account_id,room_id,room_name,room_has_image,room_image_url,community_name,my_community_regular_font_name,my_community_monospace_font_name
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
              from one"));
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
@@ -65,7 +65,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
     </fieldset>
     <fieldset>
       <legend>picture</legend>
-      <div class="frame"><img class="icon" src="/roomicon?id=<?=$room_id?>"></div>
+      <div class="frame"><img class="icon" src="<?=$room_image_url?>"></div>
       <?if($room_has_image){?>
         <form action="//post.topanswers.xyz/room" method="post">
           <input type="hidden" name="id" value="<?=$room_id?>">

@@ -8,7 +8,7 @@ db("set search_path to pinnedrooms,pg_temp");
 ccdb("select login_room(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['room']) || fail(403,'access denied');
 extract(cdb("select community_name
                   , (select coalesce(jsonb_agg(z order by participant_chat_count, participant_latest_chat_at, room_question_id desc nulls last, room_id desc),'[]'::jsonb)
-                     from (select room_id,room_derived_name,room_question_id,community_display_name,community_name,community_rgb_light,participant_chat_count,participant_latest_chat_at
+                     from (select room_id,room_derived_name,room_question_id,room_image_url,community_display_name,community_name,community_rgb_light,participant_chat_count,participant_latest_chat_at
                            from room) z) rooms
              from one"),EXTR_PREFIX_ALL,'o');
 ?>
@@ -22,7 +22,7 @@ extract(cdb("select community_name
          class="icon roomicon"
          data-id="<?=$room_id?>"
          data-name="<?=$room_derived_name?>"
-         src="/roomicon?id=<?=$room_id?>">
+         src="<?=$room_image_url?>">
   </a>
 <?}?>
 <?}?>

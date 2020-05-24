@@ -29,7 +29,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,community_ask_button_text,community_banner_markdown,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
-                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned
+                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned,room_image_url
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
@@ -397,7 +397,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
       <div id="community-rooms">
         <div>
           <div class="panecontrol fa fa-angle-double-left hidepane"></div>
-          <a class="frame this"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>" data-id="<?=$room?>"><img class="icon roomicon" src="/roomicon?id=<?=$room?>"></a>
+          <a class="frame this"<?=$dev?' href="/room?id='.$room.'" title="room settings"':''?> title="<?=$room_name?>" data-id="<?=$room?>"><img class="icon roomicon" src="<?=$room_image_url?>"></a>
           <div class="element shrink" title="<?=$room_name?>"><?=$room_name?></div>
         </div>
         <div>

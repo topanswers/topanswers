@@ -49,8 +49,14 @@ if(isset($_FILES['image'])){
   }
   ob_start();
   imagepng(imagescale($image,64,64,IMG_BICUBIC));
-  db("select change_image($1)",pg_escape_bytea(ob_get_contents()));
+  $image = ob_get_contents();
   ob_end_clean();
+  $hash = hash('sha256',$image);
+  $path = '/srv/uploads/'.substr($hash,0,2).'/'.substr($hash,2,2).'/'.substr($hash,4,2);
+  $fname = $path.'/'.$hash;
+  is_dir($path) || mkdir($path,0777,true);
+  if(!file_exists($fname)) file_put_contents($fname,$image);
+  db("select change_image(decode($1,'hex'))",$hash);
   header('Location: //topanswers.xyz/room?id='.$room_id);
   exit;
 }
