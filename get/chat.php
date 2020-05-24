@@ -7,7 +7,7 @@ if(!isset($_GET['room'])) die('room not set');
 db("set search_path to chat,pg_temp");
 $authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from changes($1)",$_GET['from']));
-if(isset($_GET['quote'])) exit(ccdb("select quote($1,$2)::varchar",$_GET['room'],$_GET['id']));
+if(isset($_GET['quote'])) exit(ccdb("select quote2($1,$2)::varchar",$_GET['room'],$_GET['id']));
 $one = isset($_GET['from']) && isset($_GET['to']);
 $limited = false;
 if(isset($_GET['limit'])){

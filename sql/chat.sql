@@ -121,6 +121,23 @@ create function quote(rid integer, cid bigint) returns text language sql securit
         where chat_id=cid) c
        natural left join (select chat_id chat_reply_id, account_derived_name reply_account_name from chat natural join api._account) r
 $$;
+create function quote2(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
+  select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
+  select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
+  --
+  select '::: quote '||room_id||' '||cid||' '||(case when account_image_hash is null then account_id::text else encode(account_image_hash,'hex') end)||' '||community_rgb_mid||' '||community_rgb_dark||chr(10)
+         ||account_derived_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)
+           ||(case when room_id<>rid and room_question_id is not null then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?q='||room_question_id||'#c'||cid||')*'
+                   when room_id<>rid then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?room='||room_id||'#c'||cid||')*'
+                   else '['||chat_iso||'](#c'||cid||')' end)||'  '||chr(10)
+         ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
+         ||':::'
+  from (select chat_reply_id,room_id,room_question_id,room_derived_name,community_name,community_rgb_mid,community_rgb_dark,chat_at,chat_markdown,account_id,account_derived_name,account_image_hash
+             , to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"') chat_iso
+        from chat natural join api._community natural join community natural join api._account natural join db.account natural join db.room natural join api._room
+        where chat_id=cid) c
+       natural left join (select chat_id chat_reply_id, account_derived_name reply_account_name from chat natural join api._account) r
+$$;
 --
 create function recent() returns bigint language sql security definer set search_path=db,api,chat,pg_temp as $$
   select greatest(min(chat_id)-1,0) from (select chat_id from chat where room_id=get_room_id() order by chat_id desc limit 100) z;

@@ -225,12 +225,13 @@ $jslang = $jslang??'en';
                .use(window.markdownitAbbr)
                .use(window.markdownitContainer, 'quote', {
                  validate: function(params) {
-                   return params.trim().match(/^quote ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$/);
+                   return params.trim().match(/^quote ([1-9][0-9]*) ([1-9][0-9]*) ([1-9][0-9]*|[0-9a-f]{64}) ([1-9][0-9]{0,2},[1-9][0-9]{0,2},[1-9][0-9]{0,2}) ([1-9][0-9]{0,2},[1-9][0-9]{0,2},[1-9][0-9]{0,2})$/);
                  },
                  render: function (tokens, idx) {
-                   var m = tokens[idx].info.trim().match(/^quote ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+) ([^ ]+)$/);
+                   var m = tokens[idx].info.trim()
+                                      .match(/^quote ([1-9][0-9]*) ([1-9][0-9]*) ([1-9][0-9]*|[0-9a-f]{64}) ([1-9][0-9]{0,2},[1-9][0-9]{0,2},[1-9][0-9]{0,2}) ([1-9][0-9]{0,2},[1-9][0-9]{0,2},[1-9][0-9]{0,2})$/);
                    if (tokens[idx].nesting === 1) {
-                     return '<div class="quoted-message" style="--rgb-dark: '+m[5]+'; background: rgb('+m[4]+');">\n<img class="icon" src="/identicon?id='+m[3]+'">\n<a class="fa fa-fw fa-link" style="color: rgb('+m[5]+');" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
+                     return '<div class="quoted-message" style="--rgb-dark: '+m[5]+'; background: rgb('+m[4]+');">\n<img class="icon" src="/'+((m[3].length===64)?'image?hash=':'identicon?id=')+m[3]+'">\n<a class="fa fa-fw fa-link" style="color: rgb('+m[5]+');" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
                    } else {
                      return '</div>\n';
                    }

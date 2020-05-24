@@ -113,8 +113,8 @@ if(isset($_GET['month'])){
     .message .button-group:first-child .fa[data-count][data-count="0"] { visibility: hidden; }
 
     .message.merged { margin-top: -1px; }
-    .message.merged .who,
-    .message.merged .icon { visibility: hidden; }
+    .message.merged>.who,
+    .message.merged>.icon { visibility: hidden; }
     .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
     .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
   </style>
