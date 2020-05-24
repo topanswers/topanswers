@@ -94,6 +94,7 @@ create table account(
 , account_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
 , account_permit_later_license boolean default false not null
 , account_permit_later_codelicense boolean default false not null
+, account_image_hash bytea check(length(account_image_hash)=32)
 );
 create unique index account_rate_limit_ind on account(account_create_at);
 

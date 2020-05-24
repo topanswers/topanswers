@@ -40,7 +40,7 @@ if($auth){
   }else{
     switch($_POST['action']){
       case 'name': db("select change_name(nullif($1,''))",$_POST['name']); header('Location: '.$_POST['location']); exit;
-      case 'remove-image': db("select change_image(null)"); header('Location: '.$_POST['location']); exit;
+      case 'remove-image': db("select change_image(null,null)"); header('Location: '.$_POST['location']); exit;
       case 'image':
         switch(getimagesize($_FILES['image']['tmp_name'])[2]){
           case IMAGETYPE_JPEG:
@@ -57,8 +57,14 @@ if($auth){
         }
         ob_start();
         imagejpeg(imagescale($image,32,32,IMG_BICUBIC));
-        db("select change_image($1)",pg_escape_bytea(ob_get_contents()));
+        $image = ob_get_contents();
         ob_end_clean();
+        $hash = hash('sha256',$image);
+        $path = '/srv/uploads/'.substr($hash,0,2).'/'.substr($hash,2,2).'/'.substr($hash,4,2);
+        $fname = $path.'/'.$hash;
+        is_dir($path) || mkdir($path,0777,true);
+        if(!file_exists($fname)) file_put_contents($fname,$image);
+        db("select change_image($1,decode($2,'hex'))",pg_escape_bytea($image),$hash);
         header('Location: '.$_POST['location']);
         exit;
       case 'pin': db("select authenticate_pin($1)",$_POST['pin']); exit;
