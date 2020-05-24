@@ -24,7 +24,6 @@ set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
 create table one(
   one_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
 , one_stackapps_secret text default '' not null
-, one_image bytea check(length(one_image)>0)
 , one_image_hash bytea check(length(one_image_hash)=32)
 );
 create unique index one_only_ind on one((1));
@@ -119,7 +118,6 @@ create table community(
 , community_is_coming_soon boolean default false not null
 , community_ordinal integer
 , community_about_question_id integer
-, community_image bytea check(length(community_image)>0)
 , community_ask_button_text text default 'Ask' not null
 , community_banner_markdown text default '' not null
 , community_wiki_account_id integer not null references account
