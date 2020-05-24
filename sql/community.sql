@@ -12,7 +12,8 @@ from db.community natural left join (select community_id, account_id from db.log
 where community_type='private' and account_id is null;
 --
 create view community with (security_barrier) as
-select community_id,community_name,community_language,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_my_votes,community_ordinal,community_about_question_id
+select community_id,community_name,community_language,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_my_votes,community_ordinal
+      ,community_about_question_id,community_image_url
 from api._community natural join db.community
      natural left join (select community_id,account_id from db.login natural join db.member where login_uuid=get_login_uuid()) m
 where community_type='public' or account_id is not null;
@@ -71,11 +72,12 @@ where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
 select account_id
-      ,community_id,community_name,community_display_name,community_language,community_my_power,community_code_language,community_tio_language,room_id,community_tables_are_monospace,community_about_question_id,community_ask_button_text,community_banner_markdown
+      ,community_id,community_name,community_display_name,community_language,community_my_power,community_code_language,community_tio_language,room_id,community_tables_are_monospace
+      ,community_about_question_id,community_ask_button_text,community_banner_markdown,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
-      ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged,question_i_counterflagged
-      ,question_when,question_account_id,question_account_name,question_account_is_imported
+      ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged
+      ,question_i_counterflagged,question_when,question_account_id,question_account_name,question_account_is_imported
       ,sanction_short_description
       ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,kind_show_answer_summary_toc

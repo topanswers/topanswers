@@ -12,7 +12,7 @@ if(isset($_GET['uuid'])){
 
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'meta') || fail(403,'access denied');
 extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
-                   ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
+                   ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name,sesite_url,communicant_se_user_id,one_stackapps_secret
              from one"));
@@ -73,7 +73,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/datatables/datatables.min.css">
-  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
+  <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <style>

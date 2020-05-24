@@ -17,6 +17,7 @@ extract(cdb("select account_id,account_license_id,account_codelicense_id,account
                    ,sanction_label_called,sanction_label_is_mandatory,sanction_default_label_id
                    ,label_code_language,label_tio_language
                    ,community_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,community_image_url
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,(select jsonb_agg(z) from (select license_id,license_name,license_is_versioned from license order by license_name) z) licenses
                    ,(select jsonb_agg(z) from (select codelicense_id,codelicense_name,codelicense_is_versioned from codelicense order by codelicense_id=1 desc, codelicense_name) z) codelicenses
@@ -52,7 +53,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="stylesheet" href="<?=h("/lib/codemirror/codemirror.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/qp/qp.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/katex/katex.min.css")?>">
-  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
+  <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <title><?=$answer_id?'Edit Answer':'Answer Question'?> - TopAnswers</title>
   <script src="<?=h("/require.config.js")?>"></script>
   <script data-main="<?=h("/page/answer/answer.js").'?question='.$question_id.($answer_id?'':'&new')?>" src="<?=h("/lib/require.js")?>"></script>

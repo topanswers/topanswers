@@ -2,30 +2,17 @@
 include '../config.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
+isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to communityicon,pg_temp");
-
-if(!isset($_GET['community'])){
-  header("Content-Type: image/jpeg");
-  echo pg_unescape_bytea(ccdb("select community_image from one"));
-  exit;
-}
-
-$auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
-extract(cdb("select community_id,community_image
-                  , community_image is not null community_has_image
+db("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
+extract(cdb("select community_id
                   , get_byte(community_dark_shade,0) community_dark_shade_r
                   , get_byte(community_dark_shade,1) community_dark_shade_g
                   , get_byte(community_dark_shade,2) community_dark_shade_b
              from one"));
 
 header('X-Powered-By: ');
-header('Cache-Control: max-age=8600');
-
-if($community_has_image){
-  header("Content-Type: image/jpeg");
-  echo pg_unescape_bytea($community_image);
-  exit;
-}
+header('Cache-Control: public, max-age=31536000, immutable');
 
 // Settings
 define('MARGIN_X', 10);        // Margin on the left and right edge in px

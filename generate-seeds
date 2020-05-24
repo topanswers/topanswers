@@ -1,5 +1,5 @@
 #!/bin/bash
-psql postgres postgres -c "\copy (select '\x0000000000000000000000000000000000000000000000000000000000000000','',one_image from one) to '~/git/sql/seed/one'"
+psql postgres postgres -c "\copy (select '\x0000000000000000000000000000000000000000000000000000000000000000','',one_image,one_image_hash from one) to '~/git/sql/seed/one'"
 psql postgres postgres -c "\copy (select sesite_id,sesite_url from sesite order by sesite_id) to '~/git/sql/seed/sesite'"
 psql postgres postgres -c "\copy (select font_id,font_name,font_is_monospace from font order by font_id) to '~/git/sql/seed/font'"
 psql postgres postgres -c "\copy (select license_id,license_name,license_href,license_is_versioned,license_description from license order by license_id) to '~/git/sql/seed/license'"
@@ -65,6 +65,7 @@ psql postgres postgres -c "\copy (select community_id
                                         ,community_wiki_account_id
                                         ,community_tio_language
                                         ,community_import_sanction_id
+                                        ,community_image_hash
                                   from community
                                   where community_type='public'
                                   order by community_id) to '~/git/sql/seed/community'"

@@ -7,14 +7,16 @@ create view environment with (security_barrier) as select environment_name from 
 --
 create view community with (security_barrier) as
 select community_id,community_name,community_room_id,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_my_votes,community_ordinal,community_about_question_id
+      ,community_image_url
 from api._community natural join db.community
      natural left join (select community_id,account_id from db.login natural join db.member where login_uuid=get_login_uuid()) m
 where community_type='public' or account_id is not null;
 --
 create view one with (security_barrier) as
-select community_id,community_name,community_display_name,community_language,community_rgb_dark,community_rgb_mid,community_rgb_light
+select community_id,community_name,community_display_name,community_language,community_rgb_dark,community_rgb_mid,community_rgb_light,community_image_url
      , coalesce(account_is_dev,false) account_is_dev
-from db.community natural join api._community
+     , '/image?hash='||encode(one_image_hash,'hex') one_image_url
+from db.one cross join db.community natural join api._community
      natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
 where community_id=get_community_id();
 --

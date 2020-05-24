@@ -10,8 +10,8 @@ $environment = $_COOKIE['environment']??'prod';
 $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
 extract(cdb("select account_id
-                   ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text,community_banner_markdown
-                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
+                   ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text
+                   ,community_banner_markdown,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace,community_image_url
                    ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
 $_GET['community']===$community_name || fail(400,'invalid community');
@@ -39,7 +39,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/post.css">
-  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
+  <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <style>
     html { box-sizing: border-box; font-family: var(--regular-font-family); font-size: 16px; }
     body { xbackground: rgb(var(--rgb-mid)); }

@@ -9,7 +9,7 @@ exit(ccdb("select json_agg(z)
            from (select community_display_name \"name\"
                       , 'https://topanswers.xyz/'||community_name canonical_url
                       , community_name url_slug
-                      , 'https://topanswers.xyz/communityicon?community='||community_name logo_url
+                      , 'https://topanswers.xyz'||community_image_url logo_url
                       , community_rgb_dark color_dark
                       , community_rgb_light color_light
                  from community

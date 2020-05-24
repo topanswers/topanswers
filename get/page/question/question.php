@@ -16,7 +16,7 @@ if(isset($_GET['id'])){
 extract(cdb("select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
                   , account_license_name||(case when account_permit_later_license then ' or later' else '' end)
                        ||(case when account_has_codelicense then ' + '||account_codelicense_name||(case when account_permit_later_codelicense then ' or later' else '' end) else '' end) account_license
-                   ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_language
+                   ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_language,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
@@ -59,7 +59,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="stylesheet" href="<?=h("/lib/codemirror/codemirror.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/qp/qp.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/katex/katex.min.css")?>">
-  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
+  <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <title><?=$question_id?'Edit':'Ask'?> Question - TopAnswers</title>
   <script src="<?=h("/require.config.js")?>"></script>
   <script data-main="<?=h("/page/question/question.js").preg_replace('/^&/','?',(isset($_GET['fiddle'])?'&fiddle':'').($question_id?'':'&new'))?>" src="<?=h("/lib/require.js")?>"></script>

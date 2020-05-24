@@ -5,7 +5,7 @@ set local search_path to room,api,pg_temp;
 --
 create view one with (security_barrier) as
 select account_id,account_is_dev
-      ,community_id,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+      ,community_id,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
       ,room_id,room_name

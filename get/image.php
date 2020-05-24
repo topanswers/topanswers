@@ -3,7 +3,7 @@ include '../config.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 header('X-Powered-By: ');
-header('Cache-Control: max-age=31536000');
+header('Cache-Control: public, max-age=31536000, immutable');
 header("Content-type: image");
 $hash = $_GET['hash'] ?? false;
 $hash || exit('missing hash');

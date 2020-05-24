@@ -10,7 +10,7 @@ ccdb("select login_answer(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE[
 extract(cdb("select account_id
                    ,answer_id,answer_is_imported
                    ,question_id,question_title
-                   ,community_name,community_display_name,community_code_language,community_tables_are_monospace
+                   ,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_image_url
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                   , (select jsonb_agg(z)
@@ -55,7 +55,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="stylesheet" href="<?=h("/lib/codemirror/codemirror.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/qp/qp.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/katex/katex.min.css")?>">
-  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
+  <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <title>Answer History - TopAnswers</title>
   <script src="<?=h("/require.config.js")?>"></script>
   <script data-main="<?=h("/page/question-history/question-history.js")?>" src="<?=h("/lib/require.js")?>"></script>

@@ -37,7 +37,7 @@ where community_id=get_community_id();
 create view one with (security_barrier) as
 select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense
      , account_image is not null account_has_image
-      ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked
+      ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,sesite_url
      , (select font_id from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_id
@@ -46,10 +46,12 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
       , selink_user_id, selink_user_id communicant_se_user_id
       ,one_stackapps_secret
-from (select account_id,account_name,account_image,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense from db.account where account_id=get_account_id()) a
+from (select account_id,account_name,account_image,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense
+      from db.account
+      where account_id=get_account_id()) a
      cross join db.one
-     natural left join (select community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_regular_font_id,community_monospace_font_id
-                              ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+     natural left join (select community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
+                              ,community_regular_font_id,community_monospace_font_id,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                               ,sesite_url
                         from api._community natural join db.community natural left join (select community_id,sesite_url from db.source natural join db.sesite where source_is_default) s
                         where community_id=get_community_id()) c

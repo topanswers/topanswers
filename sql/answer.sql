@@ -15,6 +15,7 @@ select account_id,account_license_id,account_codelicense_id,account_permit_later
       ,sanction_label_called,sanction_label_is_mandatory,sanction_default_label_id
       ,label_code_language,label_tio_language
       ,community_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_my_power
+      ,community_image_url
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
 from (select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
@@ -27,7 +28,7 @@ from (select account_id,account_license_id,account_codelicense_id,account_permit
      cross join (select community_id,question_id,question_title,question_markdown,kind_allows_answer_multivotes,sanction_label_called,sanction_label_is_mandatory,sanction_default_label_id
                  from db.question natural join db.sanction natural join db.kind
                  where question_id=get_question_id()) q
-     natural join (select community_id,community_name,community_code_language
+     natural join (select community_id,community_name,community_code_language,community_image_url
                          ,community_regular_font_id,community_monospace_font_id,community_my_power,community_tables_are_monospace
                          ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    from db.community natural join api._community) c

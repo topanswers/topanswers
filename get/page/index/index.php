@@ -7,7 +7,7 @@ require '../../../hash.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to indx,pg_temp");
 $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
-extract(cdb("select account_id from one"));
+extract(cdb("select account_id, one_image_url from one"));
 $community_name = 'meta';
 $community_code_language = '';
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
@@ -45,7 +45,7 @@ $codidact = json_decode(file_get_contents('https://codidact.com/communities.json
 <body>
   <header>
     <div class="container">
-      <a class="frame" href="/" title="home"><img class="icon" src="/communityicon"></a>
+      <a class="frame" href="/" title="home"><img class="icon" src="<?=$one_image_url?>"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div>
@@ -65,12 +65,12 @@ $codidact = json_decode(file_get_contents('https://codidact.com/communities.json
     </div>
     <div>
       <div id="communities">
-        <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light
+        <?foreach(db("select community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_image_url
                       from community
                       where community_type='public'
                       order by random()") as $r){ extract($r);?>
           <a href="/<?=$community_name?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>;">
-            <img class="icon" src="/communityicon?community=<?=$community_name?>">
+            <img class="icon" src="<?=$community_image_url?>">
             <?=$community_display_name?>
           </a>
         <?}?>

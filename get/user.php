@@ -8,8 +8,7 @@ db("set search_path to usr,pg_temp");
 ccdb("select login_communityuser(nullif($1,'')::uuid,$2,$3)",$_COOKIE['uuid']??'',$_GET['community']??'meta',$_GET['id']);
 extract(cdb("select account_id
                    ,user_account_id,user_account_name,user_account_name_is_derived
-                   ,community_id,community_name,community_display_name
-                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,community_id,community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
                    ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
 
@@ -32,7 +31,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
   <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
   <link rel="stylesheet" href="/lib/datatables/datatables.min.css">
-  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
+  <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <link rel="stylesheet" href="/global.css">
   <link rel="stylesheet" href="/header.css">
   <style>

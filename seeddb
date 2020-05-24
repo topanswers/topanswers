@@ -23,6 +23,6 @@ for t in one sesite font license codelicense kind label account community source
 done
 
 echo 'creating api'
-psql seed postgres --set ON_ERROR_STOP=on -bqf ~/git/sql/api.sql
+PGOPTIONS='--client-min-messages=warning' psql seed postgres --set ON_ERROR_STOP=on -bqf ~/git/sql/api.sql
 
 echo 'finished'

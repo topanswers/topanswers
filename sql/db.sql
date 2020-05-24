@@ -25,6 +25,7 @@ create table one(
   one_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
 , one_stackapps_secret text default '' not null
 , one_image bytea check(length(one_image)>0)
+, one_image_hash bytea check(length(one_image_hash)=32)
 );
 create unique index one_only_ind on one((1));
 
@@ -124,6 +125,7 @@ create table community(
 , community_wiki_account_id integer not null references account
 , community_tio_language text
 , community_import_sanction_id integer -- references sanction
+, community_image_hash bytea check(length(community_image_hash)=32)
 );
 
 create table source(

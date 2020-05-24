@@ -7,7 +7,7 @@ db("set search_path to private,pg_temp");
 isset($_GET['community']) || fail(400,'community must be set');
 ccdb("select exists(select 1 from community where community_name=$1)",$_GET['community']) || fail(400,'private community '.$_GET['community'].' does not exist');
 $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
-extract(cdb("select account_id, (select community_display_name from community where community_name=$1) community_display_name from one",$_GET['community']));
+extract(cdb("select account_id, one_image_url, (select community_display_name from community where community_name=$1) community_display_name from one",$_GET['community']));
 ?>
 <!doctype html>
 <html style="--rgb-light: 211,211,211;
@@ -64,7 +64,7 @@ extract(cdb("select account_id, (select community_display_name from community wh
 <body>
   <header>
     <div class="container">
-      <a class="frame" style="background: rgb(var(--rgb-white));" href="/" title="home"><img class="icon" style="background: rgb(var(--rgb-dark));" src="/communityicon"></a>
+      <a class="frame" style="background: rgb(var(--rgb-white));" href="/" title="home"><img class="icon" style="background: rgb(var(--rgb-dark));" src="<?=$one_image_url?>"></a>
       <span class='element'>TopAnswers</span>
     </div>
     <div>

@@ -25,7 +25,8 @@ if(!isset($_GET['room'])&&!isset($_GET['q'])){
 if($auth) setcookie("uuid",$_COOKIE['uuid'],['expires'=>2147483647,'path'=>'/','domain'=>'.'.config("SITE_DOMAIN"),'secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,account_id,account_is_dev,account_notification_id
-                   ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_tio_language,community_about_question_id,community_ask_button_text,community_banner_markdown
+                   ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_tio_language,community_about_question_id
+                   ,community_ask_button_text,community_banner_markdown,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import
                    ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned
@@ -103,7 +104,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
     <link rel="stylesheet" href="<?=h("/lib/starrr.css")?>">
     <link rel="stylesheet" href="<?=h("/lib/select2.css")?>">
   <?}?>
-  <link rel="icon" href="/communityicon?community=<?=$community_name?>" type="image/png">
+  <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <title><?=isset($_GET['room']) ? ($room_name.' - ') : (isset($_GET['q'])?$question_title.' - ':'')?><?=$community_display_name?> - <?=$l_topanswers?></title>
   <script src="<?=h("/require.config.js")?>"></script>
   <script data-main="<?=h("/page/community/community.js").preg_replace('/^&/','?',($clearlocal?'&clearlocal':''))?>" src="<?=h("/lib/require.js")?>"></script>
