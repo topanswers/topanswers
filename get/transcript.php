@@ -146,7 +146,7 @@ if(isset($_GET['month'])){
         $('.message').addClass('processed');
       });
       <?if(!$search){?>threadChat();<?}?>
-      $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
+      $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()); });
       $('.markdown').mark('<?=$search?>', { "separateWordSearch": false, "ignoreJoiners": true });
       setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
     });

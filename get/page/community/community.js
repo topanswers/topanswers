@@ -100,7 +100,7 @@ define(['markdown','moment','js.cookie']
 
   function setFinalSpacer(){
     var scroller = $('#messages').parent(), frst = Math.round((Date.now() - (new Date($('#messages>.message').first().data('at'))))/1000) || 300, finalspacer = $('#messages .spacer:first-child');
-    if(frst>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log(1+frst)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(frst,'seconds').humanize()+' later');
+    if(frst>600) finalspacer.css('min-height','1em').css('line-height',(Math.round(100*Math.log(1+frst)/4)/100).toString()+'em').addClass('bigspacer').text(moment.duration(frst,'seconds').humanize());
     if(scroller.hasClass('follow')) scroller.animate({ scrollTop: (scroller.prop('scrollHeight')-scroller.innerHeight())+'px' },'fast');
   }
   function setChatPollTimeout(){
@@ -294,9 +294,7 @@ define(['markdown','moment','js.cookie']
       });
     }
 
-    newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()+' later'); });
-    //if(!maxChatChangeID) $('#messages').children().last().next().filter('.spacer').remove();
-    //if(!maxChatChangeID) $('#messages>.message').last().removeClass('merged');
+    newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()); });
     $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
 
     return promise;
