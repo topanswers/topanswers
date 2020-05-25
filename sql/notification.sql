@@ -13,6 +13,7 @@ create view chat with (security_barrier) as
 select notification_id,room_id,community_id,chat_id,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_markdown,community_name,room_question_id
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , account_id chat_from_account_id
+     , account_image_url chat_from_account_image_url
      , chat_reply_account_id=get_account_id() chat_reply_account_is_me
      , room_derived_name chat_room_name 
      , room_question_id is not null chat_is_question_room
@@ -24,7 +25,8 @@ select notification_id,room_id,community_id,chat_id,chat_at,chat_change_id,chat_
      , chat_flag_at is not null chat_i_flagged
      , chat_star_at is not null chat_i_starred
      , notification_id stack_id
-from notification natural join (select notification_id,chat_id from db.chat_notification) n natural join db.chat natural join db.room natural join api._room natural join api._community natural join db.community
+from notification natural join (select notification_id,chat_id from db.chat_notification) n
+                  natural join db.chat natural join db.room natural join api._room natural join api._community natural join db.community natural join api._account
      natural left join (select chat_id chat_reply_id, account_id chat_reply_account_id from db.chat) c
      natural left join (select chat_id,chat_flag_at from db.chat_flag where account_id=get_account_id()) f
      natural left join (select chat_id,chat_star_at from db.chat_star where account_id=get_account_id()) s;

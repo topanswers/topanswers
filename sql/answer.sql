@@ -8,7 +8,7 @@ create view codelicense with (security_barrier) as select codelicense_id,codelic
 create view label with (security_barrier) as select label_id,label_name,label_code_language,label_tio_language from db.label natural join db.question where question_id=get_question_id();
 --
 create view one with (security_barrier) as
-select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license
+select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license,account_image_url
       ,answer_id,answer_markdown,answer_license,answer_account_id
       ,question_id,question_title,question_markdown
       ,kind_allows_answer_multivotes
@@ -18,10 +18,11 @@ select account_id,account_license_id,account_codelicense_id,account_permit_later
       ,community_image_url
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-from (select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense
+from (select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_image_url
            , account_license_name||(case when account_permit_later_license then ' or later' else '' end)
                                  ||(case when account_codelicense_id<>1 then ' + '||account_codelicense_name||(case when account_permit_later_codelicense then ' or later' else '' end) else '' end) account_license
       from db.account
+           natural join api._account
            natural join (select license_id account_license_id, license_name account_license_name from db.license) l
            natural join (select codelicense_id account_codelicense_id, codelicense_name account_codelicense_name from db.codelicense) c
       where account_id=get_account_id()) ac

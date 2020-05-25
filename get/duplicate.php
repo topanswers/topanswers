@@ -10,10 +10,11 @@ ccdb("select count(1) from answer where answer_id=$1",$_GET['id'])===1 || fail(4
 $auth = ccdb("select login_answer(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['id']);
 extract(cdb("select account_id
                    ,community_name,community_language,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-                   ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me,sanction_short_description
+                   ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me,question_account_image_url
+                   ,sanction_short_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                   , extract('epoch' from current_timestamp-question_at)::bigint question_when
-                   ,answer_id,answer_summary,answer_account_id,answer_account_name,answer_votes,answer_votes_from_me,answer_communicant_votes
+                   ,answer_id,answer_summary,answer_account_id,answer_account_name,answer_votes,answer_votes_from_me,answer_communicant_votes,answer_account_image_url
                   , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                   , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
              from one"));
@@ -39,7 +40,7 @@ include '../lang/duplicate.'.$community_language.'.php';
     <div>
       <span class="element"><?=$question_account_name?></span>
       <a href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>">
-        <img title="<?=$l_stars?>: <?=$l_num($question_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
+        <img title="<?=$l_stars?>: <?=$l_num($question_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="<?=$question_account_image_url?>">
       </a>
     </div>
   </div>
@@ -55,7 +56,7 @@ include '../lang/duplicate.'.$community_language.'.php';
       <div>
         <span class="element"><?=$answer_account_name?></span>
         <a href="/user?id=<?=$answer_account_id?>&community=<?=$community_name?>">
-          <img title="<?=$l_stars?>: <?=$l_num($answer_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
+          <img title="<?=$l_stars?>: <?=$l_num($answer_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="<?=$answer_account_image_url?>">
         </a>
       </div>
     </div>

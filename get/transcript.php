@@ -6,8 +6,9 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
 $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
-extract(cdb("select account_id,community_name,room_id,room_derived_name,room_can_chat,room_question_id,community_tables_are_monospace,community_code_language,my_community_regular_font_name
-                   ,my_community_monospace_font_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
+extract(cdb("select account_id,account_image_url,community_name,room_id,room_derived_name,room_can_chat,room_question_id,community_tables_are_monospace,community_code_language
+                   ,my_community_regular_font_name,my_community_monospace_font_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,community_image_url
              from one"));
 $max = 500;
 $search = $_GET['search']??'';
@@ -160,7 +161,7 @@ if(isset($_GET['month'])){
       <form class="element" action="/transcript" method="get" style="display: inline;"><input type="search" name="search" placeholder="search"><input type="hidden" name="room" value="<?=$_GET['room']?>"></form>
     </div>
     <div>
-      <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?>
+      <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a><?}?>
     </div>
   </header>
   <main style="display: flex; flex: 1 1 auto; background: rgb(var(--rgb-light)); overflow: hidden;">
@@ -168,7 +169,7 @@ if(isset($_GET['month'])){
       <div id="messages">
         <?db("select set_config('pg_trgm.strict_word_similarity_threshold','0.55',false)");?>
         <?db("select set_config('pg_trgm.gin_fuzzy_search_limit','1000',false)");?>
-        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,i_flagged,i_starred,chat_flag_count,chat_star_count,chat_has_history
+        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,i_flagged,i_starred,chat_flag_count,chat_star_count,chat_has_history,account_image_url
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
                       from search($1)",$search) as $r){ extract($r);?>
           <small class="who">
@@ -180,7 +181,7 @@ if(isset($_GET['month'])){
             <?}?>
           </small>
           <div id="c<?=$chat_id?>" class="message" data-id="<?=$chat_id?>" data-name="<?=$account_name?>">
-            <img class="icon" src="/identicon?id=<?=$account_id?>">
+            <img class="icon" src="<?=$account_image_url?>">
             <div class="markdown" data-markdown="<?=$chat_markdown?>"></div>
             <span class="buttons">
               <span class="button-group show">
@@ -253,7 +254,7 @@ if(isset($_GET['month'])){
         </div>
       <?}?>
       <div id="messages">
-        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,i_flagged,i_starred,chat_account_will_repeat
+        <?foreach(db("select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,i_flagged,i_starred,chat_account_will_repeat,account_image_url
                             ,reply_is_different_segment,chat_flag_count,chat_star_count,chat_has_history,chat_account_is_repeat
                            , to_char(chat_at at time zone 'UTC','YYYY-MM-DD HH24:MI:SS') chat_at_text
                       from range(make_timestamp($1,$2,$3,$4,0,0),make_timestamp($5,$6,$7,$8,0,0)+'1h'::interval)
@@ -272,7 +273,7 @@ if(isset($_GET['month'])){
                 <?=$reply_account_is_me?'<em>Me</em>':$reply_account_name?>
               <?}?>
             </small>
-            <img class="icon" src="/identicon?id=<?=$account_id?>">
+            <img class="icon" src="<?=$account_image_url?>">
             <div class="markdown" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
             <span class="buttons">
               <span class="button-group show">

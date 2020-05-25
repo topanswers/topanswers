@@ -10,14 +10,14 @@ create view chat_day with (security_barrier) as select chat_year,chat_month,chat
 create view chat_hour with (security_barrier) as select chat_year,chat_month,chat_day,chat_hour,chat_hour_count from db.chat_hour where room_id=get_room_id();
 --
 create view one with (security_barrier) as
-select account_id,account_is_dev,community_id,community_name,community_code_language,room_id,room_derived_name,room_question_id,community_tables_are_monospace,community_image_url
+select account_id,account_is_dev,account_image_url,community_id,community_name,community_code_language,room_id,room_derived_name,room_question_id,community_tables_are_monospace,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
      , (room_type='public' or x.account_id is not null) room_can_chat
      , '/image?hash='||encode(one_image_hash,'hex') one_image_url
 from db.one cross join db.room natural join api._room natural join db.community natural join api._community
-     natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
+     natural left join (select account_id,account_is_dev,account_image_url from db.login natural join db.account natural join api._account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
      natural left join db.writer x
 where room_id=get_room_id();
@@ -33,6 +33,7 @@ create function search(text)
                                   , chat_at timestamptz
                                   , account_is_me boolean
                                   , account_name text
+                                  , account_image_url text
                                   , reply_account_name text
                                   , reply_account_is_me boolean
                                   , i_flagged boolean
@@ -45,6 +46,7 @@ create function search(text)
   select chat_id,account_id,chat_reply_id,chat_markdown,chat_at
        , account_id=get_account_id() account_is_me
        , account_derived_name account_name
+       , account_image_url
        , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
        , (select account_id=get_account_id() from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
        , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=get_account_id()) i_flagged
@@ -65,6 +67,7 @@ create function range(startat timestamptz, endat timestamptz)
                                   , chat_at timestamptz
                                   , account_is_me boolean
                                   , account_name text
+                                  , account_image_url text
                                   , reply_account_name text
                                   , reply_account_is_me boolean
                                   , chat_gap integer
@@ -81,6 +84,7 @@ create function range(startat timestamptz, endat timestamptz)
   from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at
              , account_id=get_account_id() account_is_me
              , coalesce(nullif(account_name,''),'Anonymous') account_name
+             , account_image_url
              , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
              , (select account_id=get_account_id() from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
              , round(extract('epoch' from chat_at-(lag(chat_at) over (order by chat_at))))::integer chat_gap
@@ -91,7 +95,7 @@ create function range(startat timestamptz, endat timestamptz)
              , (select count(1)::integer from chat_flag where chat_id=c.chat_id) chat_flag_count
              , (select count(1)::integer from chat_star where chat_id=c.chat_id) chat_star_count
              , (select count(1) from chat_history where chat_id=c.chat_id)>1 chat_has_history
-        from chat c natural join account
+        from chat c natural join account natural join api._account
         where room_id=get_room_id() and chat_at>=startat and chat_at<endat) z
   where get_account_id() is not null or chat_flag_count=0
   order by chat_at;

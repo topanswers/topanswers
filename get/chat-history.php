@@ -5,7 +5,7 @@ include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to chat_history,pg_temp");
 ccdb("select login_chat(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
-extract(cdb("select account_id
+extract(cdb("select account_id,account_image_url
                    ,chat_id
                    ,room_id,room_derived_name
                    ,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_image_url
@@ -88,7 +88,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       <span class="element">history of <a href="/transcript?room=<?=$room_id?>&id=<?=$chat_id?>#c<?=$chat_id?>">a chat message</a> in <a href="/<?=$community_name?>?room=<?=$room_id?>"><?=$room_derived_name?></a></span>
     </div>
     <div>
-      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a>
     </div>
   </header>
   <main>

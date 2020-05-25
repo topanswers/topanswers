@@ -4,7 +4,7 @@ set local search_path to room,api,pg_temp;
 --
 --
 create view one with (security_barrier) as
-select account_id,account_is_dev
+select account_id,account_is_dev,account_image_url
       ,community_id,community_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
@@ -12,7 +12,7 @@ select account_id,account_is_dev
      , room_image_hash is not null room_has_image
      , (select question_id from db.question where question_room_id=room_id) question_id
 from db.room natural join api._room natural join api._community natural join db.community
-     natural join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
+     natural join (select account_id,account_is_dev,account_image_url from db.login natural join db.account natural join api._account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
 where room_id=get_room_id();
 --

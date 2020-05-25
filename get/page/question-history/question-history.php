@@ -7,13 +7,13 @@ require '../../../hash.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to question_history,pg_temp");
 ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
-extract(cdb("select account_id
+extract(cdb("select account_id,account_image_url
                    ,question_id,question_title,question_is_imported
                    ,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,my_community_regular_font_name,my_community_monospace_font_name
                   , (select jsonb_agg(z)
-                     from (select account_id,account_name
+                     from (select account_id,account_name,account_image_url
                                 , to_char(history_at,'YYYY-MM-DD HH24:MI:SS') history_at
                                 , case when question_history_id is not null then 'h' else 'f' end item_type
                                 , case when question_flag_history_id is null then (row_number() over (partition by question_flag_history_id order by history_at)) end rn
@@ -66,7 +66,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       <span class="element">question history for: <a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></span>
     </div>
     <div>
-      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a>
     </div>
   </header>
   <main>
@@ -82,7 +82,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
             <?=$action?> by <?=$h_account_name?>
             <div class="when"><?=$h_history_at?></div>
           </div>
-          <img class="icon" data-id="<?=$h_account_id?>" src="/identicon?id=<?=$h_account_id?>">
+          <img class="icon" data-id="<?=$h_account_id?>" src="<?=$h_account_image_url?>">
         </div>
       <?}?>
     </div>

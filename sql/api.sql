@@ -91,6 +91,7 @@ $$;
 create view _account with (security_barrier) as
 select account_id
      , coalesce(nullif(account_name,''),'Anonymous') account_derived_name
+     , case when account_image_hash is null then '/identicon?id='||account_id else '/image?hash='||encode(account_image_hash,'hex') end account_image_url
 from db.account;
 --
 create view _community with (security_barrier) as

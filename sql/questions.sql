@@ -8,6 +8,7 @@ select question_id,question_at,question_change_at,question_votes,question_poll_m
       ,community_id,community_name,community_display_name,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
      , sanction_short_description
      , account_id question_account_id
+     , account_image_url question_account_image_url
      , account_derived_name question_account_name
      , coalesce(question_vote_votes,0) question_votes_from_me
      , coalesce(communicant_votes,0) question_communicant_votes
@@ -26,6 +27,7 @@ create view answer with (security_barrier) as
 select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted,answer_summary,label_id,label_name,label_url
      , coalesce(answer_vote_votes,0) answer_votes_from_me
      , account_id answer_account_id
+     , account_image_url answer_account_image_url
      , account_derived_name answer_account_name
      , coalesce(communicant_votes,0) answer_communicant_votes
      , case when answer_se_imported_at=answer_change_at then 'imported' when answer_change_at>answer_at then 'edited' else 'answered' end answer_change

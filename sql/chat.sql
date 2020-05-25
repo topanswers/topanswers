@@ -23,6 +23,7 @@ $$;
 create function range(startid bigint, endid bigint, lim integer)
                      returns table (chat_id bigint
                                   , account_id integer
+                                  , account_image_url text
                                   , chat_reply_id integer
                                   , chat_markdown text
                                   , chat_at timestamptz
@@ -78,7 +79,7 @@ create function range(startid bigint, endid bigint, lim integer)
                               , round(extract('epoch' from coalesce(lag(chat_at) over (order by chat_at desc),current_timestamp)-chat_at))::integer chat_next_gap
                          from cc) z) z
              where startid=endid or ((chat_id>startid or startid is null) and (chat_id<endid or endid is null)))
-  select chat_id,account_id,chat_reply_id,chat_markdown,chat_at,chat_change_id
+  select chat_id,account_id,account_image_url,chat_reply_id,chat_markdown,chat_at,chat_change_id
        , account_id=(select account_id from g) account_is_me
        , coalesce(nullif(account_name,''),'Anonymous') account_name
        , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
@@ -98,6 +99,7 @@ create function range(startid bigint, endid bigint, lim integer)
        , chat_account_is_repeat
   from c
        natural join account
+       natural join _account
        natural join (select account_id,community_id,communicant_votes from communicant) v
        natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id() and notification_dismissed_at is null) n
   where rn<=least(lim,201)

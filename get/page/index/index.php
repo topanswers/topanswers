@@ -7,7 +7,7 @@ require '../../../hash.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to indx,pg_temp");
 $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
-extract(cdb("select account_id, one_image_url from one"));
+extract(cdb("select account_id,one_image_url,account_image_url from one"));
 $community_name = 'meta';
 $community_code_language = '';
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
@@ -50,7 +50,7 @@ $codidact = json_decode(file_get_contents('https://codidact.com/communities.json
     </div>
     <div>
       <?if($auth){?>
-        <a class="frame" href="/profile?community=meta"><img data-test="userIcon" class="icon" src="/identicon?id=<?=$account_id?>"></a>
+        <a class="frame" href="/profile?community=meta"><img data-test="userIcon" class="icon" src="<?=$account_image_url?>"></a>
       <?}else{?>
         <span class="element"><input id="link" data-test="loginBtn" type="button" value="log in"><input id="join" type="button" value="join (sets cookie)"></span>
       <?}?>

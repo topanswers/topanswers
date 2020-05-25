@@ -37,7 +37,9 @@ where community_id=get_community_id() and account_id=get_user_id();
 --
 create view one with (security_barrier) as
 select a.my_account_id account_id
+     , a.my_account_image_url account_image_url
      , u.account_id user_account_id
+     , u.account_image_url user_account_image_url
      , u.account_name is distinct from account_derived_name user_account_name_is_derived
      , u.account_derived_name user_account_name
       ,community_id,community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
@@ -45,12 +47,12 @@ select a.my_account_id account_id
      , (select font_id from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_id
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
-from (select account_id,account_name,account_derived_name from db.account natural join api._account where account_id=get_user_id()) u
+from (select account_id,account_name,account_derived_name,account_image_url from db.account natural join api._account where account_id=get_user_id()) u
      cross join (select community_id,community_name,community_display_name,community_regular_font_id,community_monospace_font_id
                               ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
                         from api._community natural join db.community
                         where community_id=get_community_id()) c
-     natural left join (select account_id my_account_id from db.account natural join api._account where account_id=get_account_id()) a
+     natural left join (select account_id my_account_id, account_image_url my_account_image_url from db.account natural join api._account where account_id=get_account_id()) a
      natural left join (select community_id,account_id my_account_id,communicant_regular_font_id,communicant_monospace_font_id from db.communicant) co;
 --
 --

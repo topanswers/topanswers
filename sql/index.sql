@@ -12,7 +12,8 @@ from db.community natural join api._community
 where community_type='public' or community_is_coming_soon;
 --
 create view one with (security_barrier) as
-select (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) account_id, '/image?hash='||encode(one_image_hash,'hex') one_image_url from db.one;
+select account_id, '/image?hash='||encode(one_image_hash,'hex') one_image_url, account_image_url
+from db.one full join (select * from db.login natural join db.account natural join api._account where login_uuid=get_login_uuid()) a on true;
 --
 --
 create function login(uuid) returns boolean language sql security definer as $$select api.login($1);$$;

@@ -21,6 +21,7 @@ extract(cdb("select account_id,community_name,community_language
                   , (select coalesce(jsonb_agg(z order by question_ordinal),'[]'::jsonb)
                      from (select question_id,question_ordinal,question_count,question_at,question_change_at,question_change,question_is_answered,question_title,question_votes,question_votes_from_me
                                  ,question_account_id,question_account_name,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_communicant_votes,question_is_imported
+                                 ,question_account_image_url
                                  ,community_id,community_name,community_display_name,community_my_power,community_image_url
                                  ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                                  ,sanction_short_description
@@ -77,7 +78,7 @@ include '../lang/questions.'.$o_community_language.'.php';
         <span class="when element hover" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"><?=$question_account_name?></span>
         <span class="element"><?=$question_account_name?></span>
         <a href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>">
-          <img title="<?=$l_stars?>: <?=$l_num($question_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="/identicon?id=<?=$question_account_id?>">
+          <img title="<?=$l_stars?>: <?=$l_num($question_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$question_account_name)[0]?>" src="<?=$question_account_image_url?>">
         </a>
       </div>
     </div>
@@ -85,6 +86,7 @@ include '../lang/questions.'.$o_community_language.'.php';
       <div class="answers">
         <?foreach(db("with l as (select unnest(label_ids) label_id from (select label_ids from questions.parse($1) limit 1) z)
                       select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes,answer_summary
+                            ,answer_account_image_url
                             ,label_name,label_url
                            , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                            , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
@@ -116,7 +118,7 @@ include '../lang/questions.'.$o_community_language.'.php';
               <span class="when element hover" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
               <span class="element"><?=$answer_account_name?></span>
               <a href="/user?id=<?=$answer_account_id?>&community=<?=$community_name?>">
-                <img title="<?=$l_stars?>: <?=$l_num($answer_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
+                <img title="<?=$l_stars?>: <?=$l_num($answer_communicant_votes)?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="<?=$answer_account_image_url?>">
               </a>
             </div>
           </div>

@@ -6,8 +6,8 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to usr,pg_temp");
 
 ccdb("select login_communityuser(nullif($1,'')::uuid,$2,$3)",$_COOKIE['uuid']??'',$_GET['community']??'meta',$_GET['id']);
-extract(cdb("select account_id
-                   ,user_account_id,user_account_name,user_account_name_is_derived
+extract(cdb("select account_id,account_image_url
+                   ,user_account_id,user_account_name,user_account_image_url,user_account_name_is_derived
                    ,community_id,community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
                    ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
@@ -84,12 +84,12 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 <body>
   <header>
     <?$ch = curl_init('http://127.0.0.1/navigationx?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-    <div><?if($account_id){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a><?}?></div>
+    <div><?if($account_id){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a><?}?></div>
   </header>
   <main>
     <fieldset>
       <div style="display: flex; align-items: center;">
-        <div class="frame"><img class="icon" src="/identicon?id=<?=$user_account_id?>&random=<?=time()?>"></div>
+        <div class="frame"><img class="icon" src="<?=$user_account_image_url?>"></div>
         <div style="margin-left: 4px;<?=$user_account_name_is_derived?' font-style: italic;':''?>"><?=$user_account_name?></div>
       </div>
     </fieldset>

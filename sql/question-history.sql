@@ -4,7 +4,7 @@ set local search_path to question_history,api,pg_temp;
 --
 --
 create view history as
-select account_id,question_id,history_at,question_history_id,question_flag_history_id
+select account_id,account_image_url,question_id,history_at,question_history_id,question_flag_history_id
      , account_derived_name account_name
 from (select account_id,question_id,question_history_at history_at,question_history_id,null::integer question_flag_history_id from db.question_history where question_id=get_question_id()
       union all
@@ -26,7 +26,7 @@ where question_id=get_question_id();
 create view one with (security_barrier) as
 select question_id,question_title
      , question_se_question_id is not null question_is_imported
-      ,account_id
+      ,account_id,account_image_url
       ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
@@ -34,7 +34,7 @@ select question_id,question_title
 from (select community_id,question_id,question_title,question_se_question_id from _question natural join db.question) q
      natural join api._community
      natural join db.community
-     natural join (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
+     natural join (select account_id,account_image_url from db.login natural join db.account natural join api._account where login_uuid=get_login_uuid()) a
      natural left join db.communicant
 where question_id=get_question_id();
 --

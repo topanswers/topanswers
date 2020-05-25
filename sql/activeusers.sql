@@ -4,9 +4,10 @@ set local search_path to activeusers,api,pg_temp;
 --
 --
 create view account with (security_barrier) as
-select account_id,account_derived_name,participant_latest_chat_at,communicant_votes
+select account_id,account_derived_name,account_image_url,participant_latest_chat_at,communicant_votes
 from db.room natural join db.participant natural join api._account natural join db.communicant
-where room_id=get_room_id() and (room_type='private' or (room_type='gallery' and participant_latest_chat_at>(current_timestamp-'90d'::interval)) or participant_latest_chat_at>(current_timestamp-'14d'::interval));
+where room_id=get_room_id()
+      and (room_type='private' or (room_type='gallery' and participant_latest_chat_at>(current_timestamp-'90d'::interval)) or participant_latest_chat_at>(current_timestamp-'14d'::interval));
 --
 create view one with (security_barrier) as select get_account_id() account_id, community_language from api._community where community_id=get_community_id();
 --

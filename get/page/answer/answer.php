@@ -11,7 +11,7 @@ if(isset($_GET['id'])){
 }else{
   ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['question']??'') || fail(403,'access denied');
 }
-extract(cdb("select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license
+extract(cdb("select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license,account_image_url
                    ,answer_id,answer_markdown,answer_license
                    ,question_id,question_title,question_markdown
                    ,sanction_label_called,sanction_label_is_mandatory,sanction_default_label_id
@@ -99,7 +99,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
         </span>
       <?}?>
       <button class="element" id="submit" type="submit" form="form"><?=$answer_id?'update<span class="wideonly"> answer under '.$answer_license.'</span>':'post<span class="wideonly"> answer</span>'?></button>
-      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+      <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a>
     </div>
   </header>
   <form id="form" method="POST" action="//post.topanswers.xyz/answer">

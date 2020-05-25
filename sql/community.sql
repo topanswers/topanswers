@@ -33,6 +33,7 @@ where community_id=get_community_id();
 create view question_flag with (security_barrier) as
 select question_flag_at,question_flag_direction,question_flag_is_crew
      , account_id question_flag_account_id
+     , account_image_url question_flag_account_image_url
      , account_derived_name question_flag_account_name
 from db.question_flag natural join api._account
 where question_id=get_question_id() and question_flag_direction<>0;
@@ -41,6 +42,7 @@ create view answer with (security_barrier) as
 select answer_id,answer_at,answer_markdown,answer_votes,answer_se_answer_id,answer_crew_flags,answer_active_flags,answer_is_deleted,answer_summary,answer_change_at
      , account_is_imported answer_account_is_imported
      , account_id answer_account_id
+     , account_image_url answer_account_image_url
      , account_derived_name answer_account_name
      , license_name||(case when answer_permit_later_license then ' or later' else '' end) answer_license_name
      , license_description answer_license_description
@@ -66,19 +68,20 @@ order by answer_votes desc, communicant_votes desc, answer_id desc;
 create view answer_flag with (security_barrier) as
 select answer_id,answer_flag_at,answer_flag_direction,answer_flag_is_crew
      , account_id answer_flag_account_id
+     , account_image_url answer_flag_account_image_url
      , account_derived_name answer_flag_account_name
 from db.answer_flag natural join (select answer_id from db.answer where question_id=get_question_id()) a natural join api._account
 where answer_flag_direction<>0;
 --
 create view one with (security_barrier) as
-select account_id
+select account_id,account_image_url
       ,community_id,community_name,community_display_name,community_language,community_my_power,community_code_language,community_tio_language,community_tables_are_monospace
       ,community_about_question_id,community_ask_button_text,community_banner_markdown,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,room_id,room_image_url
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged
-      ,question_i_counterflagged,question_when,question_account_id,question_account_name,question_account_is_imported
+      ,question_i_counterflagged,question_when,question_account_id,question_account_name,question_account_is_imported,question_account_image_url
       ,sanction_short_description
       ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,kind_show_answer_summary_toc
@@ -102,7 +105,9 @@ select account_id
      , l.account_id is null and room_can_listen room_can_listen
      , p.account_id is not null room_is_pinned
 from db.room r natural join api._room natural join db.community natural join api._community
-     natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id from db.login natural join db.account where login_uuid=get_login_uuid()) a
+     natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id,account_image_url
+                        from db.login natural join db.account natural join api._account
+                        where login_uuid=get_login_uuid()) a
      natural left join db.communicant
      natural left join db.listener l
      natural left join db.pinner p
@@ -118,6 +123,7 @@ from db.room r natural join api._room natural join db.community natural join api
                              , codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) question_codelicense_name
                              , codelicense_description question_codelicense_description
                              , account_id question_account_id
+                             , account_image_url question_account_image_url
                              , account_derived_name question_account_name
                              , account_is_imported question_account_is_imported
                              , coalesce(question_vote_votes,0) question_votes_from_me

@@ -11,6 +11,7 @@ select sanction_id,kind_id,sanction_description,sanction_ordinal,sanction_is_def
 --
 create view one with (security_barrier) as
 select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license_name,account_codelicense_name,account_has_codelicense
+      ,account_image_url
       ,community_id,community_name,community_display_name,community_code_language,community_my_power,community_tables_are_monospace,community_language,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,sesite_url
@@ -25,9 +26,10 @@ select account_id,account_license_id,account_codelicense_id,account_permit_later
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
 from db.community
      natural join api._community
-     natural left join (select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license_name,account_codelicense_name
+     natural left join (select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license_name
+                              ,account_codelicense_name,account_image_url
                              , account_codelicense_id<>1 and account_codelicense_name<>account_license_name account_has_codelicense
-                        from db.account
+                        from db.account natural join api._account
                              natural join (select license_id account_license_id, license_name account_license_name from db.license) l
                              natural join (select codelicense_id account_codelicense_id, codelicense_name account_codelicense_name from db.codelicense) c
                         where account_id=get_account_id()) a

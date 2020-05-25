@@ -4,7 +4,9 @@ set local search_path to private,api,pg_temp;
 --
 --
 create view community with (security_barrier) as select community_name,community_display_name from db.community where community_type='private';
-create view one with (security_barrier) as select get_account_id() account_id, '/image?hash='||encode(one_image_hash,'hex') one_image_url from db.one;
+--
+create view one with (security_barrier) as
+select account_id, account_image_url, '/image?hash='||encode(one_image_hash,'hex') one_image_url from db.one cross join api._account where account_id = get_account_id();
 --
 --
 create function login(uuid) returns boolean language sql security definer as $$select api.login($1);$$;

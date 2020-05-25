@@ -56,7 +56,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <?=$d_chat_reply_id?'<a class="reply" href="#c'.$d_chat_reply_id.'">&nbsp;replying to&nbsp;</a> '.($d_chat_reply_account_is_me?'<em>Me</em>':$d_chat_reply_account_name):''?>
         <?}?>
       </span>
-      <img title="<?=$d_chat_from_account_name?>" class="icon" src="/identicon?id=<?=$d_chat_from_account_id?>">
+      <img title="<?=$d_chat_from_account_name?>" class="icon" src="<?=$d_chat_from_account_image_url?>">
       <div class="markdown" data-markdown="<?=$d_chat_markdown?>"><pre><?=$d_chat_markdown?></pre></div>
       <?if($room_can_chat&&($d_room_id===$room_id)){?>
         <span class="buttons">

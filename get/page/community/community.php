@@ -24,7 +24,7 @@ if(!isset($_GET['room'])&&!isset($_GET['q'])){
 }
 if($auth) setcookie("uuid",$_COOKIE['uuid'],['expires'=>2147483647,'path'=>'/','domain'=>'.'.config("SITE_DOMAIN"),'secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 extract(cdb("select login_resizer_percent,login_chat_resizer_percent
-                   ,account_id,account_is_dev,account_notification_id
+                   ,account_id,account_is_dev,account_notification_id,account_image_url
                    ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_tio_language,community_about_question_id
                    ,community_ask_button_text,community_banner_markdown,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
@@ -35,7 +35,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
                    ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged,question_i_counterflagged
                    ,question_when
-                   ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
+                   ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported,question_account_image_url
                    ,question_selink_user_id,question_communicant_votes
                    ,question_license_href,question_has_codelicense,question_codelicense_name,question_license_description,question_codelicense_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
@@ -141,7 +141,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
             </form>
           <?}?>
           <a href="/question?community=<?=$community_name?>" class="button"><?=$community_ask_button_text?></a>
-          <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+          <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a>
         <?}?>
         <div class="panecontrol fa fa-angle-double-right"></div>
       </div>
@@ -184,7 +184,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                   <span><?=$question_account_name?></span>
                 <?}?>
               </span>
-              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="/identicon?id=<?=$question_account_id?>">
+              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="<?=$question_account_image_url?>">
             </div>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=$question_markdown?>"><pre class='noscript'><?=$question_markdown?></pre></div>
@@ -215,7 +215,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                     <div class="element container shrink">
                       <span>flagged by:</span>
                       <div class="container shrink">
-                        <?foreach(db("select question_flag_account_id,question_flag_account_name,question_flag_is_crew,question_flag_direction
+                        <?foreach(db("select question_flag_account_id,question_flag_account_name,question_flag_is_crew,question_flag_direction,question_flag_account_image_url
                                       from question_flag
                                       where question_flag_account_id<>$1
                                       order by question_flag_is_crew, question_flag_at",$account_id) as $i=>$r){ extract($r);?>
@@ -224,7 +224,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                                data-id="<?=$question_flag_account_id?>"
                                data-name="<?=explode(' ',$question_flag_account_name)[0]?>"
                                data-fullname="<?=$question_flag_account_name?>"
-                               src="/identicon?id=<?=$question_flag_account_id?>">
+                               src="<?=$question_flag_account_image_url?>">
                         <?}?>
                       </div>
                     </div>
@@ -245,7 +245,8 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
             <div style="height: 3px; background: rgba(var(--rgb-dark),0.6);"></div>
             <div class="answers">
               <?foreach(db("select answer_id,answer_change,answer_markdown,answer_account_id,answer_votes,answer_votes_from_me,answer_account_name,answer_is_deleted,answer_communicant_votes
-                                  ,answer_summary,label_name,label_url
+                                  ,answer_summary,answer_account_image_url
+                                  ,label_name,label_url
                                  , to_char(answer_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_at_iso
                                  , to_char(answer_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') answer_change_at_iso
                                  , extract('epoch' from current_timestamp-answer_at)::bigint answer_when
@@ -271,7 +272,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                       </span>
                     <?}?>
                     <span class="element"><?=$answer_account_name?></span>
-                    <img title="Stars: <?=$answer_communicant_votes?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="/identicon?id=<?=$answer_account_id?>">
+                    <img title="Stars: <?=$answer_communicant_votes?>" class="icon" data-name="<?=explode(' ',$answer_account_name)[0]?>" src="<?=$answer_account_image_url?>">
                   </div>
                 </div>
               <?}?>
@@ -318,7 +319,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                     <span><?=$answer_account_name?></span>
                   <?}?>
                 </span>
-                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="/identicon?id=<?=$answer_account_id?>">
+                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="<?=$answer_account_image_url?>">
               </div>
             </div>
             <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre class='noscript'><?=$answer_markdown?></pre></div>
@@ -351,7 +352,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                       <div class="element container shrink">
                         <span>flagged by:</span>
                         <div class="container shrink">
-                          <?foreach(db("select answer_flag_is_crew,answer_flag_direction,answer_flag_account_id,answer_flag_account_name
+                          <?foreach(db("select answer_flag_is_crew,answer_flag_direction,answer_flag_account_id,answer_flag_account_name,answer_flag_account_image_url
                                         from answer_flag
                                         where answer_id=$1 and answer_flag_account_id<>$2
                                         order by answer_flag_is_crew, answer_flag_at",$answer_id,$account_id) as $i=>$r){ extract($r);?>
@@ -360,7 +361,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                                  data-id="<?=$answer_flag_account_id?>"
                                  data-name="<?=explode(' ',$answer_flag_account_name)[0]?>"
                                  data-fullname="<?=$answer_flag_account_name?>"
-                                 src="/identicon?id=<?=$answer_flag_account_id?>">
+                                 src="<?=$answer_flag_account_image_url?>">
                           <?}?>
                         </div>
                       </div>

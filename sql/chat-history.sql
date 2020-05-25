@@ -14,7 +14,7 @@ where chat_id=get_chat_id();
 create view one with (security_barrier) as
 select chat_id
       ,room_id,room_derived_name
-      ,account_id
+      ,account_id,account_image_url
       ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
@@ -23,7 +23,7 @@ from (select chat_id,community_id,room_id from db.chat where chat_id=get_chat_id
      natural join api._room
      natural join db.community
      natural join api._community
-     natural join (select account_id from db.login natural join db.account where login_uuid=get_login_uuid()) ac
+     natural join (select account_id,account_image_url from db.login natural join db.account natural join api._account where login_uuid=get_login_uuid()) ac
      natural left join db.communicant;
 --
 --

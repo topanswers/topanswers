@@ -7,7 +7,7 @@ db("set search_path to private,pg_temp");
 isset($_GET['community']) || fail(400,'community must be set');
 ccdb("select exists(select 1 from community where community_name=$1)",$_GET['community']) || fail(400,'private community '.$_GET['community'].' does not exist');
 $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
-extract(cdb("select account_id, one_image_url, (select community_display_name from community where community_name=$1) community_display_name from one",$_GET['community']));
+extract(cdb("select account_id, account_image_url, one_image_url, (select community_display_name from community where community_name=$1) community_display_name from one",$_GET['community']));
 ?>
 <!doctype html>
 <html style="--rgb-light: 211,211,211;
@@ -69,7 +69,7 @@ extract(cdb("select account_id, one_image_url, (select community_display_name fr
     </div>
     <div>
       <?if($auth){?>
-        <a class="frame" href="/profile?community=meta"><img class="icon" src="/identicon?id=<?=$account_id?>"></a>
+        <a class="frame" href="/profile?community=meta"><img class="icon" src="<?=$account_image_url?>"></a>
       <?}else{?>
         <span class="element"><input id="join" type="button" value="join"> or <input id="link" type="button" value="log in"></span>
         <a class="frame" href="/meta"><img class="icon" src="/image?hash=bf9d945e0263481d82dfe42837c31a19bfdadd03f120665be23a3f09c34c0cc4"></a>
