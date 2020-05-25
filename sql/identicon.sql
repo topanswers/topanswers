@@ -3,7 +3,7 @@ grant usage on schema identicon to get;
 set local search_path to identicon,api,pg_temp;
 --
 --
-create view account with (security_barrier) as select account_id,account_change_at,account_image from db.account;
+create view account with (security_barrier) as select account_id,account_change_at from db.account;
 --
 --
 revoke all on all functions in schema identicon from public;

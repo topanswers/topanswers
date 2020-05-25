@@ -127,10 +127,6 @@ create function change_image(bytea) returns void language sql security definer s
   select _error('access denied') where get_account_id() is null;
   update account set account_image_hash = $1, account_change_id = default, account_change_at = default where account_id=get_account_id();
 $$;
-create function change_image(image bytea, hash bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  update account set account_image = image, account_image_hash = hash, account_change_id = default, account_change_at = default where account_id=get_account_id();
-$$;
 --
 create function change_license(id integer, later boolean) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;

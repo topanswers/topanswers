@@ -83,7 +83,6 @@ create table account(
 , account_name text
 , account_create_at timestamptz not null default current_timestamp
 , account_change_at timestamptz not null default current_timestamp
-, account_image bytea check(length(account_image)>0)
 , account_change_id bigint generated always as identity unique
 , account_uuid uuid not null default x_uuid_ossp.uuid_generate_v4()
 , account_is_dev boolean default false not null
