@@ -85,11 +85,14 @@
 .dbfiddle .batch.hidden { display: none; }
 .dbfiddle .batch { overflow: hidden; min-width: 0; }
 .dbfiddle .error { overflow: auto; white-space: pre; font-family: var(--font-monospace); background: rgba(var(--rgb-highlight),0.25); }
-.dbfiddle a { font-size: smaller; }
+.dbfiddle>div>a { font-size: smaller; }
 .dbfiddle td.null::after { content: 'null'; font-style: italic; opacity: 0.5; }
 .dbfiddle td:not(.null):empty:after { content: ' '; visibility: hidden; }
 .dbfiddle td.right { text-align: right; }
 .dbfiddle th.right { text-align: right; }
+.dbfiddle tbody.hide { display: none; }
+.dbfiddle tfoot td { padding: 6px 8px; font-size: 12px; font-family: var(--font-regular); }
+.dbfiddle tfoot td a { font-style: normal; }
 .dbfiddle table { background: rgb(var(--rgb-white)); }
 .dbfiddle tbody>tr:nth-child(even)>td { background: rgba(var(--rgb-light),0.1); }
 .dbfiddle .qp { overflow-x: auto; overflow-y: hidden; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; margin-top: 5px; padding: 2px }

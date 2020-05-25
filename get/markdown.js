@@ -88,6 +88,15 @@ define(['jquery'
             });
           });
         });
+        f.find('tfoot a').click(function(){
+          const f = $(this).closest('tfoot'), n = f.parent().children('tbody.hide').eq(0);
+          n.removeClass('hide');
+          f.find('span:first-child').html(n.next().data('showing'));
+          if(!n.next().hasClass('hide')){
+            f.find('span:last-child').remove();
+          }
+          return false;
+        });
       }
       $(this).find('a[href*="//dbfiddle.uk"]')
              .filter(function(){ return $(this).attr('href').match(/^https?:\/\/dbfiddle\.uk\/?\?.*fiddle=[0-91-f]{32}/)&&$(this).parent().is('p')&&($(this).parent().text()===('<>'+$(this).attr('href'))); })
@@ -281,6 +290,7 @@ define(['jquery'
     };
   
   }());
+
 
   return [$,_,CodeMirror,tioRequest];
 

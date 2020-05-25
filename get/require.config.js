@@ -133,8 +133,8 @@ var require = {
     'vex':'vex.ce8070c89395b6ea',
     'resizer':'resizer.acc48d85f03977b4',
     'tio':'../tio.0984e7f3a524834f',
-    'require.config':'../require.config.72079f1c182373e0',
+    'require.config':'../require.config.dd860a62a163b6bc',
     'navigation':'../navigation.f0ad7bc6582996ae',
-    'markdown':'../markdown.261d422673a18303',
+    'markdown':'../markdown.eb256113ec5cbd7a',
  } },
 };

@@ -36,14 +36,25 @@ header('Cache-Control: max-age=60');
                   </tr>
                 </thead>
                 <tbody>
-                  <?foreach(transpose($result['data']) as $row){?>
+                  <?$rows = transpose($result['data']);?>
+                  <?$initial = 0;?>
+                  <?$more = false;?>
+                  <?foreach($rows as $rownum=>$row){?>
+                    <?if( in_array($rownum,[10,100,1000,10000,100000]) && (count($rows)>=$rownum*1.3) ){ $more = true;?></tbody><tbody class="hide" data-showing="<?=$rownum?>"><?}?>
+                    <?if(!$more) $initial += 1;?>
                     <tr>
-                      <?foreach($row as $data){?>
-                        <td class="<?=trim((($data===null)?'null ':'').(($align===1)?'right ':''))?>"><?=htmlspecialchars($data)?></td>
+                      <?foreach($row as $k=>$data){?>
+                        <td class="<?=trim((($data===null)?'null ':'').(($result['align'][$k]===0)?'right ':''))?>"><?=htmlspecialchars($data)?></td>
                       <?}?>
                     </tr>
                   <?}?>
                 </tbody>
+                <?$count = $rownum+1;?>
+                <?if($count>5){?>
+                  <tfoot data-showing="<?=$rownum+1?>">
+                    <tr><td colspan="<?=count($result['head'])?>"><span><?=$initial?></span> rows<?if($count>$initial){?><span> of <?=$count?><br><a href='.'>show more</a></span><?}?></td></tr>
+                  </tfoot>
+                <?}?>
               </table>
             </div>
           <?}?>
