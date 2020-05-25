@@ -126,6 +126,7 @@ define(['jquery'
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://POSH.TA') tokens[idx].attrSet('href','/powershell');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://APL.TA') tokens[idx].attrSet('href','/apl');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://WEB.TA') tokens[idx].attrSet('href','/web');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://PHP.TA') tokens[idx].attrSet('href','/php');
     };
   
     md = require('markdown-it')({ linkify: true
