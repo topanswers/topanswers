@@ -36,7 +36,7 @@ where community_id=get_community_id();
 --
 create view one with (security_barrier) as
 select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url
-     , account_image is not null account_has_image
+     , account_image_url is not null account_has_image
       ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,sesite_url
@@ -46,7 +46,7 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
       , selink_user_id, selink_user_id communicant_se_user_id
       ,one_stackapps_secret
-from (select account_id,account_name,account_image,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url
+from (select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url
       from db.account natural join api._account
       where account_id=get_account_id()) a
      cross join db.one
@@ -123,9 +123,9 @@ create function change_name(nname text) returns void language sql security defin
   update account set account_name = nname, account_change_id = default, account_change_at = default where account_id=get_account_id();
 $$;
 --
-create function change_image(image bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$
+create function change_image(bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
-  update account set account_image = image, account_change_id = default, account_change_at = default where account_id=get_account_id();
+  update account set account_image_hash = $1, account_change_id = default, account_change_at = default where account_id=get_account_id();
 $$;
 create function change_image(image bytea, hash bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;

@@ -3,19 +3,10 @@ include '../config.php';
 include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to identicon,pg_temp");
-extract(cdb("select account_id,account_image
-                  , to_char(account_change_at,'fmDy, dd Mon YYYY HH24:MI:SS') account_change_at_text
-             from account
-             where account_id=$1",$_GET['id']));
+extract(cdb("select account_id from account where account_id=$1",$_GET['id']));
 $account_id || fail(400,'invalid account id');
 header('X-Powered-By: ');
-header('Last-Modified: '.$account_change_at_text." GMT");
-
-if($account_image){
-  header("Content-Type: image/jpeg");
-  echo pg_unescape_bytea($account_image);
-  exit;
-}
+header('Cache-Control: public, max-age=31536000, immutable');
 
 // Settings
 define('MARGIN_X', 0);        // Margin on the left and right edge in px
