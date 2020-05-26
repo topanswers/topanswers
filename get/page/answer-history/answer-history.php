@@ -50,7 +50,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="stylesheet" href="<?=h("/global.css")?>">
   <link rel="stylesheet" href="<?=h("/header.css")?>">
   <link rel="stylesheet" href="<?=h("/post.css")?>">
-  <link rel="stylesheet" href="<?=h("/page/question-history/question-history.css")?>">
+  <link rel="stylesheet" href="<?=h("/page/answer-history/answer-history.css")?>">
   <link rel="stylesheet" href="<?=h("/markdown.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/codemirror/codemirror.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/qp/qp.css")?>">
@@ -58,7 +58,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <title>Answer History - TopAnswers</title>
   <script src="<?=h("/require.config.js")?>"></script>
-  <script data-main="<?=h("/page/question-history/question-history.js")?>" src="<?=h("/lib/require.js")?>"></script>
+  <script data-main="<?=h("/page/answer-history/answer-history.js")?>" src="<?=h("/lib/require.js")?>"></script>
 </head>
 <body>
   <header>
