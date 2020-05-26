@@ -342,12 +342,14 @@ function h($f){
     "/page/community/community.js": "696537c5f2c2352e",
     "/page/index/index.css": "e1255dd738e52b37",
     "/page/index/index.js": "448494da3951db80",
-    "/page/question-history/question-history.js": "2bb3e0ccfc59685f",
     "/page/question-history/question-history.css": "bf24b17278ca4cd4",
-    "/page/question/question.js": "25c64a431cebbffd",
+    "/page/question-history/question-history.js": "2bb3e0ccfc59685f",
     "/page/question/question.css": "51cc012783425795",
+    "/page/question/question.js": "25c64a431cebbffd",
+    "/page/chat-history/chat-history.css": "1e5da1ea076366cd",
+    "/page/chat-history/chat-history.js": "ec3023f538be2881",
     "/post.css": "8f644eb2c7044a01",
-    "/require.config.js": "c2ff4f33cf0c1e81",
+    "/require.config.js": "4c6326b9daa93ffe",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
