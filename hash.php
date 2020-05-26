@@ -344,16 +344,18 @@ function h($f){
     "/page/community/community.js": "f99e9e4aa7d67daf",
     "/page/index/index.css": "e1255dd738e52b37",
     "/page/index/index.js": "448494da3951db80",
+    "/page/profile/profile.css": "fa59ba020b719265",
+    "/page/profile/profile.js": "09614566ef07c6ed",
     "/page/question-history/question-history.css": "bf24b17278ca4cd4",
     "/page/question-history/question-history.js": "2bb3e0ccfc59685f",
     "/page/question/question.css": "51cc012783425795",
     "/page/question/question.js": "25c64a431cebbffd",
     "/page/transcript/transcript.css": "03420759b92f7270",
     "/page/transcript/transcript.js": "a7faf26b343f9590",
-    "/page/profile/profile.css": "fa59ba020b719265",
-    "/page/profile/profile.js": "09614566ef07c6ed",
+    "/page/room/room.css": "fe6feab6a06ad6f0",
+    "/page/room/room.js": "6b5979e0e5fbc7f0",
     "/post.css": "8f644eb2c7044a01",
-    "/tio.js": "0984e7f3a524834f",
-    "/require.config.js": "9c79e0333cb91e9e"
+    "/require.config.js": "4e0729a194ef28b3",
+    "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }

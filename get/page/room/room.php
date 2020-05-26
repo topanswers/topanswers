@@ -1,7 +1,9 @@
-<?    
-include '../config.php';
-include '../db.php';
-include '../nocache.php';
+<?
+header("Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; style-src-elem 'self'; style-src-attr 'unsafe-inline'; img-src * data:; font-src 'self'; connect-src 'self' tio.run dbfiddle.uk post.topanswers.xyz; form-action 'self' post.topanswers.xyz;");
+require '../../../config.php';
+require '../../../db.php';
+require '../../../nocache.php';
+require '../../../hash.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to room,pg_temp");
 ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
@@ -11,45 +13,33 @@ extract(cdb("select account_id,account_image_url,room_id,room_name,room_has_imag
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>
 <!doctype html>
-<html style="--rgb-dark: <?=$community_rgb_dark?>;
-             --rgb-mid: <?=$community_rgb_mid?>;
-             --rgb-light: <?=$community_rgb_light?>;
-             --rgb-highlight: <?=$community_rgb_highlight?>;
-             --rgb-warning: <?=$community_rgb_warning?>;
-             --rgb-white: 255, 255, 255;
-             --rgb-black: 0, 0, 0;
-             --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
-             --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
+<html style="--community:<?=$community_name?>;
+             --rgb-dark:<?=$community_rgb_dark?>;
+             --rgb-mid:<?=$community_rgb_mid?>;
+             --rgb-light:<?=$community_rgb_light?>;
+             --rgb-highlight:<?=$community_rgb_highlight?>;
+             --rgb-warning:<?=$community_rgb_warning?>;
+             --rgb-white:255,255,255;
+             --rgb-black:0,0,0;
+             --font-regular:<?=$my_community_regular_font_name?>;
+             --font-monospace:<?=$my_community_monospace_font_name?>;
              ">
 <head>
-  <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
-  <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
-  <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="<?=h("/fonts/$my_community_regular_font_name.css")?>">
+  <link rel="stylesheet" href="<?=h("/fonts/$my_community_monospace_font_name.css")?>">
+  <link rel="stylesheet" href="<?=h("/lib/fork-awesome/css/fork-awesome.min.css")?>">
+  <link rel="stylesheet" href="<?=h("/global.css")?>">
+  <link rel="stylesheet" href="<?=h("/header.css")?>">
+  <link rel="stylesheet" href="<?=h("/page/room/room.css")?>">
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
-  <link rel="stylesheet" href="/global.css">
-  <link rel="stylesheet" href="/header.css">
-  <style>
-    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
-    body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
-    html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
-
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-
-    fieldset { display: inline-block; margin: 16px; border: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-white)); border-radius: 3px; }
-    legend { background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
-  </style>
-  <script src="/lib/js.cookie.js"></script>
-  <script src="/lib/jquery.js"></script>
-  <script>
-    $(function(){
-    });
-  </script>
   <title>Room Settings - TopAnswers</title>
+  <script src="<?=h("/require.config.js")?>"></script>
+  <script data-main="<?=h("/page/room/room.js")?>" src="<?=h("/lib/require.js")?>"></script>
 </head>
 <body>
   <header>
-    <?$ch = curl_init('http://127.0.0.1/navigationx?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div>
       <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a>
     </div>
