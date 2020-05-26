@@ -1,7 +1,9 @@
 <?
-include '../config.php';
-include '../db.php';
-include '../nocache.php';
+header("Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; style-src-elem 'self'; style-src-attr 'unsafe-inline'; img-src * data:; font-src 'self'; connect-src 'self' tio.run dbfiddle.uk post.topanswers.xyz; form-action 'self' post.topanswers.xyz;");
+require '../../../config.php';
+require '../../../db.php';
+require '../../../nocache.php';
+require '../../../hash.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to profile,pg_temp");
 
@@ -58,77 +60,38 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="--rgb-dark: <?=$community_rgb_dark?>;
-             --rgb-mid: <?=$community_rgb_mid?>;
-             --rgb-light: <?=$community_rgb_light?>;
-             --rgb-highlight: <?=$community_rgb_highlight?>;
-             --rgb-warning: <?=$community_rgb_warning?>;
-             --rgb-white: 255, 255, 255;
-             --rgb-black: 0, 0, 0;
-             --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
-             --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
-             ">
+<html style="--community:<?=$community_name?>;
+             --lang-code:<?=$community_code_language?>;
+             --rgb-dark:<?=$community_rgb_dark?>;
+             --rgb-mid:<?=$community_rgb_mid?>;
+             --rgb-light:<?=$community_rgb_light?>;
+             --rgb-highlight:<?=$community_rgb_highlight?>;
+             --rgb-warning:<?=$community_rgb_warning?>;
+             --rgb-white:255,255,255;
+             --rgb-black:0,0,0;
+             --font-regular:<?=$my_community_regular_font_name?>;
+             --font-monospace:<?=$my_community_monospace_font_name?>;
+             --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
+             "
+      <?=(isset($_GET['highlight-recovery']))?'data-highlight-recovery ':''?>
+      <?=$pin?('data-pin="'.$pin.'"'):''?>>
 <head>
-  <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
-  <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
-  <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
-  <link rel="stylesheet" href="/lib/datatables/datatables.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="<?=h("/fonts/$my_community_regular_font_name.css")?>">
+  <link rel="stylesheet" href="<?=h("/fonts/$my_community_monospace_font_name.css")?>">
+  <link rel="stylesheet" href="<?=h("/lib/fork-awesome/css/fork-awesome.min.css")?>">
+  <link rel="stylesheet" href="<?=h("/lib/datatables/datatables.min.css")?>">
+  <link rel="stylesheet" href="<?=h("/global.css")?>">
+  <link rel="stylesheet" href="<?=h("/header.css")?>">
+  <link rel="stylesheet" href="<?=h("/page/profile/profile.css")?>">
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
-  <link rel="stylesheet" href="/global.css">
-  <link rel="stylesheet" href="/header.css">
-  <style>
-    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 16px; }
-    body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
-    html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    main { display: flex; flex-direction: column; align-items: flex-start; overflow: auto; scroll-behavior: smooth; }
-    main>fieldset { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-start; }
-
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-
-    fieldset { display: inline-block; margin: 10px; border-radius: 3px; }
-    :not(main)>fieldset { background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); }
-    legend { background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; padding: 2px 4px; }
-    input[type="file"] { color: transparent; }
-    input[type="submit"] { margin-left: 16px; }
-
-    table { border-collapse: collapse; }
-    td,th { border: 1px solid rgb(var(--rgb-black)); white-space: nowrap; padding: 4px; }
-  </style>
-  <script src="/lib/js.cookie.js"></script>
-  <script src="/lib/jquery.js"></script>
-  <script src="/lib/datatables/datatables.min.js"></script>
-  <script>
-    $(function(){
-      $('#pin').click(function(){ $(this).prop('disabled',true); $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'pin', pin: '<?=$pin?>' }, xhrFields: { withCredentials: true } }).done(function(){
-        $('#pin').replaceWith('<code><?=$pin?></code>'); });
-      });
-      $('#uuid').click(function(){ var t = $(this); $.get('/profile?uuid').done(function(r){ t.replaceWith('<span class="highlight">'+r+'</span>'); }); });
-      $('[name="license"],[name="codelicense"]').on('change',function(){
-        if($(this).children('option:selected').data('versioned')===true){
-          $(this).next().css('color','rgb(var(--rgb-black))').find('input').prop('disabled',false);
-        }else{
-          $(this).next().css('color','#ccc').find('input').prop('checked',false).prop('disabled',true);
-        }
-      }).trigger('change');
-      $('[name]').on('change input',function(){
-        $(this).parents('fieldset').siblings().find('[name],input').prop('disabled',true);
-        $(this).closest('fieldset').find('input[type=submit]').css('visibility','visible');
-        if($(this).is('input[type=file]')) $(this).next().click();
-      });
-      <?if(isset($_GET['highlight-recovery'])){?>$('#uuid').click();<?}?>
-      $('#community').change(function(){ window.location = '/profile?community='+$(this).find(':selected').attr('data-name'); });
-      $('input[value=save]').css('visibility','hidden');
-      $('table.data').DataTable({ select: true, dom: 'Pfrtip' });
-      $('.select>div:last-child>div>div').each(function(){
-        $(this).append('<a href="/profile?community='+$(this).data('community')+'">profile</a>');
-      });
-    });
-  </script>
   <title>Profile - TopAnswers</title>
+  <script src="<?=h("/require.config.js")?>"></script>
+  <script data-main="<?=h("/page/profile/profile.js")?>" src="<?=h("/lib/require.js")?>"></script>
 </head>
 <body>
   <header>
-    <?$ch = curl_init('http://127.0.0.1/navigationx?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div>
       <a class="frame"><img class="icon" src="<?=$account_image_url?>"></a>
     </div>
