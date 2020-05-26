@@ -1,7 +1,9 @@
 <?
-include '../config.php';
-include '../db.php';
-include '../locache.php';
+header("Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; style-src-elem 'self'; style-src-attr 'unsafe-inline'; img-src * data:; font-src 'self'; connect-src 'self' tio.run dbfiddle.uk post.topanswers.xyz; form-action 'self' post.topanswers.xyz;");
+require '../../../config.php';
+require '../../../db.php';
+require '../../../nocache.php';
+require '../../../hash.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
@@ -54,108 +56,43 @@ if(isset($_GET['month'])){
 }
 ?>
 <!doctype html>
-<html style="--rgb-dark: <?=$community_rgb_dark?>;
-             --rgb-mid: <?=$community_rgb_mid?>;
-             --rgb-light: <?=$community_rgb_light?>;
-             --rgb-highlight: <?=$community_rgb_highlight?>;
-             --rgb-warning: <?=$community_rgb_warning?>;
-             --rgb-white: 255, 255, 255;
-             --rgb-black: 0, 0, 0;
-             --regular-font-family: '<?=$my_community_regular_font_name?>', serif;
-             --monospace-font-family: '<?=$my_community_monospace_font_name?>', monospace;
-             --markdown-table-font-family: <?=$community_tables_are_monospace?"'".$my_community_monospace_font_name."', monospace":"'".$my_community_regular_font_name."', serif;"?>
-             ">
+<html style="--community:<?=$community_name?>;
+             --lang-code:<?=$community_code_language?>;
+             --rgb-dark:<?=$community_rgb_dark?>;
+             --rgb-mid:<?=$community_rgb_mid?>;
+             --rgb-light:<?=$community_rgb_light?>;
+             --rgb-highlight:<?=$community_rgb_highlight?>;
+             --rgb-warning:<?=$community_rgb_warning?>;
+             --rgb-white:255,255,255;
+             --rgb-black:0,0,0;
+             --font-regular:<?=$my_community_regular_font_name?>;
+             --font-monospace:<?=$my_community_monospace_font_name?>;
+             --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
+             "
+      <?=$search?('data-search="'.htmlspecialchars($search).'"'):''?>>
 <head>
-  <link rel="stylesheet" href="/fonts/<?=$my_community_regular_font_name?>.css">
-  <link rel="stylesheet" href="/fonts/<?=$my_community_monospace_font_name?>.css">
-  <link rel="stylesheet" href="/lib/fork-awesome/css/fork-awesome.min.css">
-  <link rel="stylesheet" href="/lib/lightbox2/css/lightbox.min.css">
-  <link rel="stylesheet" href="/global.css">
-  <link rel="stylesheet" href="/header.css">
-  <link rel="stylesheet" href="/post.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <noscript><link rel="stylesheet" href="<?=h("/noscript.css")?>"></noscript>
+  <link rel="stylesheet" href="<?=h("/fonts/$my_community_regular_font_name.css")?>">
+  <link rel="stylesheet" href="<?=h("/fonts/$my_community_monospace_font_name.css")?>">
+  <link rel="stylesheet" href="<?=h("/lib/fork-awesome/css/fork-awesome.min.css")?>">
+  <link rel="stylesheet" href="<?=h("/lib/lightbox2/css/lightbox.min.css")?>">
+  <link rel="stylesheet" href="<?=h("/global.css")?>">
+  <link rel="stylesheet" href="<?=h("/header.css")?>">
+  <link rel="stylesheet" href="<?=h("/post.css")?>">
+  <link rel="stylesheet" href="<?=h("/page/transcript/transcript.css")?>">
+  <link rel="stylesheet" href="<?=h("/markdown.css")?>">
+  <link rel="stylesheet" href="<?=h("/lib/codemirror/codemirror.css")?>">
+  <link rel="stylesheet" href="<?=h("/lib/qp/qp.css")?>">
+  <link rel="stylesheet" href="<?=h("/lib/katex/katex.min.css")?>">
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
-  <noscript>
-    <style>
-      .message:not(.processed) { opacity: unset !important; }
-      .notification:not(.processed) { opacity: unset !important; }
-      #qa .post:not(.processed) { opacity: unset !important; }
-      .markdown>pre.noscript { white-space: pre-wrap; }
-    </style>
-  </noscript>
-  <style>
-    html { box-sizing: border-box; font-family: '<?=$my_community_regular_font_name?>', serif; font-size: 14px; }
-    html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
-    textarea, pre, code { font-family: '<?=$my_community_monospace_font_name?>', monospace; }
-    mark[data-markjs] { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
-    a:not([href]) { color: rgb(var(--rgb-highlight)); }
-    a[data-lightbox] img { cursor: zoom-in; }
-
-    .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
-    .period { border: 2px solid rgb(var(--rgb-mid)); border-right: none; flex: 0 0 auto; overflow: auto; }
-    .period>div { margin: 7px; white-space: nowrap; }
-    .period>div>span { font-size: smaller; font-style: italic; }
-    .spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: rgba(var(--rgb-dark),0.5); }
-
-    #messages { flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 13px; overflow: auto; background: rgb(var(--rgb-mid)); scroll-behavior: smooth; }
-
-    .message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
-    .message:not(.processed) { opacity: 0; }
-    .message .who { white-space: nowrap; font-size: 10px;<?if(!$search){?> position: absolute; top: -1.2em;<?}?> }
-    .message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: rgb(var(--rgb-white)); overflow: auto; transition: background linear 0.1s; }
-
-    .message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
-    .message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
-    .message .button-group .fa { color: rgb(var(--rgb-dark)); cursor: pointer; text-decoration: none; }
-    .message .button-group .fa.me { color: rgb(var(--rgb-highlight)); }
-    .message:hover .button-group:first-child { display: none; }
-    .message .button-group:not(.show) { display: none; }
-    .message:not(:hover) .button-group:not(:first-child) { display: none; }
-    .message .button-group:first-child .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
-    .message .button-group:first-child .fa[data-count][data-count="0"] { visibility: hidden; }
-
-    .message.merged { margin-top: -1px; }
-    .message.merged>.who,
-    .message.merged>.icon { visibility: hidden; }
-    .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
-    .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
-  </style>
-  <script src="/lib/js.cookie.js"></script>
-  <script src="/lib/lodash.js"></script>
-  <script src="/lib/jquery.js"></script>
-  <?require '../markdown.php';?>
-  <script src="/lib/lightbox2/js/lightbox.min.js"></script>
-  <script src="/lib/moment.js"></script>
-  <script src="/lib/mark.js"></script>
-  <script>
-    $(function(){
-      var promises = [];
-      function threadChat(){
-        $('.message').each(function(){
-          var id = $(this).data('id'), rid = id;
-          function foo(b){
-            if(arguments.length!==0) $(this).addClass('t'+id);
-            if(arguments.length===0 || b===true) if($(this).data('reply-id')) foo.call($('.message[data-id='+$(this).data('reply-id')+']')[0], true);
-            if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
-          }
-          foo.call(this);
-        });
-      }
-      $('main').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
-      $('.markdown').renderMarkdown(promises);
-      Promise.allSettled(promises).then(() => {
-        $('.message').addClass('processed');
-      });
-      <?if(!$search){?>threadChat();<?}?>
-      $('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()); });
-      $('.markdown').mark('<?=$search?>', { "separateWordSearch": false, "ignoreJoiners": true });
-      setTimeout(function(){ $('.message:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
-    });
-  </script>
   <title><?=$room_derived_name?> Transcript - TopAnswers</title>
+  <script src="<?=h("/require.config.js")?>"></script>
+  <script data-main="<?=h("/page/transcript/transcript.js")?>" src="<?=h("/lib/require.js")?>"></script>
 </head>
 <body style="display: flex; flex-direction: column;">
   <header>
-    <?$ch = curl_init('http://127.0.0.1/navigationx?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+    <?$ch = curl_init('http://127.0.0.1/navigation?community='.$community_name); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div class="container">
       <span class="element">transcript for <a href="/<?=$community_name?>?<?=$room_question_id?'q='.$room_question_id:'room='.$room_id?>"><?=$room_derived_name?></a></span>
       <form class="element" action="/transcript" method="get" style="display: inline;"><input type="search" name="search" placeholder="search"><input type="hidden" name="room" value="<?=$_GET['room']?>"></form>

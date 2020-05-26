@@ -338,6 +338,8 @@ function h($f){
     "/page/answer-history/answer-history.js": "e4acd2eb3e6e2085",
     "/page/answer/answer.css": "af8759bd17c59796",
     "/page/answer/answer.js": "a299ac1b03f26951",
+    "/page/chat-history/chat-history.css": "1e5da1ea076366cd",
+    "/page/chat-history/chat-history.js": "ec3023f538be2881",
     "/page/community/community.css": "d6ffac19fd89d3fa",
     "/page/community/community.js": "696537c5f2c2352e",
     "/page/index/index.css": "e1255dd738e52b37",
@@ -346,10 +348,10 @@ function h($f){
     "/page/question-history/question-history.js": "2bb3e0ccfc59685f",
     "/page/question/question.css": "51cc012783425795",
     "/page/question/question.js": "25c64a431cebbffd",
-    "/page/chat-history/chat-history.css": "1e5da1ea076366cd",
-    "/page/chat-history/chat-history.js": "ec3023f538be2881",
+    "/page/transcript/transcript.css": "03420759b92f7270",
+    "/page/transcript/transcript.js": "a7faf26b343f9590",
     "/post.css": "8f644eb2c7044a01",
-    "/require.config.js": "4c6326b9daa93ffe",
+    "/require.config.js": "23093277126cd214",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }

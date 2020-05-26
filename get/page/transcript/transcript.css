@@ -1,0 +1,35 @@
+html { box-sizing: border-box; font-family: var(--font-regular), sans-serif; font-size: 14px; }
+html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+textarea, pre, code { font-family: var(--font-monospace), monospace; }
+mark[data-markjs] { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
+a:not([href]) { color: rgb(var(--rgb-highlight)); }
+a[data-lightbox] img { cursor: zoom-in; }
+
+.icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
+.period { border: 2px solid rgb(var(--rgb-mid)); border-right: none; flex: 0 0 auto; overflow: auto; }
+.period>div { margin: 7px; white-space: nowrap; }
+.period>div>span { font-size: smaller; font-style: italic; }
+.spacer { flex: 0 0 auto; min-height: 13px; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: rgba(var(--rgb-dark),0.5); }
+
+#messages { flex: 1 1 auto; display: flex; align-items: flex-start; flex-direction: column; padding: 13px; overflow: auto; background: rgb(var(--rgb-mid)); scroll-behavior: smooth; }
+
+.message { width: 100%; position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
+.message:not(.processed) { opacity: 0; }
+.message .who { white-space: nowrap; font-size: 10px; position: absolute; top: -1.2em; }
+.message .markdown { flex: 0 1 auto; max-height: 50vh; padding: 0.25rem; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: rgb(var(--rgb-white)); overflow: auto; transition: background linear 0.1s; }
+
+.message .button-group { display: grid; grid-template: 11px 11px / 12px 12px; align-items: center; justify-items: start; font-size: 11px; margin-left: 1px; margin-top: 1px; }
+.message .button-group:first-child { grid-template: 11px 11px / 22px 2px; }
+.message .button-group .fa { color: rgb(var(--rgb-dark)); cursor: pointer; text-decoration: none; }
+.message .button-group .fa.me { color: rgb(var(--rgb-highlight)); }
+.message:hover .button-group:first-child { display: none; }
+.message .button-group:not(.show) { display: none; }
+.message:not(:hover) .button-group:not(:first-child) { display: none; }
+.message .button-group:first-child .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
+.message .button-group:first-child .fa[data-count][data-count="0"] { visibility: hidden; }
+
+.message.merged { margin-top: -1px; }
+.message.merged>.who,
+.message.merged>.icon { visibility: hidden; }
+.message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
+.message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
