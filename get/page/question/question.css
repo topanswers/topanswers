@@ -1,13 +1,13 @@
 html { box-sizing: border-box; font-family: var(--font-regular), sans-serif; }
 html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
 body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
-main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 32px 1fr; grid-gap: 10px; padding: 10px; max-width: 3000px; margin: 0 auto; height: 100%; }
+main { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; grid-gap: 10px; padding: 10px; max-width: 3000px; margin: 0 auto; height: 100%; }
 textarea, pre, code { font-family: var(--font-monospace), monospace; }
 .CodeMirror { font-family: var(--font-monospace), monospace !important; }
 .icon { width: 20px; height: 20px; display: block; margin: 1px; border-radius: 2px; }
 
 #form { flex: 1 0 0; min-height: 0; }
-#title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgba(var(--rgb-dark),0.6); padding: 5px; font-size: 18px; font-family: var(--font-regular), sans-serif; }
+#title { grid-area: 1 / 1 / 2 / 3; border: 1px solid rgba(var(--rgb-dark),0.6); padding: 6px; font-size: 18px; font-family: var(--font-regular), sans-serif; }
 #markdown { grid-area: 2 / 2 / 3 / 3; background: rgb(var(--rgb-white)); padding: 8px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; overflow-y: auto; }
 #license>span+span { display: none; }
 #imageupload { display: none; }

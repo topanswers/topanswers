@@ -109,8 +109,8 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
               </div>
             <?}?>
             <div class="panel diff-container">
-              <div class="diff" data-from="<?=$d_prev_title?>" data-to="<?=$d_question_history_title?>"></div>
-              <div class="diff" data-from="<?=$d_prev_markdown?>" data-to="<?=$d_question_history_markdown?>"></div>
+              <div class="diff diff-title" data-from="<?=$d_prev_title?>" data-to="<?=$d_question_history_title?>"></div>
+              <div class="diff diff-body" data-from="<?=$d_prev_markdown?>" data-to="<?=$d_question_history_markdown?>"></div>
             </div>
             <div class="panel after-container">
               <div class="title"><?=$d_question_history_title?></div>
