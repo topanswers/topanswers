@@ -354,8 +354,10 @@ function h($f){
     "/page/room/room.js": "6b5979e0e5fbc7f0",
     "/page/transcript/transcript.css": "03420759b92f7270",
     "/page/transcript/transcript.js": "a7faf26b343f9590",
+    "/page/user/user.css": "11c2caff7b24908b",
+    "/page/user/user.js": "8f393cc90f483337",
     "/post.css": "8f644eb2c7044a01",
-    "/require.config.js": "786b0826a9b9d4d0",
+    "/require.config.js": "e186c5cf691ac94c",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
