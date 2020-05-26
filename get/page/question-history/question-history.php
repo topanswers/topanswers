@@ -15,12 +15,13 @@ extract(cdb("select account_id,account_image_url
                   , (select jsonb_agg(z)
                      from (select account_id,account_name,account_image_url
                                 , to_char(history_at,'YYYY-MM-DD HH24:MI:SS') history_at
-                                , case when question_history_id is not null then 'h' else 'f' end item_type
-                                , case when question_flag_history_id is null then (row_number() over (partition by question_flag_history_id order by history_at)) end rn
-                                , case when question_flag_history_id is null then (count(1) over (partition by question_flag_history_id)) end cnt
-                                , coalesce(question_history_id,question_flag_history_id) id
+                                , case when question_history_id is not null then 'h' when question_flag_history_id is not null then 'f' else 't' end item_type
+                                , case when question_history_id is not null then (row_number() over (partition by question_history_id is null order by history_at)) end rn
+                                , case when question_history_id is not null then (count(1) over (partition by question_history_id is null)) end cnt
+                                , coalesce(question_history_id,question_flag_history_id,mark_history_id) id
                                 , coalesce((select to_jsonb(a) from question_history a where a.question_history_id=h.question_history_id)
-                                         , (select to_jsonb(f) from question_flag_history f where f.question_flag_history_id=h.question_flag_history_id)) item_data
+                                         , (select to_jsonb(f) from question_flag_history f where f.question_flag_history_id=h.question_flag_history_id)
+                                         , (select to_jsonb(t) from mark_history t where t.mark_history_id=h.mark_history_id)) item_data
                            from history h
                            order by history_at desc) z) items
              from one"));
@@ -76,8 +77,10 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
           <div>
             <?if($h_item_type==='h'){?>
               <?$action = ($h_rn===1)?($question_is_imported?'Imported':'Posted'):'Edited'?>
-            <?}else{?>
+            <?}else if($h_item_type==='f'){?>
               <?if($d_question_flag_history_direction===1) $action = 'Flagged'; else if($d_question_flag_history_direction===0) $action = 'Unflagged'; else $action = 'Counterflagged';?>
+            <?}else{?>
+              <?$action = '['.$d_tag_name.'] '.($d_mark_history_is_removal?'removed':'added')?>
             <?}?>
             <?=$action?> by <?=$h_account_name?>
             <div class="when"><?=$h_history_at?></div>

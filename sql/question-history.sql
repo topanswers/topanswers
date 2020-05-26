@@ -4,11 +4,13 @@ set local search_path to question_history,api,pg_temp;
 --
 --
 create view history as
-select account_id,account_image_url,question_id,history_at,question_history_id,question_flag_history_id
+select account_id,account_image_url,question_id,history_at,question_history_id,question_flag_history_id,mark_history_id
      , account_derived_name account_name
-from (select account_id,question_id,question_history_at history_at,question_history_id,null::integer question_flag_history_id from db.question_history where question_id=get_question_id()
+from (select account_id,question_id,question_history_at history_at,question_history_id, null::integer question_flag_history_id, null::integer mark_history_id from db.question_history where question_id=get_question_id()
       union all
-      select account_id,question_id,question_flag_history_at,null,question_flag_history_id from db.question_flag_history where question_id=get_question_id()) z
+      select account_id,question_id,question_flag_history_at,null,question_flag_history_id,null from db.question_flag_history where question_id=get_question_id()
+      union all
+      select account_id,question_id,mark_history_at,null,null,mark_history_id from db.mark_history where question_id=get_question_id()) z
      natural join api._account;
 --
 create view question_history as
@@ -21,6 +23,11 @@ where question_id=get_question_id();
 create view question_flag_history as
 select question_flag_history_id,question_flag_history_direction,question_flag_history_is_crew
 from db.question_flag_history
+where question_id=get_question_id();
+--
+create view mark_history as
+select mark_history_id,tag_name,mark_history_is_removal
+from db.mark_history natural join db.tag
 where question_id=get_question_id();
 --
 create view one with (security_barrier) as

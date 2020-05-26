@@ -130,7 +130,7 @@ from db.room r natural join api._room natural join db.community natural join api
                              , exists(select 1 from db.answer a natural join db.login where login_uuid=get_login_uuid() and a.question_id=q.question_id) question_answered_by_me
                              , exists(select 1 from api._answer a where a.question_id=q.question_id) question_is_answered
                              , (select count(1) from api._answer a where a.question_id=q.question_id) question_answer_count
-                             , question_at<>question_change_at or exists(select 1 from db.question_flag_history where question_id=q.question_id) question_has_history
+                             , question_at<>question_change_at or exists(select 1 from db.question_flag_history where question_id=q.question_id) or exists(select 1 from db.mark_history where question_id=q.question_id) question_has_history
                              , exists(select 1 from db.subscription s natural join db.login where login_uuid=get_login_uuid() and s.question_id=q.question_id) question_i_subscribed
                              , exists(select 1 from db.question_flag f natural join db.login where login_uuid=get_login_uuid() and f.question_id=q.question_id and question_flag_direction=1) question_i_flagged
                              , exists(select 1 from db.question_flag f natural join db.login where login_uuid=get_login_uuid() and f.question_id=q.question_id and question_flag_direction=-1) question_i_counterflagged
