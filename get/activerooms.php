@@ -12,9 +12,9 @@ extract(cdb("select community_name,community_language
                            from (select room_id,room_derived_name,room_question_id,room_image_url,community_display_name,community_name,community_rgb_light,listener_latest_read_chat_id,listener_unread
                                       , case when room_question_id is null then 1 else 2 end room_group
                                       , row_number() over (order by participant_chat_count desc, participant_latest_chat_at desc) rn
-                                 from room) z
+                                 from room(('{'||$1||'}')::integer[])) z
                            group by room_group) z) grps
-             from one"));
+             from one",isset($_GET['read'])?implode(',',$_GET['read']):''));
 $_GET['community']===$community_name || fail(400,'invalid community');
 include '../lang/activerooms.'.$community_language.'.php';
 ?>

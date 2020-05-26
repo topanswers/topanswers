@@ -243,7 +243,13 @@ define(['markdown','moment','js.cookie']
     var newchat = $('#messages>*:not(.processed)')
       , scroller = $('#messages').parent()
       , promises = []
-      , promise;
+      , promise
+      , read = localStorage.getItem('read2')?JSON.parse(localStorage.getItem('read2')):{};
+
+    if('dev' in $('html').data()) console.log('setting read counter for room '+$('html').css('--room')+' to '+$('#messages>.message').first().data('id'));
+    read[$('html').css('--room')] = $('#messages>.message').first().data('id');
+    localStorage.setItem('read2',JSON.stringify(read));
+
     newchat.filter('.message').each(function(){ promises.push(...renderChat.call(this)); }).find('.when').each(function(){
       $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
     });
@@ -291,27 +297,6 @@ define(['markdown','moment','js.cookie']
     return promise;
   }
   function updateRoomLatest(){
-    var read, count = 0, m;
-    read = localStorage.getItem('read')?JSON.parse(localStorage.getItem('read')):{};
-    $('#active-rooms a:not([data-unread]):not(.processed)').each(function(){
-      delete read[$(this).attr('data-room')];
-      $(this).addClass('processed');
-    });
-    $('#active-rooms a[data-unread]:not(.processed)').each(function(){
-      var r = $(this).attr('data-room'), l = $(this).data('latest');
-      if(r===$('html').css('--room')) read[$('html').css('--room')] = _.union(read[$('html').css('--room')]||[],$('#messages>.message').map(function(){ var id = +this.id.substring(1); return (id>l)?id:null; }).get().reverse()).sort((a,b) => a-b);
-      if(read[r]){
-        read[r] = $.map(read[r],function(v){ return (v>l)?v:null; });
-        $(this).attr('data-unread',Math.max(0,$(this).attr('data-unread')-read[r].length));
-        $(this).attr('data-unread-lang',$(this).attr('data-unread').toLocaleString($('html').css('--jslang')));
-        if($(this).attr('data-unread')==='0') $(this).removeAttr('data-unread').removeAttr('data-unread-lang');
-      }
-      $(this).addClass('processed');
-    });
-    localStorage.setItem('read',JSON.stringify(read));
-    _.forEach(read,function(e){ count += e.length; });
-    localStorage.setItem('readCount',count);
-    $('#active-rooms>div').show().children().show();
     $('#community-rooms a').each(function(){
       var t = $(this);
       $('#active-rooms a[data-room="'+t.data('id')+'"]').each(function(){
@@ -321,25 +306,25 @@ define(['markdown','moment','js.cookie']
           t.attr('data-unread-lang',u.attr('data-unread-lang'));
           t.attr('title',u.attr('title-lang'));
         }
-        u.removeAttr('data-unread').removeAttr('data-unread-lang');
-        if(u.siblings().length===0) u.parent().hide(); else u.hide();
+        if(u.siblings().length===0) u.parent().hide();
+        u.remove();
       });
     });
     m = $('#active-rooms a[data-unread]').length;
-    $('#more-rooms').removeAttr('data-unread').removeAttr('data-unread-lang');
     if(m) $('#more-rooms').attr('data-unread',m).attr('data-unread-lang',m.toLocaleString($('html').css('--jslang')));
     $('#more-rooms').toggleClass('none',$('#active-rooms a').length===0);
   }
   function updateActiveRooms(){
     if('dev' in $('html').data()) console.log('updating active room list');
-    return $.get('/activerooms?community='+$('html').css('--community')).then(function(r){
+    return $.get({ url: '/activerooms', data: { community: $('html').css('--community'), read: _.values(localStorage.getItem('read2')?JSON.parse(localStorage.getItem('read2')):{}) } }).then(function(r){
       $('#active-rooms').html(r);
       updateRoomLatest();
     });
   }
   function updateChat(scroll){
     var maxChat = $('#messages>.message').first().data('id')
-      , scroller = $('#messages').parent()
+      , scroller = $('#messages').parent();
+
     if('dev' in $('html').data()) console.log('updating chat');
     if(typeof scroll==='undefined') scroll = false;
     if(scroller.hasClass('follow')) scroll = true;
@@ -423,10 +408,10 @@ define(['markdown','moment','js.cookie']
       , promise;
     clearTimeout(chatTimer);
     setFinalSpacer();
-    if('dev' in $('html').data()) console.log('uupdating chat');
+    if('dev' in $('html').data()) console.log('polling chat');
     $.get('/poll?room='+$('html').css('--room')).then(function(r){
       var j = JSON.parse(r);
-      if(j.c>+$('#messages>.message').first().data('id')) return updateChat();
+      if(j.c>+($('#messages>.message').first().data('id')||0)) return updateChat();
       if(j.n>maxNotificationID){ maxNotificationID = j.n; return updateNotifications(); }
       if((!$('html').css('--question'))&&(j.Q>maxQuestionPollMajorID)&&(page===1)&&(srch.replace(/!|{[^}]*}|\[[^\]]+\]/g,'').trim()==='')){ maxQuestionPollMajorID = j.Q; return updateQuestions(); }
       if(j.cc>maxChatChangeID){ maxChatChangeID = j.cc; return updateChatChangeIDs(); }
@@ -706,11 +691,10 @@ define(['markdown','moment','js.cookie']
                      , replyid: replyid
                      , pings: arr
                      , action: 'new'
-                     , read: $.map(JSON.parse(localStorage.getItem('read')), function(v){ return _.last(v); }) };
+                     , read: _.values(localStorage.getItem('read2')?JSON.parse(localStorage.getItem('read2')):{}) };
             }
-            $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).done(function(){
-              localStorage.removeItem('read');
-              localStorage.removeItem('readCount');
+            $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).then(function(){
+              localStorage.removeItem('read2');
               if(edit){
                 $('#c'+editid).css('opacity',1).find('.markdown').attr('data-markdown',msg).attr('data-reply-id',replyid).end().each(renderChat);
                 checkChat();
