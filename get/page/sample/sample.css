@@ -1,0 +1,8 @@
+html { box-sizing: border-box; font-family: var(--font-regular); font-size: 16px; }
+body { xbackground: rgb(var(--rgb-mid)); }
+html, body { margin: 0; padding: 0; }
+.icon { width: 20px; height: 20px; display: block; margin: 1px; }
+.icon:not(.roomicon) { border-radius: 2px; }
+#qa { width: 100%; }
+.hover { display: none; }
+@supports (-webkit-touch-callout: none) { #qa * { -webkit-transform: translate3d(0, 0, 0); } }

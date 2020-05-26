@@ -356,8 +356,10 @@ function h($f){
     "/page/transcript/transcript.js": "a7faf26b343f9590",
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "8f393cc90f483337",
+    "/page/sample/sample.js": "ec6f849b5f374c4e",
+    "/page/sample/sample.css": "94efebee41fedb5f",
     "/post.css": "8f644eb2c7044a01",
-    "/require.config.js": "e186c5cf691ac94c",
+    "/require.config.js": "ee56a700417a165a",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
