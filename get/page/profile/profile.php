@@ -61,7 +61,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
 <html style="--community:<?=$community_name?>;
-             --lang-code:<?=$community_code_language?>;
              --rgb-dark:<?=$community_rgb_dark?>;
              --rgb-mid:<?=$community_rgb_mid?>;
              --rgb-light:<?=$community_rgb_light?>;
@@ -71,7 +70,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
              --rgb-black:0,0,0;
              --font-regular:<?=$my_community_regular_font_name?>;
              --font-monospace:<?=$my_community_monospace_font_name?>;
-             --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
              "
       <?=(isset($_GET['highlight-recovery']))?'data-highlight-recovery ':''?>
       <?=$pin?('data-pin="'.$pin.'"'):''?>>
