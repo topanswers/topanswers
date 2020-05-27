@@ -7,7 +7,7 @@ isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to navigation,pg_temp");
 $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 $environment = $_COOKIE['environment']??'prod';
-extract(cdb("select community_id,community_name,community_language,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_image_url,account_is_dev,one_image_url
+extract(cdb("select account_is_dev,one_image_url,community_id,community_name,community_language,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_image_url
              from one"));
 include '../lang/navigation.'.$community_language.'.php';
 $dev = $account_is_dev;
@@ -33,7 +33,6 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
               <div class="frame"><img class="icon" src="<?=$s_community_image_url?>"></div>
               <?=$s_community_display_name?>
             </a>
-            <?if($s_community_about_question_id){?><a href="/<?=$s_community_name?>?q=<?=$s_community_about_question_id?>">about</a><?}?>
           </div>
         <?}?>
       </div>

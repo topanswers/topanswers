@@ -124,13 +124,12 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
               <option<?=($environment===$environment_name)?' selected':''?>><?=$environment_name?></option>
             <?}?>
           </select>
+          <input id="poll" class="element" type="button" value="poll">
         <?}?>
       </div>
       <div>
         <?if(!$auth){?><span class="element"><input id="link" type="button" value="log in"><input id="join" type="button" value="join (sets cookie)"></span><?}?>
         <?if($auth){?>
-          <?if($dev){?><input id="poll" class="element" type="button" value="poll"><?}?>
-          <?if($community_about_question_id){?><a href="/<?=$community_name?>?q=<?=$community_about_question_id?>" class="button wideonly">About</a><?}?>
           <?if($auth&&$communicant_can_import){?>
             <form method="post" action="//post.topanswers.xyz/import">
               <input type="hidden" name="action" value="new">
@@ -141,8 +140,13 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
             </form>
           <?}?>
           <a href="/question?community=<?=$community_name?>" class="button"><?=$community_ask_button_text?></a>
-          <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a>
         <?}?>
+        <?if($community_about_question_id){?>
+          <a href="/<?=$community_name?>?q=<?=$community_about_question_id?>" class="frame" title="about">
+            <img class="icon" src="/image?hash=55c47c43ffec88bee33f88fe6bdffbec31d6ed1dc78779a7c4e820461ff46a6b">
+          </a>
+        <?}?>
+        <?if($auth){?><a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a><?}?>
         <div class="panecontrol fa fa-angle-double-right"></div>
       </div>
     </header>
