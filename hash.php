@@ -361,6 +361,6 @@ function h($f){
     "/page/user/user.js": "f7a3325ae90bb5bf",
     "/markdown.css": "6f974a63f7ab6405",
     "/header.css": "b7e87e6d5db23cbd",
-    "/require.config.js": "6419fb5f6cc0204f"
+    "/require.config.js": "77977ab7246fa9e2"
 }',true)[$f]).'.$2',$f);
 }

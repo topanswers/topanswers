@@ -68,7 +68,7 @@ $$;
 create function _markdownsummary(text) returns text language sql immutable security definer set search_path=db,api,pg_temp as $$
   with recursive
      m as (select regexp_replace(r[1],'([!$()*+.:<=>?[\\\]^{|}-])', '\\\1', 'g') str_from, trim(trailing chr(13) from r[2]) str_to, (row_number() over ())::integer rn 
-           from regexp_matches($1,'^(\[[^\]]+]): ?(.*)$','ng') r)
+           from regexp_matches($1,'^ *(\[[^\]]+]): ?(.*)$','ng') r)
    , w(markdown) as (select split_part(trim(leading chr(13) from $1),chr(13),1), 1 rn
                      union all
                      select regexp_replace(
