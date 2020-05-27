@@ -105,11 +105,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <tr><th>community</th><th>questions</th><th>answers</th><th>stars</th></tr>
           </thead>
           <tbody>
-            <?foreach(db("select community_id,community_name,community_question_count,community_answer_count,community_votes
+            <?foreach(db("select community_id,community_name,community_display_name,community_question_count,community_answer_count,community_votes
                           from community
                           order by community_votes desc, community_answer_count desc, community_question_count desc, community_id") as $r){extract($r,EXTR_PREFIX_ALL,'c');?>
               <tr>
-                <td><?=($community_name!==$c_community_name)?('<a href="?id='.$_GET['id'].'&community='.$c_community_name.'">'.$c_community_name.'</a>'):$c_community_name?></td>
+                <td><?=($community_name!==$c_community_name)?('<a href="?id='.$_GET['id'].'&community='.$c_community_name.'">'.$c_community_display_name.'</a>'):$c_community_display_name?></td>
                 <td><?=$c_community_question_count?></td>
                 <td><?=$c_community_answer_count?></td>
                 <td><?=$c_community_votes?></td>

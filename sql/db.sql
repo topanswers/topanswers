@@ -416,6 +416,8 @@ create index question_search_title_ind on question using gin (community_id, ques
 create index question_search_markdown_ind on question using gin (community_id, question_markdown gin_trgm_ops);
 create index question_search_simple_ind on question using gin (community_id,kind_id,question_tag_ids,question_poll_major_id);
 create index question_room_id_fk_ind on question(question_room_id);
+create index question_usr_ind on question(community_id,account_id) include (question_at,question_votes);
+
 alter table room add foreign key(room_question_id) references question deferrable initially deferred;
 
 alter table community add foreign key (community_about_question_id) references question;
@@ -460,6 +462,7 @@ create table answer(
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);
 create index answer_question_id_ind on answer(question_id);
+create index answer_usr_ind on answer(community_id,account_id) include (answer_at,answer_votes);
 
 create table answer_history(
   answer_history_id bigint generated always as identity primary key

@@ -360,6 +360,6 @@ function h($f){
     "/page/user/user.js": "f7a3325ae90bb5bf",
     "/markdown.css": "6f974a63f7ab6405",
     "/header.css": "b7e87e6d5db23cbd",
-    "/require.config.js": "537978de53a97ee1"
+    "/require.config.js": "53475dd143a9e22d"
 }',true)[$f]).'.$2',$f);
 }
