@@ -34,17 +34,20 @@ if(isset($_GET['action'])){
         $token = preg_split('/=|&/',curl_exec($ch))[1];
         curl_close($ch);
         if($token){?>
-          <form id="form" action="//post.topanswers.xyz/profile" method="post">
-            <input type="hidden" name="action" value="se">
-            <input type="hidden" name="community" value="<?=$community_name?>">
-            <input type="hidden" name="sesite" value="<?=$_GET['sesite']?>">
-            <input type="hidden" name="token" value="<?=$token?>">
-            <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
-            <noscript><input type="submit" value="Click here if you are not redirected automatically."/></noscript>
-          </form>
-          <script>
-            document.getElementById('form').submit();
-          </script><?
+          <!doctype html>
+          <html>
+          <body>
+            <form id="form" action="//post.topanswers.xyz/profile" method="post">
+              <input type="hidden" name="action" value="se">
+              <input type="hidden" name="community" value="<?=$community_name?>">
+              <input type="hidden" name="sesite" value="<?=$_GET['sesite']?>">
+              <input type="hidden" name="token" value="<?=$token?>">
+              <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
+              <input type="submit" value="Click here if you are not redirected automatically."/>
+            </form>
+            <script src="<?=h("/page/profile/se.js")?>"></script>
+          </body>
+          </html><?
           exit;
         }
         exit;
