@@ -13,14 +13,16 @@ from api._community natural join db.community
 where community_type='public' or account_id is not null;
 --
 create view one with (security_barrier) as
-select community_id,community_name,community_display_name,community_language,community_rgb_dark,community_rgb_mid,community_rgb_light,community_image_url
+select community_id,community_name,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_image_url
+     , coalesce(community_language,'en') community_language
      , coalesce(account_is_dev,false) account_is_dev
      , '/image?hash='||encode(one_image_hash,'hex') one_image_url
-from db.one cross join db.community natural join api._community
-     natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
-where community_id=get_community_id();
+from db.one
+     natural full join (select * from db.community natural join api._community where community_id=get_community_id()) c
+     natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a;
 --
 --
+create function login(uuid) returns boolean language sql security definer as $$select api.login($1);$$;
 create function login_community(uuid,text) returns boolean language sql security definer as $$select api.login_room($1,(select community_room_id from db.community where community_name=$2));$$;
 --
 --

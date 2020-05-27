@@ -337,7 +337,7 @@ function h($f){
     "/page/question/question.js": "434ff2127bcf1149",
     "/page/question/question.css": "51cc012783425795",
     "/page/index/index.css": "e1255dd738e52b37",
-    "/page/index/index.js": "cdde6e73cf927e29",
+    "/page/index/index.js": "d1e0f09163de68db",
     "/page/answer/answer.js": "7e1a10f3cacae236",
     "/page/answer/answer.css": "af8759bd17c59796",
     "/page/community/community.css": "d6ffac19fd89d3fa",
@@ -361,6 +361,6 @@ function h($f){
     "/page/user/user.js": "f7a3325ae90bb5bf",
     "/markdown.css": "6f974a63f7ab6405",
     "/header.css": "b7e87e6d5db23cbd",
-    "/require.config.js": "77977ab7246fa9e2"
+    "/require.config.js": "bd426edc89ed33f6"
 }',true)[$f]).'.$2',$f);
 }

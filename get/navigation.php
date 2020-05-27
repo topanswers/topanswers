@@ -3,20 +3,20 @@ include '../config.php';
 include '../db.php';
 include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
-isset($_GET['community']) || fail(400,'community must be set');
 db("set search_path to navigation,pg_temp");
-$auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
+if(isset($_GET['community'])){
+  db("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
+}else{
+  db("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
+}
 $environment = $_COOKIE['environment']??'prod';
-extract(cdb("select account_is_dev,one_image_url,community_id,community_name,community_language,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_image_url
+extract(cdb("select one_image_url,community_id,community_name,community_language,community_display_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_image_url
              from one"));
 include '../lang/navigation.'.$community_language.'.php';
-$dev = $account_is_dev;
-$_GET['community']===$community_name || fail(400,'invalid community');
-ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <div class="container">
   <a class="frame" href="/" title="home"><img class="icon" src="<?=$one_image_url?>"></a>
-  <a class="frame" href="/<?=$community_name?>" title="<?=$community_display_name?> home"><img class="icon" src="<?=$community_image_url?>"></a>
+  <?if(isset($_GET['community'])){?><a class="frame" href="/<?=$community_name?>" title="<?=$community_display_name?> home"><img class="icon" src="<?=$community_image_url?>"></a><?}?>
   <div class="select element">
     <div accesskey="t">
       <span class="wideonly"><?=$l_topanswers?>&nbsp;</span>
@@ -39,4 +39,3 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </div>
   </div>
 </div>
-<?ob_end_flush();

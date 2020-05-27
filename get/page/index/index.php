@@ -7,10 +7,10 @@ require '../../../hash.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to indx,pg_temp");
 $auth = ccdb("select login(nullif($1,'')::uuid)",$_COOKIE['uuid']??'');
-extract(cdb("select account_id,one_image_url,account_image_url from one"));
+extract(cdb("select account_id,account_image_url from one"));
 $community_name = 'meta';
 $community_code_language = '';
-$cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
+$cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':'');
 $codidact = json_decode(file_get_contents('https://codidact.com/communities.json'),true);
 ?>
 <!doctype html>
@@ -44,10 +44,7 @@ $codidact = json_decode(file_get_contents('https://codidact.com/communities.json
 </head>
 <body>
   <header>
-    <div class="container">
-      <a class="frame" href="/" title="home"><img class="icon" src="<?=$one_image_url?>"></a>
-      <span class='element'>TopAnswers</span>
-    </div>
+    <?$ch = curl_init('http://127.0.0.1/navigation'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
     <div>
       <?if($auth){?>
         <a class="frame" href="/profile?community=meta"><img data-test="userIcon" class="icon" src="<?=$account_image_url?>"></a>
