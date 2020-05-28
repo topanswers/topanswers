@@ -1,28 +1,28 @@
-/*! markdown-it-codeimput 2.0.0 https://github.com//topanswers/markdown-it-object @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitCodeInput = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*! markdown-it-codefence 2.0.0 https://github.com//topanswers/markdown-it-object @license MIT */(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.markdownitCodeInput = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 // Process block-level custom objects
 //
 'use strict';
 
 
-module.exports = function codeinput_plugin(md, options) {
+module.exports = function codefence_plugin(md, options) {
 
-  function validateDefault(p) { return p.trim().match(/^[-\/+a-z]+ [-a-z0-9]+$/); }
+  function validateDefault(p) { return p.trim().match(/^([-\/+a-z]+)? ?#?$/); }
 
   function renderDefault(tokens, idx, _options, env, self) {
-    var t = tokens[idx], m = t.info.trim().match(/^([-\/+a-z]+) ([-a-z0-9]+)$/);
-    return '<textarea class="codeinput" data-mode="'+md.utils.escapeHtml(m[1])+'" data-tio="'+md.utils.escapeHtml(m[2])+'">'+md.utils.escapeHtml(t.content).replace(/\n$/g,'')+"</textarea>\n";
+    var t = tokens[idx], m = t.info.trim().match(/^([-\/+a-z]+)? ?(#)?$/);
+    return '<textarea class="codefence" data-numbers="'+((m[2]==='#')?'true':'false')+'" data-mode="'+md.utils.escapeHtml(m[1])+'">'+md.utils.escapeHtml(t.content).replace(/\n$/g,'')+"</textarea>\n";
   }
 
   options = options || {};
 
   var min_markers = 3,
-      marker_str  = options.marker || '§',
+      marker_str  = options.marker || '`',
       marker_char = marker_str.charCodeAt(0),
       marker_len  = marker_str.length,
       validate    = options.validate || validateDefault,
       render      = options.render || renderDefault;
 
-  function codeinput(state, startLine, endLine, silent) {
+  function codefence(state, startLine, endLine, silent) {
     var pos, nextLine, marker_count, markup, params, token,
         old_parent, old_line_max,
         auto_closed = false,
@@ -108,7 +108,7 @@ module.exports = function codeinput_plugin(md, options) {
     // this will prevent lazy continuations from ever going past our end marker
     state.lineMax = nextLine;
 
-    token         = state.push('codeinput', 'textarea', 0);
+    token         = state.push('codefence', 'textarea', 0);
     token.markup  = markup;
     token.info    = params;
     token.content = state.getLines(startLine + 1, nextLine, state.sCount[startLine], true);
@@ -119,8 +119,8 @@ module.exports = function codeinput_plugin(md, options) {
     return true;
   }
 
-  md.block.ruler.before('fence', 'codeinput', codeinput, { alt: [ 'paragraph', 'reference', 'blockquote', 'list' ] });
-  md.renderer.rules['codeinput'] = render;
+  md.block.ruler.before('fence', 'codefence', codefence, { alt: [ 'paragraph', 'reference', 'blockquote', 'list' ] });
+  md.renderer.rules['codefence'] = render;
 };
 
 },{}]},{},[1])(1)

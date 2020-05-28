@@ -21,4 +21,4 @@ $l_provide_another_answer = 'provide another answer';
 $l_show_preview = 'show preview';
 $l_hide_preview = 'hide preview';
 $l_embed_image = 'embed image';
-$l_show_more_lines = 'show % more lines';
+$l_show_more_lines = 'show all % lines';

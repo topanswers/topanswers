@@ -6,7 +6,7 @@ define(['jquery'
        ,'codemirror/mode/meta','codemirror/addon/mode/overlay','codemirror/addon/runmode/runmode','codemirror/addon/runmode/colorize','codemirror/addon/display/placeholder'
        ,'katex'
        ,'markdown-it','markdown-it-sup','markdown-it-sub','markdown-it-emoji','markdown-it-deflist','markdown-it-footnote','markdown-it-abbr','markdown-it-container'
-       ,'markdown-it-inject-linenumbers','markdown-it-object','markdown-it-codeinput','markdown-it-for-inline','markdown-it-katex','markdownItAnchor','markdownItTocDoneRight'
+       ,'markdown-it-inject-linenumbers','markdown-it-object','markdown-it-codefence','markdown-it-codeinput','markdown-it-for-inline','markdown-it-katex','markdownItAnchor','markdownItTocDoneRight'
        ,'clipboard'
        ,'promise-all-settled'
        ,'lightbox2/js/lightbox'
@@ -138,23 +138,7 @@ define(['jquery'
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://PHP.TA') tokens[idx].attrSet('href','/php');
     };
   
-    md = require('markdown-it')({ linkify: true
-      , highlight: (code, lang) => {
-        let lastStyle
-        let sDom = ''
-        CodeMirror.runMode(code, lang||rendering.css('--lang-code'), (token, style) => {
-          if (lastStyle !== style) {
-            if (lastStyle !== undefined) sDom += '</span>'
-            if (style !== undefined) sDom += '<span class="cm-'+style+'">'
-            lastStyle = style
-          }
-          sDom += md.utils.escapeHtml(token)
-        })
-        if (lastStyle !== undefined) sDom += '</span>'
-        return sDom
-      }
-      
-       })
+    md = require('markdown-it')({ linkify: true })
                .use(require('markdown-it-sup'))
                .use(require('markdown-it-sub'))
                .use(require('markdown-it-emoji'))
@@ -174,6 +158,8 @@ define(['jquery'
                      return '</div>\n';
                    }
                  } })
+               .use(require('markdown-it-codefence'))
+               .use(require('markdown-it-codefence'), { marker: '~' } )
                .use(require('markdown-it-codeinput'))
                .use(require('markdown-it-container'), 'tio', {
                  validate: function(params) {
@@ -235,16 +221,8 @@ define(['jquery'
     if(['test','codegolf','apl'].includes($('html').css('--community'))) md.use(require('markdown-it-katex'));
   
     md.renderer.rules.code_block = function(tokens, idx, options, env, slf){
-      var token = tokens[idx], langName = rendering.css('--lang-code'), highlighted, i, tmpAttrs, tmpToken;
-  
-      if (options.highlight) {
-        highlighted = options.highlight(token.content, langName) || md.utils.escapeHtml(token.content);
-      } else {
-        highlighted = md.utils.escapeHtml(token.content);
-      }
-  
-      if (highlighted.indexOf('<pre') === 0) return highlighted + '\n';
-      return '<pre><code' + slf.renderAttrs(token) + '>' + highlighted + '</code></pre>\n';
+      var token = tokens[idx], langName = rendering.css('--lang-code');
+      return '<textarea class="codefence" data-numbers="false" data-mode="'+langName+'">'+md.utils.escapeHtml(token.content).replace(/\n$/,'')+"</textarea>\n";
     };
   
     md.linkify.tlds('kiwi',true).tlds('xyz',true).tlds('ta',true);
@@ -266,13 +244,18 @@ define(['jquery'
         t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
         t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
         t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
-        t.find('textarea.code').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().trim(),t.attr('data-tio')).then(function(r){ t.siblings('pre').children('code').text(r.output); }); },500)); });
+        t.find('textarea.codeinput').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().replace(/\n$/,''),t.attr('data-tio')).then(function(r){ t.siblings('pre').children('code').text(r.output); }); },500)); });
+        t.find('textarea.codefence').each(function(){
+          var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode'), readOnly: 'nocursor', lineNumbers: $(this).data('numbers') });
+        });
         if(!t.hasClass('noexpander')){
-          t.children('pre').each(function(){
+          t.find('.CodeMirror').each(function(){
             var t = $(this), h = t.height();
             if(h>450){
-              t.innerHeight(300).addClass('expandable');
-              $('<div class="expander">'+$('html').css('--l_show_more_lines').replace(/%/,Math.round((h-300)/14.4).toLocaleString($('html').css('--jslang')))+'</div>').prependTo(t).click(function(){ t.animate({ height: h }, function(){ t.height(''); }).removeClass('expandable'); $(this).remove(); });
+              t.css('max-height','300px').addClass('expandable');
+              $('<div class="expander">'+$('html').css('--l_show_more_lines').replace(/%/,t[0].CodeMirror.lineCount().toLocaleString($('html').css('--jslang')))+'</div>').appendTo(t).click(function(){
+                t.animate({ 'max-height': h }, function(){ t.css('max-height',''); }).removeClass('expandable'); $(this).remove();
+              });
             }
           });
         }
