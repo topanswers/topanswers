@@ -73,6 +73,7 @@
 .markdown .CodeMirror:last-child { margin-bottom: 0; }
 .markdown .CodeMirror-scroll { margin-bottom: -30px; }
 .markdown .codefence+.CodeMirror { border: 1px solid rgb(var(--rgb-mid)); background: rgb(var(--rgb-light)); }
+.markdown .codefence+.CodeMirror .CodeMirror-cursor { display: none; }
 .markdown .codefence+.CodeMirror .CodeMirror-linenumber { color: rgba(var(--rgb-dark),0.5); }
 .markdown .codefence+.CodeMirror .CodeMirror-linenumbers { color: rgb(var(--rgb-mid)); background: rgb(var(--rgb-light)); }
 .markdown .codefence+.CodeMirror .CodeMirror-gutters { border-right: 1px solid rgb(var(--rgb-mid)); }
