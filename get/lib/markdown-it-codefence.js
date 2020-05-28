@@ -6,7 +6,7 @@
 
 module.exports = function codefence_plugin(md, options) {
 
-  function validateDefault(p) { return p.trim().match(/^([-\/+a-z]+)? ?#([1-9][0-9]*)??$/); }
+  function validateDefault(p) { return p.trim().match(/^([-\/+a-z]+)? ?(#([1-9][0-9]*)?)?$/); }
 
   function renderDefault(tokens, idx, _options, env, self) {
     var t = tokens[idx], m = t.info.trim().match(/^([-\/+a-z]+)? ?(#([1-9][0-9]*)?)?$/);
