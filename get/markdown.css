@@ -69,6 +69,7 @@
 .markdown .wikipedia>a:nth-of-type(3) { float: left; margin-top: 4px; margin-right: 12px; margin-bottom: 0; max-width: 30%; }
 .markdown .CodeMirror { height: auto; font-family: var(--font-monospace); font-size: 90%; margin: 16px 0; }
 .markdown textarea:first-child+.CodeMirror { margin-top: 0; }
+@supports (-webkit-touch-callout: none) { .markdown .CodeMirror .CodeMirror-gutters { z-index: -1; } }
 .markdown .CodeMirror:last-child { margin-bottom: 0; }
 .markdown .CodeMirror-scroll { margin-bottom: -30px; }
 .markdown .codefence+.CodeMirror { border: 1px solid rgb(var(--rgb-mid)); background: rgb(var(--rgb-light)); }

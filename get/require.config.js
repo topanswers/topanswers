@@ -132,10 +132,10 @@ var require = {
     'katex':'katex.9460c91fb69cca2c',
     'vex':'vex.ce8070c89395b6ea',
     'resizer':'resizer.acc48d85f03977b4',
-    'markdown-it-codefence':'markdown-it-codefence.8ac7f0a26164776f',
-    'markdown':'../markdown.25df519bf60e3bf1',
+    'markdown-it-codefence':'markdown-it-codefence.1f3d4c7f77963dda',
+    'markdown':'../markdown.54b392a3489f44c9',
     'tio':'../tio.0984e7f3a524834f',
     'navigation':'../navigation.f0ad7bc6582996ae',
-    'require.config':'../require.config.83bda0ccd13dbeff',
+    'require.config':'../require.config.d822bc310d885117',
  } },
 };

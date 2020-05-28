@@ -222,7 +222,7 @@ define(['jquery'
   
     md.renderer.rules.code_block = function(tokens, idx, options, env, slf){
       var token = tokens[idx], langName = rendering.css('--lang-code');
-      return '<textarea class="codefence" data-numbers="false" data-mode="'+langName+'">'+md.utils.escapeHtml(token.content).replace(/\n$/,'')+"</textarea>\n";
+      return '<textarea class="codefence" data-mode="'+langName+'">'+md.utils.escapeHtml(token.content).replace(/\n$/,'')+"</textarea>\n";
     };
   
     md.linkify.tlds('kiwi',true).tlds('xyz',true).tlds('ta',true);
@@ -246,7 +246,7 @@ define(['jquery'
         t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
         t.find('textarea.codeinput').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().replace(/\n$/,''),t.attr('data-tio')).then(function(r){ t.siblings('pre').children('code').text(r.output); }); },500)); });
         t.find('textarea.codefence').each(function(){
-          var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode'), readOnly: 'nocursor', lineNumbers: $(this).data('numbers') });
+          var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode'), readOnly: 'nocursor', lineNumbers: $(this).data('numbers')!==undefined, firstLineNumber: $(this).data('numbers') });
         });
         if(!t.hasClass('noexpander')){
           t.find('.CodeMirror').each(function(){

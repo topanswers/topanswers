@@ -6,11 +6,11 @@
 
 module.exports = function codefence_plugin(md, options) {
 
-  function validateDefault(p) { return p.trim().match(/^([-\/+a-z]+)? ?#?$/); }
+  function validateDefault(p) { return p.trim().match(/^([-\/+a-z]+)? ?#([1-9][0-9]*)??$/); }
 
   function renderDefault(tokens, idx, _options, env, self) {
-    var t = tokens[idx], m = t.info.trim().match(/^([-\/+a-z]+)? ?(#)?$/);
-    return '<textarea class="codefence" data-numbers="'+((m[2]==='#')?'true':'false')+'" data-mode="'+md.utils.escapeHtml(m[1])+'">'+md.utils.escapeHtml(t.content).replace(/\n$/g,'')+"</textarea>\n";
+    var t = tokens[idx], m = t.info.trim().match(/^([-\/+a-z]+)? ?(#([1-9][0-9]*)?)?$/);
+    return '<textarea class="codefence"'+(m[2]?' data-numbers="'+(m[3]||'1'):'')+'" data-mode="'+(md.utils.escapeHtml(m[1])||'')+'">'+md.utils.escapeHtml(t.content).replace(/\n$/g,'')+"</textarea>\n";
   }
 
   options = options || {};
