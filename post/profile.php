@@ -35,6 +35,7 @@ if($auth){
         if($id) db("select set_se_user_id($1,$2)",$_POST['sesite'],$id);
         header('Location: '.$_POST['location']);
         exit;
+      case 'keyboard': db("select change_keyboard($1)",$_POST['chars']); header('Location: '.$_POST['location']); exit;
       default: fail(400,'unrecognized action for authenticated user with community set');
     }
   }else{

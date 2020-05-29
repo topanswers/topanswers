@@ -16,7 +16,8 @@ ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET
 extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_image_url
                    ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-                   ,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name,sesite_url,communicant_se_user_id,one_stackapps_secret
+                   ,communicant_keyboard,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name
+                   ,sesite_url,communicant_se_user_id,one_stackapps_secret
              from one"));
 
 if(isset($_GET['action'])){
@@ -256,6 +257,16 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </form>
         </fieldset>
       <?}?>
+      <fieldset>
+        <legend>soft keyboard</legend>
+        <form action="//post.topanswers.xyz/profile" method="post">
+          <input type="hidden" name="action" value="keyboard">
+          <input type="hidden" name="community" value="<?=$community_name?>">
+          <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
+          <input type="text" name="chars" placeholder="special characters list (separate groups with a space)" size="100" value="<?=$communicant_keyboard?>" autocomplete="off">
+          <input type="submit" style="margin-left: 0;" value="save">
+        </form>
+      </fieldset>
     </fieldset>
     <fieldset>
       <legend>community activity</legend>

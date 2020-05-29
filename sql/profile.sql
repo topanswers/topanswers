@@ -46,11 +46,12 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
       , selink_user_id, selink_user_id communicant_se_user_id
       ,one_stackapps_secret
+     , coalesce(communicant_keyboard,community_keyboard) communicant_keyboard
 from (select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url,account_image_hash
       from db.account natural join api._account
       where account_id=get_account_id()) a
      cross join db.one
-     natural left join (select community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
+     natural left join (select community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url,community_keyboard
                               ,community_regular_font_id,community_monospace_font_id,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                               ,sesite_url
                         from api._community natural join db.community natural left join (select community_id,sesite_url from db.source natural join db.sesite where source_is_default) s
@@ -206,6 +207,12 @@ create function change_syndications(ids integer[]) returns void language sql sec
   select _ensure_communicant(get_account_id(),get_community_id());
   delete from syndication where account_id=get_account_id() and community_to_id=get_community_id();
   insert into syndication(account_id,community_to_id,community_from_id) select get_account_id(),get_community_id(),community_id from _community where community_id=any(ids);
+$$;
+--
+create function change_keyboard(chars text) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _ensure_communicant(get_account_id(),get_community_id());
+  update communicant set communicant_keyboard = chars where account_id=get_account_id() and community_id=get_community_id();
 $$;
 --
 --
