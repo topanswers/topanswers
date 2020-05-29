@@ -557,6 +557,17 @@ define(['markdown','moment','js.cookie']
     Cookies.set('hidepreview','true',{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
     return false;
   });
+  $('#chatshowkeyboard').on('mousedown',function(){ return false; }).click(function(){
+    $('#canchat-wrapper').addClass('keyboard');
+    Cookies.set('hidekeyboard','false',{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
+    if($('#messages').parent().hasClass('follow')) $('#messages').parent().scrollTop(1000000);
+    return false;
+  });
+  $('#chathidekeyboard').on('mousedown',function(){ return false; }).click(function(){
+    $('#canchat-wrapper').removeClass('keyboard');
+    Cookies.set('hidekeyboard','true',{ secure: true, domain: '.topanswers.xyz', expires: 3650 });
+    return false;
+  });
   $('#community').change(function(){
     window.location = '/'+$(this).find(':selected').attr('data-name');
   });
@@ -930,6 +941,11 @@ define(['markdown','moment','js.cookie']
     $('#messages').parent().removeClass('follow');
     $(hash)[0].scrollIntoView({ behavior: 'smooth' });
     $(hash).addClass('target').children('.markdown').off('animationend').on('animationend',function(){ $(hash).removeClass('target'); });
+    return false;
+  });
+  $('#keyboard>span>span').click(function(){
+    textareaInsertTextAtCursor($('#chattext'),$(this).text());
+    $('#chattext').focus();
     return false;
   });
 },function(e){ console.error('boo'); });

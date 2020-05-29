@@ -4,6 +4,10 @@
 5	1	Question		8	10	t	\N	f	\N
 6	2	Question		1	10	t	\N	f	\N
 13	8	Wiki Post	Wiki	1	30	f	\N	f	\N
+14	1	Question		9	10	t	\N	f	\N
+15	11	Documentation	Documentation	9	20	f	\N	f	\N
+16	8	Wiki Post	Wiki	9	30	f	\N	f	\N
+17	2	Meta Question	Meta	9	40	f	\N	f	\N
 18	2	Meta Question	Meta	7	60	f	\N	f	\N
 19	3	Blog Post	Blog	7	70	f	\N	f	\N
 20	8	Wiki Post	Wiki	7	80	f	\N	f	\N
@@ -39,3 +43,6 @@
 58	2	Meta Question	Meta	15	20	f	\N	f	\N
 59	13	Meta Poll	Meta Poll	15	30	f	\N	f	\N
 60	13	Meta Poll	Meta Poll	2	25	f	\N	f	\N
+61	1	Question		16	10	t	\N	f	\N
+62	2	Meta Question	Meta	16	20	f	\N	f	\N
+66	14	Code Review	Code Review	4	25	f	\N	f	\N

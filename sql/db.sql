@@ -124,6 +124,7 @@ create table community(
 , community_tio_language text
 , community_import_sanction_id integer -- references sanction
 , community_image_hash bytea check(length(community_image_hash)=32)
+, community_keyboard text default '' not null
 );
 
 create table source(
@@ -175,6 +176,7 @@ create table communicant(
 , communicant_regular_font_id integer not null references font
 , communicant_monospace_font_id integer not null references font
 , communicant_is_post_flag_crew boolean default false not null
+, communicant_keyboard text default '' not null
 , primary key (account_id,community_id)
 );
 

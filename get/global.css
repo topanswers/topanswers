@@ -31,3 +31,8 @@ a.button { background: rgb(var(--rgb-mid)); border: 1px solid rgba(var(--rgb-dar
 a.button[href]:hover { background: rgb(var(--rgb-light)); }
 a.button:not([href]) { cursor: default; opacity: 0.5; }
 a.button+a.button { margin-left: 1px; }
+
+#keyboard { display: flex; flex-wrap: wrap; justify-content: center; border: 1px solid rgb(var(--rgb-dark)); }
+#keyboard>span { margin: 0 4px; display: flex; flex-wrap: wrap; }
+#keyboard>span>span { display: inline-flex; height: 24px; width: 24px; justify-content: center; align-items: center;
+      margin: 0.5px; border: 1px solid rgb(var(--rgb-mid)); border-radius: 2px; cursor: pointer; background: rgb(var(--rgb-white));  }

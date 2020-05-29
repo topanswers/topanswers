@@ -104,6 +104,7 @@ select account_id,account_image_url
      , l.account_id is not null and room_can_listen room_can_mute
      , l.account_id is null and room_can_listen room_can_listen
      , p.account_id is not null room_is_pinned
+     , coalesce(communicant_keyboard,community_keyboard) communicant_keyboard
 from db.room r natural join api._room natural join db.community natural join api._community
      natural left join (select login_resizer_percent,login_chat_resizer_percent,account_id,account_is_dev,account_notification_id,account_image_url
                         from db.login natural join db.account natural join api._account

@@ -103,6 +103,9 @@ a[data-lightbox] img { cursor: zoom-in; }
 #canchat-wrapper:not(.previewing) #preview { display: none; }
 #canchat-wrapper.previewing #chatshowpreview { display: none; }
 #canchat-wrapper:not(.previewing) #chathidepreview { display: none; }
+#canchat-wrapper.keyboard #chatshowkeyboard { display: none; }
+#canchat-wrapper:not(.keyboard) #chathidekeyboard { display: none; }
+#canchat-wrapper:not(.keyboard) #keyboard { display: none; }
 #preview .markdown { margin: 4px; }
 #canchat-wrapper:not(.previewing) #preview { display: none; }
 #canchat-wrapper:not(.chatting) #preview { visibility: hidden; }

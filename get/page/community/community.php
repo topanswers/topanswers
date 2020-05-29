@@ -11,6 +11,7 @@ if(isset($_COOKIE['uuid'])){ ccdb("select login($1::uuid)",$_COOKIE['uuid']) || 
 if(ccdb("select exists(select 1 from private where community_name=$1)",$_GET['community'])) { header('Location: //topanswers.xyz/private?community='.$_GET['community']); exit; }
 $pagesize = $_COOKIE['pagesize']??'10';
 $hidepreview = ($_COOKIE['hidepreview']??'false') === 'true';
+$hidekeyboard = ($_COOKIE['hidekeyboard']??'true') === 'true';
 $clearlocal = $_COOKIE['clearlocal']??'';
 $environment = $_COOKIE['environment']??'prod';
 if(!isset($_GET['room'])&&!isset($_GET['q'])){
@@ -28,7 +29,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_tio_language,community_about_question_id
                    ,community_ask_button_text,community_banner_markdown,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
-                   ,communicant_is_post_flag_crew,communicant_can_import
+                   ,communicant_is_post_flag_crew,communicant_can_import,communicant_keyboard
                    ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned,room_image_url
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
@@ -42,6 +43,8 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,sanction_short_description,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
                    ,kind_show_answer_summary_toc
              from one"));
+if(!$communicant_keyboard) $hidekeyboard = true;
+$communicant_keyboard = htmlspecialchars_decode($communicant_keyboard);
 $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
 include '../../../lang/community.'.$community_language.'.php';
@@ -457,7 +460,7 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
           <?}?>
         </div>
         <?if($canchat){?>
-          <div id="canchat-wrapper"<?=$hidepreview?'':' class="previewing"'?>>
+          <div id="canchat-wrapper" class="<?=$hidepreview?'':'previewing '?><?=$hidekeyboard?'':'keyboard '?>">
             <div id="status" data-replyid="" data-replyname="" data-editid="">
               <span><?=$l_preview?>:</span>
               <i id="cancel" class="fa fa-fw fa-times" style="display: none; cursor: pointer;"></i>
@@ -470,7 +473,18 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
                 <i id="chatshowpreview" class="fa fa-fw fa-eye" title="<?=$l_show_preview?>"></i>
                 <i id="chathidepreview" class="fa fa-fw fa-eye-slash" title="<?=$l_hide_preview?>"></i>
                 <i id="chatupload" class="fa fa-fw fa-picture-o" title="<?=$l_embed_image?>"></i>
+                <?if($communicant_keyboard){?>
+                  <i id="chatshowkeyboard" class="fa fa-fw fa-keyboard-o" title="<?=$l_show_keyboard?>"></i>
+                  <i id="chathidekeyboard" class="fa fa-fw fa-keyboard-o" title="<?=$l_hide_keyboard?>"></i>
+                <?}?>
               </div>
+            </div>
+            <div id="keyboard">
+              <?foreach(explode(' ',$communicant_keyboard) as $group){?>
+                <span>
+                  <?foreach(preg_split('//u',$group,-1,PREG_SPLIT_NO_EMPTY) as $c){?><span><?=$c?></span><?}?>
+                </span>
+              <?}?>
             </div>
           </div>
         <?}?>

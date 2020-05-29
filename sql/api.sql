@@ -226,8 +226,8 @@ begin
 end$$;
 --
 create function _ensure_communicant(aid integer, cid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  with i as (insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id)
-             select aid,cid,community_regular_font_id,community_monospace_font_id from community where community_id=cid
+  with i as (insert into communicant(account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id,communicant_keyboard)
+             select aid,cid,community_regular_font_id,community_monospace_font_id,community_keyboard from community where community_id=cid
              on conflict on constraint communicant_pkey do nothing
              returning account_id,community_id)
      , a as (select community_id,community_name,community_display_name,community_about_question_id from i natural join community where community_about_question_id is not null)
