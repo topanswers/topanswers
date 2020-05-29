@@ -104,6 +104,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 #canchat-wrapper.previewing #chatshowpreview { display: none; }
 #canchat-wrapper:not(.previewing) #chathidepreview { display: none; }
 #canchat-wrapper.keyboard #chatshowkeyboard { display: none; }
+#canchat-wrapper #keyboard { border-top: 1px solid rgb(var(--rgb-dark)); }
 #canchat-wrapper:not(.keyboard) #chathidekeyboard { display: none; }
 #canchat-wrapper:not(.keyboard) #keyboard { display: none; }
 #preview .markdown { margin: 4px; }

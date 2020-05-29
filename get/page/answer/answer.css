@@ -20,11 +20,12 @@ textarea, pre, code { font-family: var(--font-monospace), monospace; }
 #editor-buttons>div i:last-child { margin-bottom: 0; }
 #editor-buttons>div br { margin-bottom: 12px; }
 
-#codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; min-height: 0; min-width: 0; }
-#codemirror-container>textarea { width: 100%; height: 100%; resize: none; margin: 0; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; font-size: 90%; }
-#codemirror-container>.CodeMirror { height: 100%; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; font-size: 90%; }
+#codemirror-container { grid-area: 1 / 2 / 3 / 3; position: relative; margin-left: 35px; min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+#codemirror-container>textarea { flex: 1 1 auto; resize: none; margin: 0; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; font-size: 90%; }
+#codemirror-container>.CodeMirror { flex: 1 1 auto; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 3px 3px 3px; font-size: 90%; }
 #codemirror-container>.CodeMirror pre.CodeMirror-placeholder { color: darkgrey; }
 #codemirror-container>.CodeMirror-wrap pre { word-break: break-word; }
+#codemirror-container>#keyboard { flex: 0 0 auto; background: rgb(var(--rgb-light)); border: 1px solid rgba(var(--rgb-dark),0.6); border-top: none; border-radius: 3px; padding-bottom: 1px; }
 
 @media (max-width: 1500px){
   main { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 2fr; }

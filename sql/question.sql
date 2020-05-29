@@ -24,6 +24,7 @@ select account_id,account_license_id,account_codelicense_id,account_permit_later
      , coalesce(account_is_dev,false) account_is_dev
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
+     , coalesce(communicant_keyboard,community_keyboard) communicant_keyboard
 from db.community
      natural join api._community
      natural left join (select account_id,account_is_dev,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license_name

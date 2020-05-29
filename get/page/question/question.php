@@ -18,7 +18,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                        ||(case when account_has_codelicense then ' + '||account_codelicense_name||(case when account_permit_later_codelicense then ' or later' else '' end) else '' end) account_license
                    ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_language,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-                   ,my_community_regular_font_name,my_community_monospace_font_name
+                   ,communicant_keyboard,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
                   , question_license_name||(case when question_permit_later_license then ' or later' else '' end)
                        ||(case when question_has_codelicense then ' + '||question_codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) else '' end) license
@@ -27,6 +27,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_license_href,question_has_codelicense,question_codelicense_name
              from one"));
+$communicant_keyboard = htmlspecialchars_decode($communicant_keyboard);
 include '../../../lang/question.'.$community_language.'.php';
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 //ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
@@ -138,6 +139,13 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       </div>
       <div id="codemirror-container">
         <textarea name="markdown" autocomplete="off" required placeholder="<?=$l_your_question?>"><?=$question_id?$question_markdown:(isset($_GET['fiddle'])?('I have a question about this fiddle:&#13;&#10;&#13;&#10;<>https://dbfiddle.uk?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']):'')?></textarea>
+        <div id="keyboard">
+          <?foreach(explode(' ',$communicant_keyboard) as $group){?>
+            <span>
+              <?foreach(preg_split('//u',$group,-1,PREG_SPLIT_NO_EMPTY) as $c){?><span><?=$c?></span><?}?>
+            </span>
+          <?}?>
+        </div>
       </div>
       <div id="markdown" class="markdown noexpander"></div>
     </main>

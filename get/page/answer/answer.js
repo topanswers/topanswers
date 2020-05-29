@@ -131,4 +131,9 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,
   render();
   $('#question .markdown').renderMarkdown();
   $('#license a').click(function(){ $(this).parent().hide().next().show(); return false; });
+  $('#keyboard>span>span').click(function(){
+    cm.replaceSelection($(this).text());
+    cm.focus();
+    return false;
+  });
 });

@@ -32,7 +32,12 @@ a.button[href]:hover { background: rgb(var(--rgb-light)); }
 a.button:not([href]) { cursor: default; opacity: 0.5; }
 a.button+a.button { margin-left: 1px; }
 
-#keyboard { display: flex; flex-wrap: wrap; justify-content: center; border: 1px solid rgb(var(--rgb-dark)); }
-#keyboard>span { margin: 0 4px; display: flex; flex-wrap: wrap; }
-#keyboard>span>span { display: inline-flex; height: 24px; width: 24px; justify-content: center; align-items: center;
+#keyboard { display: flex; flex-wrap: wrap; justify-content: center; }
+#keyboard>span { flex: 0 0 auto; margin: 0 4px; display: flex; }
+#keyboard>span>span { display: inline-flex; height: 19px; width: 19px; justify-content: center; align-items: center; font-size: 14px;
       margin: 0.5px; border: 1px solid rgb(var(--rgb-mid)); border-radius: 2px; cursor: pointer; background: rgb(var(--rgb-white));  }
+
+@media (max-width: 576px){
+  #keyboard { flex-wrap: unset; justify-content: left; overflow-x: auto; }
+  #keyboard>span>span { height: 28px; width: 28px; font-size: 22px; }
+}

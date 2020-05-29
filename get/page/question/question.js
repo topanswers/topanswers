@@ -149,4 +149,9 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,
       });
     }
   }).click();
+  $('#keyboard>span>span').click(function(){
+    cm.replaceSelection($(this).text());
+    cm.focus();
+    return false;
+  });
 });
