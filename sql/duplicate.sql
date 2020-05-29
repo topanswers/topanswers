@@ -5,8 +5,8 @@ set local search_path to duplicate,api,pg_temp;
 --
 create view tag with (security_barrier) as
 select tag_id,tag_name,tag_question_count
-from db.question_tag_x qt natural join db.tag t
-where question_id=get_question_id() and not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
+from db.mark qt natural join db.tag t
+where question_id=get_question_id() and not exists (select 1 from db.mark natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
 create view answer with (security_barrier) as select answer_id, community_name from api._answer natural join api._question natural join db.community where not question_is_deleted and not answer_is_deleted;
 --

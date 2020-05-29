@@ -27,7 +27,7 @@ where (room_type<>'private' or account_id is not null) and not exists(select 1 f
 create view tag with (security_barrier) as
 select tag_id,tag_name,tag_implies_id,tag_question_count
      , q.tag_id is not null tag_is
-from db.tag natural left join (select tag_id from db.question_tag_x where question_id=get_question_id()) q
+from db.tag natural left join (select tag_id from db.mark where question_id=get_question_id()) q
 where community_id=get_community_id();
 --
 create view question_flag with (security_barrier) as

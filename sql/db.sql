@@ -516,33 +516,7 @@ create table mark_history(
 );
 create index mark_history_question_id_fk_ind on mark_history(question_id,tag_id);
 create index mark_history_tag_id_fk_ind on mark_history(tag_id,question_id);
-
-create table question_tag_x(
-  question_id integer
-, tag_id integer
-, community_id integer not null
-, account_id integer not null references account
-, question_tag_x_at timestamptz not null default current_timestamp
-, primary key (question_id,tag_id)
-, foreign key (community_id,question_id) references question (community_id,question_id)
-, foreign key (community_id,tag_id) references tag (community_id,tag_id)
-);
-create index question_tag_x_tag_id_fk_ind on question_tag_x(tag_id,question_id);
-
-create table question_tag_x_history(
-  question_tag_x_history_id integer generated always as identity primary key
-, question_id integer
-, tag_id integer
-, community_id integer not null
-, question_tag_x_history_added_by_account_id integer not null references account
-, question_tag_x_history_removed_by_account_id integer not null references account
-, question_tag_x_added_at timestamptz not null
-, question_tag_x_removed_at timestamptz not null default current_timestamp
-, foreign key (community_id,question_id) references question (community_id,question_id)
-, foreign key (community_id,tag_id) references tag (community_id,tag_id)
-);
-create index question_tag_x_history_question_id_fk_ind on question_tag_x_history(question_id,tag_id);
-create index question_tag_x_history_tag_id_fk_ind on question_tag_x_history(tag_id,question_id);
+create index mark_history_rate_limit on mark_history(account_id,mark_history_at);
 
 create table question_vote(
   question_id integer references question

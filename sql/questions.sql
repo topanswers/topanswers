@@ -20,8 +20,8 @@ from api._question natural join db.question q natural join api._account natural 
 --
 create view tag with (security_barrier) as
 select question_id,tag_id,tag_name,tag_question_count
-from db.question_tag_x qt natural join db.tag t
-where not exists (select 1 from db.question_tag_x natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
+from db.mark qt natural join db.tag t
+where not exists (select 1 from db.mark natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
 create view answer with (security_barrier) as
 select community_id,question_id,answer_id,answer_at,answer_change_at,answer_markdown,answer_votes,answer_is_deleted,answer_summary,label_id,label_name,label_url
