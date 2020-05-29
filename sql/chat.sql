@@ -198,18 +198,6 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
   select chat_id from i;
 $$;
 --
-create function change(id integer, msg text) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
-  select _error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
-  select _error('too late') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>300;
-  select _error(413,'message too long') where length(msg)>5000;
-  insert into chat_history(chat_id,chat_history_markdown) values(id,msg);
-  --
-  with w as (select chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
-  update account set account_notification_id = default where account_id in(select account_id from w);
-  --
-  update chat set chat_markdown = msg, chat_change_id = default, chat_change_at = default where chat_id=id;
-$$;
 create function change(id integer, msg text, replyid integer, pingids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
   select _error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
@@ -232,7 +220,7 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
      , p as (insert into ping(chat_id,account_id) select id,account_id from aa on conflict do nothing)
   select 1;
   --
-  with w as (select chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
+  with w as (select account_id,chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
   update account set account_notification_id = default where account_id in(select account_id from w);
 $$;
 --

@@ -484,6 +484,7 @@ create table tag(
 , tag_description text default '' not null check (length(tag_description)<101)
 , tag_implies_id integer
 , tag_question_count integer default 0 not null
+, tag_code_language text
 , unique (community_id,tag_id)
 , unique (community_id,tag_name)
 , foreign key (community_id,tag_implies_id) references tag (community_id,tag_id)

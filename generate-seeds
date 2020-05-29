@@ -126,6 +126,7 @@ psql postgres postgres -c "\copy (select tag_id
                                         ,tag_description
                                         ,tag_implies_id
                                         ,0
+                                        ,tag_code_language
                                   from tag natural join community
                                   where community_type='public'
                                   order by tag_id) to '~/git/sql/seed/tag'"

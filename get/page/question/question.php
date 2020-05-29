@@ -26,6 +26,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                    ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
                    ,question_license_href,question_has_codelicense,question_codelicense_name
+                   ,tag_code_language
              from one"));
 $communicant_keyboard = htmlspecialchars_decode($communicant_keyboard);
 include '../../../lang/question.'.$community_language.'.php';
@@ -34,7 +35,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 ?>
 <!doctype html>
 <html style="--community:<?=$community_name?>;
-             --lang-code:<?=$community_code_language?>;
+             --lang-code:<?=$tag_code_language?:$community_code_language?>;
              --rgb-dark:<?=$community_rgb_dark?>;
              --rgb-mid:<?=$community_rgb_mid?>;
              --rgb-light:<?=$community_rgb_light?>;

@@ -19,6 +19,7 @@ select account_id,account_license_id,account_codelicense_id,account_permit_later
       ,question_is_deleted,question_answered_by_me
       ,question_when,question_account_id,question_account_name,question_account_is_imported
       ,question_license_href,question_has_codelicense,question_codelicense_name,question_permit_later_license,question_permit_later_codelicense
+      ,tag_code_language
       ,kind_allows_question_multivotes
      , question_account_id is not distinct from account_id question_account_is_me
      , coalesce(account_is_dev,false) account_is_dev
@@ -48,8 +49,11 @@ from db.community
                              , question_crew_flags>0 question_is_deleted
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at) question_when
+                             , case num_tag_langs when 1 then tag_code_language end tag_code_language
                         from db.question q natural join db.kind natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select sesite_id question_sesite_id, sesite_url from db.sesite) s
+                             natural left join (select count(1) num_tag_langs, min(tag_code_language) tag_code_language
+                                                from (select distinct tag_code_language from db.mark natural join db.tag where question_id=get_question_id()) z) l
                         where question_id=get_question_id()) q
 where community_id=get_community_id();
 --

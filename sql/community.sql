@@ -89,6 +89,7 @@ select account_id,account_image_url
       ,question_communicant_votes
       ,question_license_href,question_has_codelicense,question_codelicense_name,question_codelicense_description
      , question_account_id is not distinct from account_id question_account_is_me
+      ,tag_code_language
      , coalesce(login_resizer_percent,70) login_resizer_percent
      , coalesce(login_chat_resizer_percent,30) login_chat_resizer_percent
      , coalesce(account_is_dev,false) account_is_dev
@@ -138,10 +139,13 @@ from db.room r natural join api._room natural join db.community natural join api
                              , coalesce(communicant_votes,0) question_communicant_votes
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at)::bigint question_when
+                             , case num_tag_langs when 1 then tag_code_language end tag_code_language
                         from api._question natural join db.question q natural join db.sanction natural join db.kind natural join api._account natural join db.account natural join db.community
                                            natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select account_id,community_id,sesite_id question_sesite_id,selink_user_id,sesite_url from db.selink natural join db.sesite) s
                              natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v
+                             natural left join (select count(1) num_tag_langs, min(tag_code_language) tag_code_language
+                                                from (select distinct tag_code_language from db.mark natural join db.tag where question_id=get_question_id()) z) l
                         where question_id=get_question_id()) q
 where room_id=get_room_id();
 --
