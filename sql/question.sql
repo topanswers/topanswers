@@ -72,29 +72,27 @@ begin
 end$$;
 --
 --
-create function new_tag(id integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
+create function _new_tag(qid integer, tid integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
-  select _error('invalid question') where get_question_id() is null;
-  select _error('invalid tag') where not exists (select 1 from tag where tag_id=id and community_id=get_community_id());
-  select _error(429,'rate limit') where (select count(1) from mark_history where account_id=get_account_id() and mark_history_at>current_timestamp-'1m'::interval)>9;
+  select _error('invalid question') where not exists (select 1 from _question where question_id=qid);
+  select _error('invalid tag') where not exists (select 1 from tag where tag_id=tid and community_id=get_community_id());
   --
-  select _ensure_communicant(get_account_id(),community_id) from question where question_id=get_question_id();
-  --
-  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=id
+  with recursive w(tag_id,next_id,path,cycle) as (select tag_id,tag_implies_id,array[tag_id],false from tag where tag_id=tid
                                                   union all
                                                   select tag.tag_id,tag.tag_implies_id,path||tag.tag_id,tag.tag_id=any(w.path) from w join tag on tag.tag_id=w.next_id where not cycle)
      , i as (insert into mark(question_id,tag_id,community_id,account_id)
-             select get_question_id(),tag_id,community_id,get_account_id()
-             from w natural join tag
-             where tag_id not in (select tag_id from mark where question_id=get_question_id())
+             select qid,tag_id,community_id,get_account_id() from w natural join tag where tag_id not in (select tag_id from mark where question_id=qid)
              returning tag_id)
      , h as (insert into mark_history(question_id,tag_id,community_id,account_id)
-             select get_question_id(),tag_id,community_id,get_account_id()
-             from w natural join tag
-             where tag_id not in (select tag_id from mark where question_id=get_question_id()))
+             select qid,tag_id,community_id,get_account_id() from w natural join tag where tag_id not in (select tag_id from mark where question_id=qid))
   update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
   --
-  update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from mark where question_id=get_question_id()) where question_id=get_question_id();
+  update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from mark where question_id=qid) where question_id=qid;
+$$;
+create function new_tag(id integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
+  select _error(429,'rate limit') where (select count(1) from mark_history where account_id=get_account_id() and mark_history_at>current_timestamp-'1m'::interval)>9;
+  select _ensure_communicant(get_account_id(),community_id) from question where question_id=get_question_id();
+  select _new_tag(get_question_id(),id);
 $$;
 --
 create function remove_tag(tid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
@@ -137,6 +135,31 @@ create function new(sid integer, title text, markdown text, lic integer, lic_orl
              select question_id,get_account_id(),title,markdown from q)
      , s as (insert into subscription(account_id,question_id) select get_account_id(),question_id from q)
   select null;
+  --
+  update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
+$$;
+create function new(sid integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean, tag_ids integer[])
+                returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('invalid community') where not exists (select 1 from community where community_id=get_community_id());
+  select _error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
+  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
+  select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
+  select _ensure_communicant(get_account_id(),get_community_id());
+  --
+  with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning room_id,community_id)
+     , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
+     , q as (insert into question(community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
+                                 ,question_permit_later_license,question_permit_later_codelicense,account_id)
+             select community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
+                  , case when (select kind_questions_by_community from kind k where k.kind_id=s.kind_id) then (select community_wiki_account_id from community where community_id=get_community_id())
+                         else get_account_id() end
+             from r cross join (select kind_id,sanction_id from sanction where sanction_id=sid) s
+             returning question_id)
+     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select question_id,get_account_id(),title,markdown from q)
+     , s as (insert into subscription(account_id,question_id) select get_account_id(),question_id from q)
+  select question._new_tag(question_id,tag_id) from q cross join unnest(tag_ids) tag_id;
   --
   update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
 $$;
