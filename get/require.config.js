@@ -133,9 +133,9 @@ var require = {
     'vex':'vex.ce8070c89395b6ea',
     'resizer':'resizer.acc48d85f03977b4',
     'markdown-it-codefence':'markdown-it-codefence.9f8bfc1e73180d4d',
-    'markdown':'../markdown.95014c2033184a00',
     'tio':'../tio.0984e7f3a524834f',
     'navigation':'../navigation.f0ad7bc6582996ae',
-    'require.config':'../require.config.90389faa67f10193',
+    'require.config':'../require.config.5c507569f51605c4',
+    'markdown':'../markdown.a97aa3323c1c1464',
  } },
 };
