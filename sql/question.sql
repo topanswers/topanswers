@@ -115,33 +115,6 @@ create function remove_tag(tid integer) returns void language sql security defin
   update question set question_poll_minor_id = default, question_tag_ids = (select coalesce(array_agg(tag_id),array[]::integer[]) from mark where question_id=get_question_id()) where question_id=get_question_id();
 $$;
 --
-create function new(sid integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean) returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid community') where not exists (select 1 from community where community_id=get_community_id());
-  select _error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
-  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
-  select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
-  select _ensure_communicant(get_account_id(),get_community_id());
-  --
-  with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning room_id,community_id)
-     , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
-     , q as (insert into question(community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
-                                 ,question_permit_later_license,question_permit_later_codelicense,account_id)
-             select community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
-                  , case when (select kind_questions_by_community from kind k where k.kind_id=s.kind_id) then (select community_wiki_account_id from community where community_id=get_community_id())
-                         else get_account_id() end
-             from r cross join (select kind_id,sanction_id from sanction where sanction_id=sid) s
-             returning question_id)
-     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
-             select question_id,get_account_id(),title,markdown from q)
-     , s as (insert into subscription(account_id,question_id) select get_account_id(),question_id from q)
-  select null;
-  --
-  update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
-$$;
-
-
-
 create function new(sid integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean, tag_ids integer[])
                 returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
@@ -168,31 +141,6 @@ create function new(sid integer, title text, markdown text, lic integer, lic_orl
   update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
 $$;
 --
-create function change(title text, markdown text) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('only author can edit this post kind') where exists (select 1 from question natural join kind where question_id=get_question_id() and not kind_can_all_edit and account_id<>get_account_id());
-  select _error(429,'rate limit') where (select count(*)
-                                         from question_history natural join (select question_id from question where account_id<>get_account_id()) z
-                                         where account_id=get_account_id() and question_history_at>current_timestamp-'5m'::interval)>10;
-  --
-  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
-             select get_question_id(),get_account_id(),title,markdown
-             from question 
-             where question_id=get_question_id() and (question_title<>title or question_markdown<>markdown)
-             returning question_id,question_history_id)
-    , nn as (select question_history_id,account_id from h natural join (select question_id,account_id from question) z where account_id<>get_account_id()
-             union
-             select question_history_id,account_id from h natural join subscription where account_id<>get_account_id())
-     , n as (insert into notification(account_id) select account_id from nn returning *)
-    , qn as (insert into question_notification(notification_id,question_history_id) select notification_id,question_history_id from nn natural join n)
-  update account set account_notification_id = default where account_id in (select account_id from nn);
-  --
-  update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
-  update answer set answer_summary = _markdownsummary(answer_markdown) where question_id=get_question_id() and answer_summary<>_markdownsummary(answer_markdown);
-$$;
-
-
-
 create function change(title text, markdown text, tag_ids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
   select _error('only author can edit this post kind') where exists (select 1 from question natural join kind where question_id=get_question_id() and not kind_can_all_edit and account_id<>get_account_id());

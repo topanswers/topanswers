@@ -135,7 +135,7 @@ var require = {
     'vex':'vex.ce8070c89395b6ea',
     'markdown':'../markdown.0f80f10c4b9be8e3',
     'navigation':'../navigation.f0ad7bc6582996ae',
-    'require.config':'../require.config.f1efd44d1e1ae201',
+    'require.config':'../require.config.4434d3519a58412d',
     'tio':'../tio.0984e7f3a524834f',
  } },
 };
