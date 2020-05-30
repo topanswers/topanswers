@@ -116,8 +116,27 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       <input type="hidden" name="action" value="new">
       <input type="hidden" name="community" value="<?=$community_name?>">
     <?}?>
+    <?if($question_id){?>
+      <?foreach(db("select tag_id,tag_name,tag_implies_id,tag_order from mark order by tag_order") as $r){ extract($r);?>
+        <input type="hidden" name="tags[]" value="<?=$tag_id?>">
+      <?}?>
+    <?}?>
     <main>
       <input id="title" name="title" placeholder="<?=$l_your_question_title?>" minlength="5" maxlength="200" autocomplete="off" autofocus required<?=$question_id?' value="'.$question_title.'"':''?>>
+      <div id="tagbar">
+        <?if($question_id){?>
+          <?foreach(db("select tag_id,tag_name,tag_implies_id,tag_order from mark order by tag_order") as $r){ extract($r);?>
+            <span class="tag" data-id="<?=$tag_id?>"<?if($tag_implies_id){?> data-implies="<?=$tag_implies_id?>"<?}?> data-order="<?=$tag_order?>"><?=$tag_name?></span>
+          <?}?>
+        <?}?>
+        <span class="tag newtag">add tag</span>
+        <input list="taglist" id="taginput" class="tag hide">
+        <datalist id="taglist">
+          <?foreach(db("select tag_id,tag_name,tag_implies_id,tag_order, exists(select 1 from mark m where m.tag_id=t.tag_id) tag_is_mark from tag t order by tag_name") as $r){ extract($r);?>
+            <option value="<?=$tag_name?>" data-id="<?=$tag_id?>" data-implies="<?=$tag_implies_id?>" data-order="<?=$tag_order?>"<?if($tag_is_mark){?> disabled<?}?>>
+          <?}?>
+        </datalist>
+      </div>
       <div id="editor-buttons">
         <div>
           <i title="Bold (Ctrl + B)" class="button fa fa-bold"></i>

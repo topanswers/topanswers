@@ -23,7 +23,7 @@ extract(cdb("select account_id,account_image_url
                                          , (select to_jsonb(f) from question_flag_history f where f.question_flag_history_id=h.question_flag_history_id)
                                          , (select to_jsonb(t) from mark_history t where t.mark_history_id=h.mark_history_id)) item_data
                            from history h
-                           order by history_at desc) z) items
+                           order by history_at desc, item_type desc) z) items
              from one"));
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>

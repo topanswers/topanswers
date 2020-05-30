@@ -9,6 +9,9 @@ create view codelicense with (security_barrier) as select codelicense_id,codelic
 create view sanction with (security_barrier) as
 select sanction_id,kind_id,sanction_description,sanction_ordinal,sanction_is_default from db.kind natural join db.sanction where community_id=get_community_id();
 --
+create view tag with (security_barrier) as select tag_id,tag_name,tag_implies_id, row_number() over (order by tag_question_count desc, tag_name) tag_order from db.tag where community_id=get_community_id();
+create view mark with (security_barrier) as select tag_id,tag_name,tag_implies_id,tag_order from tag natural join db.mark where question_id=get_question_id();
+--
 create view one with (security_barrier) as
 select account_id,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_license_name,account_codelicense_name,account_has_codelicense
       ,account_image_url
@@ -101,9 +104,7 @@ create function remove_tag(tid integer) returns void language sql security defin
   select _error('invalid tag') where not exists (select 1 from tag where tag_id=tid and community_id=get_community_id());
   select _error(429,'rate limit') where (select count(1) from mark_history where account_id=get_account_id() and mark_history_at>current_timestamp-'1m'::interval)>9;
   --
-  select question.remove_tag(tag_implies_id)
-  from mark natural join tag t natural join (select tag_id tag_implies_id, tag_name parent_name from tag) z
-  where question_id=get_question_id() and tag_id=tid and tag_name like parent_name||'%' and not exists(select 1 from mark natural join tag where question_id=get_question_id() and tag_id<>tid and tag_implies_id=t.tag_implies_id);
+  select question.remove_tag(tag_id) from mark natural join tag where question_id=get_question_id() and tag_implies_id=tid;
   --
   insert into mark_history(question_id,tag_id,community_id,account_id,mark_history_is_removal)
   select question_id,tid,community_id,get_account_id(),true from mark where question_id=get_question_id() and tag_id=tid;
@@ -138,6 +139,9 @@ create function new(sid integer, title text, markdown text, lic integer, lic_orl
   --
   update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
 $$;
+
+
+
 create function new(sid integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean, tag_ids integer[])
                 returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null;
@@ -171,13 +175,45 @@ create function change(title text, markdown text) returns void language sql secu
                                          from question_history natural join (select question_id from question where account_id<>get_account_id()) z
                                          where account_id=get_account_id() and question_history_at>current_timestamp-'5m'::interval)>10;
   --
-  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown) values(get_question_id(),get_account_id(),title,markdown) returning question_id,question_history_id)
+  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select get_question_id(),get_account_id(),title,markdown
+             from question 
+             where question_id=get_question_id() and (question_title<>title or question_markdown<>markdown)
+             returning question_id,question_history_id)
     , nn as (select question_history_id,account_id from h natural join (select question_id,account_id from question) z where account_id<>get_account_id()
              union
              select question_history_id,account_id from h natural join subscription where account_id<>get_account_id())
      , n as (insert into notification(account_id) select account_id from nn returning *)
     , qn as (insert into question_notification(notification_id,question_history_id) select notification_id,question_history_id from nn natural join n)
   update account set account_notification_id = default where account_id in (select account_id from nn);
+  --
+  update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
+  update answer set answer_summary = _markdownsummary(answer_markdown) where question_id=get_question_id() and answer_summary<>_markdownsummary(answer_markdown);
+$$;
+
+
+
+create function change(title text, markdown text, tag_ids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select _error('access denied') where get_account_id() is null;
+  select _error('only author can edit this post kind') where exists (select 1 from question natural join kind where question_id=get_question_id() and not kind_can_all_edit and account_id<>get_account_id());
+  select _error(429,'rate limit') where (select count(*)
+                                         from question_history natural join (select question_id from question where account_id<>get_account_id()) z
+                                         where account_id=get_account_id() and question_history_at>current_timestamp-'5m'::interval)>10;
+  --
+  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select get_question_id(),get_account_id(),title,markdown
+             from question 
+             where question_id=get_question_id() and (question_title<>title or question_markdown<>markdown)
+             returning question_id,question_history_id)
+    , nn as (select question_history_id,account_id from h natural join (select question_id,account_id from question) z where account_id<>get_account_id()
+             union
+             select question_history_id,account_id from h natural join subscription where account_id<>get_account_id())
+     , n as (insert into notification(account_id) select account_id from nn returning *)
+    , qn as (insert into question_notification(notification_id,question_history_id) select notification_id,question_history_id from nn natural join n)
+  update account set account_notification_id = default where account_id in (select account_id from nn);
+  --
+  select question.remove_tag(tag_id) from mark where question_id=get_question_id() and tag_id not in (select unnest(tag_ids) tag_id);
+  select question.new_tag(tag_id) from unnest(tag_ids) tag_id;
   --
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
   update answer set answer_summary = _markdownsummary(answer_markdown) where question_id=get_question_id() and answer_summary<>_markdownsummary(answer_markdown);

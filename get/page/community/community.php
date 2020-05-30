@@ -164,24 +164,20 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
             <a title="<?=$question_title?>"><?=$question_title?></a>
           </div>
           <div class="bar">
-            <div class="element container shrink">
+            <div class="element container shrink tags">
               <?if($sanction_short_description){?><span class="kind element"><?=$sanction_short_description?></span><?}?>
-              <?foreach(db("select tag_id,tag_name from tag where tag_is") as $r){ extract($r);?>
-                <span class="tag element" data-question-id="<?=$question?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
-              <?}?>
-              <?if($auth){?>
-                <span class="newtag element">
-                  <div>
-                    <select id="tags" data-question-id="<?=$question?>">
-                      <option></option>
-                      <?foreach(db("select tag_id,tag_name from tag where not tag_is order by tag_question_count desc,tag_name") as $r){ extract($r);?>
-                        <option value="<?=$tag_id?>"><?=$tag_name?></option>
-                      <?}?>
-                    </select>
-                  </div>
-                  <span class="tag element">&#65291;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                </span>
-              <?}?>
+              <div id="tagbar" class="tags">
+                <?foreach(db("select tag_id,tag_name,tag_implies_id from tag where tag_is order by tag_question_count desc, tag_name") as $r){ extract($r);?>
+                  <span class="tag" data-id="<?=$tag_id?>"<?if($tag_implies_id){?> data-implies="<?=$tag_implies_id?>"<?}?>><?=$tag_name?></span>
+                <?}?>
+                <span class="tag newtag">add tag</span>
+                <input list="taglist" id="taginput" class="tag hide">
+                <datalist id="taglist">
+                  <?foreach(db("select tag_id,tag_name from tag where not tag_is order by tag_name") as $r){ extract($r);?>
+                    <option value="<?=$tag_name?>" data-id="<?=$tag_id?>">
+                  <?}?>
+                </datalist>
+              </div>
             </div>
             <div>
               <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"></span>

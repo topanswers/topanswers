@@ -154,4 +154,58 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,
     cm.focus();
     return false;
   });
+
+  try{ // tags
+    function thread(){
+      $('.tag[data-id]').each(function(){
+        var id = $(this).data('id'), rid = id;
+        function foo(b){
+          $(this).addClass('t'+id);
+          if(arguments.length===0 || b===false) $('.tag[data-implies='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
+        }
+        foo.call(this);
+      });
+    }
+    $('.newtag').click(function(){
+      $(this).addClass('hide');
+      $('#taginput').removeClass('hide').focus();
+    });
+    $('#taginput').blur(function(){
+      $(this).val('').addClass('hide');
+      $('.newtag').removeClass('hide');
+    });
+    $('#taginput').keydown(function(e){
+      if(e.which===27){
+        $(this).val('').blur();
+        return false;
+      }
+    });
+    $('#taginput').on('input',function(e){
+      function add(o){
+        const i = $('datalist option[data-id='+o.data('implies')+']:not(:disabled)');
+        const n = $('#tagbar .tag').filter(function(){ const d = $(this).data('order')||Infinity; return d>o.data('order'); }).first();
+        $('<span class="tag" data-id="'+o.data('id')+'"'+(o.data('implies')?' data-implies="'+o.data('implies')+'"':'')+' data-order="'+o.data('order')+'">'+o.val()+'</span>').insertBefore(n);
+        $('<input type="hidden" name="tags[]" value="'+o.data('id')+'">').prependTo($('#form'));
+        o.prop('disabled',true);
+        if(i.length) add(i);
+      }
+      const t = $(this), o = $('datalist option[value='+t.val()+']:not(:disabled)');
+      if(o.length){
+        add(o);
+        thread();
+        $(this).val('').blur();
+      }
+    });
+    $('#tagbar').on('mouseenter','.tag[data-id]',function(){ $('.tag.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave','.tag[data-id]',function(){ $('.thread').removeClass('thread'); });
+    $('#tagbar').on('click','.tag[data-id]',function(){
+      $('.tag[data-id].t'+$(this).data('id')).each(function(){
+        const t = $(this);
+        $('datalist option[data-id='+t.data('id')+']:disabled').prop('disabled',false);
+        $('input[name="tags[]"][value='+t.data('id')+']').remove();
+        t.remove();
+      });
+    });
+    thread();
+  }catch(e){ console.error(e); }
+
 });
