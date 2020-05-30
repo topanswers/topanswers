@@ -1,7 +1,7 @@
 <?php
-exec("find -L get/lib -maxdepth 19 -type f \( -name '*.js' -o -name '*.css' \)",$files);
-exec("find -L get/fonts -maxdepth 19 -type f \( -name '*.js' -o -name '*.css' \)",$files);
-exec("find -L get -type d \( -path get/lib -o -path get/fonts \) -prune -o \( -name '*.js' -o -name '*.css' \) -type f -print",$files);
+exec("find -L get/lib -maxdepth 19 -type f \( -name '*.js' -o -name '*.css' \) | sort -t '\n'",$files);
+exec("find -L get/fonts -maxdepth 19 -type f \( -name '*.js' -o -name '*.css' \) | sort -t '\n'",$files);
+exec("find -L get -type d \( -path get/lib -o -path get/fonts \) -prune -o \( -name '*.js' -o -name '*.css' \) -type f -print | sort -t '\n'",$files);
 $files = array_map(function($f){ return '/'.substr($f,4); },$files);
 
 foreach($files as $file) {
