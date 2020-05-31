@@ -138,7 +138,7 @@ define(['jquery'
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://PHP.TA') tokens[idx].attrSet('href','/php');
     };
   
-    md = require('markdown-it')({ linkify: true })
+    md = require('markdown-it')({ linkify: true, typographer: true })
                .use(require('markdown-it-sup'))
                .use(require('markdown-it-sub'))
                .use(require('markdown-it-emoji'))
@@ -226,7 +226,7 @@ define(['jquery'
     };
   
     md.linkify.tlds('kiwi',true).tlds('xyz',true).tlds('ta',true);
-    mdsummary = require('markdown-it')('zero').enable(['replacements','smartquotes','autolink','backticks','entity','escape','linkify','reference','emphasis','link','strikethrough','backticks'])
+    mdsummary = require('markdown-it')('zero',{ typographer: true }).enable(['replacements','smartquotes','autolink','backticks','entity','escape','linkify','reference','emphasis','link','strikethrough','backticks'])
                       .use(require('markdown-it-sup')).use(require('markdown-it-sub'))
                       .use(require('markdown-it-for-inline'),'url-fix','link_open',shortcuts);
     mdsummary.options.linkify = true;
