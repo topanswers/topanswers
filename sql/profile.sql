@@ -141,26 +141,11 @@ create function change_codelicense(id integer, later boolean) returns void langu
   update account set account_codelicense_id = id, account_permit_later_codelicense = later where account_id=get_account_id();
 $$;
 --
-create function set_se_user_id(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
+create function unset_se_user_id(sid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null or get_community_id() is null;
-  select _error('SE user id is already linked to an account') where exists(select 1 from communicant natural join account natural join selink where community_id=get_community_id() and selink_user_id=id and not account_is_imported);
-  select _error('SE user id is already set for this account') where exists(select 1 from communicant natural join selink where community_id=get_community_id() and account_id=get_account_id() and selink_user_id is not null);
-  select _ensure_communicant(get_account_id(),get_community_id());
-  --
-  with se as (update communicant
-              set communicant_votes = 0
-              where community_id=get_community_id() and exists(select 1 from selink where community_id=get_community_id() and selink_user_id=id)
-              returning account_id)
-      , d as (delete from selink where account_id=(select account_id from se) and community_id=get_community_id())
-      , i as (insert into selink(account_id,community_id,sesite_id,selink_user_id) select account_id,community_id,sesite_id,id from community natural join (select community_id,sesite_id from source where source_is_default) s natural join communicant where community_id=get_community_id() and account_id=get_account_id())
-     , ta as (update communicant
-              set communicant_votes = communicant_votes+coalesce((select communicant_votes from communicant where community_id=get_community_id() and account_id=(select account_id from se)),0)
-              where community_id=get_community_id() and account_id=get_account_id())
-      , q as (update question set account_id=get_account_id() where account_id=(select account_id from se))
-      , a as (update answer set account_id=get_account_id() where account_id=(select account_id from se))
-  select null;
+  select _error('SE user id is not already linked to this account') where not exists(select 1 from selink where community_id=get_community_id() and sesite_id=sid and account_id=get_account_id());
+  delete from selink where account_id=get_account_id() and community_id=get_community_id() and sesite_id=sid;
 $$;
---
 create function set_se_user_id(sid integer, uid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('access denied') where get_account_id() is null or get_community_id() is null;
   select _error('SE user id is already set for this account') where exists(select 1 from communicant natural join selink where community_id=get_community_id() and sesite_id=sid and account_id=get_account_id() and selink_user_id is not null);

@@ -217,16 +217,23 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <ul>
             <?foreach(db("select sesite_id,sesite_url,selink_user_id from sesite order by sesite_ordinal") as $r){ extract($r);?>
               <li>
-                <form action="//topanswers.xyz/profile" method="get">
-                  <?if($selink_user_id){?>
+                <?if($selink_user_id){?>
+                  <form action="//post.topanswers.xyz/profile" method="post">
                     <a href="<?=$sesite_url.'/users/'.$selink_user_id?>?>"><?=substr($sesite_url,8).'/users/'.$selink_user_id?></a>
-                  <?}else{?>
+                    <input type="hidden" name="action" value="unlinkse">
+                    <input type="hidden" name="community" value="<?=$community_name?>">
+                    <input type="hidden" name="sesite" value="<?=$sesite_id?>">
+                    <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
+                    <input type="submit" style="margin-left: 0;" value="unlink">
+                  </form>
+                <?}else{?>
+                  <form action="//topanswers.xyz/profile" method="get">
                     <input type="hidden" name="action" value="se">
                     <input type="hidden" name="community" value="<?=$community_name?>">
                     <input type="hidden" name="sesite" value="<?=$sesite_id?>">
                     <input type="submit" style="margin-left: 0;" value="authenticate with SE to link <?=substr($sesite_url,8)?> account">
-                  <?}?>
-                </form>
+                  </form>
+                <?}?>
               </li>
             <?}?>
           </ul>
