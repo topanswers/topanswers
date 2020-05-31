@@ -99,7 +99,10 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
   <link rel="stylesheet" href="<?=h("/global.css")?>">
   <link rel="stylesheet" href="<?=h("/header.css")?>">
   <link rel="stylesheet" href="<?=h("/post.css")?>">
-  <link rel="stylesheet" href="<?=h("/page/community/community.css").preg_replace('/^&/','?',($auth?'&auth':'').($question?'&question':''))?>">
+  <link rel="stylesheet" href="<?=h("/page/community/community.css")?>">
+  <? if ($question) { ?>
+    <link rel="stylesheet" href="<?=h('/page/community/community_question.css')?>">
+  <? } ?>
   <link rel="stylesheet" href="<?=h("/markdown.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/codemirror/codemirror.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/qp/qp.css")?>">
