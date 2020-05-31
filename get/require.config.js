@@ -4,7 +4,6 @@ var require = {
   paths: { 'jquery': 'jquery.6ad657dafdfaa495' },
   shim: {
     'markdown-it-katex.689b2993b1958946': ['katex.9460c91fb69cca2c'],
-    'select2.6b983cad5301a9a7': ['jquery'],
     'starrr.a95baf4870cd4d81': { deps: ['jquery'], exports: 'jQuery.fn.starrr' },
     'jquery.simplePagination.b892c57d7f01a4e5': { deps: ['jquery'], exports: 'jQuery.fn.pagination' },
     'paste.6bcdb4817596af13': { deps: ['jquery'], exports: 'jQuery.fn.pastableTextarea' },
@@ -129,13 +128,11 @@ var require = {
     'qp/qp.min':'qp/qp.min.1eebf353313a8d4c',
     'require':'require.04ef68a65b54ab49',
     'resizer':'resizer.acc48d85f03977b4',
-    'select2.full.min':'select2.full.min.6b983cad5301a9a7',
-    'select2':'select2.6b983cad5301a9a7',
     'starrr':'starrr.a95baf4870cd4d81',
     'vex':'vex.ce8070c89395b6ea',
-    'markdown':'../markdown.854f01d0373d0c65',
+    'markdown':'../markdown.35357edbd231ff5d',
     'navigation':'../navigation.f0ad7bc6582996ae',
-    'require.config':'../require.config.ce754ccbb11dc130',
+    'require.config':'../require.config.4c6c84e4477c84c6',
     'tio':'../tio.0984e7f3a524834f',
  } },
 };

@@ -109,7 +109,6 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
   <link rel="stylesheet" href="<?=h("/lib/katex/katex.min.css")?>">
   <?if($question_id){?>
     <link rel="stylesheet" href="<?=h("/lib/starrr.css")?>">
-    <link rel="stylesheet" href="<?=h("/lib/select2.css")?>">
   <?}?>
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <title><?=isset($_GET['room']) ? ($room_name.' - ') : (isset($_GET['q'])?$question_title.' - ':'')?><?=$community_display_name?> - <?=$l_topanswers?></title>

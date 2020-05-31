@@ -1,1 +1,0 @@
-select2.full.min.js

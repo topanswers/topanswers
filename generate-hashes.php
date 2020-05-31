@@ -23,7 +23,6 @@ var require = {
   paths: { 'jquery': 'jquery.{$hashes['/lib/jquery.js']}' },
   shim: {
     'markdown-it-katex.{$hashes['/lib/markdown-it-katex.js']}': ['katex.{$hashes['/lib/katex.js']}'],
-    'select2.{$hashes['/lib/select2.js']}': ['jquery'],
     'starrr.{$hashes['/lib/starrr.js']}': { deps: ['jquery'], exports: 'jQuery.fn.starrr' },
     'jquery.simplePagination.{$hashes['/lib/jquery.simplePagination.js']}': { deps: ['jquery'], exports: 'jQuery.fn.pagination' },
     'paste.{$hashes['/lib/paste.js']}': { deps: ['jquery'], exports: 'jQuery.fn.pastableTextarea' },
