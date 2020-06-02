@@ -57,7 +57,9 @@ if(isset($_GET['month'])){
 ?>
 <!doctype html>
 <html style="--community:<?=$community_name?>;
+             --jslang:en;
              --lang-code:<?=$community_code_language?>;
+             --l_show_more_lines:show all % lines;
              --rgb-dark:<?=$community_rgb_dark?>;
              --rgb-mid:<?=$community_rgb_mid?>;
              --rgb-light:<?=$community_rgb_light?>;
