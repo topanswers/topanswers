@@ -26,7 +26,7 @@ header .select>div:last-child>div { position: absolute; z-index: 100; display: n
 header .select.open>div:last-child>div { display: flex; min-width: 210px; max-height: 300px; overflow-y: auto; }
 header .select>div:last-child>div>div { flex: 0 0 auto; display: flex; transition: all linear 0.1s; }
 header .select>div:last-child>div>div:not(:last-child) { border-bottom: 1px solid lightgray; }
-header .select>div:last-child>div>div:hover { background: rgb(var(--rgb-light)); }
+header .select>div:last-child>div>div:hover { background: rgb(var(--rgb-light)); box-shadow: 0 0 0 1px rgb(var(--rgb-dark)) inset; }
 header .select>div:last-child>div>div>a { display: flex; color: rgb(var(--rgb-black)); line-height: 28px; }
 header .select>div:last-child>div>div>a>div { margin-right: 6px; outline: none; }
 header .select>div:last-child>div>div>a:not(:first-of-type) { font-size: 12px; padding-right: 4px; }

@@ -326,7 +326,7 @@ function h($f){
     "/fonts/source-sans-pro.css": "7128abb0cd4de792",
     "/fonts/stix2.css": "5cf141611d69835c",
     "/global.css": "ef899c7b9d24c259",
-    "/header.css": "b7e87e6d5db23cbd",
+    "/header.css": "ec5d7dc06a5ff6be",
     "/markdown.css": "f92ce042455f23a8",
     "/markdown.js": "35357edbd231ff5d",
     "/navigation.js": "f0ad7bc6582996ae",
@@ -358,7 +358,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "bb637a3f4091e44e",
     "/post.css": "61e046b3a5fd7c26",
-    "/require.config.js": "4c6c84e4477c84c6",
+    "/require.config.js": "2b999f84c160f35e",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
