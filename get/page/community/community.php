@@ -184,10 +184,15 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
             <div>
               <span class="when element" data-seconds="<?=$question_when?>" data-at="<?=$question_at_iso?>"></span>
               <span class="element">
-                <?if($question_account_is_imported){?>
-                  <span><?if($question_selink_user_id>0){?><a href="<?=$sesite_url.'/users/'.$question_selink_user_id?>"><?=$question_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a></span>
+                <?if($question_se_question_id){?>
+                  <?if($question_account_is_imported&&$question_selink_user_id>0){?>
+                    <a href="<?=$sesite_url.'/users/'.$question_selink_user_id?>"><?=$question_account_name?></a>
+                  <?}else{?>
+                    <?=$question_account_name?>
+                  <?}?>
+                  (imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id?>">from SE</a>)
                 <?}else{?>
-                  <span><?=$question_account_name?></span>
+                  <?=$question_account_name?>
                 <?}?>
               </span>
               <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="<?=$question_account_image_url?>">
@@ -319,10 +324,15 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
               <div>
                 <span class="when element" data-seconds="<?=$answer_when?>" data-at="<?=$answer_at_iso?>"></span>
                 <span class="element">
-                  <?if($answer_account_is_imported){?>
-                    <span><?if($answer_selink_user_id){?><a href="<?=$sesite_url.'/users/'.$answer_selink_user_id?>"><?=$answer_account_name?></a> <?}?>imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'/'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a></span>
+                  <?if($answer_se_answer_id){?>
+                    <?if($answer_account_is_imported&&$answer_selink_user_id>0){?>
+                      <a href="<?=$sesite_url.'/users/'.$answer_selink_user_id?>"><?=$answer_account_name?></a>
+                    <?}else{?>
+                      <?=$answer_account_name?>
+                    <?}?>
+                    (imported <a href="<?=$sesite_url.'/questions/'.$question_se_question_id.'/'.$answer_se_answer_id.'/#'.$answer_se_answer_id?>">from SE</a>)
                   <?}else{?>
-                    <span><?=$answer_account_name?></span>
+                    <?=$answer_account_name?>
                   <?}?>
                 </span>
                 <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="<?=$answer_account_image_url?>">
