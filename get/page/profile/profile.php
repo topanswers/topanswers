@@ -101,8 +101,8 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   <main>
     <fieldset>
       <legend>global settings</legend>
-      <fieldset>
-        <legend>display name</legend>
+      <fieldset id="display-name">
+        <legend>name</legend>
         <form action="//post.topanswers.xyz/profile" method="post">
           <input type="hidden" name="action" value="name">
           <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
@@ -110,7 +110,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           <input type="submit" value="save">
         </form>
       </fieldset>
-      <fieldset>
+      <fieldset id="picture">
         <legend>picture</legend>
         <div class="frame"><img class="icon" src="<?=$account_image_url?>&random=<?=time()?>"></div>
         <?if($account_has_image){?>
@@ -128,14 +128,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </form>
         <?}?>
       </fieldset>
-      <fieldset>
+      <fieldset id="link">
         <legend>link another device to this account</legend>
         <ol>
           <li>Go to https://topanswers.xyz on the other device and click 'log in'</li>
           <li>Enter this PIN (within 1 minute of generation): <input id="pin" type="button" value="generate PIN"></li>
         </ol>
       </fieldset>
-      <fieldset>
+      <fieldset id=recovery">
         <legend>account recovery</legend>
         <ul>
           <li>Your 'login key' should be kept confidential, just like a password.<span<?=isset($_GET['highlight-recovery'])?' class="highlight"':''?>> To ensure continued access to your account, please record your 'key' somewhere safe.</span></li>
@@ -151,7 +151,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </li>
         </ul>
       </fieldset>
-      <fieldset>
+      <fieldset id="license">
         <legend>default license for new posts</legend>
         <form action="//post.topanswers.xyz/profile" method="post">
           <input type="hidden" name="action" value="license">
@@ -166,7 +166,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </form>
       </fieldset>
       <fieldset>
-        <legend>default dual license for code in new posts</legend>
+        <legend id="dual-license">default dual license for code in new posts</legend>
         <form action="//post.topanswers.xyz/profile" method="post">
           <input type="hidden" name="action" value="codelicense">
           <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
@@ -182,7 +182,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     </fieldset>
     <fieldset>
       <legend>community settings</legend>
-      <fieldset>
+      <fieldset id="fonts">
         <legend>fonts</legend>
         <form action="//post.topanswers.xyz/profile" method="post">
           <input type="hidden" name="action" value="font">
@@ -212,7 +212,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </form>
       </fieldset>
       <?if(ccdb("select count(1)>0 from sesite")){?>
-        <fieldset>
+        <fieldset id="linked">
           <legend>linked accounts on Stack Exchange (<a href="/meta?q=409#a647">info</a>)</legend>
           <ul>
             <?foreach(db("select sesite_id,sesite_url,selink_user_id from sesite order by sesite_ordinal") as $r){ extract($r);?>
@@ -240,7 +240,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </fieldset>
       <?}?>
       <?if(ccdb("select count(1)>0 from community where community_id<>$1",$community_id)){?>
-        <fieldset>
+        <fieldset id="feeds">
           <legend>cross-community feeds</legend>
           <form action="//post.topanswers.xyz/profile" method="post">
             <input type="hidden" name="action" value="feeds">
@@ -264,7 +264,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </form>
         </fieldset>
       <?}?>
-      <fieldset>
+      <fieldset id="keyboard">
         <legend>soft keyboard</legend>
         <form action="//post.topanswers.xyz/profile" method="post">
           <input type="hidden" name="action" value="keyboard">
@@ -275,7 +275,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         </form>
       </fieldset>
     </fieldset>
-    <fieldset>
+    <fieldset id="activity">
       <legend>community activity</legend>
       <fieldset>
         <legend>questions</legend>

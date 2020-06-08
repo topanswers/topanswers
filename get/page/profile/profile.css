@@ -14,3 +14,5 @@ input[type="submit"] { margin-left: 16px; }
 
 table { border-collapse: collapse; }
 td,th { border: 1px solid rgb(var(--rgb-black)); white-space: nowrap; padding: 4px; }
+
+input[name="chars"] { font-family: var(--font-monospace); }
