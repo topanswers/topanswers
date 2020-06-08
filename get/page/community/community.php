@@ -418,7 +418,12 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
       </div>
     </footer>
     <div id="chat-bar" class="label container">
-      <div class="element"><a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a><?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?></div>
+      <div class="element">
+        <a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a>
+        <?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a><?}?>
+        <?if($auth&&$dev){?> / <a class="panel" data-panel="transcript" href="."><?=$l_transcript?></a><?}?>
+        <?if($auth){?> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?>
+      </div>
       <div class="element">
         <?if($auth){?>
           <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
@@ -493,6 +498,10 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
           <div id="starboard">
             <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
             <div style="flex: 1 0 0;"></div>
+          </div>
+        </div>
+        <div class="firefoxwrapper" class="panel" style="visibility: hidden; z-index: -1;">
+          <div id="transcript">
           </div>
         </div>
         <div id="notifications" class="panel" style="visibility: hidden; z-index: -1;">
