@@ -15,6 +15,11 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox','mark'],functio
   $('.markdown').renderMarkdown(promises);
   Promise.allSettled(promises).then(() => {
     $('.message').addClass('processed');
+    $('.post:not(.processed) .when').each(function(){
+      $(this).text(moment.duration($(this).data('seconds'),'seconds').humanize()+' ago');
+      $(this).attr('title',moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'Do MMM YYYY HH:mm' }));
+    });
+    $('.post').addClass('processed');
   });
   if(!$('html').data('search')){ 
     threadChat();

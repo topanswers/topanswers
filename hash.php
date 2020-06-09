@@ -354,11 +354,11 @@ function h($f){
     "/page/sample/sample.css": "94efebee41fedb5f",
     "/page/sample/sample.js": "8389916f7f1a5af3",
     "/page/transcript/transcript.css": "03420759b92f7270",
-    "/page/transcript/transcript.js": "6f39424531b83791",
+    "/page/transcript/transcript.js": "74a0cbdd783eb240",
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "d96e8c63079240b6",
     "/post.css": "61e046b3a5fd7c26",
-    "/require.config.js": "7139edc6a0b3e613",
+    "/require.config.js": "ceb5e05e6785d687",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
