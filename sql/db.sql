@@ -381,7 +381,7 @@ alter table community add foreign key(community_import_sanction_id) references s
 
 create table question(
   question_id integer generated always as identity primary key
-, community_id integer not null references community
+, community_id integer not null references community deferrable initially deferred
 , account_id integer not null references account
 , question_at timestamptz not null default current_timestamp
 , question_title text not null check (length(question_title) between 5 and 200)
@@ -408,8 +408,8 @@ create table question(
 , unique (community_id,question_se_question_id)
 , unique (community_id,question_id,kind_id,sanction_id)
 , sanction_id integer references sanction not null
-, foreign key (community_id,question_room_id) references room(community_id,room_id)
-, foreign key (community_id,kind_id,sanction_id) references sanction(community_id,kind_id,sanction_id)
+, foreign key (community_id,question_room_id) references room(community_id,room_id) deferrable initially deferred
+, foreign key (community_id,kind_id,sanction_id) references sanction(community_id,kind_id,sanction_id) deferrable initially deferred
 );
 create unique index question_rate_limit_ind on question(account_id,question_at);
 create unique index question_se_question_id_ind on question(community_id,question_sesite_id,question_se_question_id);
@@ -456,10 +456,10 @@ create table answer(
 , answer_permit_later_license boolean default false not null
 , answer_permit_later_codelicense boolean default false not null
 , community_id integer not null references community
-, kind_id integer not null references kind
-, sanction_id integer not null references community
+, kind_id integer not null references kind deferrable initially deferred
+, sanction_id integer not null references sanction deferrable initially deferred
 , label_id integer references label
-, foreign key (question_id,community_id,kind_id,sanction_id) references question(question_id,community_id,kind_id,sanction_id)
+, foreign key (question_id,community_id,kind_id,sanction_id) references question(question_id,community_id,kind_id,sanction_id) deferrable initially deferred
 , foreign key (kind_id,label_id) references label(kind_id,label_id)
 );
 create unique index answer_rate_limit_ind on answer(account_id,answer_at);

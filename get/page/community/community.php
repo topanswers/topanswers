@@ -467,6 +467,9 @@ $cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(i
               <?}?>
             </div>
           </div>
+          <?if($dev && 1===2){?>
+            <a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>
+          <?}?>
           <?if($auth){?>
             <div id="active-users">
               <?$ch = curl_init('http://127.0.0.1/activeusers?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>

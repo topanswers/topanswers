@@ -97,7 +97,7 @@ define(['markdown','moment','js.cookie']
         }
       });
       $('#taginput').on('input',function(e){
-        const t = $(this), o = $('datalist option[value='+t.val()+']:not(:disabled)');
+        const t = $(this), o = $('datalist option[value="'+t.val()+'"]:not(:disabled)');
         if(o.length){
           t.val('');
           $.post({ url: '//post.topanswers.xyz/question', data: { id: $('html').css('--question'), tagid: o.data('id'), action: 'new-tag' }, xhrFields: { withCredentials: true } }).then(function(){ window.location.reload(); });
@@ -941,7 +941,7 @@ define(['markdown','moment','js.cookie']
   $('a.license').click(function(){ $(this).hide().next('.element').show(); return false; });
   let gettingchat = false;
   setTimeout(function(){
-    $('#chat>.firefoxwrapper').on('scroll',_.debounce(function(){
+    $('#chat>.firefoxwrapper').on('scroll',_.throttle(function(){
       const f = $(this), b = (f.prop('clientHeight')>=f.prop('scrollHeight')) || ((f.scrollTop()-f[0].scrollHeight+f[0].offsetHeight) > -5);
 
       if(!gettingchat){
@@ -960,11 +960,27 @@ define(['markdown','moment','js.cookie']
               });
             },'html');
           });
-        }else{
-          f.toggleClass('follow',b);
-          if(b) f.removeClass('newscroll');
         }
       }
+
+      f.toggleClass('follow',b);
+      if(b) f.removeClass('newscroll');
+
+      /*
+      let start = $('#minimap>img')[0].naturalHeight, end = 0;
+      $('#messages>.message').each(function(){
+        const t = $(this);
+        //t.find('.who').text(Math.round(t.position().top)+' : '+Math.round($('#chat>.firefoxwrapper').innerHeight() - t.position().top) + ' : ' + t.data('days-ago'));
+        if( (($('#chat>.firefoxwrapper').innerHeight() - t.position().top) < 0) && (!$('#messages').parent().hasClass('follow')) ) end = Math.max(end,t.data('days-ago'));
+        if(t.position().top<0) start = Math.min(start,t.data('days-ago'));
+      });
+
+      $('#minimap>div').css('bottom',(end*100/$('#minimap>img')[0].naturalHeight)+'%').css('height',((start-end)*100/$('#minimap>img')[0].naturalHeight)+'%');
+
+      //console.log('start: '+start+', end: '+end);
+      //console.log('bottomcss: '+(end*100/$('#minimap>img')[0].naturalHeight)+'%'+', height: '+((start-end)*100/$('#minimap>img')[0].naturalHeight)+'%');
+      */
+
     },10)).trigger('scroll');
   },1000);
   $('#chat').on('click','a.reply[href^="#"]', function(){

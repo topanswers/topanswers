@@ -51,6 +51,10 @@ a[data-lightbox] img { cursor: zoom-in; }
 #chat-panels { display: flex; position: relative; flex: 1 1 auto; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
 #chat-panels>div { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
 
+#minimap { position: relative; }
+#minimap>div { position: absolute; left: 0; right: 0; bottom: 0; height: 1; border: 1px solid rgb(var(--rgb-highlight)); border-width: 1px 0; background: rgba(var(--rgb-highlight),0.2); }
+#minimap>img { width: 22px; border: 1px solid rgb(var(--rgb-dark)); border-width: 0 1px; height: 100%; }
+
 #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: flex; visibility: hidden; flex-direction: column; scroll-behavior: smooth; }
 #notifications>hr { margin: 14px 6px; border: 1px solid rgb(var(--rgb-dark)); }
 #more-notifications { display: block; text-align: center; font-size: 12px; margin: 10px;}
@@ -176,4 +180,5 @@ a[data-lightbox] img { cursor: zoom-in; }
   .pages select { display: none; }
   [data-rz-handle] { display: none; }
   #search { flex: 0 1 570px; }
+  #minimap>img { width: 9px; }
 }

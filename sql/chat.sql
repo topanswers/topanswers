@@ -9,6 +9,27 @@ select community_language,room_id,room_can_chat
 from api._room natural join api._community
      natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
 where room_id=get_room_id();
+
+create view one2 with (security_barrier) as
+select community_language,room_id,room_can_chat
+     , room_derived_name, room_derived_name room_name
+     , (with m as (select min(chat_at)::date first_date from db.chat c where c.room_id=r.room_id)
+           , d as (select first_date+generate_series(0,current_date-first_date) the_date from m)
+           , h as (select the_date, generate_series(0,23) the_hour from d)
+           , c as (select the_date, the_hour, least(ceil((cn * 1000 / (max(cn) over ())))::integer,255) scaled from (select chat_at::date the_date, extract('hour' from chat_at) the_hour, count(1) cn from db.chat c where c.room_id=r.room_id group by the_date,the_hour) z)
+           , p as (select the_date, the_hour, 255-coalesce(scaled,0) brightness from h natural left join c)
+        select decode('424d'||regexp_replace(lpad(to_hex((select count(1)+54 from d)),8,'0'),'(\w\w)(\w\w)(\w\w)(\w\w)','\4\3\2\1')||'0000'||'0000'||'36040000'||
+                      '28000000'||'18000000'||regexp_replace(lpad(to_hex((select count(1) from d)),8,'0'),'(\w\w)(\w\w)(\w\w)(\w\w)','\4\3\2\1')||'0100'||'0800'||'00000000'||'00000000'||'00000000'||'00000000'||'00000000'||'00000000'||
+                      (select string_agg(
+                        lpad(to_hex((get_byte(community_dark_shade,2)+i*(get_byte(community_light_shade,2)-get_byte(community_dark_shade,2))/256)::integer),2,'0')||
+                        lpad(to_hex((get_byte(community_dark_shade,1)+i*(get_byte(community_light_shade,1)-get_byte(community_dark_shade,1))/256)::integer),2,'0')||
+                        lpad(to_hex((get_byte(community_dark_shade,0)+i*(get_byte(community_light_shade,0)-get_byte(community_dark_shade,0))/256)::integer),2,'0')||
+                        '00','') from generate_series(0,255) i)||
+                      (select string_agg(lpad(to_hex(brightness),2,'0'),'' order by the_date desc, the_hour) from p)
+                     ,'hex')) room_bitmap
+from api._room r natural join api._community natural join db.community
+     natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
+where room_id=get_room_id();
 --
 --
 create function login_room(uuid,integer) returns boolean language sql security definer as $$select * from api.login_room($1,$2);$$;
