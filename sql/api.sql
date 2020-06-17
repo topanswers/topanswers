@@ -113,20 +113,29 @@ from (select community_id,community_name,community_dark_shade,community_mid_shad
 create view _question with (security_barrier) as
 select question_id,community_id
      , question_crew_flags>0 or (question_crew_flags=0 and question_flags>0) question_is_deleted
-from db.question natural join _community
+     , case when communicant_is_post_flag_crew then room_chat_count
+            when get_account_id() is not null then room_chat_count-room_deleted_chat_count+coalesce(participant_deleted_chat_count,0)
+            else room_chat_count-room_deleted_chat_count-room_flagged_chat_count end question_visible_chat_count
+from db.question natural join _community natural join (select room_question_id question_id, room_id,room_chat_count,room_flagged_chat_count,room_deleted_chat_count from db.room) r
      natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
+     natural left join (select room_id,participant_deleted_chat_count from db.participant where account_id=get_account_id()) p
 where communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id() is not null or question_flags=0) and question_crew_flags=0) or account_id=get_account_id();
 --
 create view _room with (security_barrier) as
 select room_id,community_id,room_can_chat
      , coalesce(question_title,room_name,community_display_name||' Chat') room_derived_name
      , case when room_image_hash is null then '/roomicon?id='||room_id else '/image?hash='||encode(room_image_hash,'hex') end room_image_url
-from (select room_id,community_id,room_name,room_question_id,room_image_hash
+     , case when communicant_is_post_flag_crew then room_chat_count
+            when get_account_id() is not null then room_chat_count-room_deleted_chat_count+coalesce(participant_deleted_chat_count,0)
+            else room_chat_count-room_deleted_chat_count-room_flagged_chat_count end room_visible_chat_count
+from (select room_id,community_id,room_name,room_question_id,room_image_hash,room_chat_count,room_flagged_chat_count,room_deleted_chat_count
            , get_account_id() is not null and (room_type='public' or account_id is not null) room_can_chat
       from db.room natural left join (select * from db.writer where account_id=get_account_id()) a
       where room_type<>'private' or account_id is not null) r
      natural join (select community_id,community_display_name from api._community natural join db.community) c
      natural left join (select question_id room_question_id,question_title, question_room_id room_id from db.question natural join api._question) q
+     natural left join (select room_id,participant_deleted_chat_count from db.participant where account_id=get_account_id()) p
+     natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) t
 where r.room_question_id is null or question_title is not null;
 --
 create view _answer with (security_barrier) as
@@ -260,34 +269,34 @@ begin
             where n.nspname='api' and proname!~'^_' );
 end$$;
 --
-\i ~/git/sql/q.sql
-\i ~/git/sql/transcript.sql
-\i ~/git/sql/chat.sql
-\i ~/git/sql/notification.sql
-\i ~/git/sql/community.sql
-\i ~/git/sql/questions.sql
-\i ~/git/sql/room.sql
-\i ~/git/sql/question.sql
-\i ~/git/sql/profile.sql
-\i ~/git/sql/answer.sql
-\i ~/git/sql/upload.sql
-\i ~/git/sql/sitemap.sql
-\i ~/git/sql/roomicon.sql
-\i ~/git/sql/identicon.sql
-\i ~/git/sql/question-history.sql
-\i ~/git/sql/answer-history.sql
-\i ~/git/sql/chat-history.sql
-\i ~/git/sql/starboard.sql
-\i ~/git/sql/import.sql
-\i ~/git/sql/index.sql
-\i ~/git/sql/poll.sql
-\i ~/git/sql/private.sql
-\i ~/git/sql/duplicate.sql
-\i ~/git/sql/communityicon.sql
-\i ~/git/sql/navigation.sql
-\i ~/git/sql/user.sql
-\i ~/git/sql/activerooms.sql
-\i ~/git/sql/pinnedrooms.sql
-\i ~/git/sql/activeusers.sql
+\ir q.sql
+\ir transcript.sql
+\ir chat.sql
+\ir notification.sql
+\ir community.sql
+\ir questions.sql
+\ir room.sql
+\ir question.sql
+\ir profile.sql
+\ir answer.sql
+\ir upload.sql
+\ir sitemap.sql
+\ir roomicon.sql
+\ir identicon.sql
+\ir question-history.sql
+\ir answer-history.sql
+\ir chat-history.sql
+\ir starboard.sql
+\ir import.sql
+\ir index.sql
+\ir poll.sql
+\ir private.sql
+\ir duplicate.sql
+\ir communityicon.sql
+\ir navigation.sql
+\ir user.sql
+\ir activerooms.sql
+\ir pinnedrooms.sql
+\ir activeusers.sql
 --
 commit;

@@ -146,6 +146,9 @@ create table room(
 , room_latest_chat_id bigint
 , room_question_id integer -- references question deferrable initially deferred
 , room_image_hash bytea check(length(room_image_hash)=32)
+, room_chat_count integer default 0 not null
+, room_flagged_chat_count integer default 0 not null
+, room_deleted_chat_count integer default 0 not null
 , unique (community_id,room_id)
 );
 create unique index room_latest_ind on room(room_id) include(room_latest_chat_id) where room_latest_chat_id is not null;
@@ -292,6 +295,8 @@ create table participant(
 , account_id integer references account
 , participant_latest_chat_at timestamptz not null default current_timestamp
 , participant_chat_count integer default 0 not null
+, participant_flagged_chat_count integer default 0 not null
+, participant_deleted_chat_count integer default 0 not null
 , primary key (room_id,account_id)
 );
 create index participant_latest on participant(room_id,participant_latest_chat_at);

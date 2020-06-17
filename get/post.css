@@ -2,9 +2,10 @@
 .post:not(.processed) { opacity: 0; }
 .post:not(:hover) .hover { display: none; }
 .post.deleted, .post.deleted>.markdown, .post .answers .bar.deleted { background: linear-gradient(rgba(var(--rgb-warning),0.13),rgba(var(--rgb-warning),0.13)), rgb(var(--rgb-white)); }
-.post .stars { font-size: 12px; margin: 2px; color: rgb(var(--rgb-dark)); white-space: nowrap; }
-.post .stars>:first-child { margin-right: 1px; }
-.post .stars>i { margin: 0; }
+.post .corner { font-size: 12px; margin: 2px; color: rgb(var(--rgb-dark)); white-space: nowrap; }
+.post .corner>:first-child { margin-right: 2px; }
+.post .corner>i { margin: 0; }
+.post span.corner+span.corner { margin-left: 4px; }
 .post .title { display: flex; font-size: 18px; }
 .post .title>a { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 6px 26px 0 6px; text-decoration: none; color: rgb(var(--rgb-black)); white-space: nowrap; }
 .post .title i.highlight { color: rgb(var(--rgb-highlight)); }

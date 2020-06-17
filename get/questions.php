@@ -21,7 +21,7 @@ extract(cdb("select account_id,community_name,community_language
                   , (select coalesce(jsonb_agg(z order by question_ordinal),'[]'::jsonb)
                      from (select question_id,question_ordinal,question_count,question_at,question_change_at,question_change,question_is_answered,question_title,question_votes,question_votes_from_me
                                  ,question_account_id,question_account_name,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_communicant_votes,question_is_imported
-                                 ,question_account_image_url
+                                 ,question_account_image_url,question_visible_chat_count
                                  ,community_id,community_name,community_display_name,community_my_power,community_image_url
                                  ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                                  ,sanction_short_description
@@ -54,10 +54,14 @@ include '../lang/questions.'.$o_community_language.'.php';
        data-of="<?=$question_count?>">
     <div class="title">
       <a href="/<?=$community_name?>?q=<?=$question_id?>"><span title="<?=$question_title?>"><?=$question_title?></span></a>
+      <?if($question_visible_chat_count){?>
+        <span class="corner" title="<?=$l_comments?>: <?=$l_num($question_visible_chat_count)?>">
+          <span><?=$l_num($question_visible_chat_count)?></span><i class="element fa fa-comments"></i>
+        </span>
+      <?}?>
       <?if($question_votes){?>
-        <span class="stars" title="<?=$l_stars?>: <?=$l_num($question_votes)?>">
-          <span><?=$l_num($question_votes)?></span>
-          <i class="element stars fa fa-star<?=(($question_account_id!==$o_account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>"></i>
+        <span class="corner" title="<?=$l_stars?>: <?=$l_num($question_votes)?>">
+          <span><?=$l_num($question_votes)?></span><i class="element fa fa-star<?=(($question_account_id!==$o_account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>"></i>
         </span>
       <?}?>
     </div>

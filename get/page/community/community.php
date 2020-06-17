@@ -53,7 +53,7 @@ $jslang = substr($community_language,0,1).substr(strtok($community_language,'-')
 $question = $_GET['q']??'0';
 $room = $room_id;
 $canchat = $room_can_chat;
-$cookies = (isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; ':'').(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':'').(isset($_COOKIE['pagesize'])?'pagesize='.$_COOKIE['pagesize'].'; ':'');
+$cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'').(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':'').(isset($_COOKIE['pagesize'])?'pagesize='.$_COOKIE['pagesize'].'; ':'');
 //ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>

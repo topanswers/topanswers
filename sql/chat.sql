@@ -202,7 +202,7 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
   --
   with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
              select community_id,get_room_id(),get_account_id(),msg,replyid from room where room_id=get_room_id() returning community_id,room_id,chat_id)
-    , rm as (update room r set room_latest_chat_id=i.chat_id from i where r.room_id=i.room_id)
+    , rm as (update room r set room_latest_chat_id=i.chat_id, room_chat_count = room_chat_count+1 from i where r.room_id=i.room_id)
      , h as (insert into chat_history(chat_id,chat_history_markdown) select chat_id,msg from i)
     , aa as (select account_id from (select account_id from chat where chat_id=replyid union select unnest(pingids)) a where account_id<>get_account_id())
      , n as (insert into notification(account_id) select account_id from aa returning *)
@@ -255,11 +255,27 @@ create function flag(id bigint, direction integer) returns bigint language sql s
   select _ensure_communicant(get_account_id(),get_community_id());
   --
   with d as (delete from chat_flag where chat_id=id and account_id=get_account_id() returning *)
-     , q as (update chat set chat_active_flags = chat_active_flags-abs(d.chat_flag_direction)
+     , u as (update chat set chat_active_flags = chat_active_flags-abs(d.chat_flag_direction)
                            , chat_flags = chat_flags-(case when d.chat_flag_is_crew then 0 else d.chat_flag_direction end)
                            , chat_crew_flags = chat_crew_flags-(case when d.chat_flag_is_crew then d.chat_flag_direction else 0 end)
              from d
-             where chat.chat_id=d.chat_id)
+             where chat.chat_id=d.chat_id
+             returning chat_flags,chat_crew_flags)
+     , x as (select room_id,account_id
+                  , case when c.chat_crew_flags>0 then -1 else 0 end + case when u.chat_crew_flags>0 then 1 else 0 end deleted_delta
+                  , case when c.chat_flags>0 and c.chat_crew_flags=0 then -1 else 0 end + case when u.chat_flags>0 and u.chat_crew_flags=0 then 1 else 0 end flagged_delta
+             from chat c cross join u
+             where chat_id=id)
+     , p as (update participant p
+             set participant_deleted_chat_count = participant_deleted_chat_count + deleted_delta
+               , participant_flagged_chat_count = participant_flagged_chat_count + flagged_delta
+             from x
+             where p.account_id=x.account_id and p.room_id=x.room_id)
+     , r as (update room p
+             set room_deleted_chat_count = room_deleted_chat_count + deleted_delta
+               , room_flagged_chat_count = room_flagged_chat_count + flagged_delta
+             from x
+             where p.room_id=x.room_id)
   select null;
   --
   with i as (insert into chat_flag(chat_id,account_id,chat_flag_direction,chat_flag_is_crew)
@@ -273,19 +289,28 @@ create function flag(id bigint, direction integer) returns bigint language sql s
                            , chat_change_id = default
              from i
              where chat.chat_id=i.chat_id
-             returning chat_change_id)
+             returning chat_change_id,chat_flags,chat_crew_flags)
+     , x as (select room_id,account_id
+                  , case when c.chat_crew_flags>0 then -1 else 0 end + case when u.chat_crew_flags>0 then 1 else 0 end deleted_delta
+                  , case when c.chat_flags>0 and c.chat_crew_flags=0 then -1 else 0 end + case when u.chat_flags>0 and u.chat_crew_flags=0 then 1 else 0 end flagged_delta
+             from chat c cross join u
+             where chat_id=id)
+     , p as (update participant p
+             set participant_deleted_chat_count = participant_deleted_chat_count + deleted_delta
+               , participant_flagged_chat_count = participant_flagged_chat_count + flagged_delta
+             from x
+             where p.account_id=x.account_id and p.room_id=x.room_id)
+     , r as (update room p
+             set room_deleted_chat_count = room_deleted_chat_count + deleted_delta
+               , room_flagged_chat_count = room_flagged_chat_count + flagged_delta
+             from x
+             where p.room_id=x.room_id)
      , h as (insert into chat_flag_history(chat_id,account_id,chat_flag_history_direction,chat_flag_history_is_crew)
              select chat_id,account_id,chat_flag_direction,chat_flag_is_crew from i
              returning chat_flag_history_id,chat_flag_history_direction)
-/*    , nn as (select chat_flag_history_id,account_id
-             from h cross join (select account_id from communicant where community_id=get_community_id() and communicant_is_post_flag_crew and account_id<>get_account_id()) c
-             where chat_flag_history_direction>0)
-     , n as (insert into notification(account_id) select account_id from nn returning *)
-   , qfn as (insert into chat_flag_notification(notification_id,chat_flag_history_id) select notification_id,chat_flag_history_id from nn natural join n)*/
      , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
              select get_account_id(),get_room_id(),max(chat_id) from chat where room_id=get_room_id()
              on conflict on constraint listener_pkey do update set listener_latest_read_chat_id=excluded.listener_latest_read_chat_id)
---  update account set account_notification_id = default where account_id in (select account_id from n);
   select chat_change_id from u;
 $$;
 --
