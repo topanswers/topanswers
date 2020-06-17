@@ -70,8 +70,8 @@ include '../lang/chat.'.$o_community_language.'.php';
           <?if($account_is_me){?>
             <span class="button-group show">
               <a href="/transcript?room=<?=$_GET['room']?>&id=<?=$chat_id?>#c<?=$chat_id?>" class="fa fa-link" title="permalink"></a>
-              <i></i>
               <?if($chat_editable_age){?><i class="fa fa-edit" title="edit"></i><?}else if($chat_has_history){?><a href="/chat-history?id=<?=$chat_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
+              <i class="<?=$i_flagged?'me ':''?> fa fa-flag<?=$i_flagged?'':'-o'?>" title="flag"></i>
               <i></i>
             </span>
           <?}else{?>

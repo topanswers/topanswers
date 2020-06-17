@@ -246,7 +246,6 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
 $$;
 --
 create function flag(id bigint, direction integer) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('cant flag own message') where exists(select 1 from chat where chat_id=id and account_id=get_account_id());
   select _error('access denied') where get_account_id() is null;
   select _error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
   select _error('invalid flag direction') where direction not in(-1,0,1);
