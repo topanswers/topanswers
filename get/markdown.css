@@ -19,6 +19,7 @@
 .markdown td, .markdown th { font-family: var(--font-table); font-size: 90%; white-space: pre; border: 1px solid rgb(var(--rgb-black)); padding: 3px 5px; text-align: left; }
 .markdown blockquote { padding: 8px; margin: 16px 0; border: 1px solid rgba(var(--rgb-dark),0.5); border-left: 3px solid rgb(var(--rgb-dark));
                        box-shadow: 1px -1px 1px rgba(var(--rgb-dark),0.2), 1px 1px 1px rgba(var(--rgb-dark),0.2); }
+.markdown blockquote.error { border-color: rgba(var(--rgb-warning),1); }
 .markdown .quoted-message>blockquote { box-shadow: unset; }
 .markdown blockquote>:first-child { margin-top: 0; }
 .markdown blockquote>:last-child { margin-bottom: 0; }

@@ -130,9 +130,9 @@ var require = {
     'resizer':'resizer.acc48d85f03977b4',
     'starrr':'starrr.a95baf4870cd4d81',
     'vex':'vex.ce8070c89395b6ea',
-    'markdown':'../markdown.167217915f5c0173',
+    'markdown':'../markdown.6a39189efca8e502',
     'navigation':'../navigation.f0ad7bc6582996ae',
-    'require.config':'../require.config.0035138619aecb10',
+    'require.config':'../require.config.df6344ececeb9feb',
     'tio':'../tio.0984e7f3a524834f',
  } },
 };

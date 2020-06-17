@@ -174,6 +174,18 @@ define(['jquery'
                      return '</div>\n';
                    }
                  } })
+               .use(require('markdown-it-container'), 'error', {
+                 validate: function(params) {
+                   return params.trim().match(/^error$/);
+                 },
+                 render: function (tokens, idx) {
+                   var m = tokens[idx].info.trim().match(/^tio ([a-zA-Z0-9@\/]+)$/);
+                   if (tokens[idx].nesting === 1) {
+                     return '<blockquote class="error">';
+                   } else {
+                     return '</blockquote>\n';
+                   }
+                 } })
                .use(require('markdown-it-inject-linenumbers'))
                .use(require('markdown-it-object'),'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens,idx){
                  var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/);
