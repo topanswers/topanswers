@@ -5,7 +5,7 @@ define(['jquery'
        ,'codemirror/lib/codemirror'
        ,'codemirror/mode/meta','codemirror/addon/mode/overlay','codemirror/addon/runmode/runmode','codemirror/addon/runmode/colorize','codemirror/addon/display/placeholder'
        ,'katex'
-       ,'markdown-it','markdown-it-sup','markdown-it-sub','markdown-it-emoji','markdown-it-deflist','markdown-it-footnote','markdown-it-abbr','markdown-it-container'
+       ,'markdown-it','markdown-it-sup','markdown-it-sub','markdown-it-emoji','markdown-it-deflist','markdown-it-footnote','markdown-it-abbr','markdown-it-errorfence','markdown-it-container'
        ,'markdown-it-inject-linenumbers','markdown-it-object','markdown-it-codefence','markdown-it-codeinput','markdown-it-for-inline','markdown-it-katex','markdownItAnchor','markdownItTocDoneRight'
        ,'clipboard'
        ,'promise-all-settled'
@@ -145,6 +145,7 @@ define(['jquery'
                .use(require('markdown-it-deflist'))
                .use(require('markdown-it-footnote'))
                .use(require('markdown-it-abbr'))
+               .use(require('markdown-it-errorfence'))
                .use(require('markdown-it-container'), 'quote', {
                  validate: function(params) {
                    return params.trim().match(/^quote ([1-9][0-9]*) (-?[1-9][0-9]*) ([1-9][0-9]*|[0-9a-f]{64}) ([1-9][0-9]{0,2},[1-9][0-9]{0,2},[1-9][0-9]{0,2}) ([1-9][0-9]{0,2},[1-9][0-9]{0,2},[1-9][0-9]{0,2})$/);
@@ -172,18 +173,6 @@ define(['jquery'
                               '<a href="https://tio.run/##'+m[1]+'">tio</a>';
                    } else {
                      return '</div>\n';
-                   }
-                 } })
-               .use(require('markdown-it-container'), 'error', {
-                 validate: function(params) {
-                   return params.trim().match(/^error$/);
-                 },
-                 render: function (tokens, idx) {
-                   var m = tokens[idx].info.trim().match(/^tio ([a-zA-Z0-9@\/]+)$/);
-                   if (tokens[idx].nesting === 1) {
-                     return '<blockquote class="error">';
-                   } else {
-                     return '</blockquote>\n';
                    }
                  } })
                .use(require('markdown-it-inject-linenumbers'))
