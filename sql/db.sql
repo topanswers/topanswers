@@ -2,6 +2,10 @@ drop schema public;
 
 create schema db;
 
+create extension "plperl";
+revoke usage on language plperl from public;
+revoke usage on language plpgsql from public;
+
 create schema x_uuid_ossp;
 create extension "uuid-ossp" schema x_uuid_ossp;
 
@@ -11,19 +15,15 @@ create extension "pg_trgm" schema x_pg_trgm;
 create schema x_btree_gin;
 create extension "btree_gin" schema x_btree_gin;
 
-create schema x_pgcrypto;
-create extension "pgcrypto" schema x_pgcrypto;
-
 create schema x_pg_stat_statements;
 create extension "pg_stat_statements" schema x_pg_stat_statements;
 
 select current_database() \gset
-alter database :current_database set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
-set search_path to '$user',db,x_pgcrypto,x_pg_trgm,x_btree_gin;
+alter database :current_database set search_path to '$user',db,x_pg_trgm,x_btree_gin;
+set search_path to '$user',db,x_pg_trgm,x_btree_gin;
 
 create table one(
-  one_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
-, one_stackapps_secret text default '' not null
+  one_stackapps_secret text default '' not null
 , one_image_hash bytea check(length(one_image_hash)=32)
 );
 create unique index one_only_ind on one((1));
@@ -90,7 +90,6 @@ create table account(
 , account_codelicense_id integer references codelicense default 1 not null
 , account_notification_id integer generated always as identity unique
 , account_is_imported boolean default false not null
-, account_encryption_key bytea default x_pgcrypto.gen_random_bytes(32) not null
 , account_permit_later_license boolean default false not null
 , account_permit_later_codelicense boolean default false not null
 , account_image_hash bytea check(length(account_image_hash)=32)

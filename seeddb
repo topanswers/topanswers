@@ -8,7 +8,7 @@ echo 'creating fresh database'
 createdb -U postgres -T template0 seed                                                                                                                                              
 
 echo 'creating tables and indexes'
-psql seed postgres --set ON_ERROR_STOP=on -bq1f ~/git/sql/db.sql
+psql seed postgres --set ON_ERROR_STOP=on -bq1f sql/db.sql
 
 echo 'dropping constraints that get in the way'
 psql seed postgres --set ON_ERROR_STOP=on -qc "alter table community drop constraint community_community_import_sanction_id_fkey"
@@ -18,11 +18,11 @@ psql seed postgres --set ON_ERROR_STOP=on -qc "alter table community drop constr
 
 for t in one sesite font license codelicense kind label account community source room communicant syndicate sanction tag; do
   echo "loadind data and setting identity sequences for table $t"
-  psql seed postgres -q -c "\copy $t from '~/git/sql/seed/$t'" \
+  psql seed postgres -q -c "\copy $t from 'sql/seed/$t'" \
                         -c "do \$\$ begin execute ( select coalesce(string_agg('select setval(pg_get_serial_sequence(''$t'','''||attname||'''), max('||attname||')) from $t;',E'\n'),'select;') from pg_attribute where attrelid='$t'::regclass and attidentity='a' ); end\$\$;"
 done
 
 echo 'creating api'
-PGOPTIONS='--client-min-messages=warning' psql seed postgres --set ON_ERROR_STOP=on -bqf ~/git/sql/api.sql
+PGOPTIONS='--client-min-messages=warning' psql seed postgres --set ON_ERROR_STOP=on -bqf sql/api.sql
 
 echo 'finished'

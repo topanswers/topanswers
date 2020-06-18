@@ -1,9 +1,9 @@
 #!/bin/bash
-psql postgres postgres -c "\copy (select '\x0000000000000000000000000000000000000000000000000000000000000000','',one_image_hash from one) to '~/git/sql/seed/one'"
-psql postgres postgres -c "\copy (select sesite_id,sesite_url from sesite order by sesite_id) to '~/git/sql/seed/sesite'"
-psql postgres postgres -c "\copy (select font_id,font_name,font_is_monospace from font order by font_id) to '~/git/sql/seed/font'"
-psql postgres postgres -c "\copy (select license_id,license_name,license_href,license_is_versioned,license_description from license order by license_id) to '~/git/sql/seed/license'"
-psql postgres postgres -c "\copy (select codelicense_id,codelicense_name,codelicense_is_versioned,codelicense_description from codelicense order by codelicense_id) to '~/git/sql/seed/codelicense'"
+psql postgres postgres -c "\copy (select '',one_image_hash from one) to 'sql/seed/one'"
+psql postgres postgres -c "\copy (select sesite_id,sesite_url from sesite order by sesite_id) to 'sql/seed/sesite'"
+psql postgres postgres -c "\copy (select font_id,font_name,font_is_monospace from font order by font_id) to 'sql/seed/font'"
+psql postgres postgres -c "\copy (select license_id,license_name,license_href,license_is_versioned,license_description from license order by license_id) to 'sql/seed/license'"
+psql postgres postgres -c "\copy (select codelicense_id,codelicense_name,codelicense_is_versioned,codelicense_description from codelicense order by codelicense_id) to 'sql/seed/codelicense'"
 
 psql postgres postgres -c "\copy (select kind_id
                                        , kind_can_all_edit
@@ -17,9 +17,9 @@ psql postgres postgres -c "\copy (select kind_id
                                        , kind_questions_by_community
                                        , kind_answers_by_community
                                  from kind
-                                 order by kind_id) to '~/git/sql/seed/kind'"
+                                 order by kind_id) to 'sql/seed/kind'"
 
-psql postgres postgres -c "\copy (select label_id,kind_id,label_name,label_code_language,label_tio_language,label_url from label order by label_id) to '~/git/sql/seed/label'"
+psql postgres postgres -c "\copy (select label_id,kind_id,label_name,label_code_language,label_tio_language,label_url from label order by label_id) to 'sql/seed/label'"
 
 psql postgres postgres -c "\copy (select account_id
                                        , account_name
@@ -32,13 +32,12 @@ psql postgres postgres -c "\copy (select account_id
                                        , 1
                                        , account_notification_id
                                        , account_is_imported
-                                       , '\x0000000000000000000000000000000000000000000000000000000000000000'
                                        , account_permit_later_license
                                        , account_permit_later_codelicense
                                        , account_image_hash
                                   from account
                                   where account_id in (select community_wiki_account_id from community)
-                                  order by account_id) to '~/git/sql/seed/account'"
+                                  order by account_id) to 'sql/seed/account'"
 
 psql postgres postgres -c "\copy (select community_id
                                         ,community_name
@@ -68,12 +67,12 @@ psql postgres postgres -c "\copy (select community_id
                                         ,community_keyboard
                                   from community
                                   where community_type='public'
-                                  order by community_id) to '~/git/sql/seed/community'"
+                                  order by community_id) to 'sql/seed/community'"
 
 psql postgres postgres -c "\copy (select community_id,sesite_id,source_is_default
                                   from source natural join community
                                   where community_type='public'
-                                  order by community_id,sesite_id) to '~/git/sql/seed/source'"
+                                  order by community_id,sesite_id) to 'sql/seed/source'"
 
 psql postgres postgres -c "\copy (select room_id
                                         ,community_id
@@ -83,9 +82,12 @@ psql postgres postgres -c "\copy (select room_id
                                         ,null
                                         ,room_question_id
                                         ,room_image_hash
+                                        ,0
+                                        ,0
+                                        ,0
                                   from room natural join community
                                   where community_type='public' and room_type<>'private' and room_question_id is null
-                                  order by room_id) to '~/git/sql/seed/room'"
+                                  order by room_id) to 'sql/seed/room'"
 
 psql postgres postgres -c "\copy (select account_id
                                         ,community_id
@@ -97,13 +99,13 @@ psql postgres postgres -c "\copy (select account_id
                                         ,''
                                   from communicant natural join community
                                   where community_type='public' and account_id=community_wiki_account_id
-                                  order by account_id,community_id) to '~/git/sql/seed/communicant'"
+                                  order by account_id,community_id) to 'sql/seed/communicant'"
 
 psql postgres postgres -c "\copy (select syndicate_to_community_id,syndicate_from_community_id
                                   from syndicate
                                   where syndicate_to_community_id in(select community_id from community where community_type='public')
                                         and syndicate_from_community_id in(select community_id from community where community_type='public')
-                                  order by syndicate_to_community_id,syndicate_from_community_id) to '~/git/sql/seed/syndicate'"
+                                  order by syndicate_to_community_id,syndicate_from_community_id) to 'sql/seed/syndicate'"
 
 psql postgres postgres -c "\copy (select sanction_id
                                         ,kind_id
@@ -117,7 +119,7 @@ psql postgres postgres -c "\copy (select sanction_id
                                         ,sanction_default_label_id
                                   from sanction natural join community
                                   where community_type='public'
-                                  order by sanction_id) to '~/git/sql/seed/sanction'"
+                                  order by sanction_id) to 'sql/seed/sanction'"
 
 psql postgres postgres -c "\copy (select tag_id
                                         ,community_id
@@ -129,4 +131,4 @@ psql postgres postgres -c "\copy (select tag_id
                                         ,tag_code_language
                                   from tag natural join community
                                   where community_type='public'
-                                  order by tag_id) to '~/git/sql/seed/tag'"
+                                  order by tag_id) to 'sql/seed/tag'"

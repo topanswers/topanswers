@@ -37,3 +37,5 @@
 37	4	C#	text/x-csharp	cs-core	https://en.wikipedia.org/wiki/C_Sharp_(programming_language)
 38	4	LuaTeX	text/x-stex	null	http://www.luatex.org/
 39	4	LaTeX	text/x-stex	null	https://www.latex-project.org
+40	15	example	\N	\N	\N
+41	15	warning	\N	\N	\N

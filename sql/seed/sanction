@@ -46,3 +46,5 @@
 61	1	Question		16	10	t	\N	f	\N
 62	2	Meta Question	Meta	16	20	f	\N	f	\N
 66	14	Code Review	Code Review	4	25	f	\N	f	\N
+69	15	Concept	Concept	2	15	f	\N	t	40
+70	15	Concept	Concept	12	30	f	\N	t	40
