@@ -195,7 +195,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
                   <?=$question_account_name?>
                 <?}?>
               </span>
-              <img title="Stars: <?=$question_communicant_votes?>" class="icon<?=($auth&&!$question_account_is_me)?' pingable':''?>" data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>" src="<?=$question_account_image_url?>">
+              <img title="Stars: <?=$question_communicant_votes?>" class="icon" src="<?=$question_account_image_url?>">
             </div>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=$question_markdown?>"><pre class='noscript'><?=$question_markdown?></pre></div>
@@ -208,7 +208,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
               <?if($auth){?>
                 <?if($question_account_is_me||$kind_can_all_edit){?><a class="element" href="/question?id=<?=$question?>"><?=$l_edit?></a><?}?>
                 <?if($question_has_history){?><a class="element" href="/question-history?id=<?=$question?>"><?=$l_history?></a><?}?>
-                <?if(!$question_account_is_me){?><a class="element comment" href=".">comment</a><?}?>
+                <?if(!$question_account_is_me){?><a class="element comment pingable" href="." data-id="<?=$question_account_id?>" data-name="<?=explode(' ',$question_account_name)[0]?>" data-fullname="<?=$question_account_name?>">comment</a><?}?>
                 <a class="element license" href="."><?=$l_license?></a>
                 <span class="element" style="display: none;">
                   <a href="<?=$question_license_href?>" title="<?=$question_license_description?>"><?=$question_license_name?></a>
@@ -335,7 +335,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
                     <?=$answer_account_name?>
                   <?}?>
                 </span>
-                <img title="Stars: <?=$answer_communicant_votes?>" class="icon<?=($auth&&!$answer_account_is_me)?' pingable':''?>" data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>" src="<?=$answer_account_image_url?>">
+                <img title="Stars: <?=$answer_communicant_votes?>" class="icon" src="<?=$answer_account_image_url?>">
               </div>
             </div>
             <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre class='noscript'><?=$answer_markdown?></pre></div>
@@ -350,7 +350,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
                 <?if($auth){?>
                   <a class="element" href="/answer?id=<?=$answer_id?>"><?=$l_edit?></a>
                   <?if($answer_has_history){?><a class="element" href="/answer-history?id=<?=$answer_id?>"><?=$l_history?></a><?}?>
-                  <?if(!$answer_account_is_me){?><a class="element comment" href=".">comment</a><?}?>
+                  <?if(!$answer_account_is_me){?><a class="element comment pingable" href="." data-id="<?=$answer_account_id?>" data-name="<?=explode(' ',$answer_account_name)[0]?>" data-fullname="<?=$answer_account_name?>">comment</a><?}?>
                   <a class="element license" href="."><?=$l_license?></a>
                   <span class="element" style="display: none;">
                     <a href="<?=$answer_license_href?>" title="<?=$answer_license_description?>"><?=$answer_license_name?></a>

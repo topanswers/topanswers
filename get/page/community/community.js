@@ -557,6 +557,16 @@ define(['markdown','moment','js.cookie']
     $('#chattext').focus();
     $('#status').data('update')();
   });
+  $('a.comment').click(function(){
+    var t = $(this), p = t.closest('.post');
+    $('a.comment').removeClass('ping');
+    t.addClass('ping');
+    $('.icon.pingable[data-id="'+t.data('id')+'"]').addClass('ping');
+    textareaInsertTextAtCursor($('#chattext'),'@'+t.data('name')+', re: [your '+(p.hasClass('answer')?'answer':'question')+'](#'+p.attr('id')+'), ');
+    $('#chattext').focus();
+    $('#status').data('update')();
+    return false;
+  });
   $('#status').data('update',function(){
     var strings = [];
     if($('#status').attr('data-editid')) strings.push('editing');
@@ -937,7 +947,6 @@ define(['markdown','moment','js.cookie']
   });
   $('.panecontrol.fa-angle-double-right').click(function(){ localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur(); });
   $('.panecontrol.fa-angle-double-left').click(function(){ localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane'); });
-  $('a.comment').click(function(){ $(this).closest('.post').find('.icon').click(); return false; });
   $('a.license').click(function(){ $(this).hide().next('.element').show(); return false; });
   let gettingchat = false;
   setTimeout(function(){
