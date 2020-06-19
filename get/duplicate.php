@@ -11,6 +11,7 @@ $auth = ccdb("select login_answer(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',
 extract(cdb("select account_id
                    ,community_name,community_language,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                    ,question_id,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,question_votes_from_me,question_account_image_url
+                   ,question_visible_chat_count
                    ,sanction_short_description
                   , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                   , extract('epoch' from current_timestamp-question_at)::bigint question_when
@@ -23,10 +24,14 @@ include '../lang/duplicate.'.$community_language.'.php';
 <div class="question post" data-id="<?=$question_id?>" style="--rgb-dark: <?=$community_rgb_dark?>; --rgb-mid: <?=$community_rgb_mid?>; --rgb-light: <?=$community_rgb_light?>; --rgb-highlight: <?=$community_rgb_highlight?>; --rgb-warning: <?=$community_rgb_warning?>;">
   <div class="title">
     <a href="/<?=$community_name?>?q=<?=$question_id?>" title="<?=$question_title?>"><?=$question_title?></a>
+    <?if($question_visible_chat_count){?>
+      <span class="corner" title="<?=$l_comments?>: <?=$l_num($question_visible_chat_count)?>">
+        <span><?=$l_num($question_visible_chat_count)?></span><i class="element fa fa-comments"></i>
+      </span>
+    <?}?>
     <?if($question_votes){?>
-      <span class="stars" title="<?=$l_stars?>: <?=$l_num($question_votes)?>">
-        <span><?=$l_num($question_votes)?></span>
-        <i class="element stars fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>"></i>
+      <span class="corner" title="<?=$l_stars?>: <?=$l_num($question_votes)?>">
+        <span><?=$l_num($question_votes)?></span><i class="element fa fa-star<?=(($question_account_id!==$account_id)&&($question_votes_from_me<$community_my_power))?'-o':''?><?=$question_votes_from_me?' highlight':''?>"></i>
       </span>
     <?}?>
   </div>

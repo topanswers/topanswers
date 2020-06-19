@@ -14,6 +14,7 @@ create view one with (security_barrier) as
 select get_account_id() account_id
       ,community_name,community_language,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
       ,question_id,question_at,question_title,question_votes,question_account_id,question_account_name,question_communicant_votes,sanction_short_description,question_account_image_url
+      ,question_visible_chat_count
      , coalesce(question_vote_votes,0) question_votes_from_me
       ,answer_id,answer_at,answer_summary,answer_account_id,answer_account_name,answer_votes,answer_communicant_votes,answer_account_image_url
      , coalesce(answer_vote_votes,0) answer_votes_from_me
@@ -26,7 +27,7 @@ from (select community_id,question_id,answer_id,answer_at,answer_summary,answer_
       where answer_id=get_answer_id() and not answer_is_deleted) a
      natural join db.community
      natural join api._community
-     natural join (select question_id,question_at,question_title,question_votes
+     natural join (select question_id,question_at,question_title,question_votes,question_visible_chat_count
                         , sanction_short_description
                         , account_id question_account_id
                         , account_name question_account_name
