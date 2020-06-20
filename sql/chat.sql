@@ -45,7 +45,7 @@ create function range(startid bigint, endid bigint, lim integer)
                      returns table (chat_id bigint
                                   , account_id integer
                                   , account_image_url text
-                                  , chat_reply_id integer
+                                  , chat_reply_id bigint
                                   , chat_markdown text
                                   , chat_at timestamptz
                                   , chat_change_id bigint
@@ -66,6 +66,7 @@ create function range(startid bigint, endid bigint, lim integer)
                                   , chat_pings text
                                   , notification_id bigint
                                   , chat_account_is_repeat boolean
+                                  , chat_thread_ids bigint[]
                                    ) language sql security definer set search_path=db,api,chat,pg_temp as $$
   with g as (select get_account_id() account_id, get_room_id() room_id)
     , cr as (select coalesce((select communicant_is_post_flag_crew from db.communicant c where c.account_id = g.account_id and community_id=get_community_id()),false) is_crew from g)
@@ -118,6 +119,8 @@ create function range(startid bigint, endid bigint, lim integer)
        , (select json_agg(p.account_id) from ping p where p.chat_id=c.chat_id and c.account_id=get_account_id())::text chat_pings
        , notification_id
        , chat_account_is_repeat
+       , (select array_agg(thread_ancestor_chat_id) from thread where thread_descendant_chat_id=chat_id) ||
+         (select array_agg(thread_descendant_chat_id) from thread where thread_ancestor_chat_id=chat_id) chat_thread_ids
   from c
        natural join account
        natural join _account
@@ -131,16 +134,16 @@ create function quote(rid integer, cid bigint) returns text language sql securit
   select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
   select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
   --
-  select '::: quote '||room_id||' '||cid||' '||account_id||' '||community_rgb_mid||' '||community_rgb_dark||chr(10)
+  select '::: quote '||room_id||' '||cid||' '||(case when account_image_hash is null then account_id::text else encode(account_image_hash,'hex') end)||' '||community_rgb_mid||' '||community_rgb_dark||chr(10)
          ||account_derived_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)
            ||(case when room_id<>rid and room_question_id is not null then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?q='||room_question_id||'#c'||cid||')*'
                    when room_id<>rid then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?room='||room_id||'#c'||cid||')*'
                    else '['||chat_iso||'](#c'||cid||')' end)||'  '||chr(10)
          ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
          ||':::'
-  from (select chat_reply_id,room_id,room_question_id,room_derived_name,community_name,community_rgb_mid,community_rgb_dark,chat_at,chat_markdown,account_id,account_derived_name
+  from (select chat_reply_id,room_id,room_question_id,room_derived_name,community_name,community_rgb_mid,community_rgb_dark,chat_at,chat_markdown,account_id,account_derived_name,account_image_hash
              , to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"') chat_iso
-        from chat natural join api._community natural join community natural join api._account natural join db.room natural join api._room
+        from chat natural join api._community natural join community natural join api._account natural join db.account natural join db.room natural join api._room
         where chat_id=cid) c
        natural left join (select chat_id chat_reply_id, account_derived_name reply_account_name from chat natural join api._account) r
 $$;
@@ -160,10 +163,6 @@ create function quote2(rid integer, cid bigint) returns text language sql securi
         from chat natural join api._community natural join community natural join api._account natural join db.account natural join db.room natural join api._room
         where chat_id=cid) c
        natural left join (select chat_id chat_reply_id, account_derived_name reply_account_name from chat natural join api._account) r
-$$;
---
-create function recent() returns bigint language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select greatest(min(chat_id)-1,0) from (select chat_id from chat where room_id=get_room_id() order by chat_id desc limit 100) z;
 $$;
 --
 --
@@ -201,7 +200,11 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
   on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
   --
   with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
-             select community_id,get_room_id(),get_account_id(),msg,replyid from room where room_id=get_room_id() returning community_id,room_id,chat_id)
+             select community_id,room_id,get_account_id(),msg,replyid from room where room_id=get_room_id() returning community_id,room_id,chat_id)
+     , t as (insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
+             select thread_ancestor_chat_id,chat_id,community_id,room_id from i cross join (select thread_ancestor_chat_id from thread where thread_descendant_chat_id=replyid) z
+             union all
+             select replyid,chat_id,community_id,room_id from i where replyid is not null)
     , rm as (update room r set room_latest_chat_id=i.chat_id, room_chat_count = room_chat_count+1 from i where r.room_id=i.room_id)
      , h as (insert into chat_history(chat_id,chat_history_markdown) select chat_id,msg from i)
     , aa as (select account_id from (select account_id from chat where chat_id=replyid union select unnest(pingids)) a where account_id<>get_account_id())

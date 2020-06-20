@@ -237,7 +237,7 @@ create table chat(
 , community_id integer not null references community
 , room_id integer not null references room
 , account_id integer not null references account
-, chat_reply_id integer references chat
+, chat_reply_id bigint references chat
 , chat_change_id bigint generated always as identity unique
 , chat_at timestamptz not null default current_timestamp
 , chat_change_at timestamptz not null default current_timestamp
@@ -246,6 +246,7 @@ create table chat(
 , chat_crew_flags integer default 0 not null
 , chat_active_flags integer default 0 not null
 , unique (room_id,chat_id)
+, unique (community_id,room_id,chat_id)
 , foreign key (community_id,room_id) references room(community_id,room_id)
 , foreign key (room_id,chat_reply_id) references chat(room_id,chat_id)
 );
@@ -253,6 +254,17 @@ create index chat_latest_ind on chat(room_id,chat_at);
 create index chat_search_ind on chat using gin (room_id, chat_markdown gin_trgm_ops);
 create index chat_room_id_chat_id_fk_ind on chat(room_id,chat_id);
 create index chat_poll_ind on chat(room_id,chat_change_id) include(chat_id);
+
+create table thread(
+  thread_ancestor_chat_id bigint references chat
+, thread_descendant_chat_id bigint references chat
+, community_id integer not null references community
+, room_id integer not null references room
+, primary key (thread_ancestor_chat_id,thread_descendant_chat_id)
+, unique (thread_descendant_chat_id,thread_ancestor_chat_id)
+, foreign key (community_id,room_id,thread_ancestor_chat_id) references chat(community_id,room_id,chat_id)
+, foreign key (community_id,room_id,thread_descendant_chat_id) references chat(community_id,room_id,chat_id)
+);
 
 create table ping(
   chat_id bigint references chat

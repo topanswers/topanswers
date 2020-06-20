@@ -309,16 +309,6 @@ define(['markdown','moment','js.cookie']
         }
         newchat.addClass('processed');
 
-        $('.message').each(function(){
-          var id = $(this).data('id'), rid = id;
-          function foo(b){
-            if(arguments.length!==0) $(this).addClass('t'+id);
-            if(arguments.length===0 || b===true) if($(this).data('reply-id')) $('.message[data-id='+$(this).data('reply-id')+']').each(function(){ foo.call(this,true) });
-            if(arguments.length===0 || b===false) $('.message[data-reply-id='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
-          }
-          foo.call(this);
-        });
-
         $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
         $('.message').find('.who a.reply').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
           var id = $(this).attr('href').substring(2);

@@ -28,7 +28,7 @@ create function login_room(uuid,integer) returns boolean language sql security d
 create function search(text) 
                      returns table (chat_id bigint
                                   , account_id integer
-                                  , chat_reply_id integer
+                                  , chat_reply_id bigint
                                   , chat_markdown text
                                   , chat_at timestamptz
                                   , account_is_me boolean
@@ -62,7 +62,7 @@ $$;
 create function range(startat timestamptz, endat timestamptz) 
                      returns table (chat_id bigint
                                   , account_id integer
-                                  , chat_reply_id integer
+                                  , chat_reply_id bigint
                                   , chat_markdown text
                                   , chat_at timestamptz
                                   , account_is_me boolean

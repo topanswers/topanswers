@@ -7,7 +7,7 @@ if(!isset($_GET['room'])) die('room not set');
 db("set search_path to chat,pg_temp");
 $authenticated = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 if(isset($_GET['changes'])) exit(ccdb("select coalesce(jsonb_agg(jsonb_build_array(chat_id,chat_change_id)),'[]')::json from changes($1)",$_GET['from']));
-if(isset($_GET['quote'])) exit(ccdb("select quote2($1,$2)::varchar",$_GET['room'],$_GET['id']));
+if(isset($_GET['quote'])) exit(ccdb("select quote($1,$2)::varchar",$_GET['room'],$_GET['id']));
 if(isset($_GET['minimap'])) {
   header("Content-Type: image/jpeg");
   $image = imagecreatefromstring(pg_unescape_bytea(ccdb("select room_bitmap from one2")));
@@ -28,6 +28,7 @@ extract(cdb("select community_language,room_can_chat
                                  ,notification_id
                                 , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
                                 , current_date - chat_at::date chat_days_ago
+                                , coalesce(' t'||chat_id||' t'||array_to_string(chat_thread_ids,' t'),'') chat_thread_classes
                            from range(nullif($1,'')::bigint,nullif($2,'')::bigint,nullif($3::integer,0)) z) z) chats
              from one",$_GET['from']??'',$_GET['to']??'',$limited?$limit+1:0),EXTR_PREFIX_ALL,'o');
 $more = $limited && (count($o_chats)>$limit);
@@ -39,7 +40,7 @@ include '../lang/chat.'.$o_community_language.'.php';
     <div class="spacer<?=$chat_next_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_next_gap)/4,2)?>em;" data-gap="<?=$chat_next_gap?>"></div>
   <?}?>
   <div id="c<?=$chat_id?>"
-       class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?><?=$notification_id?' notify':''?><?=($chat_crew_flags>0)?' deleted':''?>"
+       class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?><?=$notification_id?' notify':''?><?=($chat_crew_flags>0)?' deleted':''?><?=$chat_thread_classes?>"
        data-id="<?=$chat_id?>"
        data-chat-id="<?=$chat_id?>"
        <?if($notification_id){?>data-notification-id="<?=$notification_id?>"<?}?>
