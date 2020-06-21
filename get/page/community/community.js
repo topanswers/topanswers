@@ -273,12 +273,10 @@ define(['markdown','moment','js.cookie']
   function renderChat(){
     var t = $(this), promises = [];
     t.find('.markdown').renderMarkdown(promises);
-    Promise.allSettled(promises).then( () => t.find('.question:not(.processed)').each(renderQuestion).addClass('processed') );
-    return promises;
+    return Promise.allSettled(promises).then( () => t.find('.question:not(.processed)').each(renderQuestion).addClass('processed') );
   }
-  function processNewChat(scroll){
-    var newchat = $('#messages>*:not(.processed)')
-      , scroller = $('#messages').parent()
+  function processNewChat(){
+    var newchat = $('#newchat>*')
       , promises = []
       , promise
       , read = localStorage.getItem('read2')?JSON.parse(localStorage.getItem('read2')):{};
@@ -287,39 +285,24 @@ define(['markdown','moment','js.cookie']
     read[$('html').css('--room')] = $('#messages>.message').first().data('id');
     localStorage.setItem('read2',JSON.stringify(read));
 
-    newchat.filter('.message').each(function(){ promises.push(...renderChat.call(this)); }).find('.when').each(function(){
+    newchat.filter('.message').each(function(){ promises.push(renderChat.call(this)); }).find('.when').each(function(){
       $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
     });
 
     newchat.find('img').each(function(){ promises.push(new Promise(r => { const i = new Image(); i.onload = () => r(); i.onerror = () => r(); i.src = $(this).attr('src'); })); });
-    if(typeof document.fonts === 'undefined'){ // for BB
-      if(scroll===true){
-        setTimeout(function(){ scroller.scrollTop(1000000); },1000);
-      }else if(scroll===false){
-        if(!scroller.hasClass('follow')) scroller.addClass('newscroll');
-      }
-      newchat.addClass('processed');
-    }else{
-      promises.push(document.fonts.ready);
-      promise = Promise.allSettled(promises).then(() => {
-        if(scroll===true){
-          scroller.animate({ scrollTop: (scroller.prop('scrollHeight')-scroller.innerHeight())+'px' },'fast');
-        }else if(scroll===false){
-          if(!scroller.hasClass('follow')) scroller.addClass('newscroll');
-        }
-        newchat.addClass('processed');
 
-        $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
-        $('.message').find('.who a.reply').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
-          var id = $(this).attr('href').substring(2);
-          $(this).attr('href','/transcript?room='+$('html').css('--room')+'&id='+id+'#c'+id);
-        });
+    if(typeof document.fonts !== 'undefined') promises.push(document.fonts.ready);
 
+    promise = Promise.allSettled(promises).then(() => {
+      $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
+      $('.message').find('.who a.reply').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
+        var id = $(this).attr('href').substring(2);
+        $(this).attr('href','/transcript?room='+$('html').css('--room')+'&id='+id+'#c'+id);
       });
-    }
+    });
 
     newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()); });
-    $('#messages>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
+    $('#newchat>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
 
     return promise;
   }
@@ -348,33 +331,31 @@ define(['markdown','moment','js.cookie']
       updateRoomLatest();
     });
   }
-  function updateChat(scroll){
-    var maxChat = $('#messages>.message').first().data('id')
-      , scroller = $('#messages').parent();
+  function updateChat(){
+    var maxChat = $('#messages>.message').first().data('id');
 
+    if(!('auth' in $('html').data())) return Promise.resolve();
     if('dev' in $('html').data()) console.log('updating chat');
-    if(typeof scroll==='undefined') scroll = false;
-    if(scroller.hasClass('follow')) scroll = true;
 
     return $.get('/chat?room='+$('html').css('--room')+(($('#messages>.message').length===0)?'':'&from='+maxChat)).then(function(data) {
-      if($('#messages>.message').first().data('id')===maxChat){
-        var newchat;
-        $('#messages>.spacer:first-child').remove();
-        newchat = $(data).prependTo($('#messages'));
-        if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
-        if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
-        newchat.filter('.message[data-reply-id]').each(function(){ $('#c'+$(this).attr('data-reply-id')).removeAttr('data-notification-id').removeClass('notify'); });
-        processNewChat(scroll);
-        if('auth' in $('html').data()){
-          return $.get('/activeusers?room='+$('html').css('--room')).then(function(r){
-            var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
-            $('#active-users').html(r);
-            $.each(savepings,function(){ $('#active-users .icon[data-id='+this+']').addClass('ping'); });
-            return updateActiveRooms();
-          });
-        }
-      }
-    },'html');
+      var newchat;
+      newchat = $(data).prependTo($('#newchat'));
+      if(maxChatChangeID) numNewChats += newchat.filter('.message:not(.mine)').length;
+      if(maxChatChangeID && (document.visibilityState==='hidden') && numNewChats !== 0){ document.title = '('+numNewChats+') '+title; }
+      newchat.filter('.message[data-reply-id]').each(function(){ $('#c'+$(this).attr('data-reply-id')).removeAttr('data-notification-id').removeClass('notify'); });
+      return processNewChat()
+    },'html').then(()=>{
+      let s = $('#messages').parent();
+      $('#messages>.spacer:first-child').remove();
+      $('#newchat>*').prependTo($('#messages'));
+      if(s.hasClass('follow')) s.animate({ scrollTop: (s.prop('scrollHeight')-s.innerHeight())+'px' },'fast');
+      return $.get('/activeusers?room='+$('html').css('--room')).then(function(r){
+        var savepings = $('#active-users .ping').map(function(){ return $(this).data('id'); }).get();
+        $('#active-users').html(r);
+        $.each(savepings,function(){ $('#active-users .icon[data-id='+this+']').addClass('ping'); });
+        return updateActiveRooms();
+      });
+    });
   }
   function updateChatChangeIDs(){
     if('dev' in $('html').data()) console.log('updating chat change flag statuses');
@@ -392,11 +373,9 @@ define(['markdown','moment','js.cookie']
     if('dev' in $('html').data()) console.log('updating chat '+$('.message.changed').first().data('id'));
     $('#c'+id).css('opacity',0.5);
     return $.get('/chat?room='+$('html').css('--room')+'&from='+id+'&to='+id).then(function(r){
-      var merged = $('#c'+id).hasClass('merged');
-      $('#c'+id).replaceWith(r);
-      if(merged) $('#c'+id).addClass('merged');
-      processNewChat(false);
-      $('#c'+id).css('opacity',1);
+      let oldchat = $('#c'+id), merged = oldchat.hasClass('merged'), newchat = $(r).appendTo($('#newchat'));
+      if(merged) newchat.addClass('merged');
+      return processNewChat().then(()=>{ $('#c'+id).replaceWith(newchat); });
     });
   }
   function actionQuestionChange(id){
@@ -438,7 +417,7 @@ define(['markdown','moment','js.cookie']
     if('dev' in $('html').data()) console.log('polling chat');
     $.get('/poll?room='+$('html').css('--room')).then(function(r){
       var j = JSON.parse(r);
-      if(j.c>+($('#messages>.message').first().data('id')||0)) return updateChat();
+      if(j.c>+($('#messages>.message').first().data('id')||0)) return updateChat().then(()=>{ if(!$('#messages').parent().hasClass('follow')) $('#messages').parent().addClass('newscroll'); });
       if(j.n>maxNotificationID){ return updateNotifications().then(() => maxNotificationID = j.n); }
       if((!$('html').css('--question'))&&(j.Q>maxQuestionPollMajorID)&&(page===1)&&(srch.replace(/!|{[^}]*}|\[[^\]]+\]/g,'').trim()==='')){ return updateQuestions().then(() => maxQuestionPollMajorID = j.Q); }
       if(j.cc>maxChatChangeID){ return updateChatChangeIDs().then(() => maxChatChangeID = j.cc); }
@@ -748,7 +727,8 @@ define(['markdown','moment','js.cookie']
                 checkChat();
               }else{
                 if(replyid) $('#notifications .message[data-id='+replyid+']').remove();
-                updateChat(true).always(checkChat);
+                $('#messages').parent().addClass('follow');
+                updateChat().always(checkChat);
               }
               $('#cancel').click();
               t.val('').prop('disabled',false).css('height',t.data('initialheight')).focus().trigger('input');
@@ -844,7 +824,10 @@ define(['markdown','moment','js.cookie']
       $('#qa .post').addClass('processed');
     });
   })();
-  processNewChat(true);
+  processNewChat().then(()=>{ 
+    $('#newchat>*').appendTo($('#messages'));
+    $('#messages').parent().scrollTop(1000000)
+  });
   updateActiveRooms();
   processNotifications();
   setChatPollTimeout();
@@ -939,49 +922,48 @@ define(['markdown','moment','js.cookie']
   $('.panecontrol.fa-angle-double-left').click(function(){ localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane'); });
   $('a.license').click(function(){ $(this).hide().next('.element').show(); return false; });
   let gettingchat = false;
-  setTimeout(function(){
-    $('#chat>.firefoxwrapper').on('scroll',_.throttle(function(){
-      const f = $(this), b = (f.prop('clientHeight')>=f.prop('scrollHeight')) || ((f.scrollTop()-f[0].scrollHeight+f[0].offsetHeight) > -5);
+  $('#chat>.firefoxwrapper').on('scroll',_.throttle(function(){
+    const f = $(this), b = (f.prop('clientHeight')>=f.prop('scrollHeight')) || ((f.scrollTop()-f[0].scrollHeight+f[0].offsetHeight) > -5);
 
-      if(!gettingchat){
-        if(f.scrollTop()===0){
-          gettingchat = true;
-          $('#messages>i').each(function(){
-            const t = $(this), minChat = $('#messages>.message').last().data('id'), m = $('#messages>.message').last(), s = m.offset().top;
-            t.addClass('fa-pulse').css('visibility','visible');
-            $.get('/chat?room='+$('html').css('--room')+'&to='+minChat+'&limit='+$('#messages>.message').length,function(data) {
+    if(!gettingchat){
+      if(f.scrollTop()<3000){
+        gettingchat = true;
+        if('dev' in $('html').data()) console.log('getting older chat');
+        $('#messages>i').each(function(){
+          const t = $(this), minChat = $('#messages>.message').last().data('id'), m = $('#messages>.message').last(), s = m.offset().top;
+          t.addClass('fa-pulse').css('visibility','visible');
+          $.get('/chat?room='+$('html').css('--room')+'&to='+minChat+'&limit='+$('#messages>.message').length,function(data) {
+            let newchat = $(data).appendTo($('#newchat'));
+            processNewChat().then(()=>{
               t.remove();
-              let newchat = $(data).appendTo($('#messages'));
-              f.scrollTop(f.hasClass('follow')?1000000:(f.scrollTop()+m.offset().top-s));
-              processNewChat().then(()=>{
-                f.scrollTop(f.hasClass('follow')?1000000:(f.scrollTop()+m.offset().top-s));
-                gettingchat = false;
-              });
-            },'html');
-          });
-        }
+              $('#newchat>*').appendTo($('#messages'));
+              f.scrollTop(f.scrollTop()+m.offset().top-s);
+              gettingchat = false;
+            });
+          },'html');
+        });
       }
+    }
 
-      f.toggleClass('follow',b);
-      if(b) f.removeClass('newscroll');
+    f.toggleClass('follow',b);
+    if(b) f.removeClass('newscroll');
 
-      /*
-      let start = $('#minimap>img')[0].naturalHeight, end = 0;
-      $('#messages>.message').each(function(){
-        const t = $(this);
-        //t.find('.who').text(Math.round(t.position().top)+' : '+Math.round($('#chat>.firefoxwrapper').innerHeight() - t.position().top) + ' : ' + t.data('days-ago'));
-        if( (($('#chat>.firefoxwrapper').innerHeight() - t.position().top) < 0) && (!$('#messages').parent().hasClass('follow')) ) end = Math.max(end,t.data('days-ago'));
-        if(t.position().top<0) start = Math.min(start,t.data('days-ago'));
-      });
+    /*
+    let start = $('#minimap>img')[0].naturalHeight, end = 0;
+    $('#messages>.message').each(function(){
+      const t = $(this);
+      //t.find('.who').text(Math.round(t.position().top)+' : '+Math.round($('#chat>.firefoxwrapper').innerHeight() - t.position().top) + ' : ' + t.data('days-ago'));
+      if( (($('#chat>.firefoxwrapper').innerHeight() - t.position().top) < 0) && (!$('#messages').parent().hasClass('follow')) ) end = Math.max(end,t.data('days-ago'));
+      if(t.position().top<0) start = Math.min(start,t.data('days-ago'));
+    });
 
-      $('#minimap>div').css('bottom',(end*100/$('#minimap>img')[0].naturalHeight)+'%').css('height',((start-end)*100/$('#minimap>img')[0].naturalHeight)+'%');
+    $('#minimap>div').css('bottom',(end*100/$('#minimap>img')[0].naturalHeight)+'%').css('height',((start-end)*100/$('#minimap>img')[0].naturalHeight)+'%');
 
-      //console.log('start: '+start+', end: '+end);
-      //console.log('bottomcss: '+(end*100/$('#minimap>img')[0].naturalHeight)+'%'+', height: '+((start-end)*100/$('#minimap>img')[0].naturalHeight)+'%');
-      */
+    //console.log('start: '+start+', end: '+end);
+    //console.log('bottomcss: '+(end*100/$('#minimap>img')[0].naturalHeight)+'%'+', height: '+((start-end)*100/$('#minimap>img')[0].naturalHeight)+'%');
+    */
 
-    },10)).trigger('scroll');
-  },1000);
+  },100));
   $('#chat').on('click','a.reply[href^="#"]', function(){
     const hash = $(this).attr('href');
     $('#messages').parent().removeClass('follow');

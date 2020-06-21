@@ -103,7 +103,6 @@ a[data-lightbox] img { cursor: zoom-in; }
                                                            width: 12px; height: 12px; text-align: center; line-height: 13px; border-radius: 30%; pointer-events: none; box-shadow: 0 0 2px 2px #fffd; text-shadow: 0 0 1px rgb(var(--rgb-white)); }
 
 .message { position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
-.message:not(.processed) { opacity: 0; }
 .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
 .message .who>a { color: rgb(var(--rgb-dark)); }
 .message .who>a[href^='#'] { text-decoration: none; }

@@ -448,22 +448,22 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
         <div id="chat" class="panel">
           <div class="firefoxwrapper follow">
             <div id="messages">
-              <?if($room_has_chat){?>
-                <?$ch = curl_init('http://127.0.0.1/chat?room='.$room.'&limit=20'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
-              <?}elseif($question){?>
-                <div style="padding: 10vh 20%; flex: 1 0 auto;">
-                  <?if($auth){?>
-                    <?if($question_se_question_id){?>
-                      <p>This room is for discussion about this imported question.</p>
+              <?if(!$room_has_chat){?>
+                <?if($question){?>
+                  <div style="padding: 10vh 20%; flex: 1 0 auto;">
+                    <?if($auth){?>
+                      <?if($question_se_question_id){?>
+                        <p>This room is for discussion about this imported question.</p>
+                      <?}else{?>
+                        <p>This room is for discussion about this question.</p>
+                        <p>You can direct a comment to any contributor via the 'comment' link under their post.</p>
+                      <?}?>
                     <?}else{?>
                       <p>This room is for discussion about this question.</p>
-                      <p>You can direct a comment to any contributor via the 'comment' link under their post.</p>
+                      <p>Once logged in you can direct comments to any contributor here.</p>
                     <?}?>
-                  <?}else{?>
-                    <p>This room is for discussion about this question.</p>
-                    <p>Once logged in you can direct comments to any contributor here.</p>
-                  <?}?>
-                </div>
+                  </div>
+                <?}?>
               <?}?>
             </div>
           </div>
@@ -504,6 +504,11 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
               <?}?>
             </div>
           </div>
+        <?}?>
+      </div>
+      <div id="newchat" class="panel" style="visibility: hidden; z-index: -1;">
+        <?if($room_has_chat){?>
+          <?$ch = curl_init('http://127.0.0.1/chat?room='.$room.'&limit=50'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
         <?}?>
       </div>
       <?if($auth){?>
