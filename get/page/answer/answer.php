@@ -39,7 +39,10 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
              --font-regular:<?=$my_community_regular_font_name?>;
              --font-monospace:<?=$my_community_monospace_font_name?>;
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
-             ">
+             "
+  data-question-id="<?= $question_id ?>"
+  data-answer-is-new="<?= $answer_id ? 'false' : 'true' ?>"
+>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="<?=h("/fonts/$my_community_regular_font_name.css")?>">
@@ -57,7 +60,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <title><?=$answer_id?'Edit Answer':'Answer Question'?> - TopAnswers</title>
   <script src="<?=h("/require.config.js")?>"></script>
-  <script data-main="<?=h("/page/answer/answer.js").'?question='.$question_id.($answer_id?'':'&new')?>" src="<?=h("/lib/require.js")?>"></script>
+  <script data-main="<?=h("/page/answer/answer.js")?>" src="<?=h("/lib/require.js")?>"></script>
 </head>
 <body>
   <header>
