@@ -1,7 +1,5 @@
-const ANSWER_ID = ''
-const ANSWER_IS_NEW = ANSWER_ID === '';
-const QUESTION_ID = ''
-
+const ANSWER_IS_NEW = $('html').data('answer-is-new');
+const QUESTION_ID = $('html').data('question-id');
 
 define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,CodeMirror],moment){
   var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: { name: 'gfm', gitHubSpice: false, taskLists: false, defaultLang: $('html').css('--lang-code') }, inputStyle: 'contenteditable', spellcheck: true, extraKeys: {
