@@ -1,5 +1,5 @@
-const ANSWER_IS_NEW = $('html').data('answer-is-new');
-const QUESTION_ID = $('html').data('question-id');
+const ANSWER_IS_NEW = document.documentElement.dataset.answerIsNew==='true';
+const QUESTION_ID = document.documentElement.dataset.questionId;
 
 define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,CodeMirror],moment){
   var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: { name: 'gfm', gitHubSpice: false, taskLists: false, defaultLang: $('html').css('--lang-code') }, inputStyle: 'contenteditable', spellcheck: true, extraKeys: {

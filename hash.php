@@ -333,7 +333,7 @@ function h($f){
     "/navigation.js": "f0ad7bc6582996ae",
     "/noscript.css": "4f7e2c6342642088",
     "/page/answer/answer.css": "7d8d34681f770e3a",
-    "/page/answer/answer.js": "34100424350837d7",
+    "/page/answer/answer.js": "d90a8116459b7630",
     "/page/answer-history/answer-history.css": "e261ad744f68003f",
     "/page/answer-history/answer-history.js": "305b2832beee4923",
     "/page/chat-history/chat-history.css": "1e5da1ea076366cd",
@@ -359,7 +359,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "fd143a3e3e6c3906",
     "/post.css": "6460b246ad7dc3b5",
-    "/require.config.js": "ddb2be7d667eeb30",
+    "/require.config.js": "071351e797eb9ab4",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
