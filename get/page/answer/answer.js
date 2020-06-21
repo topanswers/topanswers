@@ -1,3 +1,6 @@
+const ANSWER_IS_NEW = $('html').data('answer-is-new');
+const QUESTION_ID = $('html').data('question-id');
+
 define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,CodeMirror],moment){
   var cm = CodeMirror.fromTextArea($('textarea')[0],{ lineWrapping: true, mode: { name: 'gfm', gitHubSpice: false, taskLists: false, defaultLang: $('html').css('--lang-code') }, inputStyle: 'contenteditable', spellcheck: true, extraKeys: {
     Home: "goLineLeft",
@@ -30,7 +33,9 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,
     });
     map = [];
     $('#markdown [data-source-line]').each(function(){ map.push($(this).data('source-line')); });
-    <?if(isset($_GET['new'])){?>localStorage.setItem($('html').css('--community')+'.answer.<?=$_GET['question']?>',cm.getValue());<?}?>
+    if (ANSWER_IS_NEW) {
+      localStorage.setItem($('html').css('--community') + '.answer.' + QUESTION_ID, cm.getValue());
+    }
   }
 
   $('textarea[name="markdown"]').show().css({ position: 'absolute', opacity: 0, top: '4px', left: '10px' }).attr('tabindex','-1');
@@ -45,9 +50,9 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,
     else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#markdown').animate({ scrollTop: $('#markdown').prop("scrollHeight")-$('#markdown').height() });
     else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
   },200));
-  <?if(isset($_GET['new'])){?>
-    if(localStorage.getItem($('html').css('--community')+'.answer.<?=$_GET['question']?>')) cm.setValue(localStorage.getItem($('html').css('--community')+'.answer.<?=$_GET['question']?>'));
-  <?}?>
+  if (ANSWER_IS_NEW) {
+    if (localStorage.getItem($('html').css('--community') + '.answer.' + QUESTION_ID)) cm.setValue(localStorage.getItem($('html').css('--community') + '.answer.' + QUESTION_ID));
+  }
   $('#uploadfile').change(function() { if(this.files[0].size > 2097152){ alert("File is too big — maximum 2MB"); $(this).val(''); }else{ $('#imageupload').submit(); }; });
   $('#imageupload').submit(function(){
     var d = new FormData($(this)[0]);
