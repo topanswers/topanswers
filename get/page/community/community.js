@@ -300,7 +300,7 @@ define(['markdown','moment','js.cookie']
 
     return Promise.allSettled(promises).then(() => {
       $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
-      $('.message').find('.who a.reply').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
+      $('.message').find('.who a.reply').filter(function(){ return $('#c'+$(this).closest('.message').data('reply-id')).length===0; }).each(function(){
         var id = $(this).attr('href').substring(2);
         $(this).attr('href','/transcript?room='+$('html').css('--room')+'&id='+id+'#c'+id);
       });
