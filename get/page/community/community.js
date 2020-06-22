@@ -930,11 +930,12 @@ define(['markdown','moment','js.cookie']
         gettingchat = true;
         if('dev' in $('html').data()) console.log('getting older chat');
         $('#messages>i').each(function(){
-          const t = $(this), minChat = $('#messages>.message').last().data('id'), m = $('#messages>.message').last(), s = m.offset().top;
+          const t = $(this), minChat = $('#messages>.message').last().data('id'), m = $('#messages>.message').last();
           t.addClass('fa-pulse').css('visibility','visible');
           $.get('/chat?room='+$('html').css('--room')+'&to='+minChat+'&limit='+$('#messages>.message').length,function(data) {
             let newchat = $(data).appendTo($('#newchat'));
             processNewChat().then(()=>{
+              const s = m.offset().top;
               t.remove();
               $('#newchat>*').appendTo($('#messages'));
               f.scrollTop(f.scrollTop()+m.offset().top-s);
