@@ -276,16 +276,16 @@ define(['markdown','moment','js.cookie']
     return Promise.allSettled(promises).then( () => t.find('.question:not(.processed)').each(renderQuestion).addClass('processed') );
   }
   function processNewChat(){
-    var newchat = $('#newchat>*')
-      , promises = []
-      , promise
+    const newchat = $('#newchat>.message')
+        , room = $('html').css('--room');
+    let promises = []
       , read = localStorage.getItem('read2')?JSON.parse(localStorage.getItem('read2')):{};
 
-    if('dev' in $('html').data()) console.log('setting read counter for room '+$('html').css('--room')+' to '+$('#messages>.message').first().data('id'));
-    read[$('html').css('--room')] = $('#messages>.message').first().data('id');
+    if('dev' in $('html').data()) console.log('setting read counter for room '+$('html').css('--room')+' to '+newchat.first().data('id'));
+    read[room] = Math.max(read[room],newchat.first().data('id'));
     localStorage.setItem('read2',JSON.stringify(read));
 
-    newchat.filter('.message').each(function(){ promises.push(renderChat.call(this)); }).find('.when').each(function(){
+    newchat.each(function(){ promises.push(renderChat.call(this)); }).find('.when').each(function(){
       $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
     });
 
@@ -293,18 +293,16 @@ define(['markdown','moment','js.cookie']
 
     if(typeof document.fonts !== 'undefined') promises.push(document.fonts.ready);
 
-    promise = Promise.allSettled(promises).then(() => {
+    $('#newchat>.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()); });
+    newchat.each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
+
+    return Promise.allSettled(promises).then(() => {
       $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
       $('.message').find('.who a.reply').filter(function(){ return !$(this).closest('div').hasClass('t'+$(this).attr('href').substring(2)); }).each(function(){
         var id = $(this).attr('href').substring(2);
         $(this).attr('href','/transcript?room='+$('html').css('--room')+'&id='+id+'#c'+id);
       });
     });
-
-    newchat.filter('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()); });
-    $('#newchat>.message').each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
-
-    return promise;
   }
   function updateRoomLatest(){
     $('#community-rooms a').each(function(){
