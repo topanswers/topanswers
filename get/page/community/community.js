@@ -279,11 +279,11 @@ define(['markdown','moment','js.cookie']
     const newchat = $('#newchat>.message')
         , room = $('html').css('--room');
     let promises = []
-      , read = localStorage.getItem('read2')?JSON.parse(localStorage.getItem('read2')):{};
+      , read = localStorage.getItem('read3')?JSON.parse(localStorage.getItem('read3')):{};
 
     if('dev' in $('html').data()) console.log('setting read counter for room '+$('html').css('--room')+' to '+newchat.first().data('id'));
-    read[room] = Math.max(read[room],newchat.first().data('id'));
-    localStorage.setItem('read2',JSON.stringify(read));
+    read[room] = Math.max(read[room]??0,newchat.first().data('id'));
+    localStorage.setItem('read3',JSON.stringify(read));
 
     newchat.each(function(){ promises.push(renderChat.call(this)); }).find('.when').each(function(){
       $(this).text('— '+moment($(this).data('at')).calendar(null, { sameDay: 'HH:mm', lastDay: '[Yesterday] HH:mm', lastWeek: '[Last] dddd HH:mm', sameElse: 'dddd, Do MMM YYYY HH:mm' }));
@@ -324,7 +324,7 @@ define(['markdown','moment','js.cookie']
   }
   function updateActiveRooms(){
     if('dev' in $('html').data()) console.log('updating active room list');
-    return $.get({ url: '/activerooms', data: { community: $('html').css('--community'), read: _.values(localStorage.getItem('read2')?JSON.parse(localStorage.getItem('read2')):{}) } }).then(function(r){
+    return $.get({ url: '/activerooms', data: { community: $('html').css('--community'), read: _.values(localStorage.getItem('read3')?JSON.parse(localStorage.getItem('read3')):{}) } }).then(function(r){
       $('#active-rooms').html(r);
       updateRoomLatest();
     });
@@ -716,10 +716,10 @@ define(['markdown','moment','js.cookie']
                      , replyid: replyid
                      , pings: arr
                      , action: 'new'
-                     , read: _.values(localStorage.getItem('read2')?JSON.parse(localStorage.getItem('read2')):{}) };
+                     , read: _.values(localStorage.getItem('read3')?JSON.parse(localStorage.getItem('read3')):{}) };
             }
             $.post({ url: '//post.topanswers.xyz/chat', data: post, xhrFields: { withCredentials: true } }).then(function(){
-              localStorage.removeItem('read2');
+              localStorage.removeItem('read3');
               if(edit){
                 $('#c'+editid).css('opacity',1).find('.markdown').attr('data-markdown',msg).attr('data-reply-id',replyid).end().each(renderChat);
                 checkChat();
