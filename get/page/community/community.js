@@ -281,7 +281,7 @@ define(['markdown','moment','js.cookie']
     let promises = []
       , read = localStorage.getItem('read4')?JSON.parse(localStorage.getItem('read4')):{};
 
-    if(newchat.first().data('id')||0 > read[room]||0){
+    if((newchat.first().data('id')||0) > (read[room]||0)){
       if('dev' in $('html').data()) console.log('setting read counter for room '+$('html').css('--room')+' to '+newchat.first().data('id'));
       read[room] = newchat.first().data('id');
       localStorage.setItem('read4',JSON.stringify(read));
