@@ -347,6 +347,15 @@ define(['markdown','moment','js.cookie']
     },'html').then(()=>{
       let s = $('#messages').parent();
       $('#messages>.spacer:first-child').remove();
+      $('#newchat>.message[data-reply-id!=""]').each(function(){
+        let id = $(this).data('id'), rid = $(this).data('reply-id'), m;
+        while(true){
+          m = $('#messages>#c'+rid);
+          if(m.length!==1) break;
+          m.addClass('t'+id).addClass('t'+rid);
+          rid = m.data('reply-id');
+        }
+      });
       $('#newchat>*').prependTo($('#messages'));
       if(s.hasClass('follow')) s.animate({ scrollTop: (s.prop('scrollHeight')-s.innerHeight())+'px' },'fast');
       return $.get('/activeusers?room='+$('html').css('--room')).then(function(r){
