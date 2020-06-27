@@ -57,7 +57,7 @@ include '../lang/chat.'.$o_community_language.'.php';
       <?=$chat_reply_id?'<a class="reply" href="#c'.$chat_reply_id.'">replying to</a> '.($reply_account_is_me?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
-    <img title="<?=($account_name)?$account_name:'Anonymous'?> (<?=$l_stars?>: <?=$l_num($communicant_votes)?>)" class="icon" src="<?=$account_image_url?>">
+    <img title="<?=$account_name?> (<?=$l_stars?>: <?=$l_num($communicant_votes)?>)" class="icon" src="<?=$account_image_url?>">
     <div class="markdown" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
     <?if($authenticated){?>
       <span class="buttons">

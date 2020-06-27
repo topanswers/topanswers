@@ -103,8 +103,8 @@ create function range(startid bigint, endid bigint, lim integer)
              where startid=endid or ((chat_id>startid or startid is null) and (chat_id<endid or endid is null)))
   select chat_id,account_id,account_image_url,chat_reply_id,chat_markdown,chat_at,chat_change_id
        , account_id=(select account_id from g) account_is_me
-       , coalesce(nullif(account_name,''),'Anonymous') account_name
-       , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+       , account_derived_name account_name
+       , (select account_derived_name from chat natural join _account where chat_id=c.chat_reply_id) reply_account_name
        , (select account_id=(select account_id from g) from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
        , chat_gap
        , chat_next_gap

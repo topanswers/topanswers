@@ -47,7 +47,7 @@ create function search(text)
        , account_id=get_account_id() account_is_me
        , account_derived_name account_name
        , account_image_url
-       , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+       , (select account_derived_name from chat natural join _account where chat_id=c.chat_reply_id) reply_account_name
        , (select account_id=get_account_id() from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
        , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=get_account_id()) i_flagged
        , exists(select 1 from chat_star where chat_id=c.chat_id and account_id=get_account_id()) i_starred
@@ -83,9 +83,9 @@ create function range(startat timestamptz, endat timestamptz)
   select *, (lag(account_id) over (order by chat_at)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
   from (select chat_id,account_id,chat_reply_id,chat_markdown,chat_at
              , account_id=get_account_id() account_is_me
-             , coalesce(nullif(account_name,''),'Anonymous') account_name
+             , account_derived_name account_name
              , account_image_url
-             , (select coalesce(nullif(account_name,''),'Anonymous') from chat natural join account where chat_id=c.chat_reply_id) reply_account_name
+             , (select account_derived_name from chat natural join _account where chat_id=c.chat_reply_id) reply_account_name
              , (select account_id=get_account_id() from chat natural join account where chat_id=c.chat_reply_id) reply_account_is_me
              , round(extract('epoch' from chat_at-(lag(chat_at) over (order by chat_at))))::integer chat_gap
              , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=get_account_id()) i_flagged

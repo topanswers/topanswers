@@ -6,8 +6,9 @@ set local search_path to starboard,api,pg_temp;
 create view account with (security_barrier) as select account_id,account_derived_name account_name from api._account;
 --
 create view chat with (security_barrier) as
-select chat_id,account_id,account_name,account_image_url,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_reply_account_name,chat_markdown
+select chat_id,account_id,account_image_url,chat_at,chat_change_id,chat_reply_id,chat_reply_account_id,chat_reply_account_name,chat_markdown
      , chat_reply_account_id=get_account_id() chat_reply_account_is_me
+     , account_derived_name account_name
      , account_id=get_account_id() chat_account_is_me
      , (select count(1) from db.chat_flag where chat_id=chat.chat_id) chat_flag_count
      , (select count(1) from db.chat_star where chat_id=chat.chat_id) chat_star_count
@@ -21,7 +22,7 @@ from (select chat_id,sum(1/(gap+1)) weight
      natural join db.chat
      natural join db.account
      natural join api._account
-     natural left join (select chat_id chat_reply_id, account_id chat_reply_account_id, account_name chat_reply_account_name from db.chat natural join db.account) c
+     natural left join (select chat_id chat_reply_id, account_id chat_reply_account_id, account_derived_name chat_reply_account_name from db.chat natural join api._account) c
 order by weight desc limit 30;
 --
 create view one with (security_barrier) as

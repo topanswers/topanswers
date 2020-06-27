@@ -359,7 +359,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "fd143a3e3e6c3906",
     "/post.css": "6460b246ad7dc3b5",
-    "/require.config.js": "a85d584e1e78ca73",
+    "/require.config.js": "9f61ad3bd8f58b50",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
