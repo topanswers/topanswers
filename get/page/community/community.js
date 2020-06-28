@@ -155,10 +155,10 @@ define(['markdown','moment','js.cookie']
       } ) ) );
       mutationObserver.observe(document.getElementById('messages'), { childList: true });
 
-      map.addEventListener('click',(e)=>{
-        const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-e.layerY*map.naturalHeight/map.height).toFixed(3);
+      map.addEventListener('click',event=>{
+        const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-event.offsetY*map.naturalHeight/map.height).toFixed(3);
         if(DEV) console.log(ago);
-        e.preventDefault();
+        event.preventDefault();
         messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
         bar.style.display = 'none';
 
@@ -176,6 +176,11 @@ define(['markdown','moment','js.cookie']
           messages.append(...buffer.childNodes);
           scroll.scrollIntoView();
         });
+      });
+
+      map.addEventListener('mousemove',event=>{
+        const ago = (map.naturalHeight-event.offsetY*map.naturalHeight/map.height)
+        map.setAttribute('title',(new Date(new Date().setDate(new Date().getDate()-ago))).toISOString().split('T')[0]);
       });
 
     }catch(e){ console.error(e); }
