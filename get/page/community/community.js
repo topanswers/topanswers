@@ -56,7 +56,7 @@ define(['markdown','moment','js.cookie']
 
       scroller.addEventListener('scroll', e => {
         if(getting) return;
-        if(scroller.scrollTop>3000) return;
+        if(scroller.scrollTop>window.innerHeight) return;
         if(!messages.children.length) return;
         const spinner = document.querySelector('#messages>i:last-child');
         if(!spinner) return;
@@ -88,7 +88,7 @@ define(['markdown','moment','js.cookie']
       scroller.addEventListener('scroll', e => {
         if(getting) return;
         if(scroller.classList.contains('follow')) return;
-        if(scroller.scrollHeight-scroller.scrollTop-scroller.offsetHeight>3000) return;
+        if(scroller.scrollHeight-scroller.scrollTop-scroller.offsetHeight>window.innerHeight) return;
         if(!messages.children.length) return;
         const spinner = document.querySelector('#messages>i:first-child');
         if(!spinner) return;
