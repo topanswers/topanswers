@@ -67,40 +67,46 @@ create function range(startid bigint, endid bigint, lim integer)
                                   , notification_id bigint
                                   , chat_account_is_repeat boolean
                                   , chat_thread_ids bigint[]
+                                  , chat_is_first boolean
+                                  , chat_is_last boolean
                                    ) language sql security definer set search_path=db,api,chat,pg_temp as $$
   with g as (select get_account_id() account_id, get_room_id() room_id)
     , cr as (select coalesce((select communicant_is_post_flag_crew from db.communicant c where c.account_id = g.account_id and community_id=get_community_id()),false) is_crew from g)
    , cc1 as (select *
              from chat
              where room_id=(select room_id from g) and startid is not null and endid is not null and chat_id>=startid and chat_id<=endid
-                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
-             limit least(lim,201)+2)
+                   and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g)))
    , cc2 as (select *
              from chat
              where room_id=(select room_id from g) and startid is null and endid is not null and chat_id<=endid
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
              order by chat_id desc
-             limit least(lim,201)+1)
+             limit least(lim,50)+2)
    , cc3 as (select *
              from chat
              where room_id=(select room_id from g) and startid is not null and endid is null and chat_id>=startid
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
              order by chat_id
-             limit least(lim,201)+1)
+             limit least(lim,50)+2)
    , cc4 as (select *
              from chat
              where room_id=(select room_id from g) and startid is null and endid is null
                    and ((select is_crew from cr) or chat_crew_flags<0 or (((select account_id from g) is not null or chat_flags=0) and chat_crew_flags=0) or account_id=(select account_id from g))
              order by chat_id desc
-             limit least(lim,201))
+             limit least(lim,50)+1)
     , cc as (select * from cc1 union all select * from cc2 union all select * from cc3 union all select * from cc4)
-     , c as (select *, row_number() over(order by chat_at desc) rn
+     , c as (select *
+                  , row_number() over(order by chat_at desc) rn
+                  , case when startid is null then row_number() over(order by chat_at desc) else row_number() over(order by chat_at) end trn
              from (select *, (lead(account_id) over (order by chat_at desc)) is not distinct from account_id and chat_reply_id is null and chat_gap<60 chat_account_is_repeat
                    from (select *
                               , round(extract('epoch' from chat_at-(lead(chat_at) over (order by chat_at desc))))::integer chat_gap
                               , round(extract('epoch' from coalesce(lag(chat_at) over (order by chat_at desc),current_timestamp)-chat_at))::integer chat_next_gap
+                              , (lead(chat_id) over (order by chat_at desc)) is null chat_is_first
+                              , (lag(chat_id) over (order by chat_at desc)) is null chat_is_last
                          from cc) z) z
-             where startid=endid or ((chat_id>startid or startid is null) and (chat_id<endid or endid is null)))
+             where startid=endid or ((chat_id>startid or startid is null) and (chat_id<endid or endid is null))
+             )
   select chat_id,account_id,account_image_url,chat_reply_id,chat_markdown,chat_at,chat_change_id
        , account_id=(select account_id from g) account_is_me
        , account_derived_name account_name
@@ -121,33 +127,28 @@ create function range(startid bigint, endid bigint, lim integer)
        , chat_account_is_repeat
        , (select array_agg(thread_ancestor_chat_id) from thread where thread_descendant_chat_id=chat_id) ||
          (select array_agg(thread_descendant_chat_id) from thread where thread_ancestor_chat_id=chat_id) chat_thread_ids
+       , chat_is_first
+       , chat_is_last
   from c
        natural join account
        natural join _account
        natural join (select account_id,community_id,communicant_votes from communicant) v
        natural left join (select chat_id,notification_id from chat_notification natural join notification where account_id=get_account_id() and notification_dismissed_at is null) n
-  where rn<=least(lim,201)
+  where trn<=least(lim,50) or (startid is not null and endid is not null)
   order by rn;
 $$;
 --
-create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
-  select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
-  --
-  select '::: quote '||room_id||' '||cid||' '||(case when account_image_hash is null then account_id::text else encode(account_image_hash,'hex') end)||' '||community_rgb_mid||' '||community_rgb_dark||chr(10)
-         ||account_derived_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)
-           ||(case when room_id<>rid and room_question_id is not null then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?q='||room_question_id||'#c'||cid||')*'
-                   when room_id<>rid then chat_iso||' *in ['||room_derived_name||'](/'||community_name||'?room='||room_id||'#c'||cid||')*'
-                   else '['||chat_iso||'](#c'||cid||')' end)||'  '||chr(10)
-         ||regexp_replace(chat_markdown,'^','>','mg')||chr(10)
-         ||':::'
-  from (select chat_reply_id,room_id,room_question_id,room_derived_name,community_name,community_rgb_mid,community_rgb_dark,chat_at,chat_markdown,account_id,account_derived_name,account_image_hash
-             , to_char(chat_at,'YYYY-MM-DD"T"HH24:MI:SS"Z"') chat_iso
-        from chat natural join api._community natural join community natural join api._account natural join db.account natural join db.room natural join api._room
-        where chat_id=cid) c
-       natural left join (select chat_id chat_reply_id, account_derived_name reply_account_name from chat natural join api._account) r
+create function around(id integer, start_id out bigint, end_id out bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
+  select (select chat_id from chat where room_id=get_room_id() and chat_id<id order by chat_id desc offset 50 limit 1)
+        ,(select chat_id from chat where room_id=get_room_id() and chat_id>id order by chat_id offset 50 limit 1);
 $$;
-create function quote2(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
+--
+create function around(at timestamptz, start_id out bigint, end_id out bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
+  select (select chat_id from chat where room_id=get_room_id() and chat_at<at order by chat_id desc offset 50 limit 1)
+        ,(select chat_id from chat where room_id=get_room_id() and chat_at>at order by chat_id offset 50 limit 1);
+$$;
+--
+create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
   select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
   select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
   --

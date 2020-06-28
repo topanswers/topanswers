@@ -84,9 +84,10 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
              --font-monospace:<?=$my_community_monospace_font_name?>;
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
              "
-      <?=$auth?'data-auth ':''?>
-      <?=$dev?'data-dev ':''?>
-      <?=$communicant_is_post_flag_crew?'data-crew ':''?>
+      <?="data-room='$room_id'"?>
+      <?=$auth?'data-auth':''?>
+      <?=$dev?'data-dev':''?>
+      <?=$communicant_is_post_flag_crew?'data-crew':''?>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <noscript><link rel="stylesheet" href="<?=h("/noscript.css")?>"></noscript>
@@ -431,7 +432,6 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
       <div class="element">
         <a class="panel" data-panel="messages-wrapper"><?=$question?$l_comments:$l_chat?></a>
         <?if($auth){?> / <a class="panel" data-panel="starboard" href="."><?=$l_starred?></a><?}?>
-        <?if($auth&&$dev){?> / <a class="panel" data-panel="transcript" href="."><?=$l_transcript?></a><?}?>
         <?if($auth){?> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?>
       </div>
       <div class="element">
@@ -446,7 +446,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
     <div id="chat-panels">
       <div id="messages-wrapper" class="panel">
         <div id="chat" class="panel">
-          <div class="firefoxwrapper follow">
+          <div class="firefoxwrapper">
             <div id="messages">
               <?if(!$room_has_chat){?>
                 <?if($question){?>
@@ -467,9 +467,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
               <?}?>
             </div>
           </div>
-          <?if($dev && 1===2){?>
-            <a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>
-          <?}?>
+          <!--<a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>-->
           <?if($auth){?>
             <div id="active-users">
               <?$ch = curl_init('http://127.0.0.1/activeusers?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
@@ -506,6 +504,8 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
           </div>
         <?}?>
       </div>
+      <div id="scrollup" class="panel" style="visibility: hidden; z-index: -1;"></div>
+      <div id="scrolldown" class="panel" style="visibility: hidden; z-index: -1;"></div>
       <div id="newchat" class="panel" style="visibility: hidden; z-index: -1;">
         <?if($room_has_chat){?>
           <?$ch = curl_init('http://127.0.0.1/chat?room='.$room.'&limit=50'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
@@ -516,10 +516,6 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
           <div id="starboard">
             <?$ch = curl_init('http://127.0.0.1/starboard?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
             <div style="flex: 1 0 0;"></div>
-          </div>
-        </div>
-        <div class="firefoxwrapper" class="panel" style="visibility: hidden; z-index: -1;">
-          <div id="transcript">
           </div>
         </div>
         <div id="notifications" class="panel" style="visibility: hidden; z-index: -1;">

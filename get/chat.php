@@ -15,29 +15,35 @@ if(isset($_GET['minimap'])) {
   exit;
 }
 $one = isset($_GET['from']) && isset($_GET['to']);
+$from = $_GET['from']??'';
+$to = $_GET['to']??'';
+if(isset($_GET['daysago'])){
+  extract(cdb("select start_id::text \"from\", end_id::text \"to\" from around(current_timestamp - ($1||'d')::interval)",$_GET['daysago']));
+}
 $limited = false;
 if(isset($_GET['limit'])){
-  $limit = min(100,intval($_GET['limit']));
+  $limit = min(50,intval($_GET['limit']));
   $limited = true;
 }
 extract(cdb("select community_language,room_can_chat
                   , (select coalesce(jsonb_agg(z),'[]'::jsonb)
-                     from (select chat_id,account_id,account_image_url
-                                 ,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,chat_next_gap
-                                 ,communicant_votes,chat_editable_age,i_flagged,i_starred,chat_account_is_repeat,chat_crew_flags,chat_flag_count,chat_star_count,chat_has_history,chat_pings
-                                 ,notification_id
+                     from (select chat_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,chat_next_gap
+                                 ,chat_editable_age,i_flagged,i_starred,chat_account_is_repeat,chat_crew_flags,chat_flag_count,chat_star_count,chat_has_history,chat_pings,chat_is_last,chat_is_first
+                                 ,account_id,account_image_url,communicant_votes,notification_id
                                 , to_char(chat_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') chat_at_iso
                                 , current_date - chat_at::date chat_days_ago
+                                , current_date - (chat_at+(chat_next_gap||'s')::interval)::date chat_next_days_ago
                                 , coalesce(' t'||chat_id||' t'||array_to_string(chat_thread_ids,' t'),'') chat_thread_classes
                            from range(nullif($1,'')::bigint,nullif($2,'')::bigint,nullif($3::integer,0)) z) z) chats
-             from one",$_GET['from']??'',$_GET['to']??'',$limited?$limit+1:0),EXTR_PREFIX_ALL,'o');
-$more = $limited && (count($o_chats)>$limit);
-if($more) array_pop($o_chats);
+             from one",$from,$to,$limited?$limit:0),EXTR_PREFIX_ALL,'o');
 include '../lang/chat.'.$o_community_language.'.php';
 ?>
 <?foreach($o_chats as $n=>$r){ extract($r);?>
-  <?if( !isset($_GET['to']) && ($n===0) ){?>
-    <div class="spacer<?=$chat_next_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_next_gap)/4,2)?>em;" data-gap="<?=$chat_next_gap?>"></div>
+  <?if($n===0){?>
+    <?if(!$chat_is_last){?><i class="fa fa-fw fa-spinner"></i><?}?>
+    <?if($chat_is_last){?>
+      <div class="last spacer<?=$chat_next_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_next_gap)/4,2)?>em;" data-gap="<?=$chat_next_gap?>" data-days-ago="<?=$chat_next_days_ago?>"></div>
+    <?}?>
   <?}?>
   <div id="c<?=$chat_id?>"
        class="message<?=$account_is_me?' mine':''?><?=$chat_account_is_repeat?' merged':''?><?=$notification_id?' notify':''?><?=($chat_crew_flags>0)?' deleted':''?><?=$chat_thread_classes?>"
@@ -101,9 +107,7 @@ include '../lang/chat.'.$o_community_language.'.php';
     <?}?>
   </div>
   <?if(!$chat_account_is_repeat&&!$one){?>
-    <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>"></div>
+    <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>" data-days-ago="<?=$chat_days_ago?>"></div>
   <?}?>
 <?}?>
-<?if($more){?>
-  <i class="fa fa-fw fa-spinner"></i>
-<?}?>
+<?if(!$chat_is_first){?><i class="fa fa-fw fa-spinner"></i><?}?>
