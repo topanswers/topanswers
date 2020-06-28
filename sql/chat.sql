@@ -138,14 +138,14 @@ create function range(startid bigint, endid bigint, lim integer)
   order by rn;
 $$;
 --
-create function around(id integer, start_id out bigint, end_id out bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select (select chat_id from chat where room_id=get_room_id() and chat_id<id order by chat_id desc offset 50 limit 1)
-        ,(select chat_id from chat where room_id=get_room_id() and chat_id>id order by chat_id offset 50 limit 1);
+create function around(id bigint, start_id out bigint, end_id out bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
+  select (select chat_id from chat where room_id=get_room_id() and chat_id<id order by chat_id desc offset 30 limit 1)
+        ,(select chat_id from chat where room_id=get_room_id() and chat_id>id order by chat_id offset 30 limit 1);
 $$;
 --
 create function around(at timestamptz, start_id out bigint, end_id out bigint) language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select (select chat_id from chat where room_id=get_room_id() and chat_at<at order by chat_id desc offset 50 limit 1)
-        ,(select chat_id from chat where room_id=get_room_id() and chat_at>at order by chat_id offset 50 limit 1);
+  select (select chat_id from chat where room_id=get_room_id() and chat_at<at order by chat_id desc offset 30 limit 1)
+        ,(select chat_id from chat where room_id=get_room_id() and chat_at>at order by chat_id offset 30 limit 1);
 $$;
 --
 create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$

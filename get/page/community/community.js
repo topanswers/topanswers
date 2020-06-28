@@ -5,10 +5,49 @@ define(['markdown','moment','js.cookie']
 
   const DEV = 'dev' in document.documentElement.dataset
       , AUTH = 'auth' in document.documentElement.dataset
-      , ROOM = document.documentElement.dataset.room;
+      , ROOM = document.documentElement.dataset.room
+      , ROOM_CHAT_COUNT = document.documentElement.dataset.roomChatCount
+      , ROOM_CHAT_AGE = document.documentElement.dataset.roomChatAge;
 
 
   try{ // chat
+
+
+    try{ // 'reply to' links
+
+      const panels = document.getElementById('chat-panels');
+
+      panels.addEventListener('click',event=>{
+        if(event.target.classList.contains('reply')){
+          event.preventDefault();
+          const id = event.target.getAttribute('href').substring(2);
+          let promise = Promise.resolve(), target = document.getElementById('c'+id);
+
+          if(!target){
+            const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), bar = document.querySelector('#minimap>div');
+            if(bar) bar.style.display = 'none';
+            messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
+            promise = fetch('/chat?room='+ROOM+'&around='+id, { credentials: 'include' })
+            .then(response => { if(response.ok) return response.text() })
+            .then(data => { buffer.innerHTML = data; return processNewChat(buffer); })
+            .then(()=>{
+              messages.innerHTML = '';
+              messages.append(...buffer.childNodes);
+              target = document.getElementById('c'+id);
+              target.scrollIntoView({ block: 'center' });
+            });
+          }
+
+          promise.then(()=>{
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.classList.remove('target');
+            target.classList.add('target');
+          });
+        }
+      },true);
+
+    }catch(e){ console.error(e); }
+
 
     try{ // infinity scroll up
 
@@ -92,6 +131,7 @@ define(['markdown','moment','js.cookie']
     try{ // minimap
 
       const map = document.querySelector('#minimap>img'), bar = document.querySelector('#minimap>div');
+      if( ROOM_CHAT_COUNT>50 && ROOM_CHAT_AGE>10 ) map.style.display = 'block';
 
       let intersectionObserver = new IntersectionObserver((entries,observer)=>{
 
@@ -104,8 +144,8 @@ define(['markdown','moment','js.cookie']
           start = Math.min(start,message.dataset.daysAgo);
         });
 
-        bar.style.bottom = (start*100/(map.naturalHeight-1))+'%';
-        bar.style.height = Math.round(((end-start)*100/(map.naturalHeight-1)))+'%';
+        bar.style.bottom = (start*100/(map.naturalHeight))+'%';
+        bar.style.height = ((end-start+1)*100/(map.naturalHeight))+'%';
         bar.style.display = 'block';
 
       }, { root: document.querySelector('#chat>.firefoxwrapper') });
@@ -116,26 +156,28 @@ define(['markdown','moment','js.cookie']
       mutationObserver.observe(document.getElementById('messages'), { childList: true });
 
       map.addEventListener('click',(e)=>{
-        const newchat = document.getElementById('newchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-e.layerY*map.naturalHeight/map.height).toFixed(3);
+        const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-e.layerY*map.naturalHeight/map.height).toFixed(3);
         if(DEV) console.log(ago);
         e.preventDefault();
         messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
         bar.style.display = 'none';
-        fetch('/chat?room='+ROOM+'&daysago='+ago, { credentials: 'include' }).then(response => {
-          if(response.ok) return response.text().then(data => {
-            newchat.innerHTML = data;
-            for(let child of newchat.children){
-              scroll = child;
-              if(+child.dataset.daysAgo>ago) break;
-            }
-            processNewChat(newchat).then(()=>{
-              messages.innerHTML = '';
-              messages.append(...newchat.childNodes);
-              scroll.scrollIntoView();
-            });
-          });
+
+        fetch('/chat?room='+ROOM+'&daysago='+ago, { credentials: 'include' })
+        .then(response => { if(response.ok) return response.text(); })
+        .then(data => {
+          buffer.innerHTML = data;
+          for(let child of buffer.children){
+            scroll = child;
+            if(+child.dataset.daysAgo>ago) break;
+          }
+          return processNewChat(buffer);
+        }).then(()=>{
+          messages.innerHTML = '';
+          messages.append(...buffer.childNodes);
+          scroll.scrollIntoView();
         });
       });
+
     }catch(e){ console.error(e); }
 
     try{ // image pasting
@@ -434,13 +476,7 @@ define(['markdown','moment','js.cookie']
     $(buffer).children('.bigspacer').each(function(){ $(this).text(moment.duration($(this).data('gap'),'seconds').humanize()); });
     newchat.each(function(){ if($(this).data('change-id')>maxChatChangeID) maxChatChangeID = $(this).data('change-id'); });
 
-    return Promise.allSettled(promises).then(() => {
-      $('.message').find('.who a.reply').each(function(){ const t = $(this); t.attr('href','#c'+t.closest('.message').data('reply-id')); });
-      $('.message').find('.who a.reply').filter(function(){ return $('#c'+$(this).closest('.message').data('reply-id')).length===0; }).each(function(){
-        var id = $(this).attr('href').substring(2);
-        $(this).attr('href','/transcript?room='+$('html').attr('data-room')+'&id='+id+'#c'+id);
-      });
-    });
+    return Promise.allSettled(promises);
   }
   function updateRoomLatest(){
     $('#community-rooms a').each(function(){
@@ -595,7 +631,7 @@ define(['markdown','moment','js.cookie']
   $('#poll').click(function(){ checkChat(); });
   $('#chat-wrapper').on('mouseenter', '.message', function(){ $('.message.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave', '.message', function(){ $('.thread').removeClass('thread'); });
   $('#chat-wrapper').on('click','.fa-reply', function(){
-    var m = $(this).closest('.message'), url = location.href;
+    var m = $(this).closest('.message');
     $('#status').attr('data-replyid',m.data('chat-id')).attr('data-replyname',m.data('name')).data('update')();
     $('#chat-bar a.panel[href][data-panel="messages-wrapper"]').click();
     $('.replying').removeClass('replying');
@@ -1070,12 +1106,6 @@ define(['markdown','moment','js.cookie']
   $('.panecontrol.fa-angle-double-left').click(function(){ localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane'); });
   $('a.license').click(function(){ $(this).hide().next('.element').show(); return false; });
 
-  $('#chat').on('click','a.reply[href^="#"]', function(){
-    const hash = $(this).attr('href');
-    $(hash)[0].scrollIntoView({ behavior: 'smooth' });
-    $(hash).addClass('target').children('.markdown').off('animationend').on('animationend',function(){ $(hash).removeClass('target'); });
-    return false;
-  });
   $('#keyboard>span>span').click(function(){
     textareaInsertTextAtCursor($('#chattext'),$(this).text());
     $('#chattext').focus();

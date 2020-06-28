@@ -30,7 +30,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,community_ask_button_text,community_banner_markdown,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import,communicant_keyboard
-                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned,room_image_url
+                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned,room_image_url,room_chat_count,room_chat_age
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
@@ -85,6 +85,8 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
              "
       <?="data-room='$room_id'"?>
+      <?="data-room-chat-count='$room_chat_count'"?>
+      <?="data-room-chat-age='$room_chat_age'"?>
       <?=$auth?'data-auth':''?>
       <?=$dev?'data-dev':''?>
       <?=$communicant_is_post_flag_crew?'data-crew':''?>
@@ -445,7 +447,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
     </div>
     <div id="chat-panels">
       <div id="messages-wrapper" class="panel">
-        <div id="chat" class="panel">
+        <div id="chat">
           <div class="firefoxwrapper">
             <div id="messages">
               <?if(!$room_has_chat){?>
@@ -467,7 +469,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
               <?}?>
             </div>
           </div>
-          <!--<a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>-->
+          <a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>
           <?if($auth){?>
             <div id="active-users">
               <?$ch = curl_init('http://127.0.0.1/activeusers?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
@@ -506,6 +508,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
       </div>
       <div id="scrollup" class="panel" style="visibility: hidden; z-index: -1;"></div>
       <div id="scrolldown" class="panel" style="visibility: hidden; z-index: -1;"></div>
+      <div id="jumpchat" class="panel" style="visibility: hidden; z-index: -1;"></div>
       <div id="newchat" class="panel" style="visibility: hidden; z-index: -1;">
         <?if($room_has_chat){?>
           <?$ch = curl_init('http://127.0.0.1/chat?room='.$room.'&limit=50'); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>

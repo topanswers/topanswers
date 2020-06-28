@@ -78,7 +78,8 @@ select account_id,account_image_url
       ,community_id,community_name,community_display_name,community_language,community_my_power,community_code_language,community_tio_language,community_tables_are_monospace
       ,community_about_question_id,community_ask_button_text,community_banner_markdown,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
-      ,room_id,room_image_url
+      ,room_id,room_image_url,room_chat_count
+     , (select max(chat_at)::date-min(chat_at)::date from db.chat c where c.room_id=r.room_id) room_chat_age
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged
       ,question_i_counterflagged,question_when,question_account_id,question_account_name,question_account_is_imported,question_account_image_url
