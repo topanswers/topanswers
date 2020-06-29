@@ -13,6 +13,7 @@ define(['markdown','moment','js.cookie']
 
   try{ // chat
 
+    let saved;
 
     try{ // 'reply to' links
 
@@ -26,6 +27,7 @@ define(['markdown','moment','js.cookie']
 
           if(!target){
             const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages');
+            if(!saved) saved = [...messages.children];
             messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
             promise = fetch('/chat?room='+ROOM+'&around='+id, { credentials: 'include' })
             .then(response => { if(response.ok) return response.text() })
@@ -134,7 +136,6 @@ define(['markdown','moment','js.cookie']
       if(MINIMAP){
 
         const map = document.querySelector('#minimap>img'), bar = document.querySelector('#minimap>div');
-        let saved;
 
         let intersectionObserver = new IntersectionObserver((entries,observer)=>{
 
