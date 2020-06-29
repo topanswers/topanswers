@@ -5,6 +5,7 @@ define(['markdown','moment','js.cookie']
 
   const DEV = 'dev' in document.documentElement.dataset
       , AUTH = 'auth' in document.documentElement.dataset
+      , MINIMAP = 'minimap' in document.documentElement.dataset
       , ROOM = document.documentElement.dataset.room
       , ROOM_CHAT_COUNT = document.documentElement.dataset.roomChatCount
       , ROOM_CHAT_AGE = document.documentElement.dataset.roomChatAge;
@@ -24,13 +25,13 @@ define(['markdown','moment','js.cookie']
           let promise = Promise.resolve(), target = document.getElementById('c'+id);
 
           if(!target){
-            const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), bar = document.querySelector('#minimap>div');
-            if(bar) bar.style.display = 'none';
+            const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages');
             messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
             promise = fetch('/chat?room='+ROOM+'&around='+id, { credentials: 'include' })
             .then(response => { if(response.ok) return response.text() })
             .then(data => { buffer.innerHTML = data; return processNewChat(buffer); })
             .then(()=>{
+              document.getElementById('minimap').style.display = 'block';
               messages.innerHTML = '';
               messages.append(...buffer.childNodes);
               target = document.getElementById('c'+id);
@@ -130,58 +131,73 @@ define(['markdown','moment','js.cookie']
 
     try{ // minimap
 
-      const map = document.querySelector('#minimap>img'), bar = document.querySelector('#minimap>div');
-      if( ROOM_CHAT_COUNT>50 && ROOM_CHAT_AGE>10 ) map.style.display = 'block';
+      if(MINIMAP){
 
-      let intersectionObserver = new IntersectionObserver((entries,observer)=>{
+        const map = document.querySelector('#minimap>img'), bar = document.querySelector('#minimap>div');
 
-        entries.forEach( entry => entry.target.classList.toggle('viewport',entry.isIntersecting) );
+        let intersectionObserver = new IntersectionObserver((entries,observer)=>{
 
-        let start = map.naturalHeight-1, end = 0;
+          entries.forEach( entry => entry.target.classList.toggle('viewport',entry.isIntersecting) );
 
-        document.querySelectorAll('#messages>.viewport').forEach(message=>{
-          end = Math.max(end,message.dataset.daysAgo);
-          start = Math.min(start,message.dataset.daysAgo);
+          let start = map.naturalHeight-1, end = 0;
+
+          document.querySelectorAll('#messages>.viewport').forEach(message=>{
+            end = Math.max(end,message.dataset.daysAgo);
+            start = Math.min(start,message.dataset.daysAgo);
+          });
+
+          bar.style.bottom = (start*100/(map.naturalHeight))+'%';
+          bar.style.height = ((end-start+1)*100/(map.naturalHeight))+'%';
+          bar.style.display = 'block';
+
+        }, { root: document.querySelector('#chat>.firefoxwrapper') });
+
+        let mutationObserver = new MutationObserver((mutationsList, observer)=> mutationsList.forEach( mutation => mutation.addedNodes.forEach( child => {
+          if(child instanceof Element) if('daysAgo' in child.dataset) intersectionObserver.observe(child);
+        } ) ) );
+        mutationObserver.observe(document.getElementById('messages'), { childList: true });
+
+        map.addEventListener('click',event=>{
+          const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-event.offsetY*map.naturalHeight/map.height).toFixed(3);
+          if(DEV) console.log(ago);
+          event.preventDefault();
+          messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
+          bar.style.display = 'none';
+
+          fetch('/chat?room='+ROOM+'&daysago='+ago, { credentials: 'include' })
+          .then(response => { if(response.ok) return response.text(); })
+          .then(data => {
+            buffer.innerHTML = data;
+            for(let child of buffer.children){
+              scroll = child;
+              if(+child.dataset.daysAgo>ago) break;
+            }
+            return processNewChat(buffer);
+          }).then(()=>{
+            messages.innerHTML = '';
+            messages.append(...buffer.childNodes);
+            scroll.scrollIntoView();
+          });
         });
 
-        bar.style.bottom = (start*100/(map.naturalHeight))+'%';
-        bar.style.height = ((end-start+1)*100/(map.naturalHeight))+'%';
-        bar.style.display = 'block';
-
-      }, { root: document.querySelector('#chat>.firefoxwrapper') });
-
-      let mutationObserver = new MutationObserver((mutationsList, observer)=> mutationsList.forEach( mutation => mutation.addedNodes.forEach( child => {
-        if(child instanceof Element) if('daysAgo' in child.dataset) intersectionObserver.observe(child);
-      } ) ) );
-      mutationObserver.observe(document.getElementById('messages'), { childList: true });
-
-      map.addEventListener('click',event=>{
-        const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-event.offsetY*map.naturalHeight/map.height).toFixed(3);
-        if(DEV) console.log(ago);
-        event.preventDefault();
-        messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
-        bar.style.display = 'none';
-
-        fetch('/chat?room='+ROOM+'&daysago='+ago, { credentials: 'include' })
-        .then(response => { if(response.ok) return response.text(); })
-        .then(data => {
-          buffer.innerHTML = data;
-          for(let child of buffer.children){
-            scroll = child;
-            if(+child.dataset.daysAgo>ago) break;
-          }
-          return processNewChat(buffer);
-        }).then(()=>{
-          messages.innerHTML = '';
-          messages.append(...buffer.childNodes);
-          scroll.scrollIntoView();
+        map.addEventListener('mousemove',event=>{
+          const ago = (map.naturalHeight-event.offsetY*map.naturalHeight/map.height)
+          map.setAttribute('title',(new Date(new Date().setDate(new Date().getDate()-ago))).toISOString().split('T')[0]);
         });
-      });
 
-      map.addEventListener('mousemove',event=>{
-        const ago = (map.naturalHeight-event.offsetY*map.naturalHeight/map.height)
-        map.setAttribute('title',(new Date(new Date().setDate(new Date().getDate()-ago))).toISOString().split('T')[0]);
-      });
+        document.getElementById('showmap').addEventListener('click',event=>{
+          document.getElementById('minimap').style.display = 'block';
+          document.getElementById('hidemap').style.display = 'block';
+          event.target.style.display = 'none';
+        });
+
+        document.getElementById('hidemap').addEventListener('click',event=>{
+          document.getElementById('minimap').style.display = 'none';
+          document.getElementById('showmap').style.display = 'block';
+          event.target.style.display = 'none';
+        });
+
+      }
 
     }catch(e){ console.error(e); }
 

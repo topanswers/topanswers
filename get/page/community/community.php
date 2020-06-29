@@ -30,7 +30,7 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,community_ask_button_text,community_banner_markdown,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
                    ,communicant_is_post_flag_crew,communicant_can_import,communicant_keyboard
-                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned,room_image_url,room_chat_count,room_chat_age
+                   ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned,room_image_url,room_show_minimap
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
@@ -89,6 +89,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
       <?="data-room-chat-age='$room_chat_age'"?>
       <?=$auth?'data-auth':''?>
       <?=$dev?'data-dev':''?>
+      <?=$room_show_minimap?'data-minimap':''?>
       <?=$communicant_is_post_flag_crew?'data-crew':''?>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -469,10 +470,14 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
               <?}?>
             </div>
           </div>
-          <a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>
+          <?if($room_show_minimap){?><a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a><?}?>
           <?if($auth){?>
-            <div id="active-users">
-              <?$ch = curl_init('http://127.0.0.1/activeusers?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+            <div id="chat-sidebar">
+              <?if($room_show_minimap){?>
+                <i id="showmap" class="fa fa-fw fa-history"></i>
+                <i id="hidemap" class="fa fa-fw fa-history"></i>
+              <?}?>
+              <div id="active-users"><?$ch = curl_init('http://127.0.0.1/activeusers?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
             </div>
           <?}?>
         </div>

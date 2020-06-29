@@ -51,9 +51,9 @@ a[data-lightbox] img { cursor: zoom-in; }
 #chat-panels { display: flex; position: relative; flex: 1 1 auto; flex-direction: column; overflow: hidden; background: rgb(var(--rgb-light)); }
 #chat-panels>div { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
 
-#minimap { position: relative; }
-#minimap>div { position: absolute; left: 0; right: 0; border: 1px solid rgb(var(--rgb-highlight)); border-width: 1px 0; background: rgba(var(--rgb-highlight),0.2); pointer-events: none; display: none; }
-#minimap>img { width: 12px; border: 1px solid rgb(var(--rgb-dark)); border-width: 0 1px; height: 100%; display: none; }
+#minimap { position: relative; display: none; }
+#minimap>div { position: absolute; z-index: 1; left: 0; right: 0; border: 1px solid rgb(var(--rgb-highlight)); border-width: 1px 0; background: rgba(var(--rgb-highlight),0.2); pointer-events: none; display: none; }
+#minimap>img { width: 22px; border: 1px solid rgb(var(--rgb-dark)); border-width: 0 1px; height: 100%; }
 
 #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: flex; visibility: hidden; flex-direction: column; scroll-behavior: smooth; }
 #notifications>hr { margin: 14px 6px; border: 1px solid rgb(var(--rgb-dark)); }
@@ -143,7 +143,11 @@ a[data-lightbox] img { cursor: zoom-in; }
 .notification>a { color: rgb(var(--rgb-dark)); }
 .notification + .notification { margin-top: 0; }
 
-#active-users { flex: 0 0 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
+#chat-sidebar { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; }
+#active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
+#showmap,
+#hidemap { flex: 0 0 auto; cursor: pointer; color: rgb(var(--rgb-dark)); width: 20px; height: 20px; margin: 4px 1px; font-size: 16px; }
+#hidemap { display: none; }
 
 .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
 .simple-pagination ul { display: flex; padding: 0; margin: 2px; }
@@ -179,5 +183,4 @@ a[data-lightbox] img { cursor: zoom-in; }
   .pages select { display: none; }
   [data-rz-handle] { display: none; }
   #search { flex: 0 1 570px; }
-  #minimap>img { width: 9px; }
 }
