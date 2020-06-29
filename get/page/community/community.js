@@ -31,9 +31,9 @@ define(['markdown','moment','js.cookie']
             .then(response => { if(response.ok) return response.text() })
             .then(data => { buffer.innerHTML = data; return processNewChat(buffer); })
             .then(()=>{
-              document.getElementById('minimap').style.display = 'block';
+              document.getElementById('minimap-wrapper').style.display = 'flex';
               messages.innerHTML = '';
-              messages.append(...buffer.childNodes);
+              messages.append(...buffer.children);
               target = document.getElementById('c'+id);
               target.scrollIntoView({ block: 'center' });
             });
@@ -134,21 +134,27 @@ define(['markdown','moment','js.cookie']
       if(MINIMAP){
 
         const map = document.querySelector('#minimap>img'), bar = document.querySelector('#minimap>div');
+        let saved;
 
         let intersectionObserver = new IntersectionObserver((entries,observer)=>{
 
           entries.forEach( entry => entry.target.classList.toggle('viewport',entry.isIntersecting) );
+          const messages = document.querySelectorAll('#messages>.viewport');
 
-          let start = map.naturalHeight-1, end = 0;
+          if(messages.length>0){
 
-          document.querySelectorAll('#messages>.viewport').forEach(message=>{
-            end = Math.max(end,message.dataset.daysAgo);
-            start = Math.min(start,message.dataset.daysAgo);
-          });
+            let start = map.naturalHeight-1, end = 0;
 
-          bar.style.bottom = (start*100/(map.naturalHeight))+'%';
-          bar.style.height = ((end-start+1)*100/(map.naturalHeight))+'%';
-          bar.style.display = 'block';
+            document.querySelectorAll('#messages>.viewport').forEach(message=>{
+              end = Math.max(end,message.dataset.daysAgo);
+              start = Math.min(start,message.dataset.daysAgo);
+            });
+
+            bar.style.bottom = (start*100/(map.naturalHeight))+'%';
+            bar.style.height = ((end-start+1)*100/(map.naturalHeight))+'%';
+            bar.style.display = 'block';
+
+          }
 
         }, { root: document.querySelector('#chat>.firefoxwrapper') });
 
@@ -157,10 +163,10 @@ define(['markdown','moment','js.cookie']
         } ) ) );
         mutationObserver.observe(document.getElementById('messages'), { childList: true });
 
-        map.addEventListener('click',event=>{
-          const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-event.offsetY*map.naturalHeight/map.height).toFixed(3);
+        function jump(offsetY){
+          const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-offsetY*map.naturalHeight/map.height).toFixed(3);
           if(DEV) console.log(ago);
-          event.preventDefault();
+          if(!saved) saved = [...messages.children];
           messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
           bar.style.display = 'none';
 
@@ -175,9 +181,14 @@ define(['markdown','moment','js.cookie']
             return processNewChat(buffer);
           }).then(()=>{
             messages.innerHTML = '';
-            messages.append(...buffer.childNodes);
+            messages.append(...buffer.children);
             scroll.scrollIntoView();
           });
+        }
+
+        map.addEventListener('click',event=>{
+          event.preventDefault();
+          jump(event.offsetY);
         });
 
         map.addEventListener('mousemove',event=>{
@@ -186,17 +197,29 @@ define(['markdown','moment','js.cookie']
         });
 
         document.getElementById('showmap').addEventListener('click',event=>{
-          document.getElementById('minimap').style.display = 'block';
+          document.getElementById('minimap-wrapper').style.display = 'flex';
           document.getElementById('hidemap').style.display = 'block';
           event.target.style.display = 'none';
         });
 
         document.getElementById('hidemap').addEventListener('click',event=>{
-          document.getElementById('minimap').style.display = 'none';
+          document.getElementById('minimap-wrapper').style.display = 'none';
           document.getElementById('showmap').style.display = 'block';
           event.target.style.display = 'none';
         });
 
+        document.getElementById('startmap').addEventListener('click',event=>{
+          jump(0);
+        });
+
+        document.getElementById('endmap').addEventListener('click',event=>{
+          if(saved){
+            messages.innerHTML = '';
+            messages.append(...saved);
+            saved = null;
+            messages.children[0].scrollIntoView(false);
+          }
+        });
       }
 
     }catch(e){ console.error(e); }

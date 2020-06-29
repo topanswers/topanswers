@@ -470,7 +470,13 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
               <?}?>
             </div>
           </div>
-          <?if($room_show_minimap){?><a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a><?}?>
+          <?if($room_show_minimap){?>
+            <div id="minimap-wrapper">
+              <i id="startmap" class="fa fa-fw fa-step-backward fa-rotate-90"></i>
+              <a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>
+              <i id="endmap" class="fa fa-fw fa-step-forward fa-rotate-90"></i>
+            </div>
+          <?}?>
           <?if($auth){?>
             <div id="chat-sidebar">
               <?if($room_show_minimap){?>
