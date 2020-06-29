@@ -20,7 +20,7 @@ define(['markdown','moment','js.cookie']
       const panels = document.getElementById('chat-panels');
 
       panels.addEventListener('click',event=>{
-        if(event.target.classList.contains('reply')){
+        if( (event.target.nodeName==='A') && (event.target.getAttribute('href').substring(0,2)==='#c') ){
           event.preventDefault();
           const id = event.target.getAttribute('href').substring(2);
           let promise = Promise.resolve(), target = document.getElementById('c'+id);
