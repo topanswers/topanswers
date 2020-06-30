@@ -15,7 +15,7 @@ define(['markdown','moment','js.cookie']
 
     let saved;
 
-    try{ // 'reply to' links
+    try{ // 'reply to' and other chat '#' links
 
       const panels = document.getElementById('chat-panels');
 
@@ -43,8 +43,10 @@ define(['markdown','moment','js.cookie']
 
           promise.then(()=>{
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            target.classList.remove('target');
             target.classList.add('target');
+            target.addEventListener('animationend',event=>{
+              target.classList.remove('target');
+            });
           });
         }
       },true);
