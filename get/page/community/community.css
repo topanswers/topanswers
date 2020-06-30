@@ -137,7 +137,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
 .message:not(:target).notify .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-dark)) inset; }
 @keyframes targt { 0% { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; } 80% { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; } 100% { box-shadow: none; } }
-.message.target .markdown { animation: targt 5s; }
+.message.target .markdown { animation: targt 3s; }
 .message.replying .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
 
 .notification { flex: 0 0 auto; padding: 4px; border-radius: 3px; margin: 3px; border: 1px solid rgba(var(--rgb-dark),0.6); }

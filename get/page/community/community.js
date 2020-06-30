@@ -221,8 +221,8 @@ define(['markdown','moment','js.cookie']
             messages.innerHTML = '';
             messages.append(...saved);
             saved = null;
-            messages.children[0].scrollIntoView(false);
           }
+          messages.children[0].scrollIntoView(false);
         });
 
         document.getElementById('datemap').children[0].addEventListener('change',event=>{
