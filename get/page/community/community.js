@@ -24,6 +24,7 @@ define(['markdown','moment','js.cookie']
           event.preventDefault();
           const id = event.target.getAttribute('href').substring(2);
           let promise = Promise.resolve(), target = document.getElementById('c'+id);
+          document.querySelector('#chat-bar a.panel[data-panel="messages-wrapper"]').click();
 
           if(!target){
             const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages');

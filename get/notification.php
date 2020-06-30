@@ -34,7 +34,6 @@ extract(cdb("select room_id,room_can_chat
                            where notification_type is not null) z
                      where notification_stack_rn=1) notifications
              from one",$limit));
-ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <?$seperator = false; $n = 0;?>
 <?foreach($notifications as $notification){ extract($notification); extract($notification_data,EXTR_PREFIX_ALL,'d');?>
@@ -46,14 +45,14 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
     <?if($notification_type==='chat'){?>
       <span class="who" title="<?=$d_chat_from_account_name?><?=$d_chat_reply_id?' replying to '.($d_chat_reply_account_is_me?'Me':$d_chat_reply_account_name):''?> in <?=$d_chat_room_name?>">
         <?if(!$notification_dismissed_at){?><i class="fa fa-times-circle" title="dismiss notification"></i><?}?>
-        <span class="when" data-at="<?=$notification_at_iso?>"></span>,
-        <?=$d_chat_from_account_name?>
+        <span class="when" data-at="<?=$notification_at_iso?>"></span>
+        <span>, <?=$d_chat_from_account_name?></span>
         <?if($d_room_id!==$room_id){?>
-          <?=$d_chat_reply_id?' <span>&nbsp;replying to&nbsp;</span> '.($d_chat_reply_account_is_me?'<em>Me</em>':$d_chat_reply_account_name):''?>
-          <span>&nbsp;in&nbsp;</span>
+          <?=$d_chat_reply_id?'<span> replying to </span>'.($d_chat_reply_account_is_me?'<em>Me</em>':$d_chat_reply_account_name):''?>
+          <span> in </span>
           <a class="ellipsis" href="/<?=$d_community_name?>?<?=$d_chat_is_question_room?'q='.$d_room_question_id:'room='.$d_room_id?>" data-room="<?=$d_room_id?>" title="<?=$d_chat_room_name?>"><?=$d_chat_room_name?></a>
         <?}else{?>
-          <?=$d_chat_reply_id?'<a class="reply" href="#c'.$d_chat_reply_id.'">&nbsp;replying to&nbsp;</a> '.($d_chat_reply_account_is_me?'<em>Me</em>':$d_chat_reply_account_name):''?>
+          <?=$d_chat_reply_id?'<span> <a class="reply" href="#c'.$d_chat_reply_id.'">replying to</a> </span>'.($d_chat_reply_account_is_me?'<em>Me</em>':$d_chat_reply_account_name):''?>
         <?}?>
       </span>
       <img title="<?=$d_chat_from_account_name?>" class="icon" src="<?=$d_chat_from_account_image_url?>">
@@ -73,7 +72,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <i class="fa fa-reply fa-rotate-180" title="reply"></i>
           </span>
           <span class="button-group">
-            <a href="/transcript?room=<?=$d_room_id?>&id=<?=$d_chat_id?>#c<?=$d_chat_id?>" class="fa fa-link" title="permalink"></a>
+            <a href="<?if($d_room_id!==$room_id){?>/<?=$d_community_name?>?room=<?=$d_room_id?><?}?>#c<?=$d_chat_id?>" class="fa fa-link" title="permalink"></a>
             <i class="fa fa-ellipsis-h" title="more actions"></i>
             <?if($d_chat_has_history){?><a href="/chat-history?id=<?=$notification_id?>" class="fa fa-clock-o" title="history"></a><?}else{?><i></i><?}?>
             <i></i>
@@ -117,4 +116,3 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
   </div>
 <?}?>
 <?if($has_dismissed&&($n===$limit)){?><a id="more-notifications" href="." data-dismissed="<?=isset($_GET['dismissed'])?(intval($_GET['dismissed']*2)):'10'?>">show <?=isset($_GET['dismissed'])?'more ':''?>dismissed notifications</a><?}?>
-<?ob_end_flush();

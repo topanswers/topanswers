@@ -25,7 +25,7 @@ textarea, pre, code, .CodeMirror { font-family: var(--font-monospace); }
 .icon.pingable:not(.ping):hover { box-shadow: 0 0 0 1px rgb(var(--rgb-dark)); cursor: pointer; transition: box-shadow linear 0.1s; }
 .icon.ping { box-shadow: 0 0 0 1px rgb(var(--rgb-highlight)); }
 html[data-dev] .changed { outline: 2px solid orange; }
-.spacer { flex: 0 0 auto; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: rgba(var(--rgb-dark),0.6); pointer-events: none; }
+.spacer { flex: 0 0 auto; width: 100%; text-align: right; font-size: smaller; font-style: italic; color: rgba(var(--rgb-black),0.3); pointer-events: none; }
 .spacer:not(:first-child) { min-height: 13px; }
 
 a[data-lightbox] img { cursor: zoom-in; }
@@ -115,9 +115,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 
 .message { position: relative; flex: 0 0 auto; display: flex; align-items: flex-start; }
 .message .who { white-space: nowrap; font-size: 10px; position: absolute; }
-.message .who>a { color: rgb(var(--rgb-dark)); }
-.message .who>a[href^='#'] { text-decoration: none; }
-.message .when { color: rgb(var(--rgb-dark)); transition: opacity linear 0.1s; }
+.message .when { transition: opacity linear 0.1s; }
 .message .markdown { flex: 0 1 auto; max-height: 30vh; padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; background: rgb(var(--rgb-white)); overflow: auto; transition: background linear 0.1s; }
 .message[data-crew-flags]:not([data-crew-flags^="-"]):not([data-crew-flags^="0"]) .markdown { background: linear-gradient(rgba(var(--rgb-warning),0.13),rgba(var(--rgb-warning),0.13)), rgb(var(--rgb-white)); }
 .message .markdown img { max-height: 120px; }
@@ -145,9 +143,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 .notification:not(.message) { display: flex; overflow: hidden; font-size: 12px; white-space: nowrap; }
 .notification.message { padding-top: 1.3em; }
 .notification.message .who { display: flex; width: calc(100% - 8px); overflow: hidden; top: 0.2rem; font-size: 12px; }
-.notification.message .who > span { color: rgb(var(--rgb-dark)); }
-.notification.message .who > a['href'^='#'] { text-decoration: none; }
-.notification .when { color: rgb(var(--rgb-dark)); }
+.notification.message .who>* { white-space: pre; }
 .notification .ellipsis { overflow: hidden; text-overflow: ellipsis; }
 .notification .fa.fa-times-circle { color: rgb(var(--rgb-warning)); cursor: pointer; margin: 0 3px 0 1px; }
 .notification .fa.fa-spinner { color: rgb(var(--rgb-dark)); }
