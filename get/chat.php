@@ -14,7 +14,7 @@ if(isset($_GET['minimap'])) {
   imagejpeg($image,null,90);
   exit;
 }
-$one = isset($_GET['from']) && isset($_GET['to']);
+$one = isset($_GET['from']) && isset($_GET['to']) && $_GET['from']===$_GET['to'];
 $from = $_GET['from']??'';
 $to = $_GET['to']??'';
 if(isset($_GET['around'])){
@@ -42,7 +42,7 @@ extract(cdb("select community_language,room_can_chat
 include '../lang/chat.'.$o_community_language.'.php';
 ?>
 <?foreach($o_chats as $n=>$r){ extract($r);?>
-  <?if($n===0){?>
+  <?if( ($n===0) && !$one ){?>
     <?if(!$chat_is_last){?><i class="fa fa-fw fa-spinner"></i><?}?>
     <?if($chat_is_last){?>
       <div class="last spacer<?=$chat_next_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_next_gap)/4,2)?>em;" data-gap="<?=$chat_next_gap?>" data-days-ago="<?=$chat_next_days_ago?>"></div>
@@ -113,4 +113,4 @@ include '../lang/chat.'.$o_community_language.'.php';
     <div class="spacer<?=$chat_gap>600?' bigspacer':''?>" style="line-height: <?=round(log(1+$chat_gap)/4,2)?>em;" data-gap="<?=$chat_gap?>" data-days-ago="<?=$chat_days_ago?>"></div>
   <?}?>
 <?}?>
-<?if(!$chat_is_first){?><i class="fa fa-fw fa-spinner"></i><?}?>
+<?if( !$chat_is_first && !$one ){?><i class="fa fa-fw fa-spinner"></i><?}?>
