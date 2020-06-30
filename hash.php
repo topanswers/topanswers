@@ -338,7 +338,7 @@ function h($f){
     "/page/answer-history/answer-history.js": "305b2832beee4923",
     "/page/chat-history/chat-history.css": "1e5da1ea076366cd",
     "/page/chat-history/chat-history.js": "fdd6c4e7636dd9e9",
-    "/page/community/community.css": "93d7cd911b6a7852",
+    "/page/community/community.css": "f5c53aa050164c1d",
     "/page/community/community.js": "6ea8adbff5566338",
     "/page/community/community_question.css": "07a412ca211cc45d",
     "/page/index/index.css": "e1255dd738e52b37",
@@ -359,7 +359,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "fd143a3e3e6c3906",
     "/post.css": "6460b246ad7dc3b5",
-    "/require.config.js": "3059f6752cab3c1a",
+    "/require.config.js": "fb951505d0d40a59",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
