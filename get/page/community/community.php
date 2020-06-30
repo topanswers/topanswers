@@ -472,16 +472,17 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
           </div>
           <?if($room_show_minimap){?>
             <div id="minimap-wrapper">
-              <i id="startmap" class="fa fa-fw fa-step-backward fa-rotate-90"></i>
+              <i id="startmap" class="fa fa-fw fa-step-backward fa-rotate-90 mapbutton"></i>
+              <i id="datemap" class="fa fa-fw fa-calendar mapbutton"><input type="date"></i>
               <a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>
-              <i id="endmap" class="fa fa-fw fa-step-forward fa-rotate-90"></i>
+              <i id="endmap" class="fa fa-fw fa-step-forward fa-rotate-90 mapbutton"></i>
             </div>
           <?}?>
           <?if($auth){?>
             <div id="chat-sidebar">
               <?if($room_show_minimap){?>
-                <i id="showmap" class="fa fa-fw fa-history"></i>
-                <i id="hidemap" class="fa fa-fw fa-history"></i>
+                <i id="showmap" class="fa fa-fw fa-history mapbutton"></i>
+                <i id="hidemap" class="fa fa-fw fa-history mapbutton"></i>
               <?}?>
               <div id="active-users"><?$ch = curl_init('http://127.0.0.1/activeusers?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
             </div>

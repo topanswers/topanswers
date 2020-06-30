@@ -164,8 +164,9 @@ define(['markdown','moment','js.cookie']
         } ) ) );
         mutationObserver.observe(document.getElementById('messages'), { childList: true });
 
-        function jump(offsetY){
-          const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages'), ago = (map.naturalHeight-offsetY*map.naturalHeight/map.height).toFixed(3);
+        function jumpAgo(ago){
+          const buffer = document.getElementById('jumpchat'), messages = document.getElementById('messages');
+          let scroll;
           if(DEV) console.log(ago);
           if(!saved) saved = [...messages.children];
           messages.innerHTML = '<i class="fa fa-fw fa-spinner fa-pulse" style="visibility: visible;"></i>';
@@ -176,8 +177,8 @@ define(['markdown','moment','js.cookie']
           .then(data => {
             buffer.innerHTML = data;
             for(let child of buffer.children){
-              scroll = child;
               if(+child.dataset.daysAgo>ago) break;
+              scroll = child;
             }
             return processNewChat(buffer);
           }).then(()=>{
@@ -186,6 +187,8 @@ define(['markdown','moment','js.cookie']
             scroll.scrollIntoView();
           });
         }
+
+        function jump(offsetY){ jumpAgo( (map.naturalHeight-offsetY*map.naturalHeight/map.height).toFixed(3) ); }
 
         map.addEventListener('click',event=>{
           event.preventDefault();
@@ -221,6 +224,13 @@ define(['markdown','moment','js.cookie']
             messages.children[0].scrollIntoView(false);
           }
         });
+
+        document.getElementById('datemap').children[0].addEventListener('change',event=>{
+          const val = event.target.value;
+          event.target.value = '';
+          jumpAgo( Math.floor( (Date.now() - (Date.now()%(1000*60*60*24)) - (new Date(val)))/(1000*60*60*24) ) );
+        });
+
       }
 
     }catch(e){ console.error(e); }

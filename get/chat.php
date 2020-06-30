@@ -21,7 +21,7 @@ if(isset($_GET['around'])){
   extract(cdb("select start_id::text \"from\", end_id::text \"to\" from around($1::bigint)",$_GET['around']));
 }
 if(isset($_GET['daysago'])){
-  extract(cdb("select start_id::text \"from\", end_id::text \"to\" from around(current_timestamp - ($1||'d')::interval)",$_GET['daysago']));
+  extract(cdb("select start_id::text \"from\", end_id::text \"to\" from around(current_date::timestamptz - ($1||'d')::interval)",$_GET['daysago']));
 }
 $limited = false;
 if(isset($_GET['limit'])){
