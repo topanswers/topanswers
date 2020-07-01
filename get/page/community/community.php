@@ -442,6 +442,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
           <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
           <?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a><?}?>
           <?if($room_is_pinned){?><a id="unpin" href="."><?=$l_unpin?></a><?}else{?><a id="pin" href="."><?=$l_pin?></a><?}?>
+          <a id="map" href="."><?=$l_map?></a>
         <?}?>
         <a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a>
       </div>
@@ -472,20 +473,17 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
           </div>
           <?if($room_show_minimap){?>
             <div id="minimap-wrapper">
-              <i id="startmap" class="fa fa-fw fa-step-backward fa-rotate-90 mapbutton"></i>
-              <i id="datemap" class="fa fa-fw fa-calendar mapbutton"><input type="date"></i>
+              <?include '../../../icons/x';?>
+              <div class="divider"></div>
+              <?include '../../../icons/calendar';?>
+              <div class="divider"></div>
+              <?include '../../../icons/step-up';?>
               <a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>
-              <i id="endmap" class="fa fa-fw fa-step-forward fa-rotate-90 mapbutton"></i>
+              <?include '../../../icons/step-down';?>
             </div>
           <?}?>
           <?if($auth){?>
-            <div id="chat-sidebar">
-              <?if($room_show_minimap){?>
-                <i id="showmap" class="fa fa-fw fa-history mapbutton"></i>
-                <i id="hidemap" class="fa fa-fw fa-history mapbutton"></i>
-              <?}?>
-              <div id="active-users"><?$ch = curl_init('http://127.0.0.1/activeusers?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
-            </div>
+            <div id="active-users"><?$ch = curl_init('http://127.0.0.1/activeusers?room='.$room); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?></div>
           <?}?>
         </div>
         <?if($canchat){?>

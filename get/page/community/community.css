@@ -55,16 +55,13 @@ a[data-lightbox] img { cursor: zoom-in; }
 #minimap { flex: 1 1 auto; min-height: 0; position: relative; border: 1px solid rgb(var(--rgb-dark)); border-width: 1px 0; }
 #minimap>div { position: absolute; z-index: 1; left: 0; right: 0; border: 1px solid rgb(var(--rgb-highlight)); border-width: 1px 0; background: rgba(var(--rgb-highlight),0.2); pointer-events: none; display: none; }
 #minimap>img { width: 22px; height: 100%; }
+#minimap-wrapper i { flex: 0 0 auto; cursor: pointer; width: 22px; height: 22px; padding: 3px; }
+#minimap-wrapper i>svg { display: block; pointer-events: none; height: 100%; width: 100%; fill: rgb(var(--rgb-dark)); stroke: rgb(var(--rgb-dark)); }
 .mapbutton { flex: 0 0 auto; cursor: pointer; color: rgb(var(--rgb-dark)); width: 22px; height: 22px; padding: 1px; font-size: 16px; }
-#startmap { margin-left: -1px; }
-#endmap { margin-left: -1px; }
-#datemap { pointer-events: none; position: relative; padding-top: 2px; border-top: 1px solid rgb(var(--rgb-dark)); height: 23px; }
-#datemap>input { width: 20px; height: 20px; cursor: pointer; opacity: 0; top: 0; left: 0; position: absolute; pointer-events: auto; }
-#datemap>input::-webkit-calendar-picker-indicator { position: absolute; left: -24px; width: 100%; height: 100%; }
-
-#showmap,
-#hidemap { padding: 4px 1px; }
-#hidemap { display: none; }
+#minimap-wrapper .i-calendar { pointer-events: none; position: relative; }
+#minimap-wrapper .i-calendar>input { width: 20px; height: 20px; cursor: pointer; opacity: 0; top: 0; left: 0; position: absolute; pointer-events: auto; }
+#minimap-wrapper .i-calendar>input::-webkit-calendar-picker-indicator { position: absolute; left: -24px; width: 100%; height: 100%; }
+#minimap-wrapper .divider { height: 1px; width: 100%; background: rgb(var(--rgb-dark)); }
 
 #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: flex; visibility: hidden; flex-direction: column; scroll-behavior: smooth; }
 #notifications>hr { margin: 14px 6px; border: 1px solid rgb(var(--rgb-dark)); }
@@ -150,8 +147,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 .notification>a { color: rgb(var(--rgb-dark)); }
 .notification + .notification { margin-top: 0; }
 
-#chat-sidebar { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; }
-#active-users { flex: 1 1 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
+#active-users { flex: 0 0 auto; display: flex; flex-direction: column-reverse; overflow-y: hidden; }
 
 .simple-pagination { list-style: none; display: block; overflow: hidden; padding: 0 5px 5px 0; margin: 0; list-style: none; padding: 0; margin: 0; }
 .simple-pagination ul { display: flex; padding: 0; margin: 2px; }

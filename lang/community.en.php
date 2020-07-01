@@ -10,6 +10,7 @@ $l_transcript = 'transcript';
 $l_preview = 'preview';
 $l_topanswers = 'TopAnswers';
 $l_mute = 'mute';
+$l_map = 'map';
 $l_listen = 'listen';
 $l_pin = 'pin';
 $l_unpin = 'unpin';

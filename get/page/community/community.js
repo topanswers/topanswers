@@ -35,7 +35,7 @@ define(['markdown','moment','js.cookie']
             .then(response => { if(response.ok) return response.text() })
             .then(data => { buffer.innerHTML = data; return processNewChat(buffer); })
             .then(()=>{
-              document.getElementById('minimap-wrapper').style.display = 'flex';
+              document.getElementById('map').click();
               messages.innerHTML = '';
               messages.append(...buffer.children);
               target = document.getElementById('c'+id);
@@ -139,7 +139,13 @@ define(['markdown','moment','js.cookie']
 
       if(MINIMAP){
 
-        const map = document.querySelector('#minimap>img'), bar = document.querySelector('#minimap>div');
+        const map = document.querySelector('#minimap>img')
+            , bar = document.querySelector('#minimap>div')
+            , calendar = document.querySelector('#minimap-wrapper .i-calendar')
+            , showmap = document.querySelector('#map')
+            , hidemap = document.querySelector('#minimap-wrapper .i-x');
+
+        calendar.insertAdjacentHTML('beforeend','<input type="date">');
 
         let intersectionObserver = new IntersectionObserver((entries,observer)=>{
 
@@ -204,23 +210,22 @@ define(['markdown','moment','js.cookie']
           map.setAttribute('title',(new Date(new Date().setDate(new Date().getDate()-ago))).toISOString().split('T')[0]);
         });
 
-        document.getElementById('showmap').addEventListener('click',event=>{
+        showmap.addEventListener('click',event=>{
+          event.preventDefault();
           document.getElementById('minimap-wrapper').style.display = 'flex';
-          document.getElementById('hidemap').style.display = 'block';
-          event.target.style.display = 'none';
+          event.currentTarget.style.textDecoration = 'none';
         });
 
-        document.getElementById('hidemap').addEventListener('click',event=>{
+        hidemap.addEventListener('click',event=>{
           document.getElementById('minimap-wrapper').style.display = 'none';
-          document.getElementById('showmap').style.display = 'block';
-          event.target.style.display = 'none';
+          showmap.style.textDecoration = null;
         });
 
-        document.getElementById('startmap').addEventListener('click',event=>{
+        document.querySelector('#minimap-wrapper .i-step-up').addEventListener('click',event=>{
           jump(0);
         });
 
-        document.getElementById('endmap').addEventListener('click',event=>{
+        document.querySelector('#minimap-wrapper .i-step-down').addEventListener('click',event=>{
           if(saved){
             messages.innerHTML = '';
             messages.append(...saved);
@@ -229,7 +234,7 @@ define(['markdown','moment','js.cookie']
           messages.children[0].scrollIntoView(false);
         });
 
-        document.getElementById('datemap').children[0].addEventListener('change',event=>{
+        calendar.children[1].addEventListener('change',event=>{
           const val = event.target.value;
           event.target.value = '';
           jumpAgo( Math.floor( (Date.now() - (Date.now()%(1000*60*60*24)) - (new Date(val)))/(1000*60*60*24) ) );
