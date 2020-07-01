@@ -131,9 +131,9 @@ var require = {
     'resizer':'resizer.acc48d85f03977b4',
     'starrr':'starrr.a95baf4870cd4d81',
     'vex':'vex.ce8070c89395b6ea',
-    'markdown':'../markdown.1a804b776176bcc4',
+    'markdown':'../markdown.573e60856cd3442d',
     'navigation':'../navigation.f0ad7bc6582996ae',
-    'require.config':'../require.config.a6c9705f397ab910',
+    'require.config':'../require.config.cd6ee07d1af0f1ec',
     'tio':'../tio.0984e7f3a524834f',
  } },
 };
