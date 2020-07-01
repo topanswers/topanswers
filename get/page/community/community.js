@@ -6,6 +6,7 @@ define(['markdown','moment','js.cookie']
   const DEV = 'dev' in document.documentElement.dataset
       , AUTH = 'auth' in document.documentElement.dataset
       , MINIMAP = 'minimap' in document.documentElement.dataset
+      , COMMUNITY = document.documentElement.dataset.community
       , ROOM = document.documentElement.dataset.room
       , ROOM_CHAT_COUNT = document.documentElement.dataset.roomChatCount
       , ROOM_CHAT_AGE = document.documentElement.dataset.roomChatAge;
@@ -464,7 +465,7 @@ define(['markdown','moment','js.cookie']
   function loadQuestions(){
     $('#questions').children('.question').remove();
     $('.pages').empty();
-    $.get('/questions?community='+$('html').css('--community')+window.location.search.replace('?','&'),function(data) {
+    $.get('/questions?community='+COMMUNITY+window.location.search.replace('?','&'),function(data) {
       var newquestions = $(data).filter('.question').prependTo($('#questions'));
       processNewQuestions();
       paginateQuestions();
@@ -476,7 +477,7 @@ define(['markdown','moment','js.cookie']
   function updateQuestions(){
     var maxQuestion = $('#questions>:first-child').data('poll-major-id');
     if('dev' in $('html').data()) console.log('updating questions because polled id > max ('+maxQuestionPollMajorID+')');
-    return $.get('/questions?community='+$('html').css('--community')+window.location.search.replace('?','&')).then(function(data) {
+    return $.get('/questions?community='+COMMUNITY+window.location.search.replace('?','&')).then(function(data) {
       if($('#questions>:first-child').data('poll-major-id')===maxQuestion){
         var newquestions = $(data).filter('.question').filter(function(){ return $(this).data('poll-major-id')>maxQuestion; });
         newquestions.each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
@@ -556,7 +557,7 @@ define(['markdown','moment','js.cookie']
   }
   function updateActiveRooms(){
     if('dev' in $('html').data()) console.log('updating active room list');
-    return $.get({ url: '/activerooms', data: { community: $('html').css('--community'), read: _.values(localStorage.getItem('read4')?JSON.parse(localStorage.getItem('read4')):{}) } }).then(function(r){
+    return $.get({ url: '/activerooms', data: { community: COMMUNITY, read: _.values(localStorage.getItem('read4')?JSON.parse(localStorage.getItem('read4')):{}) } }).then(function(r){
       $('#active-rooms').html(r);
       updateRoomLatest();
     });
@@ -605,7 +606,7 @@ define(['markdown','moment','js.cookie']
   }
   function updateQuestionPollIDs(){
     if('dev' in $('html').data()) console.log('updating guestion change flag statuses');
-    return $.get('/questions?changes&community='+$('html').css('--community')+'&from='+maxQuestionPollMinorID).then(function(r){
+    return $.get('/questions?changes&community='+COMMUNITY+'&from='+maxQuestionPollMinorID).then(function(r){
       _(JSON.parse(r)).forEach(function(e){ $('#q'+e[0]).each(function(){ if(e[1]>$(this).data('poll-minor-id')) $(this).addClass('changed'); }); });
     });
   }
@@ -621,7 +622,7 @@ define(['markdown','moment','js.cookie']
   function actionQuestionChange(id){
     if('dev' in $('html').data()) console.log('updating question '+$('.question.changed').first().data('id'));
     $('#q'+id).css('opacity',0.5);
-    return $.get('/questions?one&community='+$('html').css('--community')+'&id='+id).then(function(r){
+    return $.get('/questions?one&community='+COMMUNITY+'&id='+id).then(function(r){
       $('#q'+id).replaceWith(r);
       processNewQuestions()
       $('#q'+id).css('opacity',1);
@@ -830,7 +831,7 @@ define(['markdown','moment','js.cookie']
     window.location = '/'+$(this).find(':selected').attr('data-name');
   });
   $('#room').change(function(){
-    window.location = '/'+$('html').css('--community')+'?room='+$(this).val();
+    window.location = '/'+COMMUNITY+'?room='+$(this).val();
   });
   function renderPreview(sync){
     var m = $('#chattext').val(), s
@@ -841,6 +842,21 @@ define(['markdown','moment','js.cookie']
     sync = typeof sync !== 'undefined' ? sync : false;
     $('#canchat-wrapper').toggleClass('chatting',m?true:false);
     $('#preview .markdown').html('&nbsp;');
+    if(!onebox){
+      s = m.match(RegExp('^https://topanswers.xyz/[-a-z]+(\\?room=[1-9][0-9]*)?#c(-?[1-9][0-9]*)$'));
+      if(s){
+        $.get({ url: '/chat?quote&room='+$('html').attr('data-room')+'&id='+s[2], async: !sync }).done(function(r){
+          if($('#chattext').val()===m){
+            $('#preview .markdown').css('visibility','visible').attr('data-markdown',r.replace(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/m,function(match){ return ' *— '+(moment(match).fromNow())+'*'; })).renderMarkdown(promises);
+          }
+        }).fail(function(){
+          if($('#chattext').val()===m){
+            $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
+          }
+        });
+        return;
+      }
+    }
     if(!onebox){
       s = m.match(/^https:\/\/topanswers.xyz\/transcript\?room=([1-9][0-9]*)&id=(-?[1-9][0-9]*)?[^#]*(#c(-?[1-9][0-9]*))?$/);
       if(s&&(s[2]===s[4])){

@@ -57,8 +57,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
 //ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="--community:<?=$community_name?>;
-             --jslang:<?=$jslang?>;
+<html style="--jslang:<?=$jslang?>;
              --lang-code:<?=$tag_code_language?:$community_code_language?>;
              --lang-tio:<?=$community_tio_language?>;
              --l_preview:<?=$l_preview?>;
@@ -84,6 +83,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
              --font-monospace:<?=$my_community_monospace_font_name?>;
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
              "
+      <?="data-community='$community_name'"?>
       <?="data-room='$room_id'"?>
       <?="data-room-chat-count='$room_chat_count'"?>
       <?="data-room-chat-age='$room_chat_age'"?>
