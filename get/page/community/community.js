@@ -624,9 +624,18 @@ define(['markdown','moment','js.cookie']
     if('dev' in $('html').data()) console.log('updating chat '+$('.message.changed').first().data('id'));
     $('#c'+id).css('opacity',0.5);
     return $.get('/chat?room='+$('html').attr('data-room')+'&from='+id+'&to='+id).then(function(r){
-      let oldchat = $('#c'+id), merged = oldchat.hasClass('merged'), newchat = $(r).appendTo($('#newchat'));
-      if(merged) newchat.addClass('merged');
-      return processNewChat($('#newchat')).then(()=>{ $('#c'+id).replaceWith(newchat); });
+      let oldchat = $('#c'+id), newchat = $(r).appendTo($('#newchat'));
+      if(oldchat.hasClass('merged')) newchat.addClass('merged');
+      return processNewChat($('#newchat')).then(()=>{
+        oldchat.replaceWith(newchat);
+        let rid = newchat.data('reply-id'), m;
+        while(true){
+          m = $('#messages>#c'+rid);
+          if(m.length!==1) break;
+          m.addClass('t'+id).addClass('t'+rid);
+          rid = m.data('reply-id');
+        }
+      });
     });
   }
   function actionQuestionChange(id){

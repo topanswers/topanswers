@@ -233,7 +233,20 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
   with d as (update notification set notification_dismissed_at = current_timestamp where notification_id in(select notification_id from notification natural join chat_notification where chat_id=replyid and account_id=get_account_id()) returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
   --
+  delete from thread where thread_descendant_chat_id=id;
+  --
   update chat set chat_markdown = msg, chat_reply_id=replyid, chat_change_id = default, chat_change_at = default where chat_id=id;
+  --
+  insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
+  select replyid,id,community_id,room_id from chat where chat_id=id;
+  --
+  insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
+  select thread_ancestor_chat_id,id,community_id,room_id from thread where thread_descendant_chat_id=replyid;
+  --
+  insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
+  select thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id
+  from (select thread_ancestor_chat_id,community_id,room_id from thread where thread_descendant_chat_id=id) z1
+       natural join (select thread_descendant_chat_id,community_id,room_id from thread where thread_ancestor_chat_id=id) z2;
   --
   with h as (insert into chat_history(chat_id,chat_history_markdown) values(id,msg))
     , aa as (select account_id
