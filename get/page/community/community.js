@@ -9,7 +9,9 @@ define(['markdown','moment','js.cookie']
       , COMMUNITY = document.documentElement.dataset.community
       , ROOM = document.documentElement.dataset.room
       , ROOM_CHAT_COUNT = document.documentElement.dataset.roomChatCount
-      , ROOM_CHAT_AGE = document.documentElement.dataset.roomChatAge;
+      , ROOM_CHAT_AGE = document.documentElement.dataset.roomChatAge
+      , L_MAP = document.documentElement.dataset.lMap
+      , L_PEOPLE = document.documentElement.dataset.lPeople;
 
 
   try{ // chat
@@ -35,7 +37,7 @@ define(['markdown','moment','js.cookie']
             .then(response => { if(response.ok) return response.text() })
             .then(data => { buffer.innerHTML = data; return processNewChat(buffer); })
             .then(()=>{
-              document.getElementById('map').click();
+              { const map = document.getElementById('map'); if(map) map.click(); }
               messages.innerHTML = '';
               messages.append(...buffer.children);
               target = document.getElementById('c'+id);
@@ -141,9 +143,7 @@ define(['markdown','moment','js.cookie']
 
         const map = document.querySelector('#minimap>img')
             , bar = document.querySelector('#minimap>div')
-            , calendar = document.querySelector('#minimap-wrapper .i-calendar')
-            , showmap = document.querySelector('#map')
-            , hidemap = document.querySelector('#minimap-wrapper .i-x');
+            , calendar = document.querySelector('#minimap-wrapper .i-calendar');
 
         calendar.insertAdjacentHTML('beforeend','<input type="date">');
 
@@ -210,15 +210,20 @@ define(['markdown','moment','js.cookie']
           map.setAttribute('title',(new Date(new Date().setDate(new Date().getDate()-ago))).toISOString().split('T')[0]);
         });
 
-        showmap.addEventListener('click',event=>{
-          event.preventDefault();
-          document.getElementById('minimap-wrapper').style.display = 'flex';
-          event.currentTarget.style.textDecoration = 'none';
-        });
-
-        hidemap.addEventListener('click',event=>{
-          document.getElementById('minimap-wrapper').style.display = 'none';
-          showmap.style.textDecoration = null;
+        document.getElementById('chat-bar').addEventListener('click',event=>{
+          if( event.target.getAttribute('id')==='map' ){
+            event.preventDefault();
+            document.getElementById('minimap-wrapper').style.display = 'flex';
+            document.getElementById('active-users').style.display = 'none';
+            event.target.setAttribute('id','people');
+            event.target.textContent = L_PEOPLE;
+          }else if( event.target.getAttribute('id')==='people' ){
+            event.preventDefault();
+            document.getElementById('minimap-wrapper').style.display = 'none';
+            document.getElementById('active-users').style.display = 'flex';
+            event.target.setAttribute('id','map');
+            event.target.textContent = L_MAP;
+          }
         });
 
         document.querySelector('#minimap-wrapper .i-step-up').addEventListener('click',event=>{

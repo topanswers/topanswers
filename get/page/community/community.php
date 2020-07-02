@@ -83,6 +83,8 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
              --font-monospace:<?=$my_community_monospace_font_name?>;
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
              "
+      <?="data-l-map='$l_map'"?>
+      <?="data-l-people='$l_people'"?>
       <?="data-community='$community_name'"?>
       <?="data-room='$room_id'"?>
       <?="data-room-chat-count='$room_chat_count'"?>
@@ -438,13 +440,15 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
         <?if($auth){?> / <a class="panel" data-panel="notifications" href="."><?=$l_notifications?></a><?}?>
       </div>
       <div class="element">
+        <a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a>
+      </div>
+      <div class="element">
         <?if($auth){?>
           <?if($room_can_listen){?><a id="listen" href="."><?=$l_listen?></a><?}?>
           <?if($room_can_mute){?><a id="mute" href="."><?=$l_mute?></a><?}?>
           <?if($room_is_pinned){?><a id="unpin" href="."><?=$l_unpin?></a><?}else{?><a id="pin" href="."><?=$l_pin?></a><?}?>
-          <a id="map" href="."><?=$l_map?></a>
+          <?if($room_show_minimap){?><a id="map" href="."><?=$l_map?></a><?}?>
         <?}?>
-        <a href="/transcript?room=<?=$room?>"><?=$l_transcript?></a>
       </div>
     </div>
     <div id="chat-panels">
@@ -473,8 +477,6 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
           </div>
           <?if($room_show_minimap){?>
             <div id="minimap-wrapper">
-              <?include '../../../icons/x';?>
-              <div class="divider"></div>
               <?include '../../../icons/calendar';?>
               <div class="divider"></div>
               <?include '../../../icons/step-up';?>
