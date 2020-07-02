@@ -1,5 +1,5 @@
 <i class="i-history-slash">
-  <svg viewBox="0 0 1536 1536" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 1536 1536" xmlns="http://www.w3.org/2000/svg" style="stroke: rgb(var(--rgb-dark)); fill: rgb(var(--rgb-dark));">
     <mask id="myMask">
       <rect x="0" y="0" width="1536" height="1536" fill="white" />
       <path d="M 150,1536 1536,150 1536,300 300,1536 z" fill="black" />

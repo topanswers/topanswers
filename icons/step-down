@@ -1,5 +1,5 @@
 <i class="i-step-down">
-  <svg viewBox="0 0 1539 1024" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 1539 1024" xmlns="http://www.w3.org/2000/svg" style="stroke: rgb(var(--rgb-dark)); fill: rgb(var(--rgb-dark));">
     <path d="M 15,45 C -10,20 -1,0 34,0 h 1472 c 35,0 44,20 19,45 L 815,755 c -6,6 -12,10 -19,13 h 678 c 35,0 64,29 64,64 v 128 c 0,35 -29,64 -64,64 H 66 C 31,1024 2,995 2,960 V 832 c 0,-35 29,-64 64,-64 h 678 c -7,-3 -13,-7 -19,-13 z"/>
   </svg>
 </i>

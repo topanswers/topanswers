@@ -1,6 +1,6 @@
 <i class="i-x">
-  <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
-    <path style="stroke-width:150;stroke-linecap:round;" d="M 75,75 925,925" />                                                                                      
+  <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" style="stroke: rgb(var(--rgb-dark)); fill: rgb(var(--rgb-dark));">
+    <path style="stroke-width:150;stroke-linecap:round;" d="M 75,75 925,925" />
     <path style="stroke-width:150;stroke-linecap:round;" d="M 75,925 925,75" /> 
   </svg>
 </i>
