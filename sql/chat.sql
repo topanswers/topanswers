@@ -238,7 +238,7 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
   update chat set chat_markdown = msg, chat_reply_id=replyid, chat_change_id = default, chat_change_at = default where chat_id=id;
   --
   insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
-  select replyid,id,community_id,room_id from chat where chat_id=id;
+  select replyid,id,community_id,room_id from chat where chat_id=id and replyid is not null;
   --
   insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
   select thread_ancestor_chat_id,id,community_id,room_id from thread where thread_descendant_chat_id=replyid;
