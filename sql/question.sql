@@ -92,6 +92,7 @@ create function _new_tag(qid integer, tid integer) returns void language sql sec
   --
   update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from mark where question_id=qid) where question_id=qid;
 $$;
+--
 create function new_tag(id integer) returns void language sql security definer set search_path=db,api,question,pg_temp as $$
   select _error(429,'rate limit') where (select count(1) from mark_history where account_id=get_account_id() and mark_history_at>current_timestamp-'1m'::interval)>9;
   select _ensure_communicant(get_account_id(),community_id) from question where question_id=get_question_id();
@@ -124,11 +125,11 @@ create function new(sid integer, title text, markdown text, lic integer, lic_orl
   select _error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
   select _ensure_communicant(get_account_id(),get_community_id());
   --
-  with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning room_id,community_id)
+  with r as (insert into room(community_id,room_question_id) values(get_community_id(),nextval(pg_get_serial_sequence('question','question_id'))) returning room_id,community_id,room_question_id)
      , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
-     , q as (insert into question(community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
-                                 ,question_permit_later_license,question_permit_later_codelicense,account_id)
-             select community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
+     , q as (insert into question(question_id,community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
+                                 ,question_permit_later_license,question_permit_later_codelicense,account_id) overriding system value
+             select room_question_id,community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
                   , case when (select kind_questions_by_community from kind k where k.kind_id=s.kind_id) then (select community_wiki_account_id from community where community_id=get_community_id())
                          else get_account_id() end
              from r cross join (select kind_id,sanction_id from sanction where sanction_id=sid) s
@@ -138,7 +139,7 @@ create function new(sid integer, title text, markdown text, lic integer, lic_orl
      , s as (insert into subscription(account_id,question_id) select get_account_id(),question_id from q)
   select question._new_tag(question_id,tag_id) from q cross join unnest(tag_ids) tag_id;
   --
-  update room set room_question_id = (select question_id from question where question_room_id=room_id) where room_question_id=-1 returning room_question_id;
+  select currval(pg_get_serial_sequence('question','question_id'))::integer;
 $$;
 --
 create function change(title text, markdown text, tag_ids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
