@@ -1,6 +1,6 @@
-const SITE_DOMAIN = location.hostname;
+define(['markdown', 'navigation'], function ([$, _]) {
+  const SITE_DOMAIN = location.hostname;
 
-define(['markdown','navigation'],function([$,_]){
   $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
   $('#join').click(function(){
     $.post({ url: `//post.${SITE_DOMAIN}/profile`, data: { action: 'new' }, async: false, xhrFields: { withCredentials: true } }).done(function(r){
