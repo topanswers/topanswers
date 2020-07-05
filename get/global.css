@@ -33,6 +33,9 @@ a.button:not([href]) { cursor: default; opacity: 0.5; }
 a.button+a.button { margin-left: 1px; }
 a :not(img) { pointer-events: none; }
 
+i.i { cursor: pointer; width: 22px; height: 22px; padding: 3px; }
+i.i>svg { display: block; pointer-events: none; height: 100%; width: 100%; }
+
 #keyboard { display: flex; flex-wrap: wrap; justify-content: center; }
 #keyboard>span { flex: 0 0 auto; margin: 0 4px; display: flex; }
 #keyboard>span>span { display: inline-flex; height: 19px; width: 19px; justify-content: center; align-items: center; font-size: 14px; font-family: var(--font-monospace);

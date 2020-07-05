@@ -326,8 +326,8 @@ function h($f){
     "/fonts/source-code-pro.css": "040b9fc96c140e1a",
     "/fonts/source-sans-pro.css": "7128abb0cd4de792",
     "/fonts/stix2.css": "5cf141611d69835c",
-    "/global.css": "06ea5c6e2f59f948",
-    "/header.css": "ec5d7dc06a5ff6be",
+    "/global.css": "a3753a50d1e0a684",
+    "/header.css": "53837f62149b5ac8",
     "/markdown.css": "94e1f002e6d0a16e",
     "/markdown.js": "573e60856cd3442d",
     "/navigation.js": "f0ad7bc6582996ae",
@@ -354,12 +354,14 @@ function h($f){
     "/page/room/room.js": "9dd1f6856e2974c4",
     "/page/sample/sample.css": "94efebee41fedb5f",
     "/page/sample/sample.js": "a45e38732eee9096",
+    "/page/tags/tags.css": "1c23770d61a0ef7f",
+    "/page/tags/tags.js": "80c8e18f3bbda74b",
     "/page/transcript/transcript.css": "03420759b92f7270",
     "/page/transcript/transcript.js": "4eb0051e79c5ef88",
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "da4c7d183f084434",
-    "/post.css": "6460b246ad7dc3b5",
-    "/require.config.js": "7bc4f22902cccc6b",
+    "/post.css": "ccc9d2c18b1e5dc1",
+    "/require.config.js": "d7ca950867551c74",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }

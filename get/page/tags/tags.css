@@ -1,0 +1,9 @@
+html { box-sizing: border-box; font-family: var(--font-regular), sans-serif; }
+html, body { height: 100vh; overflow: hidden; margin: 0; padding: 0; }
+body { display: flex; flex-direction: column; background: rgb(var(--rgb-mid)); }
+main { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+table { position: relative; margin: 16px auto; border: 1px solid rgb(var(--rgb-dark)); border-spacing: 0; }
+td { padding: 4px 8px; }
+th,td { border: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-white)); }
+th { position: sticky; top: 0; border-bottom-width: 2px; padding: 8px 12px; font-weight: normal; }
+tr.target { outline: 3px solid rgb(var(--rgb-highlight)); }

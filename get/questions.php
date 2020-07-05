@@ -73,7 +73,7 @@ include '../lang/questions.'.$o_community_language.'.php';
         <?if($sanction_short_description){?><span class="kind element"><?=$sanction_short_description?></span><?}?>
         <div class="tags">
           <?foreach($tags as $r){ extract($r);?>
-            <span class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?></span>
+            <a href="/tags?community=<?=$community_name?>#t<?=$tag_id?>" class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?></a>
           <?}?>
         </div>
       </div>

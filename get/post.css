@@ -25,9 +25,10 @@
 .post .community>img { display: block; height: 18px; border: 1px solid rgb(var(--rgb-dark)); background: rgb(var(--rgb-light)); border-radius: 2px; }
 
 .post .tags { display: flex; margin-left: -2px; }
-.post .tag { position: relative; height: 18px; background: rgb(var(--rgb-mid)); background-clip: padding-box; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 9px 9px 0; line-height: 14px; margin-left: 0;
-             font-size: 12px; margin: 0 2px; padding-left: 3px; padding-right: 15px; vertical-align: middle; cursor: pointer; }
+.post .tag { position: relative; height: 18px; background: rgb(var(--rgb-mid)); background-clip: padding-box; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 9px 9px 0; line-height: 14px; 
+             margin-left: 0; font-size: 12px; margin: 0 2px; padding-left: 3px; padding-right: 15px; vertical-align: middle; cursor: pointer; text-decoration: none; color: rgb(var(--rgb-dark)); }
 .post .tag::after { position: absolute; display: block; border-radius: 50%; background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
+.post .tag:visited { color: rgb(var(--rgb-dark)); }
 .post .tag:not(.newtag):hover { content: 'remove'; }
 .post .newtag:not(:hover) { opacity: 0.3; }
 .post .tag.hide { display: none; }

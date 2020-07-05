@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists tags cascade;
 drop schema if exists activeusers cascade;
 drop schema if exists pinnedrooms cascade;
 drop schema if exists activerooms cascade;
@@ -99,9 +100,11 @@ select community_id
      , get_byte(community_highlight_color,0)||','||get_byte(community_highlight_color,1)||','||get_byte(community_highlight_color,2) community_rgb_highlight
      , get_byte(community_warning_color,0)||','||get_byte(community_warning_color,1)||','||get_byte(community_warning_color,2) community_rgb_warning
      , case when community_image_hash is null then '/communityicon?community='||community_name else '/image?hash='||encode(community_image_hash,'hex') end community_image_url
+     , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) community_my_regular_font_name
 from (select community_id,community_name,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color,community_image_hash
+            ,community_regular_font_id
       from db.community natural left join (select community_id,account_id from db.member where account_id=get_account_id()) m where community_type='public' or account_id is not null) c
-     natural left join (select community_id,communicant_votes from db.communicant where account_id=get_account_id()) a;
+     natural left join (select community_id,communicant_votes,communicant_regular_font_id from db.communicant where account_id=get_account_id()) a;
 --
 create view _question with (security_barrier) as
 select question_id,community_id
@@ -323,5 +326,6 @@ end$$;
 \ir activerooms.sql
 \ir pinnedrooms.sql
 \ir activeusers.sql
+\ir tags.sql
 --
 commit;

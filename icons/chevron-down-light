@@ -1,0 +1,5 @@
+<i class="i i-chevron-down">
+  <svg viewBox="0 0 1612 1035" xmlns="http://www.w3.org/2000/svg" style="stroke: rgb(var(--rgb-light)); fill: rgb(var(--rgb-light));">
+    <path d="m 1592.75,274.75 -742,741 c -25,25 -65,25 -90,0 l -742,-741 c -25,-25 -25,-66 0,-91 l 166,-165 c 25,-25 65,-25 90,0 l 531,531 531,-531 c 25,-25 65,-25 90,0 l 166,165 c 25,25 25,66 0,91 z"/>
+  </svg>
+</i>
