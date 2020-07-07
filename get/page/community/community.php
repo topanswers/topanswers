@@ -176,7 +176,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
               <?if($sanction_short_description){?><span class="kind element"><?=$sanction_short_description?></span><?}?>
               <div id="tagbar" class="tags">
                 <?foreach(db("select tag_id,tag_name,tag_implies_id from tag where tag_is order by tag_question_count desc, tag_name") as $r){ extract($r);?>
-                  <span class="tag" data-id="<?=$tag_id?>"<?if($tag_implies_id){?> data-implies="<?=$tag_implies_id?>"<?}?>><?=$tag_name?></span>
+                  <a href="/tags?community=<?=$community_name?>#t<?=$tag_id?>" class="tag element" data-id="<?=$tag_id?>"><?=$tag_name?></a>
                 <?}?>
                 <span class="tag newtag">add tag</span>
                 <input list="taglist" id="taginput" class="tag hide">

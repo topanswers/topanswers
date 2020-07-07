@@ -29,12 +29,10 @@
              margin-left: 0; font-size: 12px; margin: 0 2px; padding-left: 3px; padding-right: 15px; vertical-align: middle; cursor: pointer; text-decoration: none; color: rgb(var(--rgb-dark)); }
 .post .tag::after { position: absolute; display: block; border-radius: 50%; background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
 .post .tag:visited { color: rgb(var(--rgb-dark)); }
-.post .tag:not(.newtag):hover { content: 'remove'; }
-.post .newtag:not(:hover) { opacity: 0.3; }
+.post .newtag:not(:hover) { opacity: 0.5; }
 .post .tag.hide { display: none; }
-.post .tag.thread { text-decoration: line-through; }
 .post #taginput { background: white; outline: none; padding-right: 0; }
-.post #taginput,
+.post #taginput { width: 140px; }
 .post .newtag { width: 70px; }
 
 .post .answers { border-top: 1px solid rgba(var(--rgb-dark),0.6); }

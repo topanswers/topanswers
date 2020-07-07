@@ -350,18 +350,6 @@ define(['markdown','moment','js.cookie']
           $.post({ url: '//post.topanswers.xyz/question', data: { id: $('html').css('--question'), tagid: o.data('id'), action: 'new-tag' }, xhrFields: { withCredentials: true } }).then(function(){ window.location.reload(); });
         }
       });
-      $('#tagbar').on('mouseenter','.tag[data-id]',function(){ $('.tag.t'+$(this).data('id')).addClass('thread'); }).on('mouseleave','.tag[data-id]',function(){ $('.thread').removeClass('thread'); });
-      $('#tagbar').on('click','.tag[data-id]',function(){
-        $.post({ url: '//post.topanswers.xyz/question', data: { id: $('html').css('--question'), tagid: $(this).data('id'), action: 'remove-tag' }, xhrFields: { withCredentials: true } }).then(function(){ window.location.reload(); });
-      });
-      $('.tag[data-id]').each(function(){
-        var id = $(this).data('id'), rid = id;
-        function foo(b){
-          $(this).addClass('t'+id);
-          if(arguments.length===0 || b===false) $('.tag[data-implies='+rid+']').each(function(){ rid = $(this).data('id'); foo.call(this,false); });
-        }
-        foo.call(this);
-      });
     }
   }catch(e){ console.error(e); }
 
