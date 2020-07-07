@@ -39,7 +39,7 @@ include '../lang/duplicate.'.$community_language.'.php';
     <div class="element container shrink">
       <?if($sanction_short_description){?><span class="kind element"><?=$sanction_short_description?></span><?}?>
       <?foreach(db("select tag_id,tag_name from tag order by tag_question_count") as $r){ extract($r);?>
-        <span class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?> <i class="fa fa-times-circle"></i></span>
+        <a href="/tags?community=<?=$community_name?>#t<?=$tag_id?>" class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?></a>
       <?}?>
     </div>
     <div>
