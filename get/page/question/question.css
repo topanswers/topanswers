@@ -13,15 +13,15 @@ textarea, pre, code { font-family: var(--font-monospace), monospace; }
 #license>span+span { display: none; }
 #imageupload { display: none; }
 
-.tag { position: relative; height: 18px; background: rgb(var(--rgb-mid)); background-clip: padding-box; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 9px 9px 0; line-height: 14px; margin-left: 0;
-       font-size: 12px; margin-left: 4px; padding-left: 3px; padding-right: 15px; vertical-align: middle; cursor: pointer; }
+.tag { position: relative; height: 18px; background: rgb(var(--rgb-light)); background-clip: padding-box; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 0 9px 9px 0; line-height: 14px; margin-left: 0;
+       font-size: 12px; margin-left: 4px; padding-left: 3px; padding-right: 15px; vertical-align: middle; cursor: pointer; color: rgb(var(--rgb-dark)); }
 .tag::after { position: absolute; display: block; border-radius: 50%; background: rgb(var(--rgb-white)); border: 1px solid rgb(var(--rgb-dark)); height: 8px; width: 8px; content: ''; top: 4px; right: 4px; box-sizing: border-box; }
 .tag:not(.newtag):hover { content: 'remove'; }
-.newtag:not(:hover) { opacity: 0.3; }
+.newtag:not(:hover) { opacity: 0.5; }
 .tag.hide { display: none; }
 .tag.thread { text-decoration: line-through; }
 #taginput { background: white; outline: none; padding-right: 0; }
-#taginput,
+#taginput { width: 140px; }
 .newtag { width: 70px; }
 
 #editor-buttons { grid-area: 3 / 1 / 4 / 2; justify-self: start; min-height: 0; }
