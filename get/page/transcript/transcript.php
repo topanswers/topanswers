@@ -9,7 +9,8 @@ if(!isset($_GET['room'])) die('Room not set');
 db("set search_path to transcript,pg_temp");
 $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
 extract(cdb("select account_id,account_image_url,community_name,room_id,room_derived_name,room_can_chat,room_question_id,community_tables_are_monospace,community_code_language
-                   ,my_community_regular_font_name,my_community_monospace_font_name,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,my_community_regular_font_name,my_community_monospace_font_name
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                    ,community_image_url
              from one"));
 $max = 500;
@@ -60,13 +61,7 @@ if(isset($_GET['month'])){
              --jslang:en;
              --lang-code:<?=$community_code_language?>;
              --l_show_more_lines:show all % lines;
-             --rgb-dark:<?=$community_rgb_dark?>;
-             --rgb-mid:<?=$community_rgb_mid?>;
-             --rgb-light:<?=$community_rgb_light?>;
-             --rgb-highlight:<?=$community_rgb_highlight?>;
-             --rgb-warning:<?=$community_rgb_warning?>;
-             --rgb-white:255,255,255;
-             --rgb-black:0,0,0;
+             <?foreach(['dark','mid','light','highlight','warning','black','white'] as $c){?>--rgb-<?=$c?>: <?=${'community_rgb_'.$c}?>;<?}?>
              --font-regular:<?=$my_community_regular_font_name?>;
              --font-monospace:<?=$my_community_monospace_font_name?>;
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;

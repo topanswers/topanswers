@@ -10,7 +10,7 @@ db("set search_path to tags,pg_temp");
 $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']);
 extract(cdb("select account_image_url
                    ,community_name,community_display_name,community_language,community_my_regular_font_name
-                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_black,community_rgb_white
                   , (select coalesce(jsonb_agg(z order by tag_name),'[]'::jsonb)
                      from (select tag_id,tag_name,tag_question_count,tag_code_language,tag_implies_id,tag_implies_name
                            from tag natural left join (select tag_id tag_implies_id, tag_name tag_implies_name from tag) z) z) tags
@@ -19,12 +19,7 @@ include '../../../lang/tags.'.$community_language.'.php';
 $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'').(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':'');
 ?>
 <!doctype html>
-<html style="--rgb-dark:<?=$community_rgb_dark?>;
-             --rgb-mid:<?=$community_rgb_mid?>;
-             --rgb-light:<?=$community_rgb_light?>;
-             --rgb-highlight:<?=$community_rgb_highlight?>;
-             --rgb-white:255,255,255;
-             --rgb-black:0,0,0;
+<html style="<?foreach(['dark','mid','light','highlight','black','white'] as $c){?>--rgb-<?=$c?>: <?=${'community_rgb_'.$c}?>;<?}?>
              --font-regular:<?=$community_my_regular_font_name?>;
              ">
 <head>

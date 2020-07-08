@@ -8,7 +8,7 @@ create view tag with (security_barrier) as select tag_id,tag_name,tag_question_c
 create view one with (security_barrier) as
 select account_image_url
       ,community_name,community_display_name,community_language,community_my_regular_font_name
-      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight
+      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_black,community_rgb_white
 from db.community natural join api._community
      natural left join (select account_image_url from api._account where account_id=get_account_id()) a
 where community_id=get_community_id();

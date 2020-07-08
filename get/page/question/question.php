@@ -17,7 +17,7 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                   , account_license_name||(case when account_permit_later_license then ' or later' else '' end)
                        ||(case when account_has_codelicense then ' + '||account_codelicense_name||(case when account_permit_later_codelicense then ' or later' else '' end) else '' end) account_license
                    ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_language,community_image_url
-                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                    ,communicant_keyboard,my_community_regular_font_name,my_community_monospace_font_name
                    ,question_id,question_title,question_markdown,question_se_question_id
                   , question_license_name||(case when question_permit_later_license then ' or later' else '' end)
@@ -36,13 +36,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
 <!doctype html>
 <html style="--community:<?=$community_name?>;
              --lang-code:<?=$tag_code_language?:$community_code_language?>;
-             --rgb-dark:<?=$community_rgb_dark?>;
-             --rgb-mid:<?=$community_rgb_mid?>;
-             --rgb-light:<?=$community_rgb_light?>;
-             --rgb-highlight:<?=$community_rgb_highlight?>;
-             --rgb-warning:<?=$community_rgb_warning?>;
-             --rgb-white:255,255,255;
-             --rgb-black:0,0,0;
+             <?foreach(['dark','mid','light','highlight','warning','black','white'] as $c){?>--rgb-<?=$c?>: <?=${'community_rgb_'.$c}?>;<?}?>
              --font-regular:<?=$my_community_regular_font_name?>;
              --font-monospace:<?=$my_community_monospace_font_name?>;
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;

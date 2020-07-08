@@ -16,7 +16,7 @@ select chat_id
       ,room_id,room_derived_name
       ,account_id,account_image_url
       ,community_id,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_image_url
-      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
 from (select chat_id,community_id,room_id from db.chat where chat_id=get_chat_id()) a

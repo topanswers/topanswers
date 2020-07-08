@@ -38,7 +38,7 @@ create view one with (security_barrier) as
 select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url
      , account_image_hash is not null account_has_image
       ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
-      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
       ,sesite_url
      , (select font_id from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_id
      , (select font_id from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_id
@@ -52,7 +52,8 @@ from (select account_id,account_name,account_license_id,account_codelicense_id,a
       where account_id=get_account_id()) a
      cross join db.one
      natural left join (select community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url,community_keyboard
-                              ,community_regular_font_id,community_monospace_font_id,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                              ,community_regular_font_id,community_monospace_font_id
+                              ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                               ,sesite_url
                         from api._community natural join db.community natural left join (select community_id,sesite_url from db.source natural join db.sesite where source_is_default) s
                         where community_id=get_community_id()) c

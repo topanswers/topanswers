@@ -14,7 +14,9 @@ select account_id,account_license_id,account_codelicense_id,account_permit_later
       ,kind_allows_answer_multivotes
       ,sanction_label_called,sanction_label_is_mandatory,sanction_default_label_id
       ,label_code_language,label_tio_language
-      ,community_name,community_code_language,community_tables_are_monospace,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_my_power
+      ,community_name,community_code_language,community_tables_are_monospace
+      ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
+      ,community_my_power
       ,community_image_url
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) my_community_regular_font_name
      , (select font_name from db.font where font_id=coalesce(communicant_monospace_font_id,community_monospace_font_id)) my_community_monospace_font_name
@@ -32,7 +34,7 @@ from (select account_id,account_license_id,account_codelicense_id,account_permit
                  where question_id=get_question_id()) q
      natural join (select community_id,community_name,community_code_language,community_image_url,community_keyboard
                          ,community_regular_font_id,community_monospace_font_id,community_my_power,community_tables_are_monospace
-                         ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                         ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                    from db.community natural join api._community) c
      natural left join (select account_id,community_id,communicant_regular_font_id,communicant_monospace_font_id,communicant_votes,communicant_keyboard from db.communicant) co
      natural left join (select question_id,answer_id,answer_markdown

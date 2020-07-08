@@ -12,20 +12,14 @@ extract(cdb("select account_id,account_image_url
                    ,room_id,room_derived_name
                    ,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_image_url
                    ,my_community_regular_font_name,my_community_monospace_font_name
-                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
              from one"));
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
 ?>
 <!doctype html>
 <html style="--community:<?=$community_name?>;
              --lang-code:<?=$community_code_language?>;
-             --rgb-dark:<?=$community_rgb_dark?>;
-             --rgb-mid:<?=$community_rgb_mid?>;
-             --rgb-light:<?=$community_rgb_light?>;
-             --rgb-highlight:<?=$community_rgb_highlight?>;
-             --rgb-warning:<?=$community_rgb_warning?>;
-             --rgb-white:255,255,255;
-             --rgb-black:0,0,0;
+             <?foreach(['dark','mid','light','highlight','warning','black','white'] as $c){?>--rgb-<?=$c?>: <?=${'community_rgb_'.$c}?>;<?}?>
              --font-regular:<?=$my_community_regular_font_name?>;
              --font-monospace:<?=$my_community_monospace_font_name?>;
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;

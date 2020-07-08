@@ -27,8 +27,8 @@ if($auth) setcookie("uuid",$_COOKIE['uuid'],['expires'=>2147483647,'path'=>'/','
 extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,account_id,account_is_dev,account_notification_id,account_image_url
                    ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_tio_language,community_about_question_id
-                   ,community_ask_button_text,community_banner_markdown,community_image_url
-                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace
+                   ,community_ask_button_text,community_banner_markdown,community_image_url,community_tables_are_monospace
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                    ,communicant_is_post_flag_crew,communicant_can_import,communicant_keyboard
                    ,room_id,room_name,room_can_chat,room_has_chat,room_can_mute,room_can_listen,room_is_pinned,room_image_url,room_show_minimap
                    ,my_community_regular_font_name,my_community_monospace_font_name
@@ -69,13 +69,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
              <?if($question_id){?>--question:<?=$question_id?>;<?}?>
              --notification:<?=$auth?$account_notification_id:'0'?>;
              --room:<?=$room_id?>;
-             --rgb-dark: <?=$community_rgb_dark?>;
-             --rgb-mid: <?=$community_rgb_mid?>;
-             --rgb-light: <?=$community_rgb_light?>;
-             --rgb-highlight: <?=$community_rgb_highlight?>;
-             --rgb-warning: <?=$community_rgb_warning?>;
-             --rgb-white:255,255,255;
-             --rgb-black:0,0,0;
+             <?foreach(['dark','mid','light','highlight','warning','black','white'] as $c){?>--rgb-<?=$c?>: <?=${'community_rgb_'.$c}?>;<?}?>
              --power:<?=$community_my_power?>;
              --required:<?=$kind_minimum_votes_to_answer?>;
              --resizer:<?=$login_resizer_percent?>;

@@ -13,7 +13,8 @@ $auth = ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??
 if($auth) setcookie("uuid",$_COOKIE['uuid'],2147483647,'/','topanswers.xyz',null,true);
 extract(cdb("select account_id
                    ,community_id,community_name,community_language,community_display_name,community_my_power,community_code_language,community_about_question_id,community_ask_button_text
-                   ,community_banner_markdown,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_tables_are_monospace,community_image_url
+                   ,community_banner_markdown,community_tables_are_monospace,community_image_url
+                   ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                    ,my_community_regular_font_name,my_community_monospace_font_name
              from one"));
 $_GET['community']===$community_name || fail(400,'invalid community');
@@ -24,13 +25,7 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
 <html style="--community:<?=$community_name?>;
-             --rgb-dark:<?=$community_rgb_dark?>;
-             --rgb-mid:<?=$community_rgb_mid?>;
-             --rgb-light:<?=$community_rgb_light?>;
-             --rgb-highlight:<?=$community_rgb_highlight?>;
-             --rgb-warning:<?=$community_rgb_warning?>;
-             --rgb-white:255,255,255;
-             --rgb-black:0,0,0;
+             <?foreach(['dark','mid','light','highlight','warning','black','white'] as $c){?>--rgb-<?=$c?>: <?=${'community_rgb_'.$c}?>;<?}?>
              --font-regular:<?=$my_community_regular_font_name?>;
              --font-monospace:<?=$my_community_monospace_font_name?>;
              ">
