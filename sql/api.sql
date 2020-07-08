@@ -99,10 +99,12 @@ select community_id
      , get_byte(community_light_shade,0)||','||get_byte(community_light_shade,1)||','||get_byte(community_light_shade,2) community_rgb_light
      , get_byte(community_highlight_color,0)||','||get_byte(community_highlight_color,1)||','||get_byte(community_highlight_color,2) community_rgb_highlight
      , get_byte(community_warning_color,0)||','||get_byte(community_warning_color,1)||','||get_byte(community_warning_color,2) community_rgb_warning
+     , get_byte(community_black_color,0)||','||get_byte(community_black_color,1)||','||get_byte(community_black_color,2) community_rgb_black
+     , get_byte(community_white_color,0)||','||get_byte(community_white_color,1)||','||get_byte(community_white_color,2) community_rgb_white
      , case when community_image_hash is null then '/communityicon?community='||community_name else '/image?hash='||encode(community_image_hash,'hex') end community_image_url
      , (select font_name from db.font where font_id=coalesce(communicant_regular_font_id,community_regular_font_id)) community_my_regular_font_name
-from (select community_id,community_name,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color,community_image_hash
-            ,community_regular_font_id
+from (select community_id,community_name,community_image_hash,community_regular_font_id
+            ,community_dark_shade,community_mid_shade,community_light_shade,community_highlight_color,community_warning_color,community_black_color,community_white_color
       from db.community natural left join (select community_id,account_id from db.member where account_id=get_account_id()) m where community_type='public' or account_id is not null) c
      natural left join (select community_id,communicant_votes,communicant_regular_font_id from db.communicant where account_id=get_account_id()) a;
 --

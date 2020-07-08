@@ -124,6 +124,8 @@ create table community(
 , community_import_sanction_id integer -- references sanction
 , community_image_hash bytea check(length(community_image_hash)=32)
 , community_keyboard text default '' not null
+, community_black_color bytea not null default decode('000000','hex') check(length(community_black_color)=3)
+, community_white_color bytea not null default decode('ffffff','hex') check(length(community_white_color)=3)
 );
 
 create table source(
