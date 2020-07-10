@@ -81,9 +81,9 @@ define(['jquery'
         f.find('input').click(function(){
           f.css('opacity',0.5);
           $(this).replaceWith('<i class="fa fa-spinner fa-pulse fa-fw"></i>');
-          $.post('https://dbfiddle.uk/run',{ rdbms: f.data('rdbms'), statements: JSON.stringify(f.find('.batch>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
+          $.post('https://dbfiddle.uk/run',{ rdbms: f.data('rdbms'), sample: f.data('sample'), statements: JSON.stringify(f.find('.batch>textarea').map(function(){ return $(this).next('.CodeMirror')[0].CodeMirror.getValue(); }).get()) })
               .done(function(r){
-            $.get('/dbfiddle?rdbms='+f.data('rdbms')+'&fiddle='+r).done(function(r){
+            $.get('/dbfiddle?rdbms='+f.data('rdbms')+(f.data('sample')?('&sample='+f.data('sample')):'')+'&fiddle='+r).done(function(r){
               addfiddle(f,r);
             });
           });

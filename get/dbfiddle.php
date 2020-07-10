@@ -11,12 +11,12 @@ function transpose($arr) {
   }
   return $out;
 }
-$json = json_decode(file_get_contents('https://dbfiddle.uk/json?rdbms='.$_GET['rdbms'].'&fiddle='.$_GET['fiddle']),true);
+$json = json_decode(file_get_contents('https://dbfiddle.uk/json?rdbms='.$_GET['rdbms'].'&sample='.($_GET['sample']??'').'&fiddle='.$_GET['fiddle']),true);
 $hide = isset($_GET['hide'])?array_reverse(array_map(function($c){ return $c==='1'; },str_split(decbin($_GET['hide'])))):[];
 header('X-Powered-By: ');
 header('Cache-Control: max-age=60');
 ?>
-<div class="dbfiddle" data-rdbms="<?=$_GET['rdbms']?>">
+<div class="dbfiddle" data-rdbms="<?=$_GET['rdbms']?>" data-sample="<?=$_GET['sample']??''?>">
   <?foreach($json as $i=>$batchplusoutput){?>
     <?if(!array_key_exists($i,$hide)) $hide[$i] = false;?>
     <div class="batch<?=$hide[$i]?' hidden':''?>">
@@ -65,6 +65,6 @@ header('Cache-Control: max-age=60');
   <?}?>
   <div>
     <input type="button" value="run">
-    <a href="https://dbfiddle.uk?rdbms=<?=$_GET['rdbms']?>&fiddle=<?=$_GET['fiddle']?><?=isset($_GET['hide'])?'&hide='.$_GET['hide']:''?>" target="_blank">fiddle</a>
+    <a href="https://dbfiddle.uk?rdbms=<?=$_GET['rdbms']?><?=isset($_GET['sample'])?'&sample='.$_GET['sample']:''?>&fiddle=<?=$_GET['fiddle']?><?=isset($_GET['hide'])?'&hide='.$_GET['hide']:''?>" target="_blank">fiddle</a>
   </div>
 </div>
