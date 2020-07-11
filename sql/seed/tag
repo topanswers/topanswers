@@ -19,7 +19,7 @@
 27	1	2019-11-22 19:37:30.992154+00	announcement		\N	0	\N
 28	1	2019-11-22 19:37:56.932485+00	licensing		\N	0	\N
 33	2	2019-11-25 23:45:14.742524+00	faq		\N	0	\N
-35	2	2019-11-26 15:52:26.69925+00	postgresql		\N	0	text/x-pgsql
+35	2	2019-11-26 15:52:26.69925+00	postgresql	A free and open-source RDBMS, with an emphasis on extensibility and SQL compliance, over 30 years of active development, and a strong reputation for reliability.	\N	0	text/x-pgsql
 39	2	2019-11-27 23:13:53.40869+00	postgresql-9.4		35	0	\N
 40	2	2019-11-29 17:53:29.896316+00	oracle		\N	0	text/x-plsql
 41	2	2019-11-29 17:54:24.927898+00	oracle-11g-r2		40	0	\N

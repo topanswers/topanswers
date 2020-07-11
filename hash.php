@@ -358,13 +358,13 @@ function h($f){
     "/page/sample/sample.css": "94efebee41fedb5f",
     "/page/sample/sample.js": "20b884328af1dc4c",
     "/page/tags/tags.css": "1c23770d61a0ef7f",
-    "/page/tags/tags.js": "186308413fe1e884",
+    "/page/tags/tags.js": "96b6bcf677749434",
     "/page/transcript/transcript.css": "03420759b92f7270",
     "/page/transcript/transcript.js": "c26e6e0d629cc034",
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "56a55ce4075f8117",
     "/post.css": "2d85563808f49017",
-    "/require.config.js": "9746bc614401523b",
+    "/require.config.js": "7d8d830d2c93a7f0",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }

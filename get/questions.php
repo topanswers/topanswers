@@ -29,7 +29,7 @@ extract(cdb("select account_id,community_name,community_language
                                 , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
                                 , extract('epoch' from current_timestamp-question_at)::bigint question_when
                                 , extract('epoch' from current_timestamp-question_change_at)::bigint question_change_when
-                                , (select coalesce(jsonb_agg(z),'[]'::jsonb) from (select tag_id,tag_name from tag t where t.question_id=q.question_id order by tag_question_count desc, tag_name) z) tags
+                                , (select coalesce(jsonb_agg(z),'[]'::jsonb) from (select tag_id,tag_name,tag_description from tag t where t.question_id=q.question_id order by tag_question_count desc, tag_name) z) tags
                            from (select question_id, 1 question_ordinal, 1 question_count from question where $1='one' and question_id=$2::integer
                                  union all
                                  select question_id,question_ordinal,question_count from simple_recent($3,$4::integer,$5::integer) where $1='simple'
@@ -73,7 +73,7 @@ include '../lang/questions.'.$o_community_language.'.php';
         <?if($sanction_short_description){?><span class="kind element"><?=$sanction_short_description?></span><?}?>
         <div class="tags">
           <?foreach($tags as $r){ extract($r);?>
-            <a href="/tags?community=<?=$community_name?>#t<?=$tag_id?>" class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>"><?=$tag_name?></a>
+            <a href="/tags?community=<?=$community_name?>#t<?=$tag_id?>" class="tag element" data-question-id="<?=$question_id?>" data-tag-id="<?=$tag_id?>" title="<?=$tag_description?>"><?=$tag_name?></a>
           <?}?>
         </div>
       </div>

@@ -127,7 +127,7 @@ psql postgres postgres -c "\copy (select tag_id
                                         ,community_id
                                         ,tag_at
                                         ,tag_name
-                                        ,tag_markdown
+                                        ,tag_description
                                         ,tag_implies_id
                                         ,0
                                         ,tag_code_language

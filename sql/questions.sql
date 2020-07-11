@@ -19,7 +19,7 @@ from api._question natural join db.question q natural join api._account natural 
      natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) v;
 --
 create view tag with (security_barrier) as
-select question_id,tag_id,tag_name,tag_question_count
+select question_id,tag_id,tag_name,tag_description,tag_question_count
 from db.mark qt natural join db.tag t
 where not exists (select 1 from db.mark natural join db.tag where question_id=qt.question_id and tag_implies_id=t.tag_id and tag_name like t.tag_name||'%');
 --
