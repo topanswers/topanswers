@@ -75,6 +75,7 @@ if(isset($_GET['month'])){
   <link rel="stylesheet" href="<?=h("/lib/fork-awesome/css/fork-awesome.min.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/lightbox2/css/lightbox.min.css")?>">
   <link rel="stylesheet" href="<?=h("/global.css")?>">
+  <link rel="stylesheet" href="<?=h("/fouc.css")?>">
   <link rel="stylesheet" href="<?=h("/header.css")?>">
   <link rel="stylesheet" href="<?=h("/post.css")?>">
   <link rel="stylesheet" href="<?=h("/page/transcript/transcript.css")?>">

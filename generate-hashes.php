@@ -9,6 +9,7 @@ foreach($files as $file) {
 }
 
 $hashes['/markdown.js'] = exec('echo '.$hashes['/markdown.js'].implode(array_filter($hashes,function($f){ return preg_match('/^\/lib\/.*\.js$/',$f); },ARRAY_FILTER_USE_KEY),'').' | xxhsum | cut -f 1 -d " " | tr -d "\n"');
+$hashes['/md-oneline.js'] = exec('echo '.$hashes['/markdown.js'].implode(array_filter($hashes,function($f){ return preg_match('/^\/lib\/.*\.js$/',$f); },ARRAY_FILTER_USE_KEY),'').' | xxhsum | cut -f 1 -d " " | tr -d "\n"');
 array_walk($hashes,function(&$h,$f){ global $hashes; if(preg_match('/^\/page\/.*\.js$/',$f)) $h = exec('echo '.$hashes[$f].$hashes['/markdown.js'].' | xxhsum | cut -f 1 -d " " | tr -d "\n"'); });
 $filtered = array_filter($hashes,function($f){ return preg_match('/^\/lib\/(codemirror|katex|qp)\/.*\.js$/',$f)
                                                  || ( preg_match('/^\/lib\/[^\/]*\.js$/',$f) && $f!=='/lib/jquery.js' ); },ARRAY_FILTER_USE_KEY);

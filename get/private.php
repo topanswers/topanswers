@@ -23,6 +23,7 @@ extract(cdb("select account_id, account_image_url, one_image_url, (select commun
   <link rel="stylesheet" href="/fonts/source-code-pro.css">
   <link rel="icon" href="/image?hash=b42ff24d293d4c4e56fa76a7b7f4766ec971bfb63e257c080bfd59a2696aafc2" type="image/png">
   <link rel="stylesheet" href="/global.css">
+  <link rel="stylesheet" href="<?=h("/fouc.css")?>">
   <link rel="stylesheet" href="/header.css">
   <style>
     html { box-sizing: border-box; font-family: source-sans-pro, serif; font-size: 16px; }

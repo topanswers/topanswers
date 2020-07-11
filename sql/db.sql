@@ -499,7 +499,7 @@ create table tag(
 , community_id integer not null references community
 , tag_at timestamptz not null default current_timestamp
 , tag_name text not null check (tag_name~'^[a-z][-.0-9a-z]{0,18}[0-9a-z]$')
-, tag_description text default '' not null check (length(tag_description)<101)
+, tag_markdown text default '' not null check (length(tag_markdown)<1001)
 , tag_implies_id integer
 , tag_question_count integer default 0 not null
 , tag_code_language text

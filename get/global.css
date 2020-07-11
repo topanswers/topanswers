@@ -1,7 +1,7 @@
 *:not(hr) { box-sizing: inherit; }
 * { scrollbar-color: rgba(var(--rgb-dark),0.6) rgb(var(--rgb-mid)); scrollbar-width: thin; }
 
-html { color: rgb(var(--rgb-black)); }
+html { display: none; color: rgb(var(--rgb-black)); }
 
 h1,h2,h3,h4,h5,h6 { font-weight: normal; }
 

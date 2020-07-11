@@ -12,7 +12,7 @@ extract(cdb("select account_image_url
                    ,community_name,community_display_name,community_language,community_my_regular_font_name
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_black,community_rgb_white
                   , (select coalesce(jsonb_agg(z order by tag_name),'[]'::jsonb)
-                     from (select tag_id,tag_name,tag_question_count,tag_code_language,tag_implies_id,tag_implies_name
+                     from (select tag_id,tag_name,tag_markdown,tag_question_count,tag_code_language,tag_implies_id,tag_implies_name
                            from tag natural left join (select tag_id tag_implies_id, tag_name tag_implies_name from tag) z) z) tags
              from one"));
 include '../../../lang/tags.'.$community_language.'.php';
@@ -26,6 +26,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="<?=h("/fonts/$community_my_regular_font_name.css")?>">
   <link rel="stylesheet" href="<?=h("/global.css")?>">
+  <noscript><link rel="stylesheet" href="<?=h("/fouc.css")?>"></noscript>
   <link rel="stylesheet" href="<?=h("/header.css")?>">
   <link rel="stylesheet" href="<?=h("/page/tags/tags.css")?>">
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
@@ -49,6 +50,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
         <th><?=$l_questions?></th>
         <th><?=$l_implies?></th>
         <th><?=$l_language?></th>
+        <th><?=$l_description?></th>
       </thead>
       <tbody>
         <?foreach($tags as $r){ extract($r,EXTR_PREFIX_ALL,'o');?>
@@ -57,6 +59,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
             <td><a href="/<?=$community_name?>?search=[<?=$o_tag_name?>]"><?=$o_tag_question_count?></a></td>
             <td><a href="#t<?=$o_tag_implies_id?>"><?=$o_tag_implies_name?></a></td>
             <td><?=$o_tag_code_language?></td>
+            <td data-markdown="<?=$o_tag_markdown?>"><?=$o_tag_markdown?></td>
           </tr>
         <?}?>
       </tbody>

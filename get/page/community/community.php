@@ -97,6 +97,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
   <link rel="stylesheet" href="<?=h("/lib/vex/vex.css")?>">
   <link rel="stylesheet" href="<?=h("/lib/vex/vex-theme-topanswers.css")?>">
   <link rel="stylesheet" href="<?=h("/global.css")?>">
+  <link rel="stylesheet" href="<?=h("/fouc.css")?>">
   <link rel="stylesheet" href="<?=h("/header.css")?>">
   <link rel="stylesheet" href="<?=h("/post.css")?>">
   <link rel="stylesheet" href="<?=h("/page/community/community.css")?>">

@@ -65,6 +65,8 @@ psql postgres postgres -c "\copy (select community_id
                                         ,community_import_sanction_id
                                         ,community_image_hash
                                         ,community_keyboard
+                                        ,community_black_color
+                                        ,community_white_color
                                   from community
                                   where community_type='public'
                                   order by community_id) to 'sql/seed/community'"
@@ -125,7 +127,7 @@ psql postgres postgres -c "\copy (select tag_id
                                         ,community_id
                                         ,tag_at
                                         ,tag_name
-                                        ,tag_description
+                                        ,tag_markdown
                                         ,tag_implies_id
                                         ,0
                                         ,tag_code_language
