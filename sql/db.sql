@@ -164,7 +164,19 @@ create table notification(
 , notification_dismissed_at timestamptz
 , unique (account_id,notification_id)
 );
-create index notification_latest_ind on notification(account_id,notification_dismissed_at desc nulls first);
+create index notification_latest_ind on notification(account_id, notification_dismissed_at desc nulls first);
+create index notification_trim_ind on notification(account_id, notification_at) include(notification_id) where notification_dismissed_at is null;
+
+create or replace function _trigger_trim_notifications() returns trigger language plpgsql security definer set search_path=db,pg_temp as $$
+begin
+  update notification
+  set notification_dismissed_at = current_timestamp
+  where notification_id in (select notification_id from notification where account_id=new.account_id and notification_dismissed_at is null order by notification_at desc offset 99);
+  --
+  return null;
+end;$$;
+
+create trigger trigger_trim_notifications after insert on notification for each row execute function _trigger_trim_notifications();
 
 create table member(
   account_id integer references account
