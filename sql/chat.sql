@@ -115,7 +115,7 @@ create function range(startid bigint, endid bigint, lim integer)
        , chat_gap
        , chat_next_gap
        , coalesce(communicant_votes,0) communicant_votes
-       , extract('epoch' from current_timestamp-chat_at)<240 chat_editable_age
+       , extract('epoch' from current_timestamp-chat_at)<604800 chat_editable_age
        , exists(select 1 from chat_flag where chat_id=c.chat_id and account_id=(select account_id from g) and chat_flag_direction>0) i_flagged
        , exists(select 1 from chat_star where chat_id=c.chat_id and account_id=(select account_id from g)) i_starred
        , chat_crew_flags
@@ -227,7 +227,7 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
   select _error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
   select _error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
   select _error('you cannot edit a message that is already a reply to be be a reply to a different message') from chat where chat_id=id and chat_reply_id is not null and chat_reply_id<>replyid;
-  select _error('too late') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>300;
+  select _error('you cannot edit a message after 8 days') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>691200;
   select _error(413,'message too long') where length(msg)>5000;
   --
   with d as (update notification set notification_dismissed_at = current_timestamp where notification_id in(select notification_id from notification natural join chat_notification where chat_id=replyid and account_id=get_account_id()) returning *)
