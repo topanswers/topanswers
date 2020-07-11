@@ -3,7 +3,7 @@ grant usage on schema tags to get,post;
 set local search_path to tags,api,pg_temp;
 --
 --
-create view tag with (security_barrier) as select tag_id,tag_name,tag_description,tag_description tag_markdown,tag_question_count,tag_implies_id,tag_code_language from db.tag where community_id=get_community_id();
+create view tag with (security_barrier) as select tag_id,tag_name,tag_description,tag_question_count,tag_implies_id,tag_code_language from db.tag where community_id=get_community_id();
 --
 create view one with (security_barrier) as
 select account_image_url
