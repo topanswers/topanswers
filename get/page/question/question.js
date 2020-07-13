@@ -18,7 +18,7 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,
 
   $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');
 
-  const QUESTION_IS_NEW = '';
+  const QUESTION_IS_NEW = $('html').data('question-is-new');
   function render(){
     var promises = [];
     $('#markdown').attr('data-markdown',cm.getValue()).renderMarkdown(promises);
@@ -48,7 +48,7 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox'],function([$,_,
     else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
   },200));
   if (QUESTION_IS_NEW) { $('input[name="title"]').on('input', function () { localStorage.setItem($('html').css('--community') + '.ask.title', $(this).val()); }); }
-  const QUESTION_IS_FROM_FIDDLE = "";
+  const QUESTION_IS_FROM_FIDDLE = $("html").data("question-is-from-fiddle");
   if (QUESTION_IS_NEW && !QUESTION_IS_FROM_FIDDLE) {
     if(localStorage.getItem($('html').css('--community')+'.ask')) cm.setValue(localStorage.getItem($('html').css('--community')+'.ask'));
     if(localStorage.getItem($('html').css('--community')+'.ask.title')) $('input[name="title"]').val(localStorage.getItem($('html').css('--community')+'.ask.title'));
