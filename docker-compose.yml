@@ -19,7 +19,7 @@ services:
       - frontend
       - backend
     ports:
-      - "80:80"
+      - "81:80"
       - "443:443"
     volumes:
       - .:/var/www/
