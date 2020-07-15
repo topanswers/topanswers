@@ -8,6 +8,8 @@ User-Agent: *
 Disallow: /poll?
 Disallow: /question?
 Disallow: /answer?
+Disallow: /chat?
+Disallow: /transcript?
 Disallow: /profile$
 
 User-agent: Googlebot-Image
