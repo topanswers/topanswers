@@ -79,6 +79,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
              "
       <?="data-l-map='$l_map'"?>
       <?="data-l-people='$l_people'"?>
+      <?="data-l-dismissing='$l_dismissing'"?>
       <?="data-community='$community_name'"?>
       <?="data-room='$room_id'"?>
       <?="data-room-chat-count='$room_chat_count'"?>
@@ -472,11 +473,11 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
           </div>
           <?if($room_show_minimap){?>
             <div id="minimap-wrapper">
-              <?include '../../../icons/calendar';?>
+              <?include '../../../icons/calendar.html';?>
               <div class="divider"></div>
-              <?include '../../../icons/step-up';?>
+              <?include '../../../icons/step-up.html';?>
               <a href='.' id="minimap"><div></div><img src="/chat?room=<?=$room?>&minimap" ismap></a>
-              <?include '../../../icons/step-down';?>
+              <?include '../../../icons/step-down.html';?>
             </div>
           <?}?>
           <?if($auth){?>

@@ -33,13 +33,19 @@ a.button:not([href]) { cursor: default; opacity: 0.5; }
 a.button+a.button { margin-left: 1px; }
 a :not(img) { pointer-events: none; }
 
-i.i { cursor: pointer; width: 22px; height: 22px; padding: 3px; }
+i.i { cursor: pointer; display: inline-block; width: 22px; height: 22px; padding: 3px; }
 i.i>svg { display: block; pointer-events: none; height: 100%; width: 100%; }
 
 #keyboard { display: flex; flex-wrap: wrap; justify-content: center; }
 #keyboard>span { flex: 0 0 auto; margin: 0 4px; display: flex; }
 #keyboard>span>span { display: inline-flex; height: 19px; width: 19px; justify-content: center; align-items: center; font-size: 14px; font-family: var(--font-monospace);
       margin: 0.5px; border: 1px solid rgb(var(--rgb-mid)); border-radius: 2px; cursor: pointer; background: rgb(var(--rgb-white));  }
+
+.spin { animation-name: spin; animation-timing-function: linear; animation-iteration-count: infinite; animation-duration: 2s; }
+@keyframes spin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+
+.pulse { animation-name: pulse; animation-timing-function: linear; animation-iteration-count: infinite; animation-duration: 0.5s; animation-direction: alternate; }
+@keyframes pulse { to { color: rgb(var(--rgb-highlight)); } }
 
 @media (max-width: 576px){
   #keyboard { flex-wrap: unset; justify-content: left; overflow-x: auto; }

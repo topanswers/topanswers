@@ -130,6 +130,11 @@ create function dismiss(id integer) returns void language sql security definer s
   update account set account_notification_id = default from u where account.account_id=u.account_id;
 $$;
 --
+create function dismiss_all() returns void language sql security definer set search_path=db,api,pg_temp as $$
+  update notification set notification_dismissed_at = current_timestamp where notification_dismissed_at is null and account_id=get_account_id();
+  update account set account_notification_id = default where account_id=get_account_id();
+$$;
+--
 --
 revoke all on all functions in schema notification from public;
 do $$

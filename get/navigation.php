@@ -21,7 +21,7 @@ include '../lang/navigation.'.$community_language.'.php';
     <div accesskey="t">
       <span class="wideonly"><?=$l_topanswers?>&nbsp;</span>
       <span><?=$community_display_name?></span>
-      <?include '../icons/chevron-down-light';?>
+      <?include '../icons/chevron-down-light.html';?>
     </div>
     <div>
       <div>

@@ -5,7 +5,8 @@ include '../nocache.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to notification,pg_temp");
 $auth = ccdb("select login_room(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['room']);
-$limit = ccdb("select count(1) from notification where notification_dismissed_at is null")+($_GET['dismissed']??0);
+$active = ccdb("select count(1) from notification where notification_dismissed_at is null");
+$limit = $active+($_GET['dismissed']??0);
 $has_dismissed = ccdb("select exists(select 1 from notification where notification_dismissed_at is not null)");
 extract(cdb("select room_id,room_can_chat
                   , (select coalesce(jsonb_agg(z order by notification_dismissed_at desc nulls first, notification_at desc),'[]'::jsonb)
@@ -35,6 +36,7 @@ extract(cdb("select room_id,room_can_chat
                      where notification_stack_rn=1) notifications
              from one",$limit));
 ?>
+<?if($active>1){?><a id="dismiss-all" href=".">dismiss all</a><?}?>
 <?$seperator = false; $n = 0;?>
 <?foreach($notifications as $notification){ extract($notification); extract($notification_data,EXTR_PREFIX_ALL,'d');?>
   <?if($notification_dismissed_at&&!$seperator){ $seperator = true; if($n>0){?><hr><?}}?>
@@ -115,4 +117,4 @@ extract(cdb("select room_id,room_can_chat
     <?}?>
   </div>
 <?}?>
-<?if($has_dismissed&&($n===$limit)){?><a id="more-notifications" href="." data-dismissed="<?=isset($_GET['dismissed'])?(intval($_GET['dismissed']*2)):'10'?>">show <?=isset($_GET['dismissed'])?'more ':''?>dismissed notifications</a><?}?>
+<?if($has_dismissed&&($n===$limit)){?><a id="more-notifications" href="." data-dismissed="<?=isset($_GET['dismissed'])?(intval($_GET['dismissed']*2)):'10'?>">show <?=isset($_GET['dismissed'])?'more ':''?>dismissed</a><?}?>

@@ -327,7 +327,7 @@ function h($f){
     "/fonts/source-sans-pro.css": "7128abb0cd4de792",
     "/fonts/stix2.css": "5cf141611d69835c",
     "/fouc.css": "cb4be44f955fc826",
-    "/global.css": "3454fc500025720d",
+    "/global.css": "c6b442f82ce488fa",
     "/header.css": "53837f62149b5ac8",
     "/markdown.css": "94e1f002e6d0a16e",
     "/markdown.js": "a94f6e89180a0827",
@@ -341,8 +341,8 @@ function h($f){
     "/page/answer-history/answer-history.js": "0360ba10c9350b4c",
     "/page/chat-history/chat-history.css": "1e5da1ea076366cd",
     "/page/chat-history/chat-history.js": "c1191ab4a5b0d777",
-    "/page/community/community.css": "7b6de1978c079d96",
-    "/page/community/community.js": "430437407ea915ed",
+    "/page/community/community.css": "57e8ee4284b1b866",
+    "/page/community/community.js": "d01a3101836ef37a",
     "/page/community/community_question.css": "07a412ca211cc45d",
     "/page/index/index.css": "e1255dd738e52b37",
     "/page/index/index.js": "9ebeeda0b13c4046",
@@ -364,7 +364,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "56a55ce4075f8117",
     "/post.css": "2d85563808f49017",
-    "/require.config.js": "7d8d830d2c93a7f0",
+    "/require.config.js": "6ec60e94747b11d2",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }

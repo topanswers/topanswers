@@ -64,7 +64,8 @@ a[data-lightbox] img { cursor: zoom-in; }
 
 #notifications { overflow-x: hidden; overflow-y: auto; flex: 1 1 auto; display: flex; visibility: hidden; flex-direction: column; scroll-behavior: smooth; }
 #notifications>hr { margin: 14px 6px; border: 1px solid rgb(var(--rgb-dark)); }
-#more-notifications { display: block; text-align: center; font-size: 12px; margin: 10px;}
+#notifications>a { display: block; text-align: center; font-size: 12px; margin: 10px; }
+
 #messages-wrapper { overflow: hidden; flex: 1 1 auto; display: flex; flex-direction: column; }
 #messages { display: flex; flex-direction: column-reverse; overflow-x: hidden; overflow-y: auto; background: rgb(var(--rgb-mid)); padding: 4px; }
 .newscroll { border-bottom: 3px solid rgb(var(--rgb-highlight)); }

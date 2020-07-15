@@ -26,3 +26,4 @@ $l_embed_image = 'embed image';
 $l_show_more_lines = 'show all % lines';
 $l_show_keyboard = 'show keyboard';
 $l_hide_keyboard = 'hide keyboard';
+$l_dismissing = 'dismissing';

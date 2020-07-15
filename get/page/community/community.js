@@ -11,12 +11,38 @@ define(['markdown','moment','js.cookie']
       , ROOM_CHAT_COUNT = document.documentElement.dataset.roomChatCount
       , ROOM_CHAT_AGE = document.documentElement.dataset.roomChatAge
       , L_MAP = document.documentElement.dataset.lMap
-      , L_PEOPLE = document.documentElement.dataset.lPeople;
+      , L_PEOPLE = document.documentElement.dataset.lPeople
+      , L_DISMISSING = document.documentElement.dataset.lDismissing;
 
 
   try{ // chat
 
     let saved;
+
+    try{ // dismiss all notifications
+
+      document.getElementById('notifications').addEventListener('click',event=>{
+        if( event.target.getAttribute('id')==='dismiss-all' ){
+          event.preventDefault();
+          event.target.textContent = L_DISMISSING+'…';
+          event.target.style.textDecoration = 'none';
+          event.target.classList.add('pulse');
+
+          fetch('//post.topanswers.xyz/notification?action=dismiss-all', { method: 'POST', credentials: 'include' })
+          .then(response => {
+            if(response.ok){
+              updateNotifications();
+              document.querySelector('#chat-bar a.panel[href][data-panel="messages-wrapper"]').click();
+            }else{
+              event.target.textContent = 'failed';
+            }
+          });
+        }
+
+      },true);
+
+    }catch(e){ console.error(e); }
+
 
     try{ // 'reply to' and other chat '#' links
 
@@ -736,7 +762,7 @@ define(['markdown','moment','js.cookie']
   }
   $('#chat-wrapper').on('click','.notify', function(){
     var t = $(this);
-    $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: t.attr('data-notification-id') }, xhrFields: { withCredentials: true } }).done(function(){
+    $.post({ url: '//post.topanswers.xyz/notification?action=dismiss&id='+t.attr('data-notification-id'), xhrFields: { withCredentials: true } }).done(function(){
       t.removeAttr('data-notification-id').removeClass('notify');
       updateNotifications();
     });
@@ -1145,7 +1171,7 @@ define(['markdown','moment','js.cookie']
   });
   $('#chat-wrapper').on('click','.notification .fa.fa-times-circle', function(){
     var n = $(this).closest('.notification').attr('data-id');
-    $.post({ url: '//post.topanswers.xyz/notification', data: { action: 'dismiss', id: n }, xhrFields: { withCredentials: true } }).done(function(){
+    $.post({ url: '//post.topanswers.xyz/notification?action=dismiss&id='+n, xhrFields: { withCredentials: true } }).done(function(){
       $('#messages>.message.notify[data-notification-id='+n+']').removeAttr('data-notification-id').removeClass('notify');
       updateNotifications().then(() => {
         if(!$('#notifications').children('div').length) $('#chat-bar a.panel[href][data-panel="messages-wrapper"]').click();
