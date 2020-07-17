@@ -40,7 +40,10 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
              --font-regular:<?=$my_community_regular_font_name?>;
              --font-monospace:<?=$my_community_monospace_font_name?>;
              --font-table:<?=$community_tables_are_monospace?$my_community_monospace_font_name:$my_community_regular_font_name?>;
-             ">
+             "
+  data-question-is-new="<?= $question_id ? 'false': 'true' ?>"
+  data-question-is-from-fiddle="<?= isset($_GET['fiddle']) ? 'true': 'false' ?>" 
+>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="<?=h("/fonts/$my_community_regular_font_name.css")?>">
@@ -59,7 +62,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
   <title><?=$question_id?'Edit':'Ask'?> Question - TopAnswers</title>
   <script src="<?=h("/require.config.js")?>"></script>
-  <script data-main="<?=h("/page/question/question.js").preg_replace('/^&/','?',(isset($_GET['fiddle'])?'&fiddle':'').($question_id?'':'&new'))?>" src="<?=h("/lib/require.js")?>"></script>
+  <script data-main="<?=h("/page/question/question.js")?>" src="<?=h("/lib/require.js")?>"></script>
 </head>
 <body>
   <header>
