@@ -76,7 +76,7 @@ define(['jquery'
       function addfiddle(o,r){
         var l = o.attr('data-source-line'), f = $(r).replaceAll(o);
         if(l) f.attr('data-source-line',l);
-        f.find('.qp').each(function(){ QP.showPlan($(this).get(0),$(this).attr('data-xml')); });
+        if(navigator.platform!=='iPhone') f.find('.qp').each(function(){ QP.showPlan($(this).get(0),$(this).attr('data-xml')); });
         f.find('textarea').each(function(){ CodeMirror.fromTextArea($(this)[0],{ viewportMargin: Infinity, mode: 'sql' }); });
         f.find('input').click(function(){
           f.css('opacity',0.5);
