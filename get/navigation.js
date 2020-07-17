@@ -1,6 +1,16 @@
-define(['jquery'],function($){
-  $('.select>div:first-child').click(function(e){ $(this).parent().toggleClass('open'); e.stopPropagation(); });
-  $('.select>div:last-child a').click(function(e){ e.stopPropagation(); return true; });
-  $('.select>div:last-child').click(function(e){ return false; });
-  $('body').click(function(){ $('.select').removeClass('open'); });
+define(function(){
+
+  try{
+
+    const mainnav = document.getElementById('mainnav');
+
+    mainnav.firstElementChild.addEventListener('click',event=>{
+      event.stopPropagation();
+      mainnav.classList.toggle('open');
+    });
+
+    document.documentElement.addEventListener('click',()=>mainnav.classList.remove('open'));
+
+  }catch(e){ console.error(e); }
+
 });

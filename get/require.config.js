@@ -134,8 +134,8 @@ var require = {
     'markdown':'../markdown.7cce7369651cea3e',
     'md-oneline':'../md-oneline.e9aae67d3791c526',
     'md-shortlinks':'../md-shortlinks.089468c314bf7e1c',
-    'navigation':'../navigation.f0ad7bc6582996ae',
-    'require.config':'../require.config.4e08f62b31db8073',
+    'navigation':'../navigation.d0d12edff60010b2',
+    'require.config':'../require.config.8baafb8d2f891ac8',
     'tio':'../tio.0984e7f3a524834f',
  } },
 };

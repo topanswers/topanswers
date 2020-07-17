@@ -17,7 +17,7 @@ include '../lang/navigation.'.$community_language.'.php';
 <div class="container">
   <a class="frame" href="/" title="home"><img class="icon" src="<?=$one_image_url?>"></a>
   <?if(isset($_GET['community'])){?><a class="frame" href="/<?=$community_name?>" title="<?=$community_display_name?> home"><img class="icon" src="<?=$community_image_url?>"></a><?}?>
-  <div class="select element">
+  <div id="mainnav" class="select element">
     <div accesskey="t">
       <span class="wideonly"><?=$l_topanswers?>&nbsp;</span>
       <span><?=$community_display_name?></span>

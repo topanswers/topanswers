@@ -333,7 +333,7 @@ function h($f){
     "/markdown.js": "7cce7369651cea3e",
     "/md-oneline.js": "e9aae67d3791c526",
     "/md-shortlinks.js": "089468c314bf7e1c",
-    "/navigation.js": "f0ad7bc6582996ae",
+    "/navigation.js": "d0d12edff60010b2",
     "/noscript.css": "4f7e2c6342642088",
     "/page/answer/answer.css": "7d8d34681f770e3a",
     "/page/answer/answer.js": "06ed13bf6ff0528d",
@@ -364,7 +364,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "3774d5d15020c4da",
     "/post.css": "2d85563808f49017",
-    "/require.config.js": "4e08f62b31db8073",
+    "/require.config.js": "8baafb8d2f891ac8",
     "/tio.js": "0984e7f3a524834f"
 }',true)[$f]).'.$2',$f);
 }
