@@ -11,6 +11,7 @@ Disallow: /answer?
 Disallow: /chat?
 Disallow: /transcript?
 Disallow: /profile$
+Disallow: /user?
 
 User-agent: Googlebot-Image
 Disallow: /identicon*
