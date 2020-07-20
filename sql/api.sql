@@ -238,7 +238,7 @@ create function login_chat(uuid uuid, id integer) returns boolean language sql s
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
-create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,post,pg_temp as $$
+create function _new_community(cname text) returns integer language plpgsql security definer set search_path=db,pg_temp as $$
 declare
   rid integer;
   cid integer;
@@ -289,6 +289,21 @@ create function _ensure_communicant(aid integer, cid integer) returns void langu
   where syndicate_to_community_id=cid
   on conflict do nothing;
 $$;
+--
+create function _migrate_question(qid integer, cid integer) returns void language plpgsql security definer set search_path=db,api,pg_temp as $$
+declare
+  sid integer;
+  rid integer;
+begin
+  perform _ensure_communicant(account_id,cid) from question where question_id=qid;
+  select sanction_id into sid from sanction where community_id=cid and sanction_description=(select sanction_description from question natural join sanction where question_id=qid);
+  select room_id into rid from room where room_question_id=qid;
+  update question set community_id=cid, sanction_id=sid where question_id=qid;
+  update answer set community_id=cid, sanction_id=sid where question_id=qid;
+  update room set community_id=cid where room_id=rid;
+  update chat set community_id=cid where room_id=rid;
+  update thread set community_id=cid where room_id=rid;
+end$$;
 --
 --
 revoke all on all functions in schema api from public;

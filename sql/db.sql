@@ -261,7 +261,7 @@ create table chat(
 , chat_active_flags integer default 0 not null
 , unique (room_id,chat_id)
 , unique (community_id,room_id,chat_id)
-, foreign key (community_id,room_id) references room(community_id,room_id)
+, foreign key (community_id,room_id) references room(community_id,room_id) deferrable initially deferred
 , foreign key (room_id,chat_reply_id) references chat(room_id,chat_id)
 );
 create index chat_latest_ind on chat(room_id,chat_at);
@@ -276,8 +276,8 @@ create table thread(
 , room_id integer not null references room
 , primary key (thread_ancestor_chat_id,thread_descendant_chat_id)
 , unique (thread_descendant_chat_id,thread_ancestor_chat_id)
-, foreign key (community_id,room_id,thread_ancestor_chat_id) references chat(community_id,room_id,chat_id)
-, foreign key (community_id,room_id,thread_descendant_chat_id) references chat(community_id,room_id,chat_id)
+, foreign key (community_id,room_id,thread_ancestor_chat_id) references chat(community_id,room_id,chat_id) deferrable initially deferred
+, foreign key (community_id,room_id,thread_descendant_chat_id) references chat(community_id,room_id,chat_id) deferrable initially deferred
 );
 
 create table ping(
