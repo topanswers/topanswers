@@ -197,7 +197,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
                   <?=$question_account_name?>
                 <?}?>
               </span>
-              <img title="Stars: <?=$question_communicant_votes?>" class="icon" src="<?=$question_account_image_url?>">
+              <a href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>"><img title="Stars: <?=$question_communicant_votes?>" class="icon" src="<?=$question_account_image_url?>"></a>
             </div>
           </div>
           <div id="markdown" class="markdown" data-markdown="<?=$question_markdown?>"><pre class='noscript'><?=$question_markdown?></pre></div>
@@ -337,7 +337,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
                     <?=$answer_account_name?>
                   <?}?>
                 </span>
-                <img title="Stars: <?=$answer_communicant_votes?>" class="icon" src="<?=$answer_account_image_url?>">
+                <a href="/user?id=<?=$question_account_id?>&community=<?=$community_name?>"><img title="Stars: <?=$answer_communicant_votes?>" class="icon" src="<?=$answer_account_image_url?>"></a>
               </div>
             </div>
             <div class="markdown" data-markdown="<?=$answer_markdown?>"><pre class='noscript'><?=$answer_markdown?></pre></div>

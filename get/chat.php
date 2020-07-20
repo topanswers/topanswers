@@ -28,7 +28,7 @@ if(isset($_GET['limit'])){
   $limit = min(50,intval($_GET['limit']));
   $limited = true;
 }
-extract(cdb("select community_language,room_can_chat
+extract(cdb("select community_name,community_language,room_can_chat
                   , (select coalesce(jsonb_agg(z),'[]'::jsonb)
                      from (select chat_id,chat_reply_id,chat_markdown,chat_at,chat_change_id,account_is_me,account_name,reply_account_name,reply_account_is_me,chat_gap,chat_next_gap
                                  ,chat_editable_age,i_flagged,i_starred,chat_account_is_repeat,chat_crew_flags,chat_flag_count,chat_star_count,chat_has_history,chat_pings,chat_is_last,chat_is_first
@@ -66,7 +66,7 @@ include '../lang/chat.'.$o_community_language.'.php';
       <?=$chat_reply_id?'<a class="reply" href="#c'.$chat_reply_id.'">replying to</a> '.($reply_account_is_me?'<em>Me</em>':$reply_account_name):''?>
       <span class="when" data-at="<?=$chat_at_iso?>"></span>
     </span>
-    <img title="<?=$account_name?> (<?=$l_stars?>: <?=$l_num($communicant_votes)?>)" class="icon" src="<?=$account_image_url?>">
+    <a href="/user?id=<?=$account_id?>&community=<?=$o_community_name?>"><img title="<?=$account_name?> (<?=$l_stars?>: <?=$l_num($communicant_votes)?>)" class="icon" src="<?=$account_image_url?>"></a>
     <div class="markdown" data-markdown="<?=$chat_markdown?>"><pre><?=$chat_markdown?></pre></div>
     <?if($authenticated){?>
       <span class="buttons">

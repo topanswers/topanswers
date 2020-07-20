@@ -4,14 +4,14 @@ set local search_path to chat,api,pg_temp;
 --
 --
 create view one with (security_barrier) as
-select community_language,room_id,room_can_chat
+select community_name,community_language,room_id,room_can_chat
      , room_derived_name, room_derived_name room_name
-from api._room natural join api._community
+from api._room natural join api._community natural join db.community
      natural left join (select account_id,account_is_dev from db.login natural join db.account where login_uuid=get_login_uuid()) a
 where room_id=get_room_id();
 
 create view one2 with (security_barrier) as
-select community_language,room_id,room_can_chat
+select community_name,community_language,room_id,room_can_chat
      , room_derived_name, room_derived_name room_name
      , (with m as (select min(chat_at)::date first_date from db.chat c where c.room_id=r.room_id)
            , d as (select first_date+generate_series(0,current_date-first_date) the_date from m)
