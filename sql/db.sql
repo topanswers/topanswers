@@ -510,7 +510,7 @@ create table tag(
   tag_id integer generated always as identity primary key
 , community_id integer not null references community
 , tag_at timestamptz not null default current_timestamp
-, tag_name text not null check (tag_name~'^[0-9a-zA-Z][-_.0-9a-zA-Z]{0,18}[0-9a-zA-Z]$')
+, tag_name text not null check (tag_name~'^[0-9a-zA-Z][- _.0-9a-zA-Z]{0,18}[0-9a-zA-Z]$')
 , tag_description text default '' not null check (length(tag_description)<251)
 , tag_implies_id integer
 , tag_question_count integer default 0 not null
