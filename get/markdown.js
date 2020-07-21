@@ -236,40 +236,44 @@ define(['jquery'
    
     $.fn.renderMarkdown = function(promises = []){
       this.filter('[data-markdown]').each(function(){
-        var t = $(this), m = t.attr('data-markdown');
-        rendering = t;
-        prefix = t.closest('[data-id]').attr('id')||'';
-        t.html(md.render(m,{ docId: prefix }));
-        t.children('pre').each(function(){ $(this).parent().addClass('cm-s-default'); });
-        t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
-        t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
-        t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
-        t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
-        t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
-        t.find('textarea.codeinput').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().replace(/\n$/,''),t.attr('data-tio')).then(function(r){ t.siblings('textarea').next()[0].CodeMirror.setValue(r.output); }); },500)); });
-        t.find('textarea.codefence').each(function(){
-          var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode')||rendering.css('--lang-code'), readOnly: true, lineNumbers: $(this).data('numbers')!==undefined, firstLineNumber: $(this).data('numbers') });
-        });
-        if(!t.hasClass('noexpander')){
-          t.find('.CodeMirror').each(function(){
-            var t = $(this), h = t.height();
-            if(h>450){
-              t.css('max-height','300px').addClass('expandable');
-              $('<div class="expander">'+$('html').css('--l_show_more_lines').replace(/%/,t[0].CodeMirror.lineCount().toLocaleString($('html').css('--jslang')))+'</div>').appendTo(t).click(function(){
-                t.animate({ 'max-height': h }, function(){ t.css('max-height',''); }).removeClass('expandable'); $(this).remove();
-              });
-            }
+        try{
+          var t = $(this), m = t.attr('data-markdown');
+          rendering = t;
+          prefix = t.closest('[data-id]').attr('id')||'';
+          t.html(md.render(m,{ docId: prefix }));
+          t.children('pre').each(function(){ $(this).parent().addClass('cm-s-default'); });
+          t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
+          t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
+          t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
+          t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
+          t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
+          t.find('textarea.codeinput').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().replace(/\n$/,''),t.attr('data-tio')).then(function(r){ t.siblings('textarea').next()[0].CodeMirror.setValue(r.output); }); },500)); });
+          t.find('textarea.codefence').each(function(){
+            var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode')||rendering.css('--lang-code'), readOnly: true, lineNumbers: $(this).data('numbers')!==undefined, firstLineNumber: $(this).data('numbers') });
           });
-        }
-        promises.push(...fiddleMarkdown.call(this));
+          if(!t.hasClass('noexpander')){
+            t.find('.CodeMirror').each(function(){
+              var t = $(this), h = t.height();
+              if(h>450){
+                t.css('max-height','300px').addClass('expandable');
+                $('<div class="expander">'+$('html').css('--l_show_more_lines').replace(/%/,t[0].CodeMirror.lineCount().toLocaleString($('html').css('--jslang')))+'</div>').appendTo(t).click(function(){
+                  t.animate({ 'max-height': h }, function(){ t.css('max-height',''); }).removeClass('expandable'); $(this).remove();
+                });
+              }
+            });
+          }
+          promises.push(...fiddleMarkdown.call(this));
+        }catch(e){ console.error(e); }
       });
       return this;
     };
   
     $.fn.renderMarkdownSummary = function(){
       this.filter('[data-markdown]').each(function(){
-        rendering = $(this);
-        $(this).html(mdsummary.renderInline($(this).attr('data-markdown')).split('\n')[0]);
+        try{
+          rendering = $(this);
+          $(this).html(mdsummary.renderInline($(this).attr('data-markdown')).split('\n')[0]);
+        }catch(e){ console.error(e); }
       });
       return this;
     };
