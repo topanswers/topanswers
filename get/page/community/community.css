@@ -127,7 +127,7 @@ a[data-lightbox] img { cursor: zoom-in; }
 .message .button-group:first-child .fa[data-count]:not([data-count^="0"])::after { content: attr(data-count); font-family: inherit }
 .message .button-group:first-child .fa[data-count][data-count="0"] { visibility: hidden; }
 .message.merged>.markdown { margin-top: -1px; }
-.message.merged>.who, .message.merged>.icon { visibility: hidden; }
+.message.merged>.who, .message.merged>a>.icon { visibility: hidden; }
 .message:target .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-highlight)) inset; }
 .message.thread .markdown { background: linear-gradient(rgba(var(--rgb-highlight),0.25),rgba(var(--rgb-highlight),0.25)), rgb(var(--rgb-white)); }
 .message:not(:target).notify .markdown { box-shadow: 0 0 2px 2px rgb(var(--rgb-dark)) inset; }
