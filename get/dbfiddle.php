@@ -58,7 +58,7 @@ header('Cache-Control: max-age=60');
               </table>
             </div>
           <?}?>
-          <?if(isset($head)) if($head==='Microsoft SQL Server 2005 XML Showplan'){?><div class="qp" data-xml="<?=htmlspecialchars($data)?>"></div><?}?>
+          <?if(isset($head)) if($head==='Microsoft SQL Server 2005 XML Showplan'){ unset($head);?><div class="qp" data-xml="<?=htmlspecialchars($data)?>"></div><?}?>
         <?}?>
       <?}?>
     </div>
