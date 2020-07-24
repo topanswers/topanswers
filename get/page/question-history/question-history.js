@@ -1,4 +1,4 @@
-define(['markdown','moment','diff_match_patch','navigation','lightbox2/js/lightbox'],function([$,_,CodeMirror],moment,dmp){
+define(['markdown','moment','diff_match_patch','navigation','lightbox2/js/lightbox','domReady!'],function([$,_,CodeMirror],moment,dmp){
   var dmp = new diff_match_patch();
 
   function render(){

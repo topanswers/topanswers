@@ -1,4 +1,4 @@
-define(['markdown', 'navigation'], function ([$, _]) {
+define(['markdown','navigation','domReady!'], function ([$, _]) {
   const SITE_DOMAIN = location.hostname;
 
   $(window).resize(_.debounce(function(){ $('body').height(window.innerHeight); })).trigger('resize');

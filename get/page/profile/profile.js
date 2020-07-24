@@ -1,4 +1,4 @@
-define(['jquery','navigation','datatables/datatables'],function($){
+define(['jquery','navigation','datatables/datatables','domReady!'],function($){
   $('#pin').click(function(){ $(this).prop('disabled',true); $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'pin', pin: $('html').data('pin') }, xhrFields: { withCredentials: true } }).done(function(){
     $('#pin').replaceWith('<code>'+$('html').data('pin')+'</code>'); });
   });

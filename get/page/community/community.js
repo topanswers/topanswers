@@ -1,4 +1,4 @@
-define(['markdown','tio','moment','js.cookie']
+define(['markdown','tio','moment','js.cookie','domReady!']
        .concat(document.documentElement.style.getPropertyValue('--question')?['starrr']:['jquery.simplePagination']),function([$,_,CodeMirror],tio,moment,Cookies){
 
   moment.locale($('html').css('--jslang'));

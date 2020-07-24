@@ -1,4 +1,4 @@
-define(['navigation'],()=>{
+define(['navigation','domReady!'],()=>{
 
   const table = document.querySelector('table');
 

@@ -1,4 +1,4 @@
-define(['jquery','navigation','datatables/datatables'],function($){
+define(['jquery','navigation','datatables/datatables','domReady!'],function($){
   $('#community').change(function(){ window.location = '/profile?community='+$(this).find(':selected').attr('data-name'); });
   $('input[value=save]').css('visibility','hidden');
   $('table').DataTable({

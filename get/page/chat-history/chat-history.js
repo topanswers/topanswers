@@ -1,4 +1,4 @@
-define(['markdown','diff_match_patch','navigation'],function([$,_,CodeMirror],dmp){
+define(['markdown','diff_match_patch','navigation','domReady!'],function([$,_,CodeMirror],dmp){
   var dmp = new diff_match_patch();
   $('textarea').each(function(){
     var m = $(this).next(), cm = CodeMirror.fromTextArea($(this)[0],{ lineWrapping: true, readOnly: true, mode: { name: 'gfm', gitHubSpice: false, taskLists: false, defaultLang: $('html').css('--lang-code') } });

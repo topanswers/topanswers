@@ -1,4 +1,4 @@
-define(['markdown','moment','navigation','lightbox2/js/lightbox','mark'],function([$,_,CodeMirror],moment){
+define(['markdown','moment','navigation','lightbox2/js/lightbox','mark','domReady!'],function([$,_,CodeMirror],moment){
   var promises = [];
   function threadChat(){
     $('.message').each(function(){

@@ -1,2 +1,2 @@
-define(['jquery','navigation'],function($){
+define(['navigation','domReady!'],function($){
 });
