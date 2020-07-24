@@ -1,7 +1,7 @@
 define(['jquery'
        ,'lodash'
        ,'qp/qp'
-       ,'pako'
+       ,'tio'
        ,'codemirror/lib/codemirror'
        ,'codemirror/mode/meta','codemirror/addon/mode/overlay','codemirror/addon/runmode/runmode','codemirror/addon/runmode/colorize','codemirror/addon/display/placeholder'
        ,'katex'
@@ -12,60 +12,7 @@ define(['jquery'
        ,'lightbox2/js/lightbox'
        ,'<?=implode(array_map(function($e){ return 'codemirror/mode/'.$e.'/'.$e; },['apl','clike','clojure','css','erlang','gfm','go','haskell','htmlmixed','javascript','julia','lua'
                                                                                    ,'markdown','mllike','php','powershell','python','shell','sql','stex','vb','xml']),"','")?>'
-                                                                                   ],function($,_,QP,pako,CodeMirror){
-  function tioRequest(code,lang){                                                                       
-    var oneTimeToken = "'" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + "'";                                               
-    var runRequest = new XMLHttpRequest;                                                                                                                                             
-                                                                                                                                                                             
-    function textToByteString(string) {return unescape(encodeURIComponent(string));}                                                                                        
-    function codeToByteString(code) {                                                                                                                                                
-      var value = textToByteString(code), runString = ["Vlang","1",lang,"Vargs","0","F.input.tio","0","F.code.tio"];
-      runString.push(value.length);runString.push(value);runString.push("R");
-      return runString.join("\0");                                                                                                                                                                                                                                               
-    }                                                                                                 
-    function deflate(byteString) {return pako.deflateRaw(byteStringToByteArray(byteString), {"level": 9});}                                    
-    function inflate(byteString) {return byteArrayToByteString(pako.inflateRaw(byteString));}                                                                                                                                                                                    
-    function byteStringToText(byteString) {return decodeURIComponent(escape(byteString));}    
-    function byteStringToByteArray(byteString) {                                                                                               
-      var byteArray = new Uint8Array(byteString.length);                                         
-      for(var index = 0; index < byteString.length; index++)byteArray[index] = byteString.charCodeAt(index);                                                                                 
-      byteArray.head = 0;                                                                                                                    
-      return byteArray;                                                                                                            
-    }                                                             
-    function byteArrayToByteString(byteArray) {              
-      var retval = "";          
-      iterate(byteArray, function(byte) { retval += String.fromCharCode(byte); });                                                                                                              
-      return retval;                                                                                                
-    }                                                                                                             
-    function iterate(iterable, monad) {if (!iterable)return;for (var i = 0; i < iterable.length; i++)monad(iterable[i]);}                   
-    function byteStringToBase64(byteString) {                                                     
-      return btoa(byteString).replace(/\+/g, "@").replace(/=+/, "");                                                            
-    }                                        
-                                                                                                                                                                                                           
-    return new Promise(function (resolve, reject) {                                                                             
-      runRequest.onreadystatechange = function () {                                                                                                                                                                  
-        if (runRequest.readyState !== 4) return;                                                                                                                                                                                      
-        if (runRequest.status >= 200 && runRequest.status < 300) {                                                              
-          var response = byteArrayToByteString(new Uint8Array(runRequest.response));                                                                                                                                 
-          var rawOutput = inflate(response.slice(10));                                                
-          var output;                                                                 
-          try {output = byteStringToText(rawOutput);}catch(error) {output = rawOutput;}
-          output = output.replace(new RegExp(output.slice(0,16).replace(/\W/g,t=>"\\"+t),"g"),"").split("\n").slice(0,-5).join("\n").replace(/\n$/g,'');
-          resolve({ req: byteStringToBase64(byteArrayToByteString(deflate(lang+'ÿÿ'+textToByteString(code)+'ÿÿ'))), output: output });
-        } else {                                                                               
-          reject({                                                                       
-            status: runRequest.status,          
-            statusText: runRequest.statusText                                                                                                                                                                    
-          });                                                                                                   
-        }                                                    
-      };                                                   
-                                                                                                          
-      runRequest.open('POST','https://tio.run/cgi-bin/run',true);
-      runRequest.responseType = "arraybuffer";             
-      runRequest.send(deflate(codeToByteString(code)));
-    });                                                
-  }                                                                      
-
+                                                                                   ],function($,_,QP,tio,CodeMirror){
   //polyfill
   if (!Promise.allSettled) Promise.allSettled = allSettled;
   
@@ -247,7 +194,7 @@ define(['jquery'
           t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
           t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
           t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
-          t.find('textarea.codeinput').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tioRequest(cm.getValue().replace(/\n$/,''),t.attr('data-tio')).then(function(r){ t.siblings('textarea').next()[0].CodeMirror.setValue(r.output); }); },500)); });
+          t.find('textarea.codeinput').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tio(cm.getValue().replace(/\n$/,''),t.attr('data-tio')).then(function(r){ t.siblings('textarea').next()[0].CodeMirror.setValue(r.output); }); },500)); });
           t.find('textarea.codefence').each(function(){
             var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode')||rendering.css('--lang-code'), readOnly: true, lineNumbers: $(this).data('numbers')!==undefined, firstLineNumber: $(this).data('numbers') });
           });
@@ -281,6 +228,6 @@ define(['jquery'
   }());
 
 
-  return [$,_,CodeMirror,tioRequest];
+  return [$,_,CodeMirror];
 
 });

@@ -226,6 +226,7 @@ $$;
 create function change(id integer, msg text, replyid integer, pingids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select _error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
   select _error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
+  select _error('you cannot edit a message that is already a reply to be be no longer a reply') from chat where chat_id=id and chat_reply_id is not null and replyid is null;
   select _error('you cannot edit a message that is already a reply to be be a reply to a different message') from chat where chat_id=id and chat_reply_id is not null and chat_reply_id<>replyid;
   select _error('you cannot edit a message after 8 days') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>691200;
   select _error(413,'message too long') where length(msg)>5000;
@@ -246,7 +247,8 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
   insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
   select thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id
   from (select thread_ancestor_chat_id,community_id,room_id from thread where thread_descendant_chat_id=id) z1
-       natural join (select thread_descendant_chat_id,community_id,room_id from thread where thread_ancestor_chat_id=id) z2;
+       natural join (select thread_descendant_chat_id,community_id,room_id from thread where thread_ancestor_chat_id=id) z2
+  where exists(select 1 from chat where chat_id=id and chat_reply_id is null and replyid is not null);
   --
   with h as (insert into chat_history(chat_id,chat_history_markdown) values(id,msg))
     , aa as (select account_id

@@ -1,5 +1,5 @@
-define(['markdown','moment','js.cookie']
-       .concat(document.documentElement.style.getPropertyValue('--question')?['starrr']:['jquery.simplePagination']),function([$,_,CodeMirror,tioRequest],moment,Cookies){
+define(['markdown','tio','moment','js.cookie']
+       .concat(document.documentElement.style.getPropertyValue('--question')?['starrr']:['jquery.simplePagination']),function([$,_,CodeMirror],tio,moment,Cookies){
 
   moment.locale($('html').css('--jslang'));
 
@@ -962,7 +962,7 @@ define(['markdown','moment','js.cookie']
           while((new RegExp('^'+c,'m')).test(code)) c+='§';
           while((new RegExp('^'+o,'m')).test(code)) o+='`';
           if(live){
-            tioRequest(code,tiolang).then(function(r){
+            tio(code,tiolang).then(function(r){
               while((new RegExp('^'+f,'m')).test(r.output)) f+=':';
               while((new RegExp('^'+c,'m')).test(r.output)) c+='§';
               while((new RegExp('^'+o,'m')).test(r.output)) o+='`';
