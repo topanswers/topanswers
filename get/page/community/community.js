@@ -41,7 +41,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
 
       },true);
 
-    }catch(e){ console.error(e); if(AUTH) error(e); }
+    }catch(e){ error(e); }
 
 
     try{ // 'reply to' and other chat '#' links
@@ -81,7 +81,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
         }
       },true);
 
-    }catch(e){ console.error(e); if(AUTH) error(e); }
+    }catch(e){ error(e); }
 
 
     try{ // infinity scroll up
@@ -113,7 +113,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
           }).finally(()=>{ getting = false; });
       });
 
-    }catch(e){ console.error(e); if(AUTH) error(e); }
+    }catch(e){ error(e); }
 
     try{ // infinity scroll down
 
@@ -145,7 +145,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
           }).finally(()=>{ getting = false; });
       });
 
-    }catch(e){ console.error(e); if(AUTH) error(e); }
+    }catch(e){ error(e); }
 
     try{ // follow
 
@@ -161,7 +161,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
       } ) ) );
       mutationObserver.observe(document.getElementById('messages'), { childList: true });
 
-    }catch(e){ console.error(e); if(AUTH) error(e); }
+    }catch(e){ error(e); }
 
     try{ // minimap
 
@@ -273,7 +273,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
 
       }
 
-    }catch(e){ console.error(e); if(AUTH) error(e); }
+    }catch(e){ error(e); }
 
     try{ // image pasting
       require(['paste'], function(paste){
@@ -292,14 +292,14 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
           return false;
         });
       });
-    }catch(e){ console.error(e); if(AUTH) error(e); }
+    }catch(e){ error(e); }
 
-  }catch(e){ console.error(e); if(AUTH) error(e); }
+  }catch(e){ error(e); }
 
 
   try{ // common header navigation
     require(['navigation']);
-  }catch(e){ console.error(e); if(AUTH) error(e); }
+  }catch(e){ error(e); }
 
 
   try{ // import from SE
@@ -324,7 +324,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
       });
 
     });
-  }catch(e){ console.error(e); if(AUTH) error(e); }
+  }catch(e){ error(e); }
 
 
   try{ // resizer
@@ -334,7 +334,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
         if(AUTH) $.post({ url: '//post.topanswers.xyz/profile', data: { action: 'resizer', position: Math.round(w) }, xhrFields: { withCredentials: true } });
       } });
     });
-  }catch(e){ console.error(e); if(AUTH) error(e); }
+  }catch(e){ error(e); }
 
 
   try{ // prod/test environment switching
@@ -350,7 +350,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
         window.location.reload(true);
       });
     });
-  }catch(e){ console.error(e); if(AUTH) error(e); }
+  }catch(e){ error(e); }
 
 
   try{ // tags
@@ -377,7 +377,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
         }
       });
     }
-  }catch(e){ console.error(e); if(AUTH) error(e); }
+  }catch(e){ error(e); }
 
 
   var title = document.title, latestChatId;
@@ -1218,4 +1218,4 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
     $('#chattext').focus();
     return false;
   });
-},function(e){ console.error(e); if(AUTH) error(e); });
+},function(e){ error(e); });
