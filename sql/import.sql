@@ -44,8 +44,8 @@ end;
 $$;
 --
 create function _new_question(aid integer, title text, markdown text, tags text, sesid integer, seqid integer, seat timestamptz) returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error(400,'already imported') where exists (select 1 from question where community_id=get_community_id() and question_se_question_id=seqid);
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error(400,'already imported') where exists (select 1 from question where community_id=get_community_id() and question_se_question_id=seqid);
   select _ensure_communicant(aid,get_community_id());
   --
   with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning community_id,room_id)
@@ -76,8 +76,8 @@ create function new_questionanon(title text, markdown text, tags text, sesid int
 $$;
 --
 create function _new_answer(aid integer, markdown text, seaid integer, seat timestamptz) returns integer language sql security definer set search_path=db,api,import,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error(400,'already imported') where exists (select 1 from answer where question_id=get_question_id() and answer_se_answer_id=seaid);
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error(400,'already imported') where exists (select 1 from answer where question_id=get_question_id() and answer_se_answer_id=seaid);
   select _ensure_communicant(aid,get_community_id());
   --
   update question set question_poll_major_id = default where question_id=get_question_id();

@@ -678,3 +678,9 @@ create table import(
 create table environment(
   environment_name text primary key
 );
+
+create unlogged table error(
+  error_at timestamptz default current_timestamp not null
+, error_ua text not null
+, error_text text not null
+);

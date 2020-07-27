@@ -62,12 +62,12 @@ end$$;
 --
 --
 create function vote(votes integer) returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid answer') where get_answer_id() is null;
-  select _error('invalid number of votes cast') from answer.one where votes<0 or votes>(case when kind_allows_answer_multivotes then community_my_power else 1 end);
-  select _error('cant vote on own answer') from answer.one where account_id=answer_account_id;
-  select _error(429,'rate limit') where (select count(*) from answer_vote where account_id=get_account_id() and answer_vote_at>current_timestamp-'1m'::interval)>4;
-  select _error(429,'rate limit') where (select count(*) from answer_vote_history where account_id=get_account_id() and answer_vote_history_at>current_timestamp-'1m'::interval)>10;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('invalid answer') where get_answer_id() is null;
+  select raise_error('invalid number of votes cast') from answer.one where votes<0 or votes>(case when kind_allows_answer_multivotes then community_my_power else 1 end);
+  select raise_error('cant vote on own answer') from answer.one where account_id=answer_account_id;
+  select raise_error(429,'rate limit') where (select count(*) from answer_vote where account_id=get_account_id() and answer_vote_at>current_timestamp-'1m'::interval)>4;
+  select raise_error(429,'rate limit') where (select count(*) from answer_vote_history where account_id=get_account_id() and answer_vote_history_at>current_timestamp-'1m'::interval)>10;
   --
   select _ensure_communicant(get_account_id(),get_community_id());
   update question set question_poll_minor_id = default where question_id=(select question_id from answer where answer_id=get_answer_id());
@@ -93,10 +93,10 @@ create function vote(votes integer) returns integer language sql security define
 $$;
 --
 create function flag(direction integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid answer') where get_answer_id() is null;
-  select _error('invalid flag direction') where direction not in(-1,0,1);
-  select _error(429,'rate limit') where (select count(1) from answer_flag_history where account_id=get_account_id() and answer_flag_history_at>current_timestamp-'1m'::interval)>6;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('invalid answer') where get_answer_id() is null;
+  select raise_error('invalid flag direction') where direction not in(-1,0,1);
+  select raise_error(429,'rate limit') where (select count(1) from answer_flag_history where account_id=get_account_id() and answer_flag_history_at>current_timestamp-'1m'::interval)>6;
   --
   select _ensure_communicant(get_account_id(),get_community_id());
   --
@@ -131,9 +131,9 @@ create function flag(direction integer) returns void language sql security defin
 $$;
 --
 create function change(markdown text) returns void language sql security definer set search_path=db,api,answer,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid answer') where get_answer_id() is null;
-  select _error(429,'rate limit') where (select count(*)
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('invalid answer') where get_answer_id() is null;
+  select raise_error(429,'rate limit') where (select count(*)
                                          from answer_history natural join (select answer_id from answer where account_id<>get_account_id()) z
                                          where account_id=get_account_id() and answer_history_at>current_timestamp-'5m'::interval)>10;
   --
@@ -152,12 +152,12 @@ $$;
 --
 create function new(markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean, label integer) returns integer language sql security definer
                 set search_path=db,api,answer,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid question') where get_question_id() is null;
-  select _error('question needs more votes before answers are permitted') from question natural join kind where question_id=get_question_id() and question_votes<kind_minimum_votes_to_answer;
-  select _error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
-  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
-  select _error(429,'rate limit') where (select count(*) from answer where account_id=get_account_id() and answer_at>current_timestamp-'2m'::interval)>3;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('invalid question') where get_question_id() is null;
+  select raise_error('question needs more votes before answers are permitted') from question natural join kind where question_id=get_question_id() and question_votes<kind_minimum_votes_to_answer;
+  select raise_error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
+  select raise_error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
+  select raise_error(429,'rate limit') where (select count(*) from answer where account_id=get_account_id() and answer_at>current_timestamp-'2m'::interval)>3;
   --
   select _ensure_communicant(get_account_id(),get_community_id());
   update question set question_poll_major_id = default where question_id=get_question_id();

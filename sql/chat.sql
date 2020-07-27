@@ -149,8 +149,8 @@ create function around(at timestamptz, start_id out bigint, end_id out bigint) l
 $$;
 --
 create function quote(rid integer, cid bigint) returns text language sql security definer set search_path=db,api,chat,pg_temp as $$
-  select _error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
-  select _error('invalid room id') where not exists (select 1 from _room where room_id=rid);
+  select raise_error('invalid chat id') where not exists (select 1 from _chat where chat_id=cid);
+  select raise_error('invalid room id') where not exists (select 1 from _room where room_id=rid);
   --
   select '::: quote '||room_id||' '||cid||' '||(case when account_image_hash is null then account_id::text else encode(account_image_hash,'hex') end)||' '||community_rgb_mid||' '||community_rgb_dark||chr(10)
          ||account_derived_name||(case when reply_account_name is not null then ' replying to '||reply_account_name else '' end)
@@ -178,8 +178,8 @@ end$$;
 --
 --
 create function new(msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
-  select _error(413,'message too long') where length(msg)>5000;
+  select raise_error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
+  select raise_error(413,'message too long') where length(msg)>5000;
   select _ensure_communicant(get_account_id(),community_id) from room where room_id=get_room_id();
   --
   with d as (update notification set notification_dismissed_at = current_timestamp where notification_id in(select notification_id from notification natural join chat_notification where chat_id=replyid and account_id=get_account_id()) returning *)
@@ -224,12 +224,12 @@ create function new(msg text, replyid integer, pingids integer[]) returns bigint
 $$;
 --
 create function change(id integer, msg text, replyid integer, pingids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
-  select _error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
-  select _error('you cannot edit a message that is already a reply to be be no longer a reply') from chat where chat_id=id and chat_reply_id is not null and replyid is null;
-  select _error('you cannot edit a message that is already a reply to be be a reply to a different message') from chat where chat_id=id and chat_reply_id is not null and chat_reply_id<>replyid;
-  select _error('you cannot edit a message after 8 days') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>691200;
-  select _error(413,'message too long') where length(msg)>5000;
+  select raise_error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
+  select raise_error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
+  select raise_error('you cannot edit a message that is already a reply to be be no longer a reply') from chat where chat_id=id and chat_reply_id is not null and replyid is null;
+  select raise_error('you cannot edit a message that is already a reply to be be a reply to a different message') from chat where chat_id=id and chat_reply_id is not null and chat_reply_id<>replyid;
+  select raise_error('you cannot edit a message after 8 days') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>691200;
+  select raise_error(413,'message too long') where length(msg)>5000;
   --
   with d as (update notification set notification_dismissed_at = current_timestamp where notification_id in(select notification_id from notification natural join chat_notification where chat_id=replyid and account_id=get_account_id()) returning *)
   update account set account_notification_id = default from d where account.account_id=d.account_id;
@@ -265,10 +265,10 @@ create function change(id integer, msg text, replyid integer, pingids integer[])
 $$;
 --
 create function flag(id bigint, direction integer) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
-  select _error('invalid flag direction') where direction not in(-1,0,1);
-  select _error(429,'rate limit') where (select count(1) from chat_flag_history where account_id=get_account_id() and chat_flag_history_at>current_timestamp-'1m'::interval)>6;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
+  select raise_error('invalid flag direction') where direction not in(-1,0,1);
+  select raise_error(429,'rate limit') where (select count(1) from chat_flag_history where account_id=get_account_id() and chat_flag_history_at>current_timestamp-'1m'::interval)>6;
   --
   select _ensure_communicant(get_account_id(),get_community_id());
   --
@@ -333,22 +333,22 @@ create function flag(id bigint, direction integer) returns bigint language sql s
 $$;
 --
 create function set_star(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('cant star own message') where exists(select 1 from chat where chat_id=cid and account_id=get_account_id());
-  select _error('already starred') where exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
-  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
+  select raise_error('cant star own message') where exists(select 1 from chat where chat_id=cid and account_id=get_account_id());
+  select raise_error('already starred') where exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
+  select raise_error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
   insert into chat_star(chat_id,account_id,room_id) select chat_id,get_account_id(),room_id from chat where chat_id=cid;
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
 create function remove_star(cid bigint) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('not already starred') where not exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
-  select _error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
+  select raise_error('not already starred') where not exists(select 1 from chat_star where chat_id=cid and account_id=get_account_id());
+  select raise_error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
   delete from chat_star where chat_id=cid and account_id=get_account_id();
   update chat set chat_change_id = default where chat_id=cid returning chat_change_id;
 $$;
 --
 create function read(ids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   --
   with w as (select room_id, max(chat_id) chat_id
              from chat natural join (select room_id,listener_latest_read_chat_id from listener where account_id=get_account_id()) x

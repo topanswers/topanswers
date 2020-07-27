@@ -104,7 +104,7 @@ end$$;
 --
 --
 create function dismiss(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('invalid notification id') where not exists (select 1 from notification where notification_id=id and account_id=get_account_id());
+  select raise_error('invalid notification id') where not exists (select 1 from notification where notification_id=id and account_id=get_account_id());
   --
   with q as (select question_id from question_notification natural join (select question_history_id,question_id from question_history) h where notification_id=id)
      , n as (select notification_id from notification natural join question_notification natural join (select question_history_id,question_id from question_history) h natural join q where notification_dismissed_at is null and account_id=get_account_id())

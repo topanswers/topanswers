@@ -31,37 +31,37 @@ end$$;
 --
 --
 create function change_name(nname text) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('not authorised') from room.one where not account_is_dev;
-  select _error(400,'invalid room name') where nname is not null and not nname~'^[0-9[:alpha:]/][-'' ,.0-9[:alpha:]/<>+]{1,25}[0-9[:alpha:]/<>]$';
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('not authorised') from room.one where not account_is_dev;
+  select raise_error(400,'invalid room name') where nname is not null and not nname~'^[0-9[:alpha:]/][-'' ,.0-9[:alpha:]/<>+]{1,25}[0-9[:alpha:]/<>]$';
   update room set room_name = nname where room_id=get_room_id();
 $$;
 --
 create function change_image(bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('not authorised') from room.one where not account_is_dev;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('not authorised') from room.one where not account_is_dev;
   update room set room_image_hash = $1 where room_id=get_room_id();
 $$;
 --
 create function mute() returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   delete from listener where account_id=get_account_id() and room_id=get_room_id();
 $$;
 --
 create function listen() returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   select _ensure_communicant(get_account_id(),get_community_id());
   insert into listener(account_id,room_id,listener_latest_read_chat_id) select get_account_id(),get_room_id(),max(chat_id) from chat where room_id=get_room_id() on conflict do nothing;
 $$;
 --
 create function pin() returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   select _ensure_communicant(get_account_id(),get_community_id());
   insert into pinner(account_id,room_id) values (get_account_id(),get_room_id()) on conflict do nothing;
 $$;
 --
 create function unpin() returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   delete from pinner where account_id=get_account_id() and room_id=get_room_id();
 $$;
 --

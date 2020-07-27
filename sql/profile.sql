@@ -76,7 +76,7 @@ end$$;
 --
 --
 create function new(luuid uuid) returns uuid language sql security definer set search_path=db,api,pg_temp as $$
-  select _error(429,'rate limit') where (select count(*) from account where account_create_at>current_timestamp-'5m'::interval and account_is_imported=false)>5;
+  select raise_error(429,'rate limit') where (select count(*) from account where account_create_at>current_timestamp-'5m'::interval and account_is_imported=false)>5;
   --
   with a as (insert into account default values returning account_id,account_uuid)
      , l as (insert into login(account_id,login_uuid) select account_id,luuid from a)
@@ -95,62 +95,62 @@ create function new(luuid uuid) returns uuid language sql security definer set s
 $$;
 --
 create function authenticate_pin(num bigint) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   delete from pin where pin_number=num;
   insert into pin(pin_number,account_id) select num,account_id from account where account_id=get_account_id();
 $$;
 --
 create function regenerate_account_uuid() returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   update account set account_uuid = default where account_id = get_account_id();
 $$;
 --
 create function change_regular_font(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('regular font is locked for this community') from community where community_id=get_community_id() and community_regular_font_is_locked;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('regular font is locked for this community') from community where community_id=get_community_id() and community_regular_font_is_locked;
   select _ensure_communicant(get_account_id(),get_community_id());
   update communicant set communicant_regular_font_id=id where account_id=get_account_id() and community_id=get_community_id();
 $$;
 --
 create function change_monospace_font(id integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('monospace font is locked for this community') from community where community_id=get_community_id() and community_monospace_font_is_locked;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('monospace font is locked for this community') from community where community_id=get_community_id() and community_monospace_font_is_locked;
   select _ensure_communicant(get_account_id(),get_community_id());
   update communicant set communicant_monospace_font_id=id where account_id=get_account_id() and community_id=get_community_id();
 $$;
 --
 create function change_name(nname text) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('invalid username') where nname is not null and not nname~'^[0-9[:alpha:]][-'' .0-9[:alpha:]]{1,25}[0-9[:alpha:]]$';
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('invalid username') where nname is not null and not nname~'^[0-9[:alpha:]][-'' .0-9[:alpha:]]{1,25}[0-9[:alpha:]]$';
   update account set account_name = nname, account_change_id = default, account_change_at = default where account_id=get_account_id();
 $$;
 --
 create function change_image(bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   update account set account_image_hash = $1, account_change_id = default, account_change_at = default where account_id=get_account_id();
 $$;
 --
 create function change_license(id integer, later boolean) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('"or later" not allowed for '||license_name) from license where license_id=id and later and not license_is_versioned;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('"or later" not allowed for '||license_name) from license where license_id=id and later and not license_is_versioned;
   update account set account_license_id = id, account_permit_later_license = later where account_id=get_account_id();
 $$;
 --
 create function change_codelicense(id integer, later boolean) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
-  select _error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=id and later and not codelicense_is_versioned;
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=id and later and not codelicense_is_versioned;
   update account set account_codelicense_id = id, account_permit_later_codelicense = later where account_id=get_account_id();
 $$;
 --
 create function unset_se_user_id(sid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null or get_community_id() is null;
-  select _error('SE user id is not already linked to this account') where not exists(select 1 from selink where community_id=get_community_id() and sesite_id=sid and account_id=get_account_id());
+  select raise_error('access denied') where get_account_id() is null or get_community_id() is null;
+  select raise_error('SE user id is not already linked to this account') where not exists(select 1 from selink where community_id=get_community_id() and sesite_id=sid and account_id=get_account_id());
   delete from selink where account_id=get_account_id() and community_id=get_community_id() and sesite_id=sid;
 $$;
 create function set_se_user_id(sid integer, uid integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null or get_community_id() is null;
-  select _error('SE user id is already set for this account') where exists(select 1 from communicant natural join selink where community_id=get_community_id() and sesite_id=sid and account_id=get_account_id() and selink_user_id is not null);
-  select _error('SE user id is already linked to an account') where exists(select 1 from communicant natural join account natural join selink where community_id=get_community_id() and sesite_id=sid and selink_user_id=uid and not account_is_imported);
+  select raise_error('access denied') where get_account_id() is null or get_community_id() is null;
+  select raise_error('SE user id is already set for this account') where exists(select 1 from communicant natural join selink where community_id=get_community_id() and sesite_id=sid and account_id=get_account_id() and selink_user_id is not null);
+  select raise_error('SE user id is already linked to an account') where exists(select 1 from communicant natural join account natural join selink where community_id=get_community_id() and sesite_id=sid and selink_user_id=uid and not account_is_imported);
   select _ensure_communicant(get_account_id(),get_community_id());
   --
   with se as (update communicant c
@@ -169,34 +169,34 @@ create function set_se_user_id(sid integer, uid integer) returns void language s
 $$;
 --
 create function link(luuid uuid, pn bigint) returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('invalid pin') where not exists (select 1 from pin where pin_number=pn);
+  select raise_error('invalid pin') where not exists (select 1 from pin where pin_number=pn);
   insert into login(account_id,login_uuid) select account_id,luuid from pin where pin_number=pn and pin_at>current_timestamp-'1 min'::interval returning account_id;
 $$;
 --
 create function link(luuid uuid, auuid uuid) returns integer language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('invalid recovery key') where not exists (select 1 from account where account_uuid=auuid);
+  select raise_error('invalid recovery key') where not exists (select 1 from account where account_uuid=auuid);
   insert into login(account_id,login_uuid) select account_id,luuid from account where account_uuid=auuid returning account_id;
 $$;
 --
 create function change_resizer(perc integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('invalid percent') where perc<0 or perc>100;
+  select raise_error('invalid percent') where perc<0 or perc>100;
   update login set login_resizer_percent = perc where login_uuid=get_login_uuid();
 $$;
 --
 create function change_chat_resizer(perc integer) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('invalid percent') where perc<0 or perc>100;
+  select raise_error('invalid percent') where perc<0 or perc>100;
   update login set login_chat_resizer_percent = perc where login_uuid=get_login_uuid();
 $$;
 --
 create function change_syndications(ids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   select _ensure_communicant(get_account_id(),get_community_id());
   delete from syndication where account_id=get_account_id() and community_to_id=get_community_id();
   insert into syndication(account_id,community_to_id,community_from_id) select get_account_id(),get_community_id(),community_id from _community where community_id=any(ids);
 $$;
 --
 create function change_keyboard(chars text) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select _error('access denied') where get_account_id() is null;
+  select raise_error('access denied') where get_account_id() is null;
   select _ensure_communicant(get_account_id(),get_community_id());
   update communicant set communicant_keyboard = chars where account_id=get_account_id() and community_id=get_community_id();
 $$;

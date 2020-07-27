@@ -8,10 +8,6 @@ foreach($files as $file) {
   $hashes[$file] = exec('xxhsum get'.$file.' | cut -f 1 -d " " | tr -d "\n"');
 }
 
-$hashes['/md-oneline.js'] = exec('echo '.$hashes['/md-oneline.js'].$hashes['/md-shortlinks.js'].implode(array_filter($hashes,function($f){ return preg_match('/^\/lib\/.*\.js$/',$f); },ARRAY_FILTER_USE_KEY),'').' | xxhsum | cut -f 1 -d " " | tr -d "\n"');
-$hashes['/md.js'] = exec('echo '.$hashes['/md.js'].$hashes['/md-shortlinks.js'].$hashes['/tio.js'].implode(array_filter($hashes,function($f){ return preg_match('/^\/lib\/.*\.js$/',$f); },ARRAY_FILTER_USE_KEY),'').' | xxhsum | cut -f 1 -d " " | tr -d "\n"');
-$hashes['/markdown.js'] = exec('echo '.$hashes['/markdown.js'].$hashes['/md-oneline.js'].$hashes['/md.js'].implode(array_filter($hashes,function($f){ return preg_match('/^\/lib\/.*\.js$/',$f); },ARRAY_FILTER_USE_KEY),'').' | xxhsum | cut -f 1 -d " " | tr -d "\n"');
-array_walk($hashes,function(&$h,$f){ global $hashes; if(preg_match('/^\/page\/.*\.js$/',$f)) $h = exec('echo '.$hashes[$f].$hashes['/markdown.js'].' | xxhsum | cut -f 1 -d " " | tr -d "\n"'); });
 $filtered = array_filter($hashes,function($f){ return preg_match('/^\/lib\/(codemirror|katex|qp)\/.*\.js$/',$f)
                                                  || ( preg_match('/^\/lib\/[^\/]*\.js$/',$f) && $f!=='/lib/jquery.js' ); },ARRAY_FILTER_USE_KEY);
 array_walk($filtered,function($h,$f){ global $modules,$hashes; $modules .= "    '".substr($f,5,-3)."':'".substr($f,5,-3).'.'.$hashes['/lib/'.substr($f,5,-3).'.js']."',".PHP_EOL; });

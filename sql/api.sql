@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists error cascade;
 drop schema if exists tags cascade;
 drop schema if exists activeusers cascade;
 drop schema if exists pinnedrooms cascade;
@@ -39,8 +40,8 @@ grant usage on schema api to get,post;
 set local search_path to api,pg_temp;
 --
 --
-create function _error(integer,text) returns void language plpgsql as $$begin raise exception '%', $2 using errcode='H0'||$1; end;$$;
-create function _error(text) returns void language sql as $$select _error(403,$1);$$;
+create function raise_error(integer,text) returns void language plpgsql as $$begin raise exception '%', $2 using errcode='H0'||$1; end;$$;
+create function raise_error(text) returns void language sql as $$select raise_error(403,$1);$$;
 --
 --
 --create function get_login_uuid() returns uuid stable language sql security definer as $$select nullif(current_setting('custom.uuid',true),'')::uuid;$$;
@@ -196,15 +197,15 @@ $$;
 --
 create function login_community(uuid uuid, cid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select _set('login',uuid::text),_set('account',account_id::text) from login where login_uuid=uuid;
-  select _error('invalid community') where not exists (select 1 from _community c where community_id=cid);
+  select raise_error('invalid community') where not exists (select 1 from _community c where community_id=cid);
   select _set('community',community_id::text) from community where community_id=cid;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_communityuser(uuid uuid, cid integer, aid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select _set('login',uuid::text),_set('account',account_id::text) from login where login_uuid=uuid;
-  select _error('invalid community') where not exists (select 1 from _community c where community_id=cid);
-  select _error('invalid account') where not exists (select 1 from _account a where account_id=aid);
+  select raise_error('invalid community') where not exists (select 1 from _community c where community_id=cid);
+  select raise_error('invalid account') where not exists (select 1 from _account a where account_id=aid);
   select _set('community',community_id::text) from community where community_id=cid;
   select _set('user',account_id::text) from account where account_id=aid;
   select exists(select 1 from login where login_uuid=uuid);
@@ -212,28 +213,28 @@ $$;
 --
 create function login_room(uuid uuid, rid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select _set('login',uuid::text),_set('account',account_id::text) from login where login_uuid=uuid;
-  select _error('invalid room') where not exists (select 1 from _room where room_id=rid);
+  select raise_error('invalid room') where not exists (select 1 from _room where room_id=rid);
   select _set('room',room_id::text),_set('community',community_id::text) from room where room_id=rid;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_question(uuid uuid, qid integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select _set('login',uuid::text),_set('account',account_id::text) from login where login_uuid=uuid;
-  select _error('invalid question') where not exists (select 1 from _question where question_id=qid);
+  select raise_error('invalid question') where not exists (select 1 from _question where question_id=qid);
   select _set('question',question_id::text),_set('room',question_room_id::text),_set('community',community_id::text) from question where question_id=qid;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_answer(uuid uuid, id integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select _set('login',uuid::text),_set('account',account_id::text) from login where login_uuid=uuid;
-  select _error('invalid answer') where not exists (select 1 from _answer where answer_id=id);
+  select raise_error('invalid answer') where not exists (select 1 from _answer where answer_id=id);
   select _set('answer',answer_id::text),_set('question',question_id::text),_set('room',question_room_id::text),_set('community',community_id::text) from _answer natural join question where answer_id=id;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --
 create function login_chat(uuid uuid, id integer) returns boolean language sql security definer set search_path=db,api,pg_temp as $$
   select _set('login',uuid::text),_set('account',account_id::text) from login where login_uuid=uuid;
-  select _error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
+  select raise_error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
   select _set('chat',chat_id::text),_set('room',room_id::text),_set('community',community_id::text) from _chat where chat_id=id;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
@@ -344,5 +345,6 @@ end$$;
 \ir pinnedrooms.sql
 \ir activeusers.sql
 \ir tags.sql
+\ir error.sql
 --
 commit;
