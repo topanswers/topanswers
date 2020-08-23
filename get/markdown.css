@@ -16,7 +16,7 @@
 .markdown .tablewrapper { max-width: 100%; padding: 1px; overflow-x: auto; }
 .markdown th { background: rgb(var(--rgb-mid)); }
 .markdown td { background: rgb(var(--rgb-white)); }
-.markdown td, .markdown th { font-family: var(--font-table); font-size: 90%; white-space: pre; border: 1px solid rgb(var(--rgb-black)); padding: 3px 5px; text-align: left; }
+.markdown td, .markdown th { font-family: var(--font-table); font-size: 90%; white-space: pre; border: 1px solid rgba(var(--rgb-dark),0.5); padding: 3px 5px; text-align: left; }
 .markdown blockquote { padding: 8px; margin: 16px 0; border: 1px solid rgba(var(--rgb-dark),0.5); border-left: 3px solid rgb(var(--rgb-dark));
                        box-shadow: 1px -1px 1px rgba(var(--rgb-dark),0.2), 1px 1px 1px rgba(var(--rgb-dark),0.2); }
 .markdown blockquote.error { display: block; max-width: 100%; overflow-x: auto; border-color: rgb(var(--rgb-warning)); background: rgba(var(--rgb-warning),0.08); white-space: pre; font-family: var(--font-monospace) }
