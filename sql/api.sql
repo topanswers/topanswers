@@ -3,6 +3,7 @@
 */
 begin;
 --
+drop schema if exists feed cascade;
 drop schema if exists error cascade;
 drop schema if exists tags cascade;
 drop schema if exists activeusers cascade;
@@ -346,5 +347,6 @@ end$$;
 \ir activeusers.sql
 \ir tags.sql
 \ir error.sql
+\ir feed.sql
 --
 commit;

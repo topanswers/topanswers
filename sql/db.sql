@@ -449,6 +449,7 @@ create index question_search_markdown_ind on question using gin (community_id, q
 create index question_search_simple_ind on question using gin (community_id,kind_id,question_tag_ids,question_poll_major_id);
 create index question_room_id_fk_ind on question(question_room_id);
 create index question_usr_ind on question(community_id,account_id) include (question_at,question_votes);
+create index question_feed_ind on question(community_id,question_at) include(question_id,question_title);
 
 alter table room add foreign key(room_question_id) references question deferrable initially deferred;
 
