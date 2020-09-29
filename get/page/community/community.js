@@ -807,6 +807,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
     $('a.comment').removeClass('ping');
     t.addClass('ping');
     $('.icon.pingable[data-id="'+t.data('id')+'"]').addClass('ping');
+    $('.panecontrol.fa-angle-double-right').click();
     textareaInsertTextAtCursor($('#chattext'),'@'+t.data('name')+', re: [your '+(p.hasClass('answer')?'answer':'question')+'](#'+p.attr('id')+'), ');
     $('#chattext').focus();
     $('#status').data('update')();
@@ -1209,7 +1210,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
     $('#active-rooms').slideToggle(200);
     return false;
   });
-  $('.panecontrol.fa-angle-double-right').click(function(){ localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur(); });
+  $('.panecontrol.fa-angle-double-right').click(function(){ localStorage.setItem('chat','chat'); $('.pane').toggleClass('hidepane'); $('#chattext').trigger('input').blur(); $('#messages').parent().scrollTop(1000000) });
   $('.panecontrol.fa-angle-double-left').click(function(){ localStorage.removeItem('chat'); $('.pane').toggleClass('hidepane'); });
   $('a.license').click(function(){ $(this).hide().next('.element').show(); return false; });
 
