@@ -13,6 +13,11 @@ extract(cdb("select account_id,account_image_url
                    ,community_id,community_name,community_display_name,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                    ,my_community_regular_font_name,my_community_monospace_font_name
+                  , (select coalesce(jsonb_agg(z),'[]'::jsonb)
+                     from (select sanction_id,sanction_description
+                           from question
+                           group by sanction_id,sanction_description
+                           order by count(*) desc, sanction_id) z) sanctions
              from one"));
 
 $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':''):'';
@@ -52,7 +57,11 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
       </div>
     </fieldset>
     <fieldset>
-      <legend><a class="panel" data-panel="answers">answers</a> / <a class="panel" data-panel="questions" href=".">questions</a> / <a class="panel" data-panel="communities" href=".">communities</a></legend>
+      <legend>
+        <a class="panel" data-panel="answers">Answers</a> / 
+        <?foreach($sanctions as $r){ extract($r);?><a class="panel" data-panel="posttype<?=$sanction_id?>" href="."><?=$sanction_description?>s</a> / <?}?>
+        <a class="panel" data-panel="communities" href=".">Communities</a>
+      </legend>
       <div id="answers" class="panel">
         <table data-order='[[0,"desc"]]' data-page-length='10'>
           <thead>
@@ -75,26 +84,28 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
           </tbody>
         </table>
       </div>
-      <div id="questions" class="panel">
-        <table data-order='[[0,"desc"]]' data-page-length="10">
-          <thead>
-            <tr><th>date/time</th><th>type</th><th>title</th><th>stars</th></tr>
-          </thead>
-          <tbody>
-            <?foreach(db("select question_id,question_title,question_votes,sanction_description,kind_has_question_votes
-                               , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
-                          from question
-                          order by question_at desc") as $r){extract($r);?>
-              <tr>
-                <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
-                <td><?=$sanction_description?></td>
-                <td><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></td>
-                <td><?=$kind_has_question_votes?$question_votes:''?></td>
-              </tr>
-            <?}?>
-          </tbody>
-        </table>
-      </div>
+      <?foreach($sanctions as $r){ extract($r);?>
+        <div id="posttype<?=$sanction_id?>" class="panel">
+          <table data-order='[[0,"desc"]]' data-page-length="10">
+            <thead>
+              <tr><th>date/time</th><th>title</th><th>stars</th></tr>
+            </thead>
+            <tbody>
+              <?foreach(db("select question_id,question_title,question_votes,kind_has_question_votes
+                                 , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
+                            from question
+                            where sanction_id=$1
+                            order by question_at desc",$sanction_id) as $r){extract($r);?>
+                <tr>
+                  <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
+                  <td><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></td>
+                  <td><?=$kind_has_question_votes?$question_votes:''?></td>
+                </tr>
+              <?}?>
+            </tbody>
+          </table>
+        </div>
+      <?}?>
       <div id="communities" class="panel">
         <table data-order='[[3,"desc"]]' data-page-length="10" data-dom="rtip">
           <thead>
