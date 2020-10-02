@@ -29,8 +29,12 @@ var require = {
     'diff_match_patch.{$hashes['/lib/diff_match_patch.js']}': { exports: 'diff_match_patch' },
     'jquery.{$hashes['/lib/jquery.js']}': { exports: 'jQuery' },
   },
-  map: { '*': {
-{$modules}{$omodules} } },
+  map: { '*':
+    {
+      'datatables.net': 'datatables/datatables',
+      {$modules}{$omodules}
+    }
+  },
 };
 EOT;
 

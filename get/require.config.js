@@ -12,8 +12,10 @@ var require = {
     'diff_match_patch.6e3838c0996f1453': { exports: 'diff_match_patch' },
     'jquery.6ad657dafdfaa495': { exports: 'jQuery' },
   },
-  map: { '*': {
-    'clipboard':'clipboard.fa1eb95558c72c3f',
+  map: { '*':
+    {
+      'datatables.net': 'datatables/datatables',
+          'clipboard':'clipboard.fa1eb95558c72c3f',
     'clipboard.min':'clipboard.min.fa1eb95558c72c3f',
     'codemirror/addon/display/placeholder':'codemirror/addon/display/placeholder.c2412da7adc816c2',
     'codemirror/addon/mode/overlay':'codemirror/addon/mode/overlay.78008086f33a69da',
@@ -138,7 +140,9 @@ var require = {
     'md-oneline':'../md-oneline.30cbe39e44603c66',
     'md-shortlinks':'../md-shortlinks.089468c314bf7e1c',
     'navigation':'../navigation.d0d12edff60010b2',
-    'require.config':'../require.config.3e927eb18da58dcb',
+    'require.config':'../require.config.942b645d98c30249',
     'tio':'../tio.84a530d72166be1e',
- } },
+
+    }
+  },
 };
