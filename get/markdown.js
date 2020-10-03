@@ -191,7 +191,7 @@ define(['jquery'
           t.children('pre').each(function(){ $(this).parent().addClass('cm-s-default'); });
           t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
           t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });
-          t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow', 'target':'_blank' });
+          t.find(':not(sup.footnote-ref)>a:not(.footnote-backref):not([href^="#"])').attr({ 'rel':'nofollow noopener noreferrer', 'target':'_blank' });
           t.find('.object-answer').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/duplicate?id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
           t.find('.object-question').each(function(){ var t = $(this); promises.push(Promise.resolve($.get('/questions?one&id='+t.attr('data-id')).done(function(r){ t.html(r); }))); });
           t.find('textarea.codeinput').each(function(){ var t = $(this), cm = CodeMirror.fromTextArea(t[0],{ viewportMargin: Infinity, mode: t.attr('data-mode') }); cm.on('change',_.debounce(function(){ tio(cm.getValue().replace(/\n$/,''),t.attr('data-tio')).then(function(r){ t.siblings('textarea').next()[0].CodeMirror.setValue(r.output); }); },500)); });
