@@ -50,8 +50,8 @@ create function _new_question(aid integer, title text, markdown text, tags text,
   --
   with r as (insert into room(community_id,room_question_id) values(get_community_id(),-1) returning community_id,room_id)
      , q as (insert into question(community_id,account_id,kind_id,sanction_id,question_at,question_title,question_markdown,question_room_id,license_id,codelicense_id,question_se_question_id
-                                 ,question_se_imported_at,question_sesite_id)
-             select community_id,aid,kind_id,community_import_sanction_id,seat,title,markdown,room_id,4,1,seqid,current_timestamp,sesid
+                                 ,question_se_imported_at,question_sesite_id,question_published_at)
+             select community_id,aid,kind_id,community_import_sanction_id,seat,title,markdown,room_id,4,1,seqid,current_timestamp,sesid,current_timestamp
              from r natural join community natural join (select sanction_id community_import_sanction_id, kind_id from sanction) s
              returning question_id)
      , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)

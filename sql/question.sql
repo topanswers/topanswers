@@ -128,8 +128,8 @@ create function new(sid integer, title text, markdown text, lic integer, lic_orl
   with r as (insert into room(community_id,room_question_id) values(get_community_id(),nextval(pg_get_serial_sequence('question','question_id'))) returning room_id,community_id,room_question_id)
      , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
      , q as (insert into question(question_id,community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
-                                 ,question_permit_later_license,question_permit_later_codelicense,account_id) overriding system value
-             select room_question_id,community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
+                                 ,question_permit_later_license,question_permit_later_codelicense,question_published_at,account_id) overriding system value
+             select room_question_id,community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater,current_timestamp
                   , case when (select kind_questions_by_community from kind k where k.kind_id=s.kind_id) then (select community_wiki_account_id from community where community_id=get_community_id())
                          else get_account_id() end
              from r cross join (select kind_id,sanction_id from sanction where sanction_id=sid) s

@@ -119,7 +119,8 @@ select question_id,community_id
 from db.question natural join _community natural join (select room_question_id question_id, room_id,room_chat_count,room_flagged_chat_count,room_deleted_chat_count from db.room) r
      natural left join (select community_id,communicant_is_post_flag_crew from db.communicant where account_id=get_account_id()) a
      natural left join (select room_id,participant_deleted_chat_count from db.participant where account_id=get_account_id()) p
-where communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id() is not null or question_flags=0) and question_crew_flags=0) or account_id=get_account_id();
+where (question_published_at is not null and (communicant_is_post_flag_crew or question_crew_flags<0 or ((get_account_id() is not null or question_flags=0) and question_crew_flags=0)))
+      or account_id=get_account_id();
 --
 create view _room with (security_barrier) as
 select room_id,community_id,room_can_chat
