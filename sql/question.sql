@@ -20,8 +20,9 @@ select account_id,account_license_id,account_codelicense_id,account_permit_later
       ,sesite_url
       ,question_id,question_title,question_markdown,question_license_name,question_se_question_id
       ,question_is_deleted,question_answered_by_me
-      ,question_when,question_account_id,question_account_name,question_account_is_imported
+      ,question_when,question_account_id,question_account_name,question_account_is_imported,question_is_published
       ,question_license_href,question_has_codelicense,question_codelicense_name,question_permit_later_license,question_permit_later_codelicense
+      ,question_license_description,question_codelicense_description
       ,tag_code_language
       ,kind_allows_question_multivotes
      , question_account_id is not distinct from account_id question_account_is_me
@@ -44,7 +45,9 @@ from db.community
                              , sesite_url
                              , license_name||(case when question_permit_later_license then ' or later' else '' end) question_license_name
                              , license_href question_license_href
+                             , license_description question_license_description
                              , codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) question_codelicense_name
+                             , codelicense_description question_codelicense_description
                              , account_id question_account_id
                              , account_name question_account_name
                              , account_is_imported question_account_is_imported
@@ -53,6 +56,7 @@ from db.community
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at) question_when
                              , case num_tag_langs when 1 then tag_code_language end tag_code_language
+                             , question_published_at is not null question_is_published
                         from db.question q natural join db.kind natural join db.account natural join db.community natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select sesite_id question_sesite_id, sesite_url from db.sesite) s
                              natural left join (select count(1) num_tag_langs, min(tag_code_language) tag_code_language
@@ -116,6 +120,32 @@ create function remove_tag(tid integer) returns void language sql security defin
   update question set question_poll_minor_id = default, question_tag_ids = (select coalesce(array_agg(tag_id),array[]::integer[]) from mark where question_id=get_question_id()) where question_id=get_question_id();
 $$;
 --
+create function new(sid integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean, tag_ids integer[], is_draft boolean)
+                returns integer language sql security definer set search_path=db,api,pg_temp as $$
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('invalid community') where not exists (select 1 from community where community_id=get_community_id());
+  select raise_error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
+  select raise_error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
+  select raise_error(429,'rate limit') where (select count(*) from question where account_id=get_account_id() and question_at>current_timestamp-'10m'::interval)>3;
+  select _ensure_communicant(get_account_id(),get_community_id());
+  --
+  with r as (insert into room(community_id,room_question_id) values(get_community_id(),nextval(pg_get_serial_sequence('question','question_id'))) returning room_id,community_id,room_question_id)
+     , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
+     , q as (insert into question(question_id,community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
+                                 ,question_permit_later_license,question_permit_later_codelicense,question_published_at,account_id) overriding system value
+             select room_question_id,community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater,case when is_draft then null else current_timestamp end
+                  , case when (select kind_questions_by_community from kind k where k.kind_id=s.kind_id) then (select community_wiki_account_id from community where community_id=get_community_id())
+                         else get_account_id() end
+             from r cross join (select kind_id,sanction_id from sanction where sanction_id=sid) s
+             returning question_id)
+     , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select question_id,get_account_id(),title,markdown from q)
+     , s as (insert into subscription(account_id,question_id) select get_account_id(),question_id from q)
+  select question._new_tag(question_id,tag_id) from q cross join unnest(tag_ids) tag_id;
+  --
+  select currval(pg_get_serial_sequence('question','question_id'))::integer;
+$$;
+--
 create function new(sid integer, title text, markdown text, lic integer, lic_orlater boolean, codelic integer, codelic_orlater boolean, tag_ids integer[])
                 returns integer language sql security definer set search_path=db,api,pg_temp as $$
   select raise_error('access denied') where get_account_id() is null;
@@ -140,6 +170,35 @@ create function new(sid integer, title text, markdown text, lic integer, lic_orl
   select question._new_tag(question_id,tag_id) from q cross join unnest(tag_ids) tag_id;
   --
   select currval(pg_get_serial_sequence('question','question_id'))::integer;
+$$;
+--
+create function change(title text, markdown text, tag_ids integer[], publish boolean) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('only author can edit this post kind') where exists (select 1 from question natural join kind where question_id=get_question_id() and not kind_can_all_edit and account_id<>get_account_id());
+  select raise_error(429,'rate limit') where (select count(*)
+                                         from question_history natural join (select question_id from question where account_id<>get_account_id()) z
+                                         where account_id=get_account_id() and question_history_at>current_timestamp-'5m'::interval)>10;
+  select raise_error('only author can publish') where publish and exists (select 1 from question where question_id=get_question_id() and account_id<>get_account_id());
+  select raise_error('already published') where publish and exists (select 1 from question where question_id=get_question_id() and question_published_at is not null);
+  --
+  with h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
+             select get_question_id(),get_account_id(),title,markdown
+             from question 
+             where question_id=get_question_id() and (question_title<>title or question_markdown<>markdown or publish)
+             returning question_id,question_history_id)
+    , nn as (select question_history_id,account_id from h natural join (select question_id,account_id from question) z where account_id<>get_account_id()
+             union
+             select question_history_id,account_id from h natural join subscription where account_id<>get_account_id())
+     , n as (insert into notification(account_id) select account_id from nn returning *)
+    , qn as (insert into question_notification(notification_id,question_history_id) select notification_id,question_history_id from nn natural join n)
+  update account set account_notification_id = default where account_id in (select account_id from nn);
+  --
+  select question.remove_tag(tag_id) from mark where question_id=get_question_id() and tag_id not in (select unnest(tag_ids) tag_id);
+  select question.new_tag(tag_id) from unnest(tag_ids) tag_id;
+  --
+  update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
+  update question set question_published_at = current_timestamp where question_id=get_question_id() and publish;
+  update answer set answer_summary = _markdownsummary(answer_markdown) where question_id=get_question_id() and answer_summary<>_markdownsummary(answer_markdown);
 $$;
 --
 create function change(title text, markdown text, tag_ids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$

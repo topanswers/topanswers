@@ -207,6 +207,7 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox','domReady!'],fu
         t.remove();
       });
     });
+    $('a.license').click(function(){ $(this).hide().next('.element').show(); return false; });
     thread();
   }catch(e){ console.error(e); }
 

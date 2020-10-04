@@ -24,8 +24,8 @@ extract(cdb("select account_id,account_is_dev,account_license_id,account_codelic
                        ||(case when question_has_codelicense then ' + '||question_codelicense_name||(case when question_permit_later_codelicense then ' or later' else '' end) else '' end) license
                    ,question_is_deleted,question_answered_by_me
                    ,question_when
-                   ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported
-                   ,question_license_href,question_has_codelicense,question_codelicense_name
+                   ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported,question_is_published
+                   ,question_license_name,question_license_href,question_has_codelicense,question_codelicense_name,question_license_description,question_codelicense_description
                    ,tag_code_language
              from one"));
 $communicant_keyboard = htmlspecialchars_decode($communicant_keyboard);
@@ -98,8 +98,20 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
               <option value="<?=$sanction_id?>"<?=$sanction_is_default?' selected':''?>><?=$sanction_description?></option>
             <?}?>
           </select>
+          <button class="element" name="action" value="draft" type="submit" form="form"><?=$l_save?></button>
+          <button class="element" name="action" value="new" type="submit" form="form"><?=$l_submit?></button>
+        <?}else{?>
+          <a class="element license" href="."><?=$l_license?></a>
+          <span class="element" style="display: none;">
+            <a href="<?=$question_license_href?>" title="<?=$question_license_description?>"><?=$question_license_name?></a>
+            <?if($question_has_codelicense){?>
+              <span> + </span>
+              <a href="/meta?q=24" title="<?=$question_codelicense_description?>"><?=$question_codelicense_name?> for original code</a>
+            <?}?>
+          </span>
+          <?if(!$question_is_published){?><label><input type="checkbox" name="publish" form="form">publish </label><?}?>
+          <button class="element" name="action" value="change" type="submit" form="form"><?='update'?></button>
         <?}?>
-        <button class="element" id="submit" type="submit" form="form"><?=$question_id?'update<span class="wideonly"> post under '.$license.'</span>':$l_submit?></button>
         <a class="frame" href="/profile?community=<?=$community_name?>" title="profile"><img class="icon" src="<?=$account_image_url?>"></a>
       <?}else{?>
         <input class="element" id="join" type="button" value="join">
@@ -108,10 +120,8 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
   </header>
   <form id="form" method="POST" action="//post.topanswers.xyz/question">
     <?if($question_id){?>
-      <input type="hidden" name="action" value="change">
       <input type="hidden" name="id" value="<?=$question_id?>">
     <?}else{?>
-      <input type="hidden" name="action" value="new">
       <input type="hidden" name="community" value="<?=$community_name?>">
     <?}?>
     <?if($question_id){?>

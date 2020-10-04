@@ -22,11 +22,21 @@ switch($_POST['action']) {
   case 'unsubscribe': exit(ccdb("select unsubscribe()"));
   case 'flag': exit(ccdb("select flag($1)",$_POST['direction']));
   case 'change':
-    db("select change($1,$2,('{'||$3||'}')::integer[])",$_POST['title'],$_POST['markdown'],isset($_POST['tags'])?implode(',',$_POST['tags']):'');
+    db("select change($1,$2,('{'||$3||'}')::integer[],$4)",$_POST['title'],$_POST['markdown'],isset($_POST['tags'])?implode(',',$_POST['tags']):'',isset($_POST['publish'])?'t':'f');
     header('Location: //topanswers.xyz/'.$community_name.'?q='.$_POST['id']);
     exit;
   case 'new':
-    $id=ccdb("select new($1::integer,$2,$3,$4,$5,$6,$7,('{'||$8||'}')::integer[])",$_POST['sanction'],$_POST['title'],$_POST['markdown'],$_POST['license'],isset($_POST['license-orlater'])?'t':'f',$_POST['codelicense'],isset($_POST['codelicense-orlater'])?'t':'f',isset($_POST['tags'])?implode(',',$_POST['tags']):'');
+  case 'draft':
+    $id=ccdb("select new($1::integer,$2,$3,$4,$5,$6,$7,('{'||$8||'}')::integer[],$9)"
+            ,$_POST['sanction']
+            ,$_POST['title']
+            ,$_POST['markdown']
+            ,$_POST['license']
+            ,isset($_POST['license-orlater'])?'t':'f'
+            ,$_POST['codelicense']
+            ,isset($_POST['codelicense-orlater'])?'t':'f'
+            ,isset($_POST['tags'])?implode(',',$_POST['tags']):''
+            ,($_POST['action']==='draft')?'t':'f');
     if($id){
       setcookie('clearlocal',$community_name.'.ask',0,'/','topanswers.xyz',true);
       header('Location: //topanswers.xyz/'.$community_name.'?q='.$id);

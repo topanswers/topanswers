@@ -15,10 +15,11 @@ extract(cdb("select account_id,account_image_url
                   , (select jsonb_agg(z)
                      from (select account_id,account_name,account_image_url
                                 , to_char(history_at,'YYYY-MM-DD HH24:MI:SS') history_at
+                                , question_published_at=history_at history_is_publish
                                 , case when question_history_id is not null then 'h' when question_flag_history_id is not null then 'f' else 't' end item_type
                                 , case when question_history_id is not null then (row_number() over (partition by question_history_id is null order by history_at)) end rn
                                 , case when question_history_id is not null then (count(1) over (partition by question_history_id is null)) end cnt
-                                , coalesce(question_history_id,question_flag_history_id,mark_history_id) id
+                                , coalesce(question_history_id,question_flag_history_id,mark_history_id,0) id
                                 , coalesce((select to_jsonb(a) from question_history a where a.question_history_id=h.question_history_id)
                                          , (select to_jsonb(f) from question_flag_history f where f.question_flag_history_id=h.question_flag_history_id)
                                          , (select to_jsonb(t) from mark_history t where t.mark_history_id=h.mark_history_id)) item_data
@@ -71,7 +72,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
         <div id="<?=$h_item_type.$h_id?>" data-bar="<?=($h_item_type==='h')?'visible':'hidden'?>" data-rev="<?=( ($h_item_type==='h') && ($h_rn>1) )?('Revision '.($h_rn-1).' of '.($h_cnt-1)):''?>">
           <div>
             <?if($h_item_type==='h'){?>
-              <?$action = ($h_rn===1)?($question_is_imported?'Imported':'Posted'):'Edited'?>
+              <?$action = ($h_rn===1)?($question_is_imported?'Imported':'Posted'):($h_history_is_publish?'Published':'Edited')?>
             <?}else if($h_item_type==='f'){?>
               <?if($d_question_flag_history_direction===1) $action = 'Flagged'; else if($d_question_flag_history_direction===0) $action = 'Unflagged'; else $action = 'Counterflagged';?>
             <?}else{?>

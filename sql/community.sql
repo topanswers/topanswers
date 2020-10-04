@@ -82,7 +82,7 @@ select account_id,account_image_url
      , room_chat_count>=50 and (select max(chat_at)::date-min(chat_at)::date from db.chat c where c.room_id=r.room_id)>=10 room_show_minimap
       ,question_id,question_at,question_title,question_markdown,question_votes,question_license_name,question_license_description,question_se_question_id,question_crew_flags,question_active_flags
       ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged
-      ,question_i_counterflagged,question_when,question_account_id,question_account_name,question_account_is_imported,question_account_image_url
+      ,question_i_counterflagged,question_when,question_account_id,question_account_name,question_account_is_imported,question_account_image_url,question_is_published
       ,sanction_short_description
       ,kind_can_all_edit,kind_has_answers,kind_has_question_votes,kind_has_answer_votes,kind_minimum_votes_to_answer,kind_allows_question_multivotes,kind_allows_answer_multivotes
       ,kind_show_answer_summary_toc
@@ -141,6 +141,7 @@ from db.room r natural join api._room natural join db.community natural join api
                              , codelicense_id<>1 and codelicense_name<>license_name question_has_codelicense
                              , extract('epoch' from current_timestamp-question_at)::bigint question_when
                              , case num_tag_langs when 1 then tag_code_language end tag_code_language
+                             , question_published_at is not null question_is_published
                         from api._question natural join db.question q natural join db.sanction natural join db.kind natural join api._account natural join db.account natural join db.community
                                            natural join db.license natural join db.codelicense natural join db.communicant
                              natural left join (select account_id,community_id,sesite_id question_sesite_id,selink_user_id,sesite_url from db.selink natural join db.sesite) s

@@ -155,6 +155,7 @@ create function new(markdown text, lic integer, lic_orlater boolean, codelic int
   select raise_error('access denied') where get_account_id() is null;
   select raise_error('invalid question') where get_question_id() is null;
   select raise_error('question needs more votes before answers are permitted') from question natural join kind where question_id=get_question_id() and question_votes<kind_minimum_votes_to_answer;
+  select raise_error('question needs to be published before answers are permitted') from question where question_id=get_question_id() and question_published_at is null;
   select raise_error('"or later" not allowed for '||license_name) from license where license_id=lic and lic_orlater and not license_is_versioned;
   select raise_error('"or later" not allowed for '||codelicense_name) from codelicense where codelicense_id=codelic and codelic_orlater and not codelicense_is_versioned;
   select raise_error(429,'rate limit') where (select count(*) from answer where account_id=get_account_id() and answer_at>current_timestamp-'2m'::interval)>3;

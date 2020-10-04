@@ -355,7 +355,7 @@ function h($f){
     "/page/question-history/question-history.css": "bf24b17278ca4cd4",
     "/page/question-history/question-history.js": "549cd2b2f97a27ab",
     "/page/question/question.css": "9467cb5a46584b92",
-    "/page/question/question.js": "8c8e7c69b42524af",
+    "/page/question/question.js": "641c3520b8106a42",
     "/page/room/room.css": "fe6feab6a06ad6f0",
     "/page/room/room.js": "37e19792513f57c9",
     "/page/sample/sample.css": "94efebee41fedb5f",
@@ -367,7 +367,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "7753c25dfe08401b",
     "/post.css": "2d85563808f49017",
-    "/require.config.js": "c61f0ff5c678bcd3",
+    "/require.config.js": "3a91ad80936c6ed9",
     "/tio.js": "84a530d72166be1e"
 }',true)[$f]).'.$2',$f);
 }

@@ -34,7 +34,8 @@ extract(cdb("select login_resizer_percent,login_chat_resizer_percent
                    ,my_community_regular_font_name,my_community_monospace_font_name
                    ,sesite_url
                    ,question_id,question_title,question_markdown,question_votes,question_license_name,question_se_question_id,question_crew_flags,question_active_flags
-                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count,question_i_subscribed,question_i_flagged,question_i_counterflagged
+                   ,question_has_history,question_is_deleted,question_votes_from_me,question_answered_by_me,question_is_answered,question_answer_count
+                   ,question_i_subscribed,question_i_flagged,question_i_counterflagged,question_is_published
                    ,question_when
                    ,question_account_id,question_account_is_me,question_account_name,question_account_is_imported,question_account_image_url
                    ,question_selink_user_id,question_communicant_votes
@@ -166,7 +167,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
                                                              ?><?=$question_i_counterflagged?' counterflagged':''?><?
                                                              ?><?=$question_is_deleted?' deleted':''?>">
           <div class="title">
-            <a title="<?=$question_title?>"><?=$question_title?></a>
+            <a title="<?=$question_title?>"><?=$question_is_published?'':'DRAFT: '?><?=$question_title?></a>
           </div>
           <div class="bar">
             <div class="element container shrink tags">
@@ -243,10 +244,12 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
                       </div>
                     </div>
                   <?}?>
-                  <div class="element fa fw fa-flag" title="unflag this question"></div>
-                  <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
-                  <?if($communicant_is_post_flag_crew&&($question_active_flags>0)){?>
-                    <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
+                  <?if($question_is_published){?>
+                    <div class="element fa fw fa-flag" title="unflag this question"></div>
+                    <div class="element fa fw fa-flag-o" title="flag this question (n.b. flags are public)"></div>
+                    <?if($communicant_is_post_flag_crew&&($question_active_flags>0)){?>
+                      <div class="element fa fw fa-flag-checkered" title="counterflag"></div>
+                    <?}?>
                   <?}?>
                 <?}?>
                 <a href="/<?=$community_name?>?q=<?=$question_id?>" class="element fa fw fa-link" title="permalink"></a>
@@ -293,7 +296,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
             </div>
           <?}?>
         </div>
-        <?if($kind_has_answers){?>
+        <?if($kind_has_answers&&$question_is_published){?>
           <div class="banner">
             <h3><?=$question_answer_count?> Answer<?=($question_answer_count!==1)?'s':''?></h3>
             <div style="flex: 1 1 0;"></div>
