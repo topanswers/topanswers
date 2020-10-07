@@ -25,9 +25,9 @@ extract(cdb("select account_id,community_name,community_language
                                  ,community_id,community_name,community_display_name,community_my_power,community_image_url
                                  ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning
                                  ,sanction_short_description
-                                , to_char(question_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
+                                , to_char(coalesce(question_published_at,question_at),'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_at_iso
                                 , to_char(question_change_at,'YYYY-MM-DD".'"T"'."HH24:MI:SS".'"Z"'."') question_change_at_iso
-                                , extract('epoch' from current_timestamp-question_at)::bigint question_when
+                                , extract('epoch' from current_timestamp-coalesce(question_published_at,question_at))::bigint question_when
                                 , extract('epoch' from current_timestamp-question_change_at)::bigint question_change_when
                                 , (select coalesce(jsonb_agg(z),'[]'::jsonb) from (select tag_id,tag_name,tag_description from tag t where t.question_id=q.question_id order by tag_question_count desc, tag_name) z) tags
                            from (select question_id, 1 question_ordinal, 1 question_count from question where $1='one' and question_id=$2::integer

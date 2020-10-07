@@ -4,7 +4,7 @@ set local search_path to questions,api,pg_temp;
 --
 --
 create view question with (security_barrier) as
-select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title,question_visible_chat_count
+select question_id,question_at,question_change_at,question_votes,question_poll_major_id,question_poll_minor_id,question_is_deleted,question_title,question_visible_chat_count,question_published_at
       ,community_id,community_name,community_display_name,community_my_power,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_image_url
      , sanction_short_description
      , account_id question_account_id
