@@ -16,6 +16,7 @@ textarea, pre, code { font-family: var(--font-monospace), monospace; }
 #revisions { height: 100%; background: rgb(var(--rgb-light)); border-right: 1px solid rgba(var(--rgb-dark),0.6); font-size: 14px; overflow-y: auto; grid-area: 1 / 1 / 3 / 2; }
 #revisions > div { padding: 2px 2px 3px 5px; border-bottom: 1px solid rgba(var(--rgb-dark),0.6); display: grid; grid-template-rows: auto; grid-template-columns: auto 22px; grid-column-gap: 5px; cursor: pointer; color: unset; text-decoration: unset; }
 #revisions > div.active { box-shadow: 0 0 0 1px rgb(var(--rgb-highlight)) inset; }
+#revisions > form > div { margin-top: 20px; display: block; text-align: center; }
 #history-bar { display: grid; grid-template-columns: auto 1fr auto; margin: 10px 10px 0 10px; font-size: 14px; grid-area: 1 / 2 / 2 / 3; }
 #history-bar > div { margin: 0; }
 #history-bar > div:last-child { grid-area: 1 / 3 / 2 / 4; }

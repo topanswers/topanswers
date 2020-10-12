@@ -8,7 +8,7 @@ $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to question_history,pg_temp");
 ccdb("select login_question(nullif($1,'')::uuid,nullif($2,'')::integer)",$_COOKIE['uuid']??'',$_GET['id']??'') || fail(403,'access denied');
 extract(cdb("select account_id,account_image_url
-                   ,question_id,question_title,question_is_imported
+                   ,question_id,question_title,question_is_imported,question_can_purge_drafts
                    ,community_name,community_display_name,community_code_language,community_tables_are_monospace,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                    ,my_community_regular_font_name,my_community_monospace_font_name
@@ -83,6 +83,13 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
           </div>
           <img class="icon" data-id="<?=$h_account_id?>" src="<?=$h_account_image_url?>">
         </div>
+      <?}?>
+      <?if($question_can_purge_drafts){?>
+        <form method="post" action="//post.topanswers.xyz/question-history">
+          <input type="hidden" name="action" value="purge">
+          <input type="hidden" name="id" value="<?=$question_id?>">
+          <div><a id="purge" href="." class="button">purge drafts</a></div>
+        </form>
       <?}?>
     </div>
     <div id="history-bar">

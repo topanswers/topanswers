@@ -41,6 +41,10 @@ define(['markdown','moment','diff_match_patch','navigation','lightbox2/js/lightb
     history.replaceState(null,null,'#'+$(this).attr('id'));
     return false;
   });
+  $('#purge').click(function(){
+    $(this).closest('form').submit();
+    return false;
+  });
   $('#history-bar a.panel').click(function(){
     var panels = $('#content div.panel'), panel = $('#content div.panel.'+$(this).data('panel'));
     $('#history-bar a.panel:not([href])').attr('href','.');
