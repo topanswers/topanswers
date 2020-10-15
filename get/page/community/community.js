@@ -499,14 +499,14 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
     },'html');
   }
   function updateQuestions(){
-    var maxQuestion = $('#questions>:first-child').data('poll-major-id');
+    var maxQuestion = $('#questions>:first-child').data('poll-major-id'), pagesize = Cookies.get('pagesize')||10
     if('dev' in $('html').data()) console.log('updating questions because polled id > max ('+maxQuestionPollMajorID+')');
     return $.get('/questions?community='+COMMUNITY+window.location.search.replace('?','&')).then(function(data) {
       if($('#questions>:first-child').data('poll-major-id')===maxQuestion){
         var newquestions = $(data).filter('.question').filter(function(){ return $(this).data('poll-major-id')>maxQuestion; });
         newquestions.each(function(){ $('#'+$(this).attr('id')).removeAttr('id').slideUp({ complete: function(){ $(this).remove(); } }); });
         newquestions.prependTo($('#questions')).hide().slideDown();
-        $('#questions .question').slice(11).slideUp({ complete: function(){ $(this).remove(); } });
+        $('#questions .question').slice(pagesize).slideUp({ complete: function(){ $(this).remove(); } });
         processNewQuestions();
         paginateQuestions();
       }
