@@ -88,16 +88,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <div id="posttype<?=$sanction_id?>" class="panel">
           <table data-order='[[0,"desc"]]' data-page-length="10">
             <thead>
-              <tr><th>date/time</th><th>title</th><th>stars</th></tr>
+              <tr><th>date/time</th><th>status</th><th>title</th><th>stars</th></tr>
             </thead>
             <tbody>
-              <?foreach(db("select question_id,question_title,question_votes,kind_has_question_votes
+              <?foreach(db("select question_id,question_title,question_is_draft,question_votes,kind_has_question_votes
                                  , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
                             from question
                             where sanction_id=$1
                             order by question_at desc",$sanction_id) as $r){extract($r);?>
                 <tr>
                   <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
+                  <td><?=$question_is_draft?'draft':'published'?></td>
                   <td><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></td>
                   <td><?=$kind_has_question_votes?$question_votes:''?></td>
                 </tr>

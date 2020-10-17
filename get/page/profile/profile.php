@@ -276,16 +276,17 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
         <legend>questions</legend>
         <table class="data" data-order='[[0,"desc"]]' data-page-length='10'>
           <thead>
-            <tr><th>date/time</th><th>type</th><th>title</th><th>stars</th></tr>
+            <tr><th>date/time</th><th>type</th><th>status</th><th>title</th><th>stars</th></tr>
           </thead>
           <tbody>
-            <?foreach(db("select question_id,question_title,question_votes,sanction_description
+            <?foreach(db("select question_id,question_title,question_is_draft,question_votes,sanction_description
                                , to_char(question_at,'YYYY-MM-DD HH24:MI') question_at_desc
                           from question
                           order by question_at desc") as $r){extract($r);?>
               <tr>
                 <td style="font-family: <?=$my_community_monospace_font_name?>;"><?=$question_at_desc?></td>
                 <td><?=$sanction_description?></td>
+                <td><?=$question_is_draft?'draft':'published'?></td>
                 <td><a href="/<?=$community_name?>?q=<?=$question_id?>"><?=$question_title?></a></td>
                 <td><?=$question_votes?></td>
               </tr>

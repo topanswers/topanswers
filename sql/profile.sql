@@ -16,6 +16,7 @@ from api._community natural join db.community natural join (select community_id 
 create view question with (security_barrier) as
 select community_id
       ,question_id,question_at,question_title,question_votes
+     , question_published_at is null question_is_draft
       ,sanction_description
 from db.question natural join db.sanction natural join db.kind
 where community_id=get_community_id() and account_id=get_account_id();

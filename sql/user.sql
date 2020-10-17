@@ -21,6 +21,7 @@ where (community_type='public' or account_id is not null) and coalesce(community
 create view question with (security_barrier) as
 select community_id
       ,question_id,question_at,question_title,question_votes
+     , question_published_at is null question_is_draft
       ,sanction_id,sanction_description,kind_has_question_votes
 from api._question natural join db.question natural join db.sanction natural join db.kind
 where community_id=get_community_id() and account_id=get_user_id();

@@ -87,6 +87,9 @@ create function simple_recent(text,integer,integer) returns table (question_id i
   from questions.parse($1) natural join question q cross join f
   where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
         and (label_ids is null or exists (select 1 from answer a where a.question_id=q.question_id and label_id = any(label_ids)))
+        and question_published_at is not null
+        and question_crew_flags<=0
+        and (question_flags=0 or question_crew_flags<0)
   order by question_poll_major_id desc offset ($2-1)*$3 limit $3;
 $$;
 --
@@ -109,6 +112,9 @@ create function fuzzy_closest(text,integer,integer) returns table (question_id i
   from s natural join db.question q natural join parse($1) cross join f
   where question_tag_ids@>tag_ids and not question_tag_ids&&not_tag_ids and (position('@' in flags)=0 or question_se_question_id is null)
         and (label_ids is null or exists (select 1 from answer a where a.question_id=q.question_id and label_id = any(label_ids)))
+        and question_published_at is not null
+        and question_crew_flags<=0
+        and (question_flags=0 or question_crew_flags<0)
   order by exact desc, similarity desc offset ($2-1)*$3 limit $3;
 $$;
 --
