@@ -687,3 +687,9 @@ create unlogged table error(
 , error_ua text not null
 , error_text text not null
 );
+
+create table onebox(
+  onebox_id integer generated always as identity primary key
+, onebox_source text default '' not null
+, onebox_markdown text default '' not null
+);
