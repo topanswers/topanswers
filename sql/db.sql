@@ -435,6 +435,7 @@ create table question(
 , question_sesite_id integer references sesite
 , question_tag_ids integer[] default array[]::integer[] not null
 , question_published_at timestamptz
+, question_is_public_visible boolean not null
 , unique (community_id,question_id)
 , unique (community_id,question_se_question_id)
 , unique (community_id,question_id,kind_id,sanction_id)

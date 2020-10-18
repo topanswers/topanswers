@@ -92,7 +92,7 @@ create function _new_tag(qid integer, tid integer) returns void language sql sec
              returning tag_id)
      , h as (insert into mark_history(question_id,tag_id,community_id,account_id)
              select qid,tag_id,community_id,get_account_id() from w natural join tag where tag_id not in (select tag_id from mark where question_id=qid))
-  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i);
+  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from i) and (select question_is_public_visible from question where question_id=qid);
   --
   update question set question_poll_minor_id = default, question_tag_ids = (select array_agg(tag_id) from mark where question_id=qid) where question_id=qid;
 $$;
@@ -115,7 +115,7 @@ create function remove_tag(tid integer) returns void language sql security defin
   select question_id,tid,community_id,get_account_id(),true from mark where question_id=get_question_id() and tag_id=tid;
   --
   delete from mark where question_id=get_question_id() and tag_id=tid;
-  update tag set tag_question_count = tag_question_count-1 where tag_id=tid;
+  update tag set tag_question_count = tag_question_count-1 where tag_id=tid and (select question_is_public_visible from question where question_id=get_question_id());
   --
   update question set question_poll_minor_id = default, question_tag_ids = (select coalesce(array_agg(tag_id),array[]::integer[]) from mark where question_id=get_question_id()) where question_id=get_question_id();
 $$;
@@ -132,10 +132,12 @@ create function new(sid integer, title text, markdown text, lic integer, lic_orl
   with r as (insert into room(community_id,room_question_id) values(get_community_id(),nextval(pg_get_serial_sequence('question','question_id'))) returning room_id,community_id,room_question_id)
      , l as (insert into listener(account_id,room_id) select get_account_id(),room_id from r)
      , q as (insert into question(question_id,community_id,kind_id,sanction_id,question_title,question_markdown,question_room_id,license_id,codelicense_id
-                                 ,question_permit_later_license,question_permit_later_codelicense,question_published_at,account_id) overriding system value
-             select room_question_id,community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater,case when is_draft then null else current_timestamp end
+                                 ,question_permit_later_license,question_permit_later_codelicense,question_published_at,account_id,question_is_public_visible) overriding system value
+             select room_question_id,community_id,kind_id,sanction_id,title,markdown,room_id,lic,codelic,lic_orlater,codelic_orlater
+                  , case when is_draft then null else current_timestamp end
                   , case when (select kind_questions_by_community from kind k where k.kind_id=s.kind_id) then (select community_wiki_account_id from community where community_id=get_community_id())
                          else get_account_id() end
+                  , not is_draft
              from r cross join (select kind_id,sanction_id from sanction where sanction_id=sid) s
              returning question_id)
      , h as (insert into question_history(question_id,account_id,question_history_title,question_history_markdown)
@@ -171,7 +173,7 @@ create function change(title text, markdown text, tag_ids integer[], publish boo
   select question.new_tag(tag_id) from unnest(tag_ids) tag_id;
   --
   update question set question_title = title, question_markdown = markdown, question_change_at = default, question_poll_major_id = default where question_id=get_question_id();
-  update question set question_published_at = current_timestamp where question_id=get_question_id() and publish;
+  update question set question_published_at = current_timestamp, question_is_public_visible = true where question_id=get_question_id() and publish;
   update answer set answer_summary = _markdownsummary(answer_markdown) where question_id=get_question_id() and answer_summary<>_markdownsummary(answer_markdown);
 $$;
 --
@@ -264,6 +266,10 @@ create function flag(direction integer) returns void language sql security defin
              select get_account_id(),get_room_id(),max(chat_id) from chat where room_id=get_room_id()
              on conflict on constraint listener_pkey do update set listener_latest_read_chat_id=excluded.listener_latest_read_chat_id)
   update account set account_notification_id = default where account_id in (select account_id from n);
+  --
+  update tag set tag_question_count = tag_question_count-1 where tag_id in (select tag_id from question join mark using(question_id) where question_id=get_question_id() and question_is_public_visible);
+  update question set question_is_public_visible = question_crew_flags<0 or (question_crew_flags=0 and question_flags=0) where question_id=get_question_id();
+  update tag set tag_question_count = tag_question_count+1 where tag_id in (select tag_id from question join mark using(question_id) where question_id=get_question_id() and question_is_public_visible);
 $$;
 --
 --
