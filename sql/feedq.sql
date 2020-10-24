@@ -4,7 +4,7 @@ set local search_path to feedq,api,pg_temp;
 --
 --
 create view one with (security_barrier) as
-select community_name,question_id,question_title,question_published_at from db.question natural join db.community where question_id=get_question_id();
+select community_name,question_id,question_title,question_published_at,question_change_at from db.question natural join db.community where question_id=get_question_id();
 --
 create view answer with (security_barrier) as
 select answer_id,answer_at,answer_change_at,answer_summary

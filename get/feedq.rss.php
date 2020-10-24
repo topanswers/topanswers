@@ -4,7 +4,7 @@ include '../db.php';
 $_SERVER['REQUEST_METHOD']==='GET' || fail(405,'only GETs allowed here');
 db("set search_path to feedq,pg_temp");
 db("select login_question($1)",$_GET['q']);
-extract(cdb("select question_id,question_title,question_published_at
+extract(cdb("select question_id,question_title,question_published_at,question_change_at
                   , (select jsonb_agg(z)
                      from (select answer_id,answer_summary
                                 , to_char(answer_change_at,'Dy, dd Mon YYYY HH24:MI:SS') answer_change_at
@@ -18,7 +18,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL;
   <channel>
     <title><?=$question_title?></title>
     <link>https://topanswers.xyz/<?=$community_name?>?q=<?=$question_id?></link>
-    <lastBuildDate><?=$question_published_at?></lastBuildDate>
+    <lastBuildDate><?=$question_change_at?></lastBuildDate>
     <pubDate><?=$question_published_at?></pubDate>
     <ttl>30</ttl>
 
