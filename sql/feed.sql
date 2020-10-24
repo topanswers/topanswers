@@ -8,7 +8,7 @@ create view one with (security_barrier) as select community_name,community_displ
 create view question with (security_barrier) as
 select question_id,question_at,question_title
 from db.question
-where community_id=get_community_id() and (question_crew_flags<0 or (question_crew_flags=0 and question_flags=0));
+where community_id=get_community_id() and question_published_at is not null and (question_crew_flags<0 or (question_crew_flags=0 and question_flags=0));
 --
 --
 create function login_community(text) returns void language sql security definer as $$select api.login_community(null,(select community_id from db.community where community_name=$1));$$;

@@ -114,7 +114,11 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
     <link rel="stylesheet" href="<?=h("/lib/starrr.css")?>">
   <?}?>
   <link rel="icon" href="<?=$community_image_url?>" type="image/png">
-  <link rel="alternate" type="application/rss+xml" href="/feed.rss?community=<?=$community_name?>" />
+  <?if($question_id){?>
+    <link rel="alternate" type="application/rss+xml" href="/feedq.rss?q=<?=$question_id?>" />
+  <?}else{?>
+    <link rel="alternate" type="application/rss+xml" href="/feed.rss?community=<?=$community_name?>" />
+  <?}?>
   <title><?=isset($_GET['room']) ? ($room_name.' - ') : (isset($_GET['q'])?$question_title.' - ':'')?><?=$community_display_name?> - <?=$l_topanswers?></title>
   <script src="<?=h("/require.config.js")?>"></script>
   <script data-main="<?=h("/page/community/community.js").preg_replace('/^&/','?',($clearlocal?'&clearlocal':''))?>" src="<?=h("/lib/require.js")?>"></script>

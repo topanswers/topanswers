@@ -20,7 +20,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL;
     <link>https://topanswers.xyz</link>
     <lastBuildDate><?=$items[0]['question_at']?></lastBuildDate>
     <pubDate><?=$items[0]['question_at']?></pubDate>
-    <ttl>600</ttl>
+    <ttl>5</ttl>
 
     <?foreach($items as $r){ extract($r,EXTR_PREFIX_ALL,'q');?>
       <item>
