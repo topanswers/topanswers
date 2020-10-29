@@ -268,7 +268,10 @@ create function flag(id bigint, direction integer) returns bigint language sql s
   select raise_error('access denied') where get_account_id() is null;
   select raise_error('invalid chat') where not exists (select 1 from _chat where chat_id=id);
   select raise_error('invalid flag direction') where direction not in(-1,0,1);
-  select raise_error(429,'rate limit') where (select count(1) from chat_flag_history where account_id=get_account_id() and chat_flag_history_at>current_timestamp-'1m'::interval)>6;
+  --
+  select raise_error(429,'rate limit')
+  where (select not account_is_dev from account where account_id=get_account_id())
+    and (select count(1) from chat_flag_history where account_id=get_account_id() and chat_flag_history_at>current_timestamp-'1m'::interval)>6;
   --
   select _ensure_communicant(get_account_id(),get_community_id());
   --
