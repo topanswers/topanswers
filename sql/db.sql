@@ -688,8 +688,8 @@ create unlogged table error(
 , error_text text not null
 );
 
-create table onebox(
-  onebox_id integer generated always as identity primary key
-, onebox_source text default '' not null
-, onebox_markdown text default '' not null
+create table chat_onebox(
+  chat_id bigint references chat
+, chat_onebox_hash bytea check(length(chat_onebox_hash)=16)
+, chat_onebox_markdown text default '' not null
 );

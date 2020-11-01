@@ -1,23 +1,24 @@
 define(['jquery'
        ,'lodash'
+       ,'sparkmd5'
        ,'qp/qp'
        ,'tio'
        ,'codemirror/lib/codemirror'
        ,'codemirror/mode/meta','codemirror/addon/mode/overlay','codemirror/addon/runmode/runmode','codemirror/addon/runmode/colorize','codemirror/addon/display/placeholder'
        ,'katex'
-       ,'markdown-it','markdown-it-sup','markdown-it-sub','markdown-it-emoji','markdown-it-deflist','markdown-it-footnote','markdown-it-abbr','markdown-it-errorfence','markdown-it-container'
+       ,'markdown-it','markdown-it-sup','markdown-it-sub','markdown-it-emoji','markdown-it-deflist','markdown-it-footnote','markdown-it-abbr','markdown-it-errorfence','markdown-it-onebox','markdown-it-container'
        ,'markdown-it-inject-linenumbers','markdown-it-object','markdown-it-codefence','markdown-it-codeinput','markdown-it-for-inline','markdown-it-katex','markdownItAnchor','markdownItTocDoneRight'
        ,'clipboard'
        ,'promise-all-settled'
        ,'lightbox2/js/lightbox'
        ,'<?=implode(array_map(function($e){ return 'codemirror/mode/'.$e.'/'.$e; },['apl','clike','clojure','css','erlang','gfm','go','haskell','htmlmixed','javascript','julia','lua'
                                                                                    ,'markdown','mllike','php','powershell','python','shell','sql','stex','vb','xml']),"','")?>'
-                                                                                   ],function($,_,QP,tio,CodeMirror){
+                                                                                   ],function($,_,SparkMD5,QP,tio,CodeMirror){
   //polyfill
   if (!Promise.allSettled) Promise.allSettled = allSettled;
   
   (function(){
-    var md, mdsummary, prefix, rendering;
+    var md, mdsummary, prefix, rendering, hashes, missing;
     function fiddleMarkdown(){
       var promises = [];
       function addfiddle(o,r){
@@ -85,7 +86,7 @@ define(['jquery'
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://PHP.TA') tokens[idx].attrSet('href','/php');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://FSHARP.TA') tokens[idx].attrSet('href','/fsharp');
     };
-  
+
     md = require('markdown-it')({ linkify: true, typographer: true })
                .use(require('markdown-it-sup'))
                .use(require('markdown-it-sub'))
@@ -102,7 +103,7 @@ define(['jquery'
                    var m = tokens[idx].info.trim()
                                       .match(/^quote ([1-9][0-9]*) (-?[1-9][0-9]*) ([1-9][0-9]*|[0-9a-f]{64}) ([1-9][0-9]{0,2},[1-9][0-9]{0,2},[1-9][0-9]{0,2}) ([1-9][0-9]{0,2},[1-9][0-9]{0,2},[1-9][0-9]{0,2})$/);
                    if (tokens[idx].nesting === 1) {
-                     return '<div class="quoted-message" style="--rgb-dark: '+m[5]+'; background: rgb('+m[4]+');">\n<img class="icon" src="/'+((m[3].length===64)?'image?hash=':'identicon?id=')+m[3]+'">\n<a class="fa fa-fw fa-link" style="color: rgb('+m[5]+');" href="/transcript?room='+m[1]+'&id='+m[2]+'#c'+m[2]+'"></a>\n';
+                     return '<div class="quoted-message" style="--rgb-dark: '+m[5]+'; background: rgb('+m[4]+');">\n<img class="icon" src="/'+((m[3].length===64)?'image?hash=':'identicon?id=')+m[3]+'">\n';
                    } else {
                      return '</div>\n';
                    }
@@ -123,6 +124,18 @@ define(['jquery'
                      return '</div>\n';
                    }
                  } })
+               .use(require('markdown-it-onebox'), 'onebox',{
+                 render: function (tokens, idx) {
+                   if (tokens[idx].nesting === 1) {
+                     const content = tokens[idx].content, hash = SparkMD5.hash(content), m = rendering.data('onebox-'+hash), e = ( (typeof m)==='undefined' );
+                     hashes.push(hash);
+                     if(e) missing.push(content);
+                     return '<div class="onebox"><div>'+md.render(e?content:m);
+                   } else {
+                     return '</div></div>\n';
+                   }
+                 }
+               })
                .use(require('markdown-it-inject-linenumbers'))
                .use(require('markdown-it-object'),'answer',{ validate: function(p) { return p.trim().match(/^answer ([1-9][0-9]*)$/); }, render: function (tokens,idx){
                  var m = tokens[idx].info.trim().match(/^answer ([1-9][0-9]*)$/);
@@ -184,10 +197,15 @@ define(['jquery'
     $.fn.renderMarkdown = function(promises = []){
       this.filter('[data-markdown]').each(function(){
         try{
-          var t = $(this), m = t.attr('data-markdown');
+          var t = $(this);
           rendering = t;
+          hashes = [];
           prefix = t.closest('[data-id]').attr('id')||'';
-          t.html(md.render(m,{ docId: prefix }));
+          missing = [];
+          t.html(md.render(t.attr('data-markdown'),{ docId: prefix }));
+          t.data('onebox',hashes);
+          t.data('missing',missing);
+          //promises.push(Promise.allSettled(missing));
           t.children('pre').each(function(){ $(this).parent().addClass('cm-s-default'); });
           t.find('table').wrap('<div class="tablewrapper" tabindex="-1">');
           t.find(':not(.quoted-message):not(a)>img').each(function(){ $(this).wrap('<a href="'+$(this).attr('src')+'" data-lightbox="'+$(this).closest('.message').attr('id')+'"></a>'); });

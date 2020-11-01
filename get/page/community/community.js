@@ -1,5 +1,5 @@
-define(['error','markdown','tio','moment','js.cookie','domReady!']
-       .concat(document.documentElement.style.getPropertyValue('--question')?['starrr']:['jquery.simplePagination']),function(error,[$,_,CodeMirror],tio,moment,Cookies){
+define(['error','markdown','tio','moment','js.cookie','sparkmd5','domReady!']
+       .concat(document.documentElement.style.getPropertyValue('--question')?['starrr']:['jquery.simplePagination']),function(error,[$,_,CodeMirror],tio,moment,Cookies,SparkMD5){
 
   moment.locale($('html').css('--jslang'));
 
@@ -920,11 +920,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
     if(!onebox){
       s = m.match(/^https:\/\/xkcd.com\/([0-9]*)\/?$/);
       if(s){
-        $.post({ url: '//post.topanswers.xyz/onebox/xkcd', data: { id: s[1] }, xhrFields: { withCredentials: true }, async: !sync }).done(function(r){
-          if($('#chattext').val()===m){
-            $('#preview .markdown').css('visibility','visible').attr('data-markdown',r).renderMarkdown(promises);
-          }
-        });
+        $('#preview .markdown').css('visibility','visible').attr('data-markdown',"::: onebox\n"+m+'\n:::').renderMarkdown(promises);
         onebox = true;
       }
     }
@@ -980,6 +976,22 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
     }
     if(!onebox) $('#preview .markdown').css('visibility',(m?'visible':'hidden')).attr('data-markdown',(m.trim()?m:'&nbsp;')).renderMarkdown(promises);
     Promise.allSettled(promises).then(() => {
+      const missing = $('#preview .markdown').data('missing');
+      if(missing.length){
+        let p = [];
+        for(const m of missing){
+          s = m.match(/^https:\/\/xkcd.com\/([0-9]*)\/?$/);
+          if(s){
+            p.push(Promise.resolve($.post({ url: '//post.topanswers.xyz/onebox/xkcd', data: { id: s[1] }, xhrFields: { withCredentials: true } }).done(function(r){
+              $('#preview .markdown').data('onebox-'+SparkMD5.hash(m),r);
+            })));
+            break;
+          }
+        }
+        Promise.allSettled(p).then(() => {
+          $('#preview .markdown').renderMarkdown();
+        });
+      }
       $('#preview .question:not(.processed)').each(renderQuestion).addClass('processed');
       if(scroll) scroller.scrollTop(1000000);
     });
@@ -992,7 +1004,7 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
     renderPreviewThrottle();
   }).trigger('input');
   $('#chattext').keydown(function(e){
-    var t = $(this), msg = t.val(),  replyid = $('#status').attr('data-replyid'), c = $('#c'+replyid), edit = $('#status').attr('data-editid')!=='', editid = $('#status').attr('data-editid'), post, arr = [];
+    var t = $(this), msg = t.val(),  replyid = $('#status').attr('data-replyid'), c = $('#c'+replyid), edit = $('#status').attr('data-editid')!=='', editid = $('#status').attr('data-editid'), post, arr = [], hashes = [], hashmd = [];
     if(!t.prop('disabled')) { //Safari workaround for double-posting
       if(e.which===13) {
         if(!e.shiftKey) {
@@ -1001,14 +1013,23 @@ define(['error','markdown','tio','moment','js.cookie','domReady!']
             clearTimeout(chatTimer);
             renderPreview(true);
             $('.ping').each(function(){ arr.push($(this).data('id')); });
+            for (const hash of $('#preview>.markdown').data('onebox')){
+              md = $('#preview>.markdown').data('onebox-'+hash);
+              if(md){
+                hashes.push(hash);
+                hashmd.push(md);
+              }
+            }
             if(edit){
-              post = { msg: $('#preview>.markdown').attr('data-markdown'), room: $('html').attr('data-room'), editid: editid, replyid: replyid, pings: arr, action: 'edit' };
+              post = { msg: $('#preview>.markdown').attr('data-markdown'), room: $('html').attr('data-room'), editid: editid, replyid: replyid, pings: arr, action: 'edit', obhashes: hashes, obmarkdown: hashmd };
               $('#c'+editid).css('opacity',0.5);
             }else{
               post = { room: $('html').attr('data-room')
                      , msg: $('#preview>.markdown').attr('data-markdown')
                      , replyid: replyid
                      , pings: arr
+                     , obhashes: hashes
+                     , obmarkdown: hashmd
                      , action: 'new'
                      , read: _.values(localStorage.getItem('read4')?JSON.parse(localStorage.getItem('read4')):{}) };
             }

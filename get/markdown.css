@@ -35,11 +35,10 @@
 .markdown .footnote-item { font-size: smaller; }
 .markdown .footnote-ref { font-size: 70%; }
 .markdown .footnote-ref>a { text-decoration: none; }
-.markdown .quoted-message { border-radius: 2px; padding: 5px; display: grid; grid-template-columns: 22px auto 11px auto; grid-template-rows: auto auto; overflow: auto; }
-.markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 4; grid-row: 1 / span 1; }
+.markdown .quoted-message { border-radius: 2px; padding: 5px; display: grid; grid-template-columns: 22px auto; grid-template-rows: auto auto; overflow: auto; }
+.markdown .quoted-message > p { margin: 0; font-size: 10px; grid-column: 1 / span 2; grid-row: 1 / span 1; }
 .markdown .quoted-message > p > a { color: rgb(var(--rgb-dark)); text-decoration: none; }
 .markdown .quoted-message > p em { color: rgb(var(--rgb-dark)); font-style: normal; white-space: nowrap; }
-.markdown .quoted-message > a { text-decoration: none; font-size: 10px; grid-column: 3 / span 1; grid-row: 2 / span 1; margin: 2px 0 0 1px; }
 .markdown .quoted-message > img { grid-row: 2 / span 1; }
 .markdown .quoted-message > blockquote { margin: 0; background: rgb(var(--rgb-white)); padding: 4px; border: 1px solid rgba(var(--rgb-dark),0.6); border-radius: 3px; grid-column: 2 / span 1; grid-row: 2 / span 1; justify-self: start; }
 .markdown .post { border: 3px solid rgb(var(--rgb-dark)); margin: 0; }
@@ -84,6 +83,11 @@
 .markdown .tio>pre>xcode { padding: 0 2px; border: 1px solid rgb(var(--rgb-dark)); }
 .markdown .tio>a { grid-area: 2 / 2 / 3 / 3; font-size: 12px; justify-self: end; align-self: end; }
 .markdown:not(:hover)) .tio>a { visibility: hidden; }
+
+.markdown .onebox { margin: 16px 0; }
+.markdown>:first-child.onebox { margin-top: 0; }
+.markdown>:last-child.onebox { margin-bottom: 0; }
+.markdown .onebox>div { display: inline-block; border: 1px solid rgb(var(--rgb-dark)); background-color: rgb(var(--rgb-light)); padding: 10px; border-radius: 5px; }
 
 .dbfiddle { padding: 8px; background: rgb(var(--rgb-light)); border-radius: 3px; }
 .dbfiddle .CodeMirror { border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; }
