@@ -226,52 +226,6 @@ create function new(msg text, replyid integer, pingids integer[], hashes bytea[]
   select chat_id from i;
 $$;
 --
-create function new(msg text, replyid integer, pingids integer[]) returns bigint language sql security definer set search_path=db,api,pg_temp as $$
-  select raise_error('access denied') where not exists(select 1 from api._room where room_id=get_room_id() and room_can_chat);
-  select raise_error(413,'message too long') where length(msg)>5000;
-  select _ensure_communicant(get_account_id(),community_id) from room where room_id=get_room_id();
-  --
-  with d as (update notification set notification_dismissed_at = current_timestamp where notification_id in(select notification_id from notification natural join chat_notification where chat_id=replyid and account_id=get_account_id()) returning *)
-  update account set account_notification_id = default from d where account.account_id=d.account_id;
-  --
-  insert into chat_year(room_id,chat_year,chat_year_count)
-  select get_room_id(),extract('year' from current_timestamp),1 from room where room_id=get_room_id() on conflict on constraint chat_year_pkey do update set chat_year_count = chat_year.chat_year_count+1;
-  --
-  insert into chat_month(room_id,chat_year,chat_month,chat_month_count)
-  select get_room_id(),extract('year' from current_timestamp),extract('month' from current_timestamp),1 from room where room_id=get_room_id()
-  on conflict on constraint chat_month_pkey do update set chat_month_count = chat_month.chat_month_count+1;
-  --
-  insert into chat_day(room_id,chat_year,chat_month,chat_day,chat_day_count)
-  select get_room_id(),extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),1 from room where room_id=get_room_id()
-  on conflict on constraint chat_day_pkey do update set chat_day_count = chat_day.chat_day_count+1;
-  --
-  insert into chat_hour(room_id,chat_year,chat_month,chat_day,chat_hour,chat_hour_count)
-  select get_room_id(),extract('year' from current_timestamp),extract('month' from current_timestamp),extract('day' from current_timestamp),extract('hour' from current_timestamp),1 from room where room_id=get_room_id()
-  on conflict on constraint chat_hour_pkey do update set chat_hour_count = chat_hour.chat_hour_count+1;
-  --
-  with i as (insert into chat(community_id,room_id,account_id,chat_markdown,chat_reply_id)
-             select community_id,room_id,get_account_id(),msg,replyid from room where room_id=get_room_id() returning community_id,room_id,chat_id)
-     , t as (insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
-             select thread_ancestor_chat_id,chat_id,community_id,room_id from i cross join (select thread_ancestor_chat_id from thread where thread_descendant_chat_id=replyid) z
-             union all
-             select replyid,chat_id,community_id,room_id from i where replyid is not null)
-    , rm as (update room r set room_latest_chat_id=i.chat_id, room_chat_count = room_chat_count+1 from i where r.room_id=i.room_id)
-     , h as (insert into chat_history(chat_id,chat_history_markdown) select chat_id,msg from i)
-    , aa as (select account_id from (select account_id from chat where chat_id=replyid union select unnest(pingids)) a where account_id<>get_account_id())
-     , n as (insert into notification(account_id) select account_id from aa returning *)
-    , cn as (insert into chat_notification(notification_id,chat_id) select notification_id,chat_id from n cross join i)
-     , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
-     , p as (insert into ping(chat_id,account_id) select chat_id,account_id from aa cross join i)
-     , l as (insert into listener(account_id,room_id,listener_latest_read_chat_id)
-             select get_account_id(),room_id,chat_id from i natural join room
-             on conflict on constraint listener_pkey do update set listener_latest_read_chat_id=excluded.listener_latest_read_chat_id)
-     , r as (insert into participant(room_id,account_id)
-             select room_id,get_account_id() from i
-             on conflict on constraint participant_pkey
-                do update set participant_latest_chat_at=default, participant_chat_count=participant.participant_chat_count+1)
-  select chat_id from i;
-$$;
---
 create function change(id integer, msg text, replyid integer, pingids integer[], hashes bytea[], markdown text[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select raise_error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
   select raise_error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
@@ -288,47 +242,6 @@ create function change(id integer, msg text, replyid integer, pingids integer[],
   update chat set chat_markdown = msg, chat_reply_id=replyid, chat_change_id = default, chat_change_at = default where chat_id=id;
   delete from chat_onebox where chat_id=id;
   insert into chat_onebox(chat_id,chat_onebox_hash,chat_onebox_markdown) select id,unnest(hashes),unnest(markdown);
-  --
-  insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
-  select replyid,id,community_id,room_id from chat where chat_id=id and replyid is not null;
-  --
-  insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
-  select thread_ancestor_chat_id,id,community_id,room_id from thread where thread_descendant_chat_id=replyid;
-  --
-  insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
-  select thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id
-  from (select thread_ancestor_chat_id,community_id,room_id from thread where thread_descendant_chat_id=id) z1
-       natural join (select thread_descendant_chat_id,community_id,room_id from thread where thread_ancestor_chat_id=id) z2
-  where exists(select 1 from chat where chat_id=id and chat_reply_id is null and replyid is not null);
-  --
-  with h as (insert into chat_history(chat_id,chat_history_markdown) values(id,msg))
-    , aa as (select account_id
-             from (select account_id from chat where chat_id=replyid union select unnest(pingids)) a
-             where account_id<>get_account_id() and not exists (select 1 from chat_notification natural join notification where chat_id=id and account_id=a.account_id))
-     , n as (insert into notification(account_id) select account_id from aa returning *)
-    , cn as (insert into chat_notification(notification_id,chat_id) select notification_id,id from n)
-     , a as (update account set account_notification_id = default from n where account.account_id=n.account_id)
-     , p as (insert into ping(chat_id,account_id) select id,account_id from aa on conflict do nothing)
-  select 1;
-  --
-  with w as (select account_id,chat_reply_id from chat natural join (select chat_id chat_reply_id, account_id reply_account_id from chat) z where chat_id=id and chat_reply_id is not null)
-  update account set account_notification_id = default where account_id in(select account_id from w);
-$$;
---
-create function change(id integer, msg text, replyid integer, pingids integer[]) returns void language sql security definer set search_path=db,api,pg_temp as $$
-  select raise_error('chat does not exist') where not exists(select 1 from chat where chat_id=id);
-  select raise_error('message not mine') from chat where chat_id=id and account_id<>get_account_id();
-  select raise_error('you cannot edit a message that is already a reply to be be no longer a reply') from chat where chat_id=id and chat_reply_id is not null and replyid is null;
-  select raise_error('you cannot edit a message that is already a reply to be be a reply to a different message') from chat where chat_id=id and chat_reply_id is not null and chat_reply_id<>replyid;
-  select raise_error('you cannot edit a message after 8 days') from chat where chat_id=id and extract('epoch' from current_timestamp-chat_at)>691200;
-  select raise_error(413,'message too long') where length(msg)>5000;
-  --
-  with d as (update notification set notification_dismissed_at = current_timestamp where notification_id in(select notification_id from notification natural join chat_notification where chat_id=replyid and account_id=get_account_id()) returning *)
-  update account set account_notification_id = default from d where account.account_id=d.account_id;
-  --
-  delete from thread where thread_descendant_chat_id=id;
-  --
-  update chat set chat_markdown = msg, chat_reply_id=replyid, chat_change_id = default, chat_change_at = default where chat_id=id;
   --
   insert into thread(thread_ancestor_chat_id,thread_descendant_chat_id,community_id,room_id)
   select replyid,id,community_id,room_id from chat where chat_id=id and replyid is not null;
