@@ -93,7 +93,7 @@ create function new_answer(markdown text, sesid integer, seaid integer, seuid in
 $$;
 --
 create function new_answeranon(markdown text, sesid integer, seaid integer, seat timestamptz) returns integer language sql security definer set search_path=db,api,import,pg_temp as $$
-  select _new_answer((select account_id from communicant natural join selink where community_id=get_community_id() and selink_user_id=0),markdown,seaid,seat);
+  select _new_answer((select account_id from communicant natural join selink where community_id=get_community_id() and sesite_id=sesid and selink_user_id=0),markdown,seaid,seat);
 $$;
 --
 create function new_import(sid integer, qid text) returns void language sql security definer set search_path=db,api,pg_temp as $$
