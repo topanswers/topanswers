@@ -58,7 +58,8 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
 //ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
 ?>
 <!doctype html>
-<html style="--jslang:<?=$jslang?>;
+<html style="--community:<?=$community_name?>;
+             --jslang:<?=$jslang?>;
              --lang-code:<?=$tag_code_language?:$community_code_language?>;
              --lang-tio:<?=$community_tio_language?>;
              --l_preview:<?=$l_preview?>;
