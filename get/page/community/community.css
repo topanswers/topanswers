@@ -31,7 +31,7 @@ html[data-dev] .changed { outline: 2px solid orange; }
 a[data-lightbox] img { cursor: zoom-in; }
 
 #qa { overflow: auto; scroll-behavior: smooth; }
-#qa #info { color: rgb(var(--rgb-mid)); padding: 6px; background: rgb(var(--rgb-mid)); font-size: 12px; }
+#qa #info { color: rgb(var(--rgb-mid)); margin: 10px; padding: 6px; background: rgb(var(--rgb-mid)); font-size: 12px; border: 1px solid rgb(var(--rgb-dark)); border-radius: 3px; }
 #qa .banner { display: flex; margin: 10px; align-items: center; }
 #qa .banner .button:last-child { margin-right: 0; }
 #qa .banner h3 { color: rgb(var(--rgb-dark)); font-weight: normal; margin: 0; }

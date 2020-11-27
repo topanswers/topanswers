@@ -1148,7 +1148,7 @@ define(['error','markdown','tio','moment','js.cookie','sparkmd5','domReady!']
     var promises = [];
     $('#info').find('.markdown[data-markdown]').renderMarkdown(promises);
     Promise.allSettled(promises).then(() => {
-      $('#info').css('color','rgb(var(--rgb-dark)');
+      $('#info').css('color','rgb(var(--rgb-black)');
     });
   })();
   if($('html').css('--question')) setTimeout(function(){ $('.answer:target').each(function(){ $(this)[0].scrollIntoView(); }); }, 500);
