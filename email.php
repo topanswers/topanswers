@@ -24,6 +24,6 @@ function ccdb($query,...$params){ $c = cdb($query,...$params); if(!$c) error_log
 
 foreach(db("select notification_id,account_email,notification_subject,notification_message from notification") as $r){
   extract($r);
-  mail($account_email,$notification_subject,$notification_message,array('From' => 'noreply@topanswers.xyz'));
+  mail($account_email,$notification_subject,$notification_message,array('From' => 'noreply@topanswers.xyz'),'-f noreply@topanswers.xyz');
   db("select process($1)",$notification_id);
 }
