@@ -93,6 +93,7 @@ create table account(
 , account_permit_later_license boolean default false not null
 , account_permit_later_codelicense boolean default false not null
 , account_image_hash bytea check(length(account_image_hash)=32)
+, account_email text check(account_email~'^\w+([-+.'']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$')
 );
 create unique index account_rate_limit_ind on account(account_create_at);
 
@@ -162,10 +163,12 @@ create table notification(
 , account_id integer references account
 , notification_at timestamptz not null default current_timestamp
 , notification_dismissed_at timestamptz
+, notification_email_is_processed boolean
 , unique (account_id,notification_id)
 );
 create index notification_latest_ind on notification(account_id, notification_dismissed_at desc nulls first);
 create index notification_trim_ind on notification(account_id, notification_at) include(notification_id) where notification_dismissed_at is null;
+create index notification_email on notification(notification_id) include(account_id) where notification_email_is_processed = false and notification_dismissed_at is null;
 
 create or replace function _trigger_trim_notifications() returns trigger language plpgsql security definer set search_path=db,pg_temp as $$
 begin
@@ -175,8 +178,17 @@ begin
   --
   return null;
 end;$$;
-
 create trigger trigger_trim_notifications after insert on notification for each row execute function _trigger_trim_notifications();
+
+create or replace function _trigger_setemail_notifications() returns trigger language plpgsql security definer set search_path=db,pg_temp as $$
+begin
+  if (select account_email is not null from account where account_id=new.account_id) then
+    new.notification_email_is_processed = false;
+  end if;
+  --
+  return new;
+end;$$;
+create trigger trigger_setemail_notifications before insert on notification for each row execute function _trigger_setemail_notifications();
 
 create table member(
   account_id integer references account

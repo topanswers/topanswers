@@ -36,7 +36,7 @@ from db.source natural join db.sesite
 where community_id=get_community_id();
 --
 create view one with (security_barrier) as
-select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url
+select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url,account_email
      , account_image_hash is not null account_has_image
       ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
       ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
@@ -48,7 +48,7 @@ select account_id,account_name,account_license_id,account_codelicense_id,account
       , selink_user_id, selink_user_id communicant_se_user_id
       ,one_stackapps_secret
      , coalesce(communicant_keyboard,community_keyboard) communicant_keyboard
-from (select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url,account_image_hash
+from (select account_id,account_name,account_license_id,account_codelicense_id,account_uuid,account_permit_later_license,account_permit_later_codelicense,account_image_url,account_image_hash,account_email
       from db.account natural join api._account
       where account_id=get_account_id()) a
      cross join db.one
@@ -124,6 +124,12 @@ create function change_name(nname text) returns void language sql security defin
   select raise_error('access denied') where get_account_id() is null;
   select raise_error('invalid username') where nname is not null and not nname~'^[0-9[:alpha:]][-'' .0-9[:alpha:]]{1,25}[0-9[:alpha:]]$';
   update account set account_name = nname, account_change_id = default, account_change_at = default where account_id=get_account_id();
+$$;
+--
+create function change_email(email text) returns void language sql security definer set search_path=db,api,pg_temp as $$
+  select raise_error('access denied') where get_account_id() is null;
+  select raise_error('invalid email') where email is not null and not email~'^\w+([-+.'']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$';
+  update account set account_email = email, account_change_id = default, account_change_at = default where account_id=get_account_id();
 $$;
 --
 create function change_image(bytea) returns void language sql security definer set search_path=db,api,pg_temp as $$

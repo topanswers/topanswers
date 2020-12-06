@@ -79,6 +79,7 @@ if($auth){
       case 'codelicense': db("select change_codelicense($1,$2)",$_POST['codelicense'],isset($_POST['orlater'])?'t':'f'); header('Location: '.$_POST['location']); exit;
       case 'resizer': exit(ccdb("select change_resizer($1)",$_POST['position']));
       case 'chat_resizer': exit(ccdb("select change_chat_resizer($1)",$_POST['position']));
+      case 'email': db("select change_email(nullif($1,''))",$_POST['email']); header('Location: '.$_POST['location']); exit;
       default: fail(400,'unrecognized action for authenticated user with community not set');
     }
   }

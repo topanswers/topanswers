@@ -13,7 +13,7 @@ if(isset($_GET['uuid'])){
 }
 
 ccdb("select login_community(nullif($1,'')::uuid,$2)",$_COOKIE['uuid']??'',$_GET['community']??'meta') || fail(403,'access denied');
-extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_image_url
+extract(cdb("select account_id,account_name,account_has_image,account_license_id,account_codelicense_id,account_permit_later_license,account_permit_later_codelicense,account_image_url,account_email
                    ,community_id,community_name,community_display_name,community_regular_font_is_locked,community_monospace_font_is_locked,community_image_url
                    ,community_rgb_dark,community_rgb_mid,community_rgb_light,community_rgb_highlight,community_rgb_warning,community_rgb_black,community_rgb_white
                    ,communicant_keyboard,my_community_regular_font_id,my_community_monospace_font_id,my_community_regular_font_name,my_community_monospace_font_name
@@ -122,6 +122,15 @@ ob_start(function($html){ return preg_replace('~\n\s*<~','<',$html); });
             <input type="submit" value="save">
           </form>
         <?}?>
+      </fieldset>
+      <fieldset id="email">
+        <legend>email for notifications</legend>
+        <form action="//post.topanswers.xyz/profile" method="post">
+          <input type="hidden" name="action" value="email">
+          <input type="hidden" name="location" value="//topanswers.xyz/profile?community=<?=$community_name?>">
+          <input type="text" name="email" placeholder="email address" value="<?=$account_email?>" size="50" autocomplete="off" autofocus>
+          <input type="submit" value="save">
+        </form>
       </fieldset>
       <fieldset id="link">
         <legend>link another device to this account</legend>
