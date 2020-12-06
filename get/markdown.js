@@ -85,6 +85,9 @@ define(['jquery'
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://WEB.TA') tokens[idx].attrSet('href','/web');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://PHP.TA') tokens[idx].attrSet('href','/php');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://FSHARP.TA') tokens[idx].attrSet('href','/fsharp');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://CPLUSPLUS.TA') tokens[idx].attrSet('href','/cplusplus');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://CPP.TA') tokens[idx].attrSet('href','/cplusplus');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://PYTHON.TA') tokens[idx].attrSet('href','/python');
     };
 
     md = require('markdown-it')({ linkify: true, typographer: true })
