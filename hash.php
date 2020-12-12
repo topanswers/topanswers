@@ -318,6 +318,7 @@ function h($f){
     "/lib/vex/vex-theme-topanswers.css": "772496da37c708aa",
     "/fonts/apl333.css": "fa82541e788bfa35",
     "/fonts/apl385.css": "1dd5a073e2864671",
+    "/fonts/bqn386.css": "998e9ea4f763d4ae",
     "/fonts/charis.css": "fc10cf90160cc4d3",
     "/fonts/dejavu-sans.css": "0a5603a11372e71b",
     "/fonts/dejavu-sans-mono.css": "6e7582654b4f39b3",
@@ -369,7 +370,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "7753c25dfe08401b",
     "/post.css": "2d85563808f49017",
-    "/require.config.js": "1857e72e3ec77aca",
+    "/require.config.js": "3b697bc0cf5e088b",
     "/tio.js": "84a530d72166be1e"
 }',true)[$f]).'.$2',$f);
 }
