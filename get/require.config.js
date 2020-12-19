@@ -32,6 +32,8 @@ var require = {
     'codemirror/mode/clojure':'codemirror/mode/clojure.a6c82719a8589569',
     'codemirror/mode/css/css':'codemirror/mode/css/css.4bc27114a047458b',
     'codemirror/mode/css':'codemirror/mode/css.4bc27114a047458b',
+    'codemirror/mode/diff/diff':'codemirror/mode/diff/diff.5cf2c64b70d63c41',
+    'codemirror/mode/diff':'codemirror/mode/diff.5cf2c64b70d63c41',
     'codemirror/mode/erlang/erlang':'codemirror/mode/erlang/erlang.6c840b08e44b804c',
     'codemirror/mode/erlang':'codemirror/mode/erlang.6c840b08e44b804c',
     'codemirror/mode/gfm/gfm':'codemirror/mode/gfm/gfm.f4ad694c46ec6bf6',
@@ -137,12 +139,12 @@ var require = {
     'starrr':'starrr.a95baf4870cd4d81',
     'vex':'vex.ce8070c89395b6ea',
     'error':'../error.60aa3b21598409da',
-    'markdown':'../markdown.daf98defb765a913',
+    'markdown':'../markdown.ec1a5386b6ef2281',
     'md':'../md.ef46db3751d8e999',
     'md-oneline':'../md-oneline.30cbe39e44603c66',
     'md-shortlinks':'../md-shortlinks.089468c314bf7e1c',
     'navigation':'../navigation.d0d12edff60010b2',
-    'require.config':'../require.config.3b697bc0cf5e088b',
+    'require.config':'../require.config.27086298971ec630',
     'tio':'../tio.84a530d72166be1e',
 
     }
