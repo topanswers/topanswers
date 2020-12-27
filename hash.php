@@ -346,7 +346,7 @@ function h($f){
     "/navigation.js": "d0d12edff60010b2",
     "/noscript.css": "4f7e2c6342642088",
     "/page/answer/answer.css": "7d8d34681f770e3a",
-    "/page/answer/answer.js": "626685c27a750963",
+    "/page/answer/answer.js": "b2dfa53b70c67312",
     "/page/answer-history/answer-history.css": "e261ad744f68003f",
     "/page/answer-history/answer-history.js": "9b236b1349d4e3aa",
     "/page/chat-history/chat-history.css": "1e5da1ea076366cd",
@@ -362,7 +362,7 @@ function h($f){
     "/page/question-history/question-history.css": "45f6439b41aadb24",
     "/page/question-history/question-history.js": "8745349d8dd90480",
     "/page/question/question.css": "9467cb5a46584b92",
-    "/page/question/question.js": "641c3520b8106a42",
+    "/page/question/question.js": "e42da1d897a11cf9",
     "/page/room/room.css": "fe6feab6a06ad6f0",
     "/page/room/room.js": "37e19792513f57c9",
     "/page/sample/sample.css": "94efebee41fedb5f",
@@ -374,7 +374,7 @@ function h($f){
     "/page/user/user.css": "11c2caff7b24908b",
     "/page/user/user.js": "7753c25dfe08401b",
     "/post.css": "2d85563808f49017",
-    "/require.config.js": "27086298971ec630",
+    "/require.config.js": "4195f92f445c5062",
     "/tio.js": "84a530d72166be1e"
 }',true)[$f]).'.$2',$f);
 }

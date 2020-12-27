@@ -50,6 +50,19 @@ define(['markdown','moment','navigation','lightbox2/js/lightbox','domReady!'],fu
     else if(cm.getScrollInfo().top+10>(cm.getScrollInfo().height-cm.getScrollInfo().clientHeight)) $('#markdown').animate({ scrollTop: $('#markdown').prop("scrollHeight")-$('#markdown').height() });
     else $('#markdown [data-source-line="'+map.reduce(function(prev,curr) { return ((Math.abs(curr-m)<Math.abs(prev-m))?curr:prev); })+'"]')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
   },200));
+  cm.on('paste',(c,e) => {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") === 0) {
+        const d = new FormData();
+        d.append('image',items[i].getAsFile());
+        $.post({ url: "//post.topanswers.xyz/upload", data: d, processData: false, cache: false, contentType: false, xhrFields: { withCredentials: true } }).done(function(r){
+          cm.replaceSelection('!['+d.get('image').name+'](/image?hash='+r+')');
+        });
+        break;
+      }
+    }
+  });
   if (ANSWER_IS_NEW) {
     if (localStorage.getItem($('html').css('--community') + '.answer.' + QUESTION_ID)) cm.setValue(localStorage.getItem($('html').css('--community') + '.answer.' + QUESTION_ID));
   }
