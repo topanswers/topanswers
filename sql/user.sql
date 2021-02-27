@@ -16,7 +16,7 @@ from api._community
                         group by community_id) q
      natural left join (with w as (select answer_id,answer_votes from db.answer natural join (select question_id,community_id from db.question) q where account_id=get_user_id())
                         select community_id, sum(answer_votes) community_answer_votes, count(*) community_answer_count from api._answer natural join w group by community_id) a
-where (community_type='public' or account_id is not null) and coalesce(community_question_votes,0)+coalesce(community_answer_votes,0)>0;
+where (community_type='public' or account_id is not null) and (community_question_count>0 or community_answer_count>0);
 --
 create view question with (security_barrier) as
 select community_id
