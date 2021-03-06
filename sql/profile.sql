@@ -18,6 +18,7 @@ select community_id
       ,question_id,question_at,question_title,question_votes
      , question_published_at is null question_is_draft
       ,sanction_description
+     , case when kind_has_answers then (select count(1) from db.answer where question_id=question.question_id) end question_answers
 from db.question natural join db.sanction natural join db.kind
 where community_id=get_community_id() and account_id=get_account_id();
 --
