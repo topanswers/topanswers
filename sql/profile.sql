@@ -123,7 +123,7 @@ $$;
 --
 create function change_name(nname text) returns void language sql security definer set search_path=db,api,pg_temp as $$
   select raise_error('access denied') where get_account_id() is null;
-  select raise_error('invalid username') where nname is not null and not nname~'^[0-9[:alpha:]][-'' .0-9[:alpha:]]{1,25}[0-9[:alpha:]]$';
+  select raise_error('invalid username') where nname is not null and not nname~'^[0-9[:alpha:]][-'' .0-9[:alpha:]]{1,25}[0-9.[:alpha:]]$';
   update account set account_name = nname, account_change_id = default, account_change_at = default where account_id=get_account_id();
 $$;
 --
