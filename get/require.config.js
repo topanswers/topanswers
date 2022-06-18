@@ -139,12 +139,12 @@ var require = {
     'starrr':'starrr.a95baf4870cd4d81',
     'vex':'vex.ce8070c89395b6ea',
     'error':'../error.60aa3b21598409da',
-    'markdown':'../markdown.7c7730f6cc8a32c5',
+    'markdown':'../markdown.a648db7d820f06f6',
     'md':'../md.ef46db3751d8e999',
     'md-oneline':'../md-oneline.30cbe39e44603c66',
     'md-shortlinks':'../md-shortlinks.089468c314bf7e1c',
     'navigation':'../navigation.d0d12edff60010b2',
-    'require.config':'../require.config.98c5ba6395b23c36',
+    'require.config':'../require.config.a1cdb8e4cfa85f53',
     'tio':'../tio.84a530d72166be1e',
 
     }

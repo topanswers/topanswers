@@ -90,6 +90,7 @@ define(['jquery'
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://PYTHON.TA') tokens[idx].attrSet('href','/python');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://RUST.TA') tokens[idx].attrSet('href','/rust');
       if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://SANDBOX.TA') tokens[idx].attrSet('href','/sandbox');
+      if(tokens[idx].attrGet('href').toUpperCase()==='HTTP://FIDDLE.TA') tokens[idx].attrSet('href','/fiddle');
     };
 
     md = require('markdown-it')({ linkify: true, typographer: true })
