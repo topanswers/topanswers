@@ -76,7 +76,7 @@ $codidact = json_decode(file_get_contents('https://codidact.com/communities.json
     </div>
     <div>
       <div id="qa">
-        <?$ch = curl_init('http://127.0.0.1/questions?community=meta&search='.urlencode('@+ {}{code golf}{blog}[!bug][!feature-request]')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
+        <?$ch = curl_init('http://127.0.0.1/questions?community=meta&search='.urlencode('@+ {}{code golf}{blog}[!bug]')); curl_setopt($ch, CURLOPT_HTTPHEADER, [$cookies]); curl_exec($ch); curl_close($ch);?>
       </div>
     </div>
     <div id="info-wrapper">
