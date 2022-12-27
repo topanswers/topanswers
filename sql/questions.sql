@@ -45,8 +45,8 @@ select account_id,community_id,community_name,community_language,community_code_
      , (select count(*) from api._question where community_id=get_community_id()) num_questions
 from api._community natural join db.community
      natural left join (select account_id,account_is_dev,communicant_is_post_flag_crew,communicant_regular_font_id,communicant_monospace_font_id
-                        from db.login natural join db.account natural join db.communicant
-                        where login_uuid=get_login_uuid()) a
+                        from db.account natural join db.communicant
+                        where account_id=get_account_id() and community_id=get_community_id()) a
 where community_id=get_community_id();
 --
 --
@@ -81,7 +81,7 @@ create function parse(text) returns table (community_id integer, sanction_id int
   select community_id,sanction_id,kind_id,coalesce(tag_ids,array[]::integer[]),coalesce(not_tag_ids,array[]::integer[]),label_ids from u3;
 $$;
 --
-create function simple_recent(text,integer,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
+create function simple_recent(text,integer,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql rows 1 security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
   select question_id, (row_number() over (order by question_poll_major_id desc))::integer, (count(1) over ())::integer
   from questions.parse($1) natural join question q cross join f
@@ -93,7 +93,7 @@ create function simple_recent(text,integer,integer) returns table (question_id i
   order by question_poll_major_id desc offset ($2-1)*$3 limit $3;
 $$;
 --
-create function fuzzy_closest(text,integer,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
+create function fuzzy_closest(text,integer,integer) returns table (question_id integer, question_ordinal integer, question_count integer) language sql rows 1 security definer set search_path=db,api,questions,x_pg_trgm,pg_temp as $$
   with f as (select trim((coalesce(regexp_match($1,'^[!+@]+ |^[!+@]+$'),array['']))[1]) flags)
      , c as (select distinct community_id from parse($1))
      , e as (select '%'||trim('"' from m[1])||'%' exacts from regexp_matches($1,'"[^%."]*"','g') m)

@@ -1,6 +1,3 @@
-/*
-\i ~/git/sql/api.sql
-*/
 begin;
 --
 drop schema if exists feedq cascade;
