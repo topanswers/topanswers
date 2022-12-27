@@ -1,3 +1,4 @@
 #!/bin/bash
-#generate hashes
-#ssh copy to server
+#php generate-hashes.php
+ssh admin@3.9.77.187 'sudo rm -rf /srv/all/test/*'
+tar -c -C /workspaces/topanswers/ -f - . | ssh admin@3.9.77.187 'sudo tar xvf - -C /srv/all/test'
