@@ -114,7 +114,7 @@ $codidact = json_decode(file_get_contents('https://codidact.com/communities.json
     </div>
   </main>
   <footer>
-    <div>TopAnswers is based in the UK, with servers in a data centre in Reading. We are <a href="/meta?q=1">committed to</a> seeking <a href="https://en.wikipedia.org/wiki/Charitable_incorporated_organisation">Charitable Incorporated Organisation</a> status as soon as we can meet our modest hosting and accountancy costs.</div>
+    <div>TopAnswers is based in the UK, and runs on AWS, primarily using the London (eu-west-2) region. We are <a href="/meta?q=1">committed to</a> seeking <a href="https://en.wikipedia.org/wiki/Charitable_incorporated_organisation">Charitable Incorporated Organisation</a> status as soon as we can meet our modest hosting and accountancy costs.</div>
   </footer>
 </body>
 </html>
