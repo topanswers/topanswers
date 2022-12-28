@@ -1,6 +1,6 @@
 <?php
 include 'config.php';
-$connection = pg_connect("host='" . config("DB_HOST") ."' dbname=postgres user=email") or die;
+$connection = pg_connect("host='cluster1.cluster-c8l1itv3i2dg.eu-west-2.rds.amazonaws.com' dbname=ta user=email password=email sslmode=require") or fail(403);
 function db($query,...$params) {
   global $connection;
   pg_send_query_params($connection, $query, $params);
