@@ -137,14 +137,14 @@ create function change(markdown text) returns void language sql security definer
                                          from answer_history natural join (select answer_id from answer where account_id<>get_account_id()) z
                                          where account_id=get_account_id() and answer_history_at>current_timestamp-'5m'::interval)>10;
   --
-  update question set question_poll_major_id = default where question_id=get_question_id();
-  --
-  with h as (insert into answer_history(answer_id,account_id,answer_history_markdown) values(get_answer_id(),get_account_id(),markdown) returning answer_id,answer_history_id)
+  with h as (insert into answer_history(answer_id,account_id,answer_history_markdown,answer_history_question_poll_major_id)
+             select get_answer_id(),get_account_id(),markdown,question_poll_major_id from question where question_id=get_question_id() returning answer_id,answer_history_id)
     , nn as (select answer_history_id,account_id from h natural join (select answer_id,question_id,account_id from answer) z where account_id<>get_account_id()
              union
              select answer_history_id,account_id from h natural join (select answer_id,question_id from answer) z natural join subscription where account_id<>get_account_id())
      , n as (insert into notification(account_id) select account_id from nn returning *)
     , an as (insert into answer_notification(notification_id,answer_history_id) select notification_id,answer_history_id from nn natural join n)
+     , q as (update question set question_poll_major_id = default where question_id=get_question_id())
   update account set account_notification_id = default where account_id in (select account_id from n);
   --
   update answer set answer_markdown = markdown, answer_summary = _markdownsummary(markdown), answer_change_at = default where answer_id=get_answer_id();
@@ -161,7 +161,6 @@ create function new(markdown text, lic integer, lic_orlater boolean, codelic int
   select raise_error(429,'rate limit') where (select count(*) from answer where account_id=get_account_id() and answer_at>current_timestamp-'2m'::interval)>3;
   --
   select _ensure_communicant(get_account_id(),get_community_id());
-  update question set question_poll_major_id = default where question_id=get_question_id();
   --
   with i as (insert into answer(question_id,community_id,kind_id,sanction_id,answer_markdown,license_id,codelicense_id,answer_summary,answer_permit_later_license,answer_permit_later_codelicense
                                ,label_id,account_id)
@@ -169,8 +168,8 @@ create function new(markdown text, lic integer, lic_orlater boolean, codelic int
                   , case when kind_answers_by_community then community_wiki_account_id else get_account_id() end
              from question natural join community natural join kind natural join sanction
              where question_id=get_question_id()
-             returning answer_id)
-     , h as (insert into answer_history(answer_id,account_id,answer_history_markdown) select answer_id,get_account_id(),markdown from i returning answer_id,answer_history_id)
+             returning answer_id,question_id)
+     , h as (insert into answer_history(answer_id,account_id,answer_history_markdown,answer_history_question_poll_major_id) select answer_id,get_account_id(),markdown,question_poll_major_id from i natural join question returning answer_id,answer_history_id)
     , nn as (select answer_history_id,account_id from h cross join (select account_id from subscription where question_id=get_question_id() and account_id<>get_account_id()) z)
      , n as (insert into notification(account_id) select account_id from nn returning *)
     , an as (insert into answer_notification(notification_id,answer_history_id) select notification_id,answer_history_id from nn natural join n)
@@ -180,6 +179,7 @@ create function new(markdown text, lic integer, lic_orlater boolean, codelic int
              from question natural join room
              where question_id=get_question_id() and room_can_listen
              on conflict do nothing)
+     , q as (update question set question_poll_major_id = default where question_id=get_question_id())
   select answer_id from i;
 $$;
 --

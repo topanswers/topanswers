@@ -523,6 +523,7 @@ create table answer_history(
 , account_id integer not null references account
 , answer_history_at timestamptz default current_timestamp not null
 , answer_history_markdown text not null
+, answer_history_question_poll_major_id bigint
 );
 create unique index answer_history_rate_limit_ind on answer_history(account_id,answer_history_at);
 create index answer_history_answer_ind on answer_history(answer_id) include(account_id);
