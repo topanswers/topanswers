@@ -18,10 +18,10 @@ select notification_id,account_email
             else 'other' end notification_subject
      , case when cn.notification_id is not null then 'https://topanswers.xyz/'||cn.community_name||'?room='||cn.room_id||'#c'||cn.chat_id||chr(10)||chr(10)||cn.chat_markdown
             when an.notification_id is not null then 'https://topanswers.xyz/'||an.community_name||'?q='||an.question_id||'#a'||an.answer_id
-            when ane.notification_id is not null then 'https://topanswers.xyz/answer-history?id='||ane.answer_id||'#h'||ane.answer_history_id
-            when afn.notification_id is not null then 'https://topanswers.xyz/answer-history?id='||afn.answer_id||'#f'||afn.answer_flag_history_id
-            when qn.notification_id is not null then 'https://topanswers.xyz/question-history?id='||qn.question_id||'#h'||qn.question_history_id
-            when qfn.notification_id is not null then 'https://topanswers.xyz/question-history?id='||qfn.question_id||'#f'||qfn.question_flag_history_id
+            when ane.notification_id is not null then 'https://topanswers.xyz/answer-history?id='||ane.answer_id||'#h'||ane.answer_history_id||' on '||'https://topanswers.xyz/'||ane.community_name||'?q='||ane.question_id||'#a'||ane.answer_id
+            when afn.notification_id is not null then 'https://topanswers.xyz/answer-history?id='||afn.answer_id||'#f'||afn.answer_flag_history_id||' on '||'https://topanswers.xyz/'||afn.community_name||'?q='||afn.question_id||'#a'||afn.answer_id
+            when qn.notification_id is not null then 'https://topanswers.xyz/question-history?id='||qn.question_id||'#h'||qn.question_history_id||' on '||'https://topanswers.xyz/'||qn.community_name||'?q='||qn.question_id
+            when qfn.notification_id is not null then 'https://topanswers.xyz/question-history?id='||qfn.question_id||'#f'||qfn.question_flag_history_id||' on '||'https://topanswers.xyz/'||qfn.community_name||'?q='||qfn.question_id
             else 'other' end notification_message
 from db.notification
      natural join db.account
@@ -32,27 +32,27 @@ from db.notification
                      natural join (select answer_id,question_id,account_name,answer_at from db.answer natural join db.account) a
                      natural join (select question_id,question_title,community_name from db.question natural join db.community) q
                 where answer_history_at=answer_at) an using (notification_id)
-     left join (select notification_id,question_title,answer_history_id,answer_id,account_name
+     left join (select notification_id,question_title,community_name,question_id,answer_history_id,answer_id,account_name
                 from db.answer_notification
-                     natural join (select answer_history_id,answer_id,answer_history_at from db.answer_history) ah
-                     natural join (select answer_id,question_id,account_name,answer_at from db.answer natural join db.account) a
+                     natural join (select answer_history_id,answer_id,answer_history_at,account_name from db.answer_history natural join db.account) ah
+                     natural join (select answer_id,question_id,answer_at from db.answer) a
                      natural join (select question_id,question_title,community_name from db.question natural join db.community) q
                 where answer_history_at<>answer_at) ane using (notification_id)
-     left join (select notification_id,answer_id,answer_flag_history_id,question_title
+     left join (select notification_id,answer_id,answer_flag_history_id,question_title,community_name,question_id
                 from db.answer_flag_notification
                      natural join (select answer_flag_history_id,answer_id from db.answer_flag_history) afh
                      natural join (select answer_id,question_id from db.answer) a
-                     natural join (select question_id,question_title from db.question) q
+                     natural join (select question_id,question_title,community_name from db.question natural join db.community) q
                ) afn using (notification_id)
-     left join (select notification_id,question_title,question_history_id,question_id,account_name
+     left join (select notification_id,question_title,community_name,question_history_id,question_id,account_name
                 from db.question_notification
                      natural join (select question_history_id,question_id,account_name from db.question_history natural join db.account) ah
                      natural join (select question_id,question_title,community_name from db.question natural join db.community) q
                ) qn using (notification_id)
-     left join (select notification_id,question_id,question_flag_history_id,question_title
+     left join (select notification_id,community_name,question_id,question_flag_history_id,question_title
                 from db.question_flag_notification
                      natural join (select question_flag_history_id,question_id from db.question_flag_history) qfh
-                     natural join (select question_id,question_title from db.question) q
+                     natural join (select question_id,question_title,community_name from db.question natural join db.community) q
                ) qfn using (notification_id)
 where notification_email_is_processed = false and notification_dismissed_at is null;
 --
