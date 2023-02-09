@@ -23,6 +23,7 @@ extract(cdb("select string_agg(question_id::text,',') qids
                    select question_id from simple_recent($3,$4::integer,$5::integer) where $1='simple'
                    union all
                    select question_id from fuzzy_closest($3,$4::integer,$5::integer) where $1='fuzzy') z",$type,$_GET['id']??'0',$search,$page,$pagesize));
+if(!$qids) $qids = '0';
 extract(cdb("select account_id,community_name,community_language
                   , (select coalesce(jsonb_agg(z order by question_ordinal),'[]'::jsonb)
                      from (select question_id,question_ordinal,question_count,question_at,question_change_at,question_change,question_is_answered,question_title,question_votes,question_votes_from_me
