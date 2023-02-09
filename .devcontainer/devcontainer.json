@@ -18,13 +18,7 @@
     "docker-in-docker": {}
   },
 
-  "containerEnv": { 
-    "AWS_ACCESS_KEY_ID": "AKIAYYQWL57XQKILXV64",
-    "AWS_DEFAULT_REGION": "eu-west-2",
-    "AWS_SECRET_ACCESS_KEY": "${localEnv:AWS_SECRET_ACCESS_KEY}",
-    "PGLAMBDA": "${localEnv:TA_PGLAMBDA}",
-    "PGPASSWORD": "${localEnv:RDS_PGPASSWORD}"
-  },
+  "runArgs": ["--env-file",".devcontainer/.env"],
 
   "postCreateCommand": ".devcontainer/postCreate.sh",
   "postStartCommand": ".devcontainer/postStart.sh"
