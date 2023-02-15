@@ -15,6 +15,7 @@ select notification_id,account_email
             when afn.notification_id is not null then 'answer flag on "'||afn.question_title||'"'
             when qn.notification_id is not null then 'question edit by '||qn.account_name||' on "'||qn.question_title||'"'
             when qfn.notification_id is not null then 'question flag on "'||qfn.question_title||'"'
+            when sn.notification_id is not null then 'notification'||(case when sn.community_display_name is not null then ' for '||sn.community_display_name||' community' else '' end)
             else 'other' end notification_subject
      , case when cn.notification_id is not null then 'https://topanswers.xyz/'||cn.community_name||'?room='||cn.room_id||'#c'||cn.chat_id||chr(10)||chr(10)||cn.chat_markdown
             when an.notification_id is not null then 'https://topanswers.xyz/'||an.community_name||'?q='||an.question_id||'#a'||an.answer_id
@@ -22,6 +23,7 @@ select notification_id,account_email
             when afn.notification_id is not null then 'https://topanswers.xyz/answer-history?id='||afn.answer_id||'#f'||afn.answer_flag_history_id||' on '||'https://topanswers.xyz/'||afn.community_name||'?q='||afn.question_id||'#a'||afn.answer_id
             when qn.notification_id is not null then 'https://topanswers.xyz/question-history?id='||qn.question_id||'#h'||qn.question_history_id||' on '||'https://topanswers.xyz/'||qn.community_name||'?q='||qn.question_id
             when qfn.notification_id is not null then 'https://topanswers.xyz/question-history?id='||qfn.question_id||'#f'||qfn.question_flag_history_id||' on '||'https://topanswers.xyz/'||qfn.community_name||'?q='||qfn.question_id
+            when sn.notification_id is not null then system_notification_message
             else 'other' end notification_message
 from db.notification
      natural join db.account
@@ -54,6 +56,10 @@ from db.notification
                      natural join (select question_flag_history_id,question_id from db.question_flag_history) qfh
                      natural join (select question_id,question_title,community_name from db.question natural join db.community) q
                ) qfn using (notification_id)
+     left join (select notification_id,system_notification_message,community_display_name
+                from db.system_notification
+                     natural left join (select community_id system_notification_community_id, community_display_name from db.community) c
+               ) sn using (notification_id)
 where notification_email_is_processed = false and notification_dismissed_at is null;
 --
 --
