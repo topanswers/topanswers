@@ -138,7 +138,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
           <?}?>
         <?}?>
         <span class="tag newtag">add tag</span>
-        <input list="taglist" id="taginput" class="tag hide">
+        <input list="taglist" id="taginput" class="tag hide" autocomplete="off">
         <datalist id="taglist">
           <?foreach(db("select tag_id,tag_name,tag_implies_id,tag_order, exists(select 1 from mark m where m.tag_id=t.tag_id) tag_is_mark from tag t order by tag_name") as $r){ extract($r);?>
             <option value="<?=$tag_name?>" data-id="<?=$tag_id?>" data-implies="<?=$tag_implies_id?>" data-order="<?=$tag_order?>"<?if($tag_is_mark){?> disabled<?}?>>

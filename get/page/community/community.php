@@ -182,7 +182,7 @@ $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'')
                   <a href="/tags?community=<?=$community_name?>#t<?=$tag_id?>" class="tag element" data-id="<?=$tag_id?>"><?=$tag_name?></a>
                 <?}?>
                 <span class="tag newtag">add tag</span>
-                <input list="taglist" id="taginput" class="tag hide">
+                <input list="taglist" id="taginput" class="tag hide" autocomplete="off">
                 <datalist id="taglist">
                   <?foreach(db("select tag_id,tag_name from tag where not tag_is order by tag_name") as $r){ extract($r);?>
                     <option value="<?=$tag_name?>" data-id="<?=$tag_id?>">
