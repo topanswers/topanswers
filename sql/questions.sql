@@ -100,13 +100,13 @@ create function fuzzy_closest(text,integer,integer) returns table (question_id i
      , w as (select trim(regexp_replace($1,'\[[^\]]+]|{[^}]+}','','g')) search_text)
      , q as (select question_id, question_markdown txt, strict_word_similarity($1,question_markdown) word_similarity, similarity($1,question_markdown) similarity
              from c natural join db.question
-             where (select search_text from w)<<%question_markdown and ((select exacts from e) is null or question_markdown ilike all((select exacts from e))))
+             where (select search_text from w)<<%question_markdown and ((select count(*) from e)=0 or question_markdown ilike all((select exacts from e))))
     , qt as (select question_id, question_title txt, strict_word_similarity($1,question_title)*2 word_similarity, similarity($1,question_title)*2 similarity
              from c natural join db.question
-             where (select search_text from w)<<%question_title and ((select exacts from e) is null or question_title ilike all((select exacts from e))))
+             where (select search_text from w)<<%question_title and ((select count(*) from e)=0 or question_title ilike all((select exacts from e))))
      , a as (select question_id, answer_markdown txt, strict_word_similarity($1,answer_markdown) word_similarity, similarity($1,answer_markdown) similarity
              from c natural join db.answer natural join (select question_id,community_id from db.question) z
-             where (select search_text from w)<<%answer_markdown and ((select exacts from e) is null or answer_markdown ilike all((select exacts from e))))
+             where (select search_text from w)<<%answer_markdown and ((select count(*) from e)=0 or answer_markdown ilike all((select exacts from e))))
      , s as (select question_id, bool_or(txt like '%'||(select search_text from w)||'%') exact, max(word_similarity+similarity) similarity from (select * from q union all select * from qt union all select * from a) z group by question_id)
   select question_id, (row_number() over (order by exact desc, similarity desc))::integer, (count(1) over ())::integer
   from s natural join db.question q natural join parse($1) cross join f
