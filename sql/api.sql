@@ -215,6 +215,7 @@ create function login_room(uuid uuid, rid integer) returns boolean language sql 
   select _set('login',uuid::text),_set('account',account_id::text) from login where login_uuid=uuid;
   select raise_error('invalid room') where not exists (select 1 from _room where room_id=rid);
   select _set('room',room_id::text),_set('community',community_id::text) from room where room_id=rid;
+  select _set('question',room_question_id::text) from room where room_id=rid and room_question_id is not null;
   select exists(select 1 from login where login_uuid=uuid);
 $$;
 --

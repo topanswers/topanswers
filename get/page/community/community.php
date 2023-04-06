@@ -51,7 +51,7 @@ $dev = $account_is_dev;
 $_GET['community']===$community_name || fail(400,'invalid community');
 include '../../../lang/community.'.$community_language.'.php';
 $jslang = substr($community_language,0,1).substr(strtok($community_language,'-'),-1);
-$question = $_GET['q']??'0';
+$question = $_GET['q']??ccdb("select api.get_question_id()")??'0';
 $room = $room_id;
 $canchat = $room_can_chat;
 $cookies = 'Cookie: '.(isset($_COOKIE['uuid'])?'uuid='.$_COOKIE['uuid'].'; ':'').(isset($_COOKIE['environment'])?'environment='.$_COOKIE['environment'].'; ':'').(isset($_COOKIE['pagesize'])?'pagesize='.$_COOKIE['pagesize'].'; ':'');
