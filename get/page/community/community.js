@@ -534,7 +534,7 @@ define(['error','markdown','tio','moment','js.cookie','sparkmd5','domReady!']
   }
   function renderChat(){
     var t = $(this), promises = [];
-    t.find('.markdown').renderMarkdown(promises);
+    t.filter(':not(.deleted)').find('.markdown').renderMarkdown(promises);
     return Promise.allSettled(promises).then( () => t.find('.question:not(.processed)').each(renderQuestion).addClass('processed') );
   }
   function processNewChat(buffer){
