@@ -1,12 +1,13 @@
 /*
 create database ta;
+revoke connect on database ta from public;
 create user get password 'get';
 grant connect on database ta to get;
 create user post password 'get';
 grant connect on database ta to post;
 create user email password 'get';
 grant connect on database ta to email;
-psql "host=cluster1.cluster-c8l1itv3i2dg.eu-west-2.rds.amazonaws.com dbname=ta user=postgres sslmode=require" -f sql/db.sql
+psql "host=cluster1.cluster-c8l1itv3i2dg.eu-west-2.rds.amazonaws.com dbname=ta user=postgres sslmode=require" xxx-f sql/db.sql
 */
 
 drop schema if exists public;
