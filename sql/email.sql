@@ -3,7 +3,7 @@ begin;
 --
 drop schema if exists email cascade;
 create schema email;
-grant usage on schema email to email;
+grant usage on schema email to email,ta_email;
 set local search_path to email,pg_temp;
 --
 --
@@ -71,8 +71,8 @@ $$;
 revoke all on all functions in schema email from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to email;', E'\n') from pg_views where schemaname='email' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to email;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to email,ta_email;', E'\n') from pg_views where schemaname='email' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to email,ta_email;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='email' and proname!~'^_' );
 end$$;

@@ -1,5 +1,5 @@
 create schema communityicon;
-grant usage on schema communityicon to get;
+grant usage on schema communityicon to get,ta_get;
 set local search_path to communityicon,api,pg_temp;
 --
 --
@@ -12,8 +12,8 @@ create function login_community(uuid,text) returns boolean language sql security
 revoke all on all functions in schema communityicon from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='communityicon' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='communityicon' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='communityicon' and proname!~'^_' );
 end$$;

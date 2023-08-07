@@ -1,5 +1,5 @@
 create schema questions;
-grant usage on schema questions to get;
+grant usage on schema questions to get,ta_get;
 set local search_path to questions,api,pg_temp;
 --
 --
@@ -121,8 +121,8 @@ $$;
 revoke all on all functions in schema questions from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='questions' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='questions' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='questions' and proname!~'^_' );
 end$$;

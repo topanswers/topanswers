@@ -1,5 +1,5 @@
 create schema community;
-grant usage on schema community to get;
+grant usage on schema community to get,ta_get;
 set local search_path to community,api,pg_temp;
 --
 --
@@ -162,8 +162,8 @@ create function login_question(uuid,integer) returns boolean language sql securi
 revoke all on all functions in schema community from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='community' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='community' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='community' and proname!~'^_' );
 end$$;

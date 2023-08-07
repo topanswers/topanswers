@@ -1,5 +1,5 @@
 create schema transcript;
-grant usage on schema transcript to get;
+grant usage on schema transcript to get,ta_get;
 set local search_path to transcript,api,pg_temp;
 --
 --
@@ -105,8 +105,8 @@ $$;
 revoke all on all functions in schema transcript from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='transcript' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='transcript' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='transcript' and proname!~'^_' );
 end$$;

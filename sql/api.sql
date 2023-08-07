@@ -35,7 +35,7 @@ drop schema if exists notification cascade;
 drop schema if exists q cascade;
 drop schema if exists api cascade;
 create schema api;
-grant usage on schema api to get,post;
+grant usage on schema api to get,ta_get,post,ta_post;
 set local search_path to api,pg_temp;
 --
 --
@@ -311,7 +311,7 @@ end$$;
 revoke all on all functions in schema api from public;
 do $$
 begin
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,post;', E'\n')
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get,post,ta_post;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='api' and proname!~'^_' );
 end$$;

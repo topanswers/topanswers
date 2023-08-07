@@ -1,6 +1,6 @@
 <?php
 include 'config.php';
-$connection = pg_connect("host='cluster1.cluster-c8l1itv3i2dg.eu-west-2.rds.amazonaws.com' dbname=ta user=email password=email sslmode=require") or fail(403);
+$connection = pg_connect("host='cluster1.cluster-c8l1itv3i2dg.eu-west-2.rds.amazonaws.com' dbname=ta user=ta_email password=password sslmode=require") or fail(403);
 function db($query,...$params) {
   global $connection;
   pg_send_query_params($connection, $query, $params);
@@ -21,6 +21,8 @@ function db($query,...$params) {
 }
 function cdb($query,...$params){ $c = db($query,...$params); if(!$c) error_log($query); return current($c); }
 function ccdb($query,...$params){ $c = cdb($query,...$params); if(!$c) error_log($query); return current($c); }
+
+db("set search_path to email,pg_temp");
 
 foreach(db("select notification_id,account_email,notification_subject,notification_message from notification") as $r){
   extract($r);

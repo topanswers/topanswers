@@ -1,5 +1,5 @@
 create schema usr;
-grant usage on schema usr to get;
+grant usage on schema usr to get,ta_get;
 set local search_path to usr,api,pg_temp;
 --
 --
@@ -65,8 +65,8 @@ $$select api.login_communityuser($1,(select community_id from db.community where
 revoke all on all functions in schema usr from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get;', E'\n') from pg_views where schemaname='usr' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='usr' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='usr' and proname!~'^_' );
 end$$;
