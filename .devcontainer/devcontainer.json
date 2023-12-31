@@ -1,26 +1,21 @@
 {
-  "image": "node:16-bullseye",
-  "containerUser": "root",
+	"build": { "dockerfile": "./Dockerfile" },
 
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "Tobermory.es6-string-html",
-        "ms-azuretools.vscode-docker",
-        "amazonwebservices.aws-toolkit-vscode"
-      ]
-    }
-  },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "Tobermory.es6-string-html",
+                "42Crunch.vscode-openapi",
+                "humao.rest-client"
+            ]
+        }
+    },
 
-  "features": {
-    "aws-cli": {},
-    "docker-in-docker": {}
-  },
-
-  "runArgs": ["--env-file",".devcontainer/.env"],
-
-  "postCreateCommand": ".devcontainer/postCreate.sh",
-  "postStartCommand": ".devcontainer/postStart.sh"
+	"mounts": [
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=delegated"
+    ],
+  
+    "runArgs": ["--env-file",".devcontainer/.env"]
 
 }
