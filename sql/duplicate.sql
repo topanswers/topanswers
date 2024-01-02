@@ -1,3 +1,5 @@
+-- select duplicate.login_answer( (select login_uuid from login where account_id=2 limit 1) , 5096);
+--
 create schema duplicate;
 grant usage on schema duplicate to ta_get;
 set local search_path to duplicate,api,pg_temp;
@@ -34,9 +36,9 @@ from (select community_id,question_id,answer_id,answer_at,answer_summary,answer_
                         , account_image_url question_account_image_url
                         , coalesce(communicant_votes,0) question_communicant_votes
                    from api._question natural join db.question natural join db.sanction natural join db.kind natural join db.account natural join api._account natural join db.communicant
-                   where not question_is_deleted) q
-     natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where login_uuid=get_login_uuid() and question_vote_votes>0) qv
-     natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where login_uuid=get_login_uuid() and answer_vote_votes>0) av
+                   where question_id=get_question_id() and not question_is_deleted) q
+     natural left join (select question_id,question_vote_votes from db.question_vote natural join db.login where question_id=get_question_id() and login_uuid=get_login_uuid() and question_vote_votes>0) qv
+     natural left join (select answer_id,answer_vote_votes from db.answer_vote natural join db.login where answer_id=get_answer_id() and login_uuid=get_login_uuid() and answer_vote_votes>0) av
 ;
 --
 --
