@@ -1,5 +1,5 @@
 create schema feedq;
-grant usage on schema feedq to get,ta_get;
+grant usage on schema feedq to ta_get;
 set local search_path to feedq,api,pg_temp;
 --
 --
@@ -18,8 +18,8 @@ create function login_question(integer) returns void language sql security defin
 revoke all on all functions in schema feedq from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='feedq' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to ta_get;', E'\n') from pg_views where schemaname='feedq' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to ta_get;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='feedq' and proname!~'^_' );
 end$$;

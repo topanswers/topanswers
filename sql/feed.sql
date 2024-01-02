@@ -1,5 +1,5 @@
 create schema feed;
-grant usage on schema feed to get,ta_get;
+grant usage on schema feed to ta_get;
 set local search_path to feed,api,pg_temp;
 --
 --
@@ -17,8 +17,8 @@ create function login_community(text) returns void language sql security definer
 revoke all on all functions in schema feed from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='feed' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to ta_get;', E'\n') from pg_views where schemaname='feed' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to ta_get;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='feed' and proname!~'^_' );
 end$$;

@@ -1,5 +1,5 @@
 create schema import;
-grant usage on schema import to get,ta_get,post,ta_post;
+grant usage on schema import to ta_get,ta_post;
 set local search_path to import,api,pg_temp;
 --
 --
@@ -112,8 +112,8 @@ $$;
 revoke all on all functions in schema import from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to post,ta_post;', E'\n') from pg_views where schemaname='import' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to post,ta_post;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to ta_post;', E'\n') from pg_views where schemaname='import' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to ta_post;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='import' and proname!~'^_' );
 end$$;

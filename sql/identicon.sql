@@ -1,5 +1,5 @@
 create schema identicon;
-grant usage on schema identicon to get,ta_get;
+grant usage on schema identicon to ta_get;
 set local search_path to identicon,api,pg_temp;
 --
 --
@@ -9,5 +9,5 @@ create view account with (security_barrier) as select account_id,account_change_
 revoke all on all functions in schema identicon from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='identicon' and viewname!~'^_');
+  execute (select string_agg('grant select on '||viewname||' to ta_get;', E'\n') from pg_views where schemaname='identicon' and viewname!~'^_');
 end$$;

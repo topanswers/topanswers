@@ -1,5 +1,5 @@
 create schema sitemap;
-grant usage on schema sitemap to get,ta_get;
+grant usage on schema sitemap to ta_get;
 set local search_path to sitemap,api,pg_temp;
 --
 --
@@ -12,5 +12,5 @@ where question_crew_flags<0 or (question_crew_flags=0 and question_flags=0) and 
 revoke all on all functions in schema sitemap from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='sitemap' and viewname!~'^_');
+  execute (select string_agg('grant select on '||viewname||' to ta_get;', E'\n') from pg_views where schemaname='sitemap' and viewname!~'^_');
 end$$;

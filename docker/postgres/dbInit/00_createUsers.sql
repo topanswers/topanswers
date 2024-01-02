@@ -1,5 +1,5 @@
-CREATE USER get;
-GRANT ALL PRIVILEGES ON DATABASE postgres to get,ta_get;
+CREATE USER ta_get;
+GRANT ALL PRIVILEGES ON DATABASE postgres to ta_get;
 
-CREATE USER post;
-GRANT ALL PRIVILEGES ON DATABASE postgres to post,ta_post;
+CREATE USER ta_post;
+GRANT ALL PRIVILEGES ON DATABASE postgres to ta_post;

@@ -1,5 +1,5 @@
 create schema room;
-grant usage on schema room to get,ta_get,post,ta_post;
+grant usage on schema room to ta_get,ta_post;
 set local search_path to room,api,pg_temp;
 --
 --
@@ -23,8 +23,8 @@ create function login_room(uuid,integer) returns boolean language sql security d
 --
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to get,ta_get;', E'\n') from pg_views where schemaname='room' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to get,ta_get;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to ta_get;', E'\n') from pg_views where schemaname='room' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to ta_get;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='room' and proname!~'^_' );
 end$$;
@@ -69,8 +69,8 @@ $$;
 revoke all on all functions in schema room from public;
 do $$
 begin
-  execute (select string_agg('grant select on '||viewname||' to post,ta_post;', E'\n') from pg_views where schemaname='room' and viewname!~'^_');
-  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to post,ta_post;', E'\n')
+  execute (select string_agg('grant select on '||viewname||' to ta_post;', E'\n') from pg_views where schemaname='room' and viewname!~'^_');
+  execute ( select string_agg('grant execute on function '||p.oid::regproc||'('||pg_get_function_identity_arguments(p.oid)||') to ta_post;', E'\n')
             from pg_proc p join pg_namespace n on p.pronamespace=n.oid
             where n.nspname='room' and proname!~'^_' );
 end$$;

@@ -2,9 +2,9 @@
 create database ta;
 revoke connect on database ta from public;
 create user ta_get password 'get';
-grant connect on database ta to get,ta_get;
+grant connect on database ta to ta_get;
 create user ta_post password 'get';
-grant connect on database ta to post,ta_post;
+grant connect on database ta to ta_post;
 create user ta_email password 'get';
 grant connect on database ta to email,ta_email;
 psql "host=cluster1.cluster-c8l1itv3i2dg.eu-west-2.rds.amazonaws.com dbname=ta user=postgres sslmode=require" xxx-f sql/db.sql
