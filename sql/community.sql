@@ -1,3 +1,6 @@
+-- select community.login_community( (select login_uuid from login where account_id=2 limit 1) , 'meta');
+-- set search_path to community,api,pg_temp;
+--
 create schema community;
 grant usage on schema community to ta_get;
 set local search_path to community,api,pg_temp;
