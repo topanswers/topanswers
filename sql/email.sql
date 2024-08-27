@@ -1,4 +1,4 @@
---psql "host=cluster1.cluster-c8l1itv3i2dg.eu-west-2.rds.amazonaws.com dbname=ta user=postgres sslmode=require" -f sql/email.sql
+--psql "host=18.169.61.181 dbname=ta user=postgres sslmode=require" -f sql/email.sql
 begin;
 --
 drop schema if exists email cascade;

@@ -16,7 +16,7 @@ $user = '';
 if($_SERVER['SERVER_NAME']===config("DEV_SERVER_NAME")) $user = 'get';
 if($_SERVER['SERVER_NAME']==='topanswers.xyz') $user = 'get';
 if($_SERVER['SERVER_NAME']==='post.'.config("SITE_DOMAIN")) $user = 'post';
-$connection = pg_connect("host='cluster1.cluster-c8l1itv3i2dg.eu-west-2.rds.amazonaws.com' dbname=ta user=ta_".$user." password=password sslmode=require") or fail(403);
+$connection = pg_connect("host=/var/run/postgresql dbname=ta user=ta_".$user." password=password sslmode=require") or fail(403);
 function db($query,...$params) {
   global $connection;
   pg_send_query_params($connection, $query, $params);
