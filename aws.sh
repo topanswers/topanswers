@@ -324,6 +324,7 @@ apt install postfix
 sed -i "s/^smtpd_banner = .*$/smtpd_banner = topanswers.xyz/g" /etc/postfix/main.cf
 sed -i "s/^myhostname = .*$/myhostname = topanswers.xyz/g" /etc/postfix/main.cf
 service postfix restart
+apt install cron
 cat <<"EOF" > /etc/cron.d/ta
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
