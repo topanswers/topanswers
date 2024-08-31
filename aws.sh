@@ -13,8 +13,7 @@ aws ec2 associate-address --instance-id i-08a26762b68534179 --public-ip 18.169.6
 ssh-add
 # allow PG, SSH, HTTPS through security group
 # ssh-copy-id -i ./.ssh/id_rsa.pub admin@18.169.61.181
-ssh admin@18.169.61.181
-sudo su - root
+ssh -t admin@18.169.61.181 "sudo su - root"
 apt-get update
 iptables -F
 apt remove iptables iptables-persistent
@@ -321,27 +320,13 @@ mkdir -p /srv/all/prod /srv/all/test /srv/uploads
 chown www-data:www-data /srv/uploads
 service apache2 restart
 #scp -3rp admin@3.9.77.187:/srv/uploads admin@18.169.61.181:/home/admin
-
-
-
-
 apt install postfix
-
-vim /etc/crontab
-…
-*  *  * * * root  php -f /srv/all/prod/email.php
-
-
-vim /etc/postfix/main.cf
-\
-…
-smtpd_banner = topanswers.xyz
-…
-myhostname = topanswers.xyz
-…
-smtputf8_enable = no
-/
-
+sed -i "s/^smtpd_banner = .*$/smtpd_banner = topanswers.xyz/g" /etc/postfix/main.cf
+sed -i "s/^myhostname = .*$/myhostname = topanswers.xyz/g" /etc/postfix/main.cf
 service postfix restart
+cat <<"EOF" > /etc/cron.d/ta
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-
+*  *  * * * root  php -f /srv/all/prod/email.php
+EOF

@@ -69,7 +69,7 @@ $cookies = isset($_COOKIE['uuid'])?'Cookie: uuid='.$_COOKIE['uuid'].'; '.(isset(
       <?}?>
     </div>
     <div>
-      <?if(!$answer_id && count($labels)){?>
+      <?if(!$answer_id && $labels && count($labels)){?>
         <select class="element" name="label" form="form"<?=$sanction_label_is_mandatory?' required':''?>>
           <option value=""<?=$sanction_label_is_mandatory?' disabled':''?><?=$sanction_default_label_id?'':' selected'?>>
             choose <?=$sanction_label_called?><?=$sanction_label_is_mandatory?'':' (optional)'?>
