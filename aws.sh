@@ -44,6 +44,11 @@ local   all         postgres                          ident map=map
 host    all         all         all                   scram-sha-256
 local   all         all                               password
 EOF
+dd if=/dev/zero of=/var/swap bs=1M count=2048
+chmod 600 /var/swap
+mkswap /var/swap
+swapon /var/swap
+echo "/var/swap   swap    swap    defaults        0   0" >> /etc/fstab
 cat > /etc/postgresql/15/main/postgresql.conf <<"EOF"
 data_directory = '/var/lib/postgresql/15/main'
 hba_file = '/etc/postgresql/15/main/pg_hba.conf'
@@ -331,3 +336,10 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 *  *  * * * root  php -f /srv/all/prod/email.php
 EOF
+cat <<"EOF" > /etc/cron.d/tabackup
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+0  *  * * * root  pg_dump --username=postgres ta -F c > /root/backup.$(date +"\%H").sql
+EOF
+
